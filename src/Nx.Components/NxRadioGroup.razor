@@ -1,0 +1,31 @@
+@namespace Nx.Components
+@typeparam TValue
+
+<div class="@CssClass" style="@Style">
+    @if (Label is not null)
+    {
+        <div class="nx-radiogroup-label" id="@LabelId">@Label</div>
+    }
+    <div class="nx-radiogroup-items"
+         id="@GroupId"
+         role="radiogroup"
+         aria-labelledby="@(Label is null ? null : LabelId)"
+         aria-orientation="@(Orientation == NxOrientation.Horizontal ? "horizontal" : "vertical")"
+         aria-disabled="@(Disabled ? "true" : null)"
+         aria-invalid="@(validation.IsInvalid ? "true" : null)">
+        <CascadingValue Value="this" IsFixed="true">
+            @if (Data is not null)
+            {
+                foreach (var item in Data)
+                {
+                    <NxRadioButton TValue="TValue"
+                                   Value="item"
+                                   Label="@(ItemTemplate is null ? ItemText?.Invoke(item) ?? item?.ToString() : null)"
+                                   Disabled="@(ItemDisabled?.Invoke(item) ?? false)"
+                                   ChildContent="@(ItemTemplate?.Invoke(item))" />
+                }
+            }
+            @ChildContent
+        </CascadingValue>
+    </div>
+</div>

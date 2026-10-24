@@ -1,0 +1,51 @@
+@page "/multiselect/api"
+
+<DocHeader Slug="multiselect" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <p class="doc-note">Parameters shared with <code>NxComboBox</code> behave the same; these are the multi-select ones and the differences.</p>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Values / SelectedItems</td><td>IEnumerable&lt;TValue&gt;? / IEnumerable&lt;TItem&gt;?</td><td>—</td><td><code>@@bind-Values</code>, <code>@@bind-SelectedItems</code>, or both. Bind an <code>IEnumerable</code> field.</td></tr>
+                <tr><td>SelectAll</td><td>bool</td><td>false</td><td>A first row that selects every listed item, or clears them.</td></tr>
+                <tr><td>MaxSelections</td><td>int?</td><td>none</td><td>Cap; the rest grey out once reached.</td></tr>
+                <tr><td>SummaryThreshold</td><td>int?</td><td>none</td><td>Above this many, one summary instead of chips; 0 = always.</td></tr>
+                <tr><td>SummaryFormat</td><td>string</td><td>"{0} selected"</td><td>Summary text; <code>{0}</code> is the count.</td></tr>
+                <tr><td>MaxVisibleChips / ChipTemplate</td><td>int? / RenderFragment&lt;TItem&gt;?</td><td>—</td><td>Chip count before "+N more"; chip content.</td></tr>
+                <tr><td>Filterable</td><td>bool</td><td>true</td><td>Typing filters. False: no typing, letters jump to items.</td></tr>
+                <tr><td>Filter / CustomFilter / FilterAllColumns</td><td></td><td>Contains / — / true</td><td>As NxComboBox.</td></tr>
+                <tr><td>Data / DataProvider / DebounceDelay</td><td></td><td></td><td>As NxComboBox.</td></tr>
+                <tr><td>ItemText / ItemValue / ItemGroup</td><td></td><td></td><td>As NxComboBox.</td></tr>
+                <tr><td>ItemTemplate / GroupHeaderTemplate / Columns / ColumnDefinitions</td><td></td><td></td><td>As NxComboBox.</td></tr>
+                <tr><td>Virtualize / ItemHeight / PopupWidth / PopupMaxHeight</td><td></td><td></td><td>As NxComboBox.</td></tr>
+                <tr><td>MobileMode / MobileBreakpoint / MobileTitle</td><td></td><td>Auto / 600 / —</td><td>Full-screen sheet; toggles apply on Done.</td></tr>
+                <tr><td>Placeholder / Clearable / NoDataText</td><td></td><td></td><td>As NxComboBox; Clearable clears every item.</td></tr>
+                <tr><td>Loading / Disabled / ReadOnly / Id / Class / Style</td><td></td><td></td><td>As NxComboBox.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events &amp; Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ValuesChanged / SelectedItemsChanged</td><td>EventCallback</td><td>The selection changed: a toggle, Select all, a removed chip, clear, Done in the sheet.</td></tr>
+                <tr><td>FocusAsync()</td><td>ValueTask</td><td>Focuses the field.</td></tr>
+                <tr><td>IsOpen</td><td>bool</td><td>Whether the list is open.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <p class="doc-note">The same as <code>NxComboBox</code>, including <code>--nx-chip-bg</code> and <code>--nx-chip-fg</code> for the chips and the summary. The outer element also carries <code>nx-multiselect</code>.</p>
+</div>
+
+<DocPager Slug="multiselect" Page="api" />

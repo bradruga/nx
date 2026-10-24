@@ -1,0 +1,68 @@
+@page "/splitter"
+@page "/splitter/overview"
+
+<DocHeader Slug="splitter" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxSplitter</code> lays out two or more <code>NxSplitterPane</code>s side by side (or stacked, with
+        <code>Orientation="Vertical"</code>) with a bar between each pair. Drag a bar, or focus it and use the arrow keys.
+        Give a pane a <code>Size</code> in px or % — bound with <code>@@bind-Size</code> — and leave one without, to take the rest.
+        <code>Min</code> and <code>Max</code> limit resizing; <code>Collapsible</code> puts a collapse button on the bar.
+        Splitters nest. On a phone the panes stack, each with a header that collapses it.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column">
+        <NxSplitter Id="overview-splitter" Style="height: 260px">
+            <NxSplitterPane Id="overview-list" Title="Jobs" @bind-Size="listSize" Min="160px" Max="70%">
+                <ul class="demo-list">
+                    @foreach (var job in Jobs)
+                    {
+                        <li>@job</li>
+                    }
+                </ul>
+            </NxSplitterPane>
+            <NxSplitterPane Id="overview-details" Title="Details">
+                <p><strong>Job 55120</strong> · Kiewit Northeast</p>
+                <p>Drag the bar, or Tab to it and press ← / →.</p>
+            </NxSplitterPane>
+        </NxSplitter>
+        <div class="demo-row"><span class="demo-value" id="overview-size">Size: <strong>@listSize</strong></span></div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Tab</td><td>Each movable bar is a tab stop.</td></tr>
+                <tr><td>← / → (↑ / ↓ when stacked)</td><td>Moves the bar 10 px; with Shift, 50 px. Stops at Min and Max.</td></tr>
+                <tr><td>Home / End</td><td>Moves the bar to the limit.</td></tr>
+                <tr><td>Enter</td><td>Collapses or expands the collapsible pane next to the bar.</td></tr>
+                <tr><td>role="separator"</td><td>Focusable, with <code>aria-valuenow</code> (the pane before it, in % of the splitter), <code>aria-controls</code> and the pane's title as its name.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="splitter" Page="overview" />
+
+@code {
+    static readonly string[] Jobs = ["55120 · Kiewit Northeast", "55121 · Turner Construction", "55124 · Skanska USA", "55130 · Gilbane", "55131 · Barr & Barr"];
+    string? listSize = "35%";
+
+    const string basicCode =
+        """
+        <NxSplitter Style="height: 260px">
+            <NxSplitterPane Title="Jobs" @bind-Size="listSize" Min="160px" Max="70%">…</NxSplitterPane>
+            <NxSplitterPane Title="Details">…</NxSplitterPane>
+        </NxSplitter>
+        """;
+}

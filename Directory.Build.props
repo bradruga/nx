@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Authors>Bradley Ruga</Authors>
+    <Copyright>Copyright © Bradley Ruga $([System.DateTime]::Now.Year)</Copyright>
+  </PropertyGroup>
+</Project>

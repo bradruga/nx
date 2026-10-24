@@ -1,0 +1,92 @@
+@page "/form/api"
+
+<DocHeader Slug="form" Page="api" />
+
+<div class="doc-section">
+    <h2>NxForm</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Model</td><td>object?</td><td>—</td><td>The object edited; the form makes its EditContext. Set this or EditContext.</td></tr>
+                <tr><td>EditContext</td><td>EditContext?</td><td>—</td><td>Your own context. Reads back the context in use either way.</td></tr>
+                <tr><td>OnValidSubmit / OnInvalidSubmit</td><td>EventCallback&lt;EditContext&gt;</td><td>—</td><td>Submit after validation passed or failed.</td></tr>
+                <tr><td>OnSubmit</td><td>EventCallback&lt;EditContext&gt;</td><td>—</td><td>Every submit, without validating; not with the two above.</td></tr>
+                <tr><td>Columns</td><td>int</td><td>1</td><td>Grid columns for the items.</td></tr>
+                <tr><td>ColumnSpacing</td><td>string?</td><td>16px</td><td>Space between columns, as CSS.</td></tr>
+                <tr><td>Orientation</td><td>NxOrientation</td><td>Vertical</td><td>Labels above (Vertical) or beside (Horizontal) the editors.</td></tr>
+                <tr><td>Validation</td><td>RenderFragment?</td><td>DataAnnotationsValidator</td><td>The validators; empty for none.</td></tr>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>Items, groups and any markup.</td></tr>
+                <tr><td>Buttons</td><td>RenderFragment?</td><td>—</td><td>The row under the items. No buttons are rendered for you.</td></tr>
+                <tr><td>SubmitOnEnter</td><td>bool</td><td>true</td><td><code>false</code>: Enter in a field does not submit.</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>On the <code>&lt;form&gt;</code>; generated editors get <code>{Id}-{Field}</code>.</td></tr>
+                <tr><td>IsValid()</td><td>bool</td><td></td><td>Validates every field, shows the messages, returns whether there were none.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxFormItem</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Field</td><td>string?</td><td>—</td><td>A property of the form's model (<code>@@nameof(…)</code>): the editor, label and messages.</td></tr>
+                <tr><td>Label</td><td>string?</td><td>[Display] or the name in words</td><td>The label; none for your own editor unless set.</td></tr>
+                <tr><td>Id</td><td>string?</td><td>{form id}-{Field}</td><td>The editor's id, which the label targets; give your own editor the same.</td></tr>
+                <tr><td>ColSpan</td><td>int</td><td>1</td><td>Columns spanned, up to the form's or group's Columns.</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>false</td><td>Disables the generated editor.</td></tr>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>Your own editor.</td></tr>
+                <tr><td>Class / Style</td><td>string?</td><td>—</td><td>On the item.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxFormGroup</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Label</td><td>string?</td><td>—</td><td>The legend.</td></tr>
+                <tr><td>Columns / ColumnSpacing</td><td>int? / string?</td><td>the form's</td><td>The group's own grid.</td></tr>
+                <tr><td>ChildContent / Class / Style</td><td></td><td></td><td>Its items; on the fieldset.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxValidationMessage</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>For</td><td>Expression&lt;Func&lt;object?&gt;&gt;?</td><td>—</td><td>The field: <code>For="() =&gt; order.PourDate"</code>.</td></tr>
+                <tr><td>Field / Model</td><td>string? / object?</td><td>— / the form's model</td><td>The field by name, when there is no lambda.</td></tr>
+                <tr><td>Class</td><td>string?</td><td>—</td><td>On the outer element; other attributes go there too.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-form-row-gap / --nx-form-column-gap</td><td>16px / 16px</td><td>The grid's gaps (ColumnSpacing overrides the column gap).</td></tr>
+                <tr><td>--nx-form-label-width</td><td>160px</td><td>The label column of a horizontal form.</td></tr>
+                <tr><td>--nx-form-label-gap</td><td>6px</td><td>Between a label and its editor.</td></tr>
+                <tr><td>--nx-form-group-gap</td><td>24px</td><td>Above a group that follows another.</td></tr>
+                <tr><td>--nx-validation-color / --nx-validation-font-size</td><td>var(--nx-invalid) / 12.5px</td><td>Messages.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="doc-note">Grids fold to one column when the form is under 540 px wide (a container query, so a narrow dialog folds too).</p>
+</div>
+
+<DocPager Slug="form" Page="api" />

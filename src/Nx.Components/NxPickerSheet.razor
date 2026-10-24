@@ -1,0 +1,46 @@
+@namespace Nx.Components
+
+@* The full-screen phone sheet of the pickers: a header with Close and the title, the body, and an
+   optional footer of actions. The host locks page scroll and moves focus in and out. *@
+<div class="nx-sheet @Class" role="dialog" aria-modal="true" aria-label="@Title" @onkeydown="HandleKeyDown">
+    <div class="nx-sheet-header">
+        <button type="button" class="nx-sheet-close" aria-label="Close" title="Close" @onclick="OnClose">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+            </svg>
+        </button>
+        <span class="nx-sheet-title">@Title</span>
+        @HeaderActions
+    </div>
+    <div class="nx-sheet-body">@ChildContent</div>
+    @if (Footer is not null)
+    {
+        <div class="nx-sheet-footer">@Footer</div>
+    }
+</div>
+
+@code {
+    /// <summary>Title in the header and the dialog's accessible name.</summary>
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+
+    /// <summary>Raised by the Close button and by <kbd>Escape</kbd>.</summary>
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    /// <summary>Buttons at the end of the header, e.g. Done.</summary>
+    [Parameter] public RenderFragment? HeaderActions { get; set; }
+
+    /// <summary>The sheet's content.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Actions along the bottom edge.</summary>
+    [Parameter] public RenderFragment? Footer { get; set; }
+
+    /// <summary>Extra CSS class on the sheet.</summary>
+    [Parameter] public string? Class { get; set; }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+            await OnClose.InvokeAsync();
+    }
+}

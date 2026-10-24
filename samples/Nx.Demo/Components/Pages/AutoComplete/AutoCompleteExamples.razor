@@ -1,0 +1,138 @@
+@page "/autocomplete/examples"
+@using System.ComponentModel.DataAnnotations
+
+<DocHeader Slug="autocomplete" Page="examples" />
+
+<div class="doc-section">
+    <h2>Objects &amp; Item Template</h2>
+    <p class="doc-note">
+        <code>ItemText</code> is the text put in the field; <code>ItemTemplate</code> shows more in the list — here the
+        county under each town.
+    </p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <label class="demo-field-label" for="places-city">Town</label>
+        <NxAutoComplete Id="places-city" Data="SampleData.Places" ItemText="p => p.City" @bind-Value="town" @bind-Value:after="TownChanged"
+                        Filter="NxComboBoxFilter.StartsWith" Placeholder="Starts with…">
+            <ItemTemplate>
+                <span class="demo-item-main"><strong>@context.City</strong><span class="demo-item-meta-line">@context.County, @context.State</span></span>
+            </ItemTemplate>
+        </NxAutoComplete>
+        <span class="demo-value" id="places-value">Town: <strong>@town</strong> · County: <strong>@county</strong></span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Minimum Length</h2>
+    <p class="doc-note"><code>MinLength</code> keeps the list shut until enough is typed — useful over long lists of codes.</p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <label class="demo-field-label" for="job-number">Job number (3 characters)</label>
+        <NxAutoComplete Id="job-number" Data="Jobs" @bind-Value="job" MinLength="3" Placeholder="551…" />
+        <span class="demo-value" id="job-value">Job: <strong>@job</strong></span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Search Box</h2>
+    <p class="doc-note">
+        A <code>Prefix</code> icon and <code>@@bind-Value:after</code> make a search box that acts on a pick. The list is
+        wider than the field with <code>PopupWidth</code>.
+    </p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxAutoComplete Id="search-box" Data="SampleData.Customers" ItemText="c => c.Name" @bind-Value="search" @bind-Value:after="Searched"
+                        Placeholder="Search customers…" PopupWidth="340px" Clearable="true" aria-label="Search customers">
+            <Prefix><NxIcon Icon="NxIcons.Search" /></Prefix>
+            <ItemTemplate>
+                <span class="demo-item-main"><strong>@context.Name</strong><span class="demo-item-meta-line">@context.Code · @context.City</span></span>
+            </ItemTemplate>
+        </NxAutoComplete>
+        <span class="demo-value" id="search-result">@searchResult</span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Server Search</h2>
+    <p class="doc-note">
+        A <code>DataProvider</code> is asked for matches after a 300 ms pause in typing; a spinner shows while it works and
+        a newer keystroke cancels an older request.
+    </p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <label class="demo-field-label" for="provider-customer">Customer</label>
+        <NxAutoComplete Id="provider-customer" DataProvider="SearchAsync" ItemText="c => c.Name" @bind-Value="providerValue" Placeholder="Type to search the server" />
+        <span class="demo-counter" id="provider-calls">Provider calls: @providerCalls</span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>50,000 Suggestions</h2>
+    <p class="doc-note"><code>Virtualize</code> renders only the rows in view, so a long list stays fast.</p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <label class="demo-field-label" for="part-search">Part</label>
+        <NxAutoComplete Id="part-search" Data="SampleData.Parts" ItemText="p => p.Description" @bind-Value="part" Virtualize="true" MinLength="2" Placeholder="e.g. vault 48" />
+        <span class="demo-value" id="part-value">Part: <strong>@part</strong></span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>State</h2>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <label class="demo-field-label" for="state-readonly">Read-only</label>
+                <NxAutoComplete Id="state-readonly" Data="Cities" Value="Portland" ReadOnly="true" />
+            </div>
+            <div>
+                <label class="demo-field-label" for="state-disabled">Disabled</label>
+                <NxAutoComplete Id="state-disabled" Data="Cities" Value="Salem" Disabled="true" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Form Validation</h2>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <EditForm id="autocomplete-form" Model="site" OnValidSubmit="Submit" FormName="autocomplete-form">
+            <DataAnnotationsValidator />
+            <label class="demo-field-label" for="site-city">Site city</label>
+            <NxAutoComplete Id="site-city" Data="Cities" @bind-Value="site.City" />
+            <NxValidationMessage For="() => site.City" />
+            <div class="demo-row" style="margin-top:16px">
+                <NxButton id="autocomplete-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Save site</NxButton>
+                <span class="demo-value" id="autocomplete-result">@result</span>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<DocPager Slug="autocomplete" Page="examples" />
+
+@code {
+    static readonly IReadOnlyList<string> Cities = SampleData.Places.Select(p => p.City).ToList();
+    static readonly IReadOnlyList<string> Jobs = Enumerable.Range(0, 60).Select(i => $"{55100 + i * 3}").ToList();
+
+    string? town, county, job, search, searchResult = "Pick a customer to open it.", providerValue, part;
+    int providerCalls;
+    string result = "Not saved";
+    readonly SiteForm site = new();
+
+    void TownChanged() => county = SampleData.Places.FirstOrDefault(p => p.City == town)?.County ?? "—";
+
+    void Searched() =>
+        searchResult = SampleData.Customers.FirstOrDefault(c => c.Name == search) is { } c ? $"Opened {c.Code}" : $"No customer named “{search}”";
+
+    async Task<IEnumerable<Customer>> SearchAsync(NxComboBoxRequest request)
+    {
+        providerCalls++;
+        StateHasChanged();     // the provider runs inside the autocomplete; the counter is the page's
+        return await SampleData.SearchCustomersAsync(request.Filter, 400, request.CancellationToken);
+    }
+
+    void Submit() => result = $"Saved {site.City}";
+
+    class SiteForm
+    {
+        [Required(ErrorMessage = "Enter the site's city.")]
+        [MinLength(3, ErrorMessage = "At least 3 letters.")]
+        public string? City { get; set; }
+    }
+}

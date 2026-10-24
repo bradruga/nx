@@ -1,0 +1,68 @@
+@page "/dropdown"
+@page "/dropdown/overview"
+
+<DocHeader Slug="dropdown" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxDropDown&lt;TItem, TValue&gt;</code> picks one item from a list without typing — a styled native select.
+        Letters jump to items by their first characters. It runs on the <code>NxComboBox</code> engine, so
+        <code>Data</code> and <code>DataProvider</code>, item and selected-item templates, grouping, virtualization, columns,
+        the phone sheet and <code>EditForm</code> validation all work the same way. <code>DefaultText</code> adds a first
+        item that selects nothing.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <label class="demo-field-label" for="overview-ship">Ship via</label>
+                <NxDropDown Id="overview-ship" TItem="string" TValue="string" Data="SampleData.ShipVia" @bind-Value="shipVia" DefaultText="Any carrier" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="overview-ship-value">Value: <strong>@(shipVia ?? "null")</strong></span></div>
+            </div>
+            <div>
+                <label class="demo-field-label" for="overview-customer">Customer</label>
+                <NxDropDown Id="overview-customer" Data="SampleData.Customers" ItemText="c => c.Name" ItemValue="c => (int?)c.Id"
+                            @bind-Value="customerId" Placeholder="Pick a customer" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="overview-customer-value">Value: <strong>@(customerId?.ToString() ?? "null")</strong></span></div>
+            </div>
+        </div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Enter / Space / ↓ / ↑</td><td>Opens the list at the selected item.</td></tr>
+                <tr><td>Letters (closed)</td><td>Selects the next item starting with them, without opening — as a native select does. The same letter again cycles through the matches.</td></tr>
+                <tr><td>Letters (open)</td><td>Moves the highlight; typed quickly they build a prefix (<em>ma</em> finds Maryland, then Massachusetts).</td></tr>
+                <tr><td>↑ / ↓, PgUp / PgDn, Home / End</td><td>Move the highlight.</td></tr>
+                <tr><td>Enter / Space (open)</td><td>Picks the highlighted item and closes.</td></tr>
+                <tr><td>Esc / Tab</td><td>Closes without changing the value.</td></tr>
+                <tr><td>role="combobox"</td><td>Read-only, with a <code>listbox</code> popup, <code>aria-expanded</code> and <code>aria-activedescendant</code>; no <code>aria-autocomplete</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="dropdown" Page="overview" />
+
+@code {
+    string? shipVia;
+    int? customerId = 11;
+
+    const string basicCode =
+        """
+        <NxDropDown TItem="string" TValue="string" Data="shipVia" @bind-Value="order.ShipVia" DefaultText="Any carrier" />
+
+        <NxDropDown Data="customers" ItemText="c => c.Name" ItemValue="c => (int?)c.Id"
+                    @bind-Value="order.CustomerId" Placeholder="Pick a customer" />
+        """;
+}

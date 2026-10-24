@@ -1,0 +1,58 @@
+@page "/tabstrip"
+@page "/tabstrip/overview"
+
+<DocHeader Slug="tabstrip" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxTabStrip</code> shows one panel at a time under a row of tabs. Declare the tabs as <code>NxTab</code> children —
+        text, an icon, or a header template; disabled or closable — and bind the active one with <code>@@bind-ActiveTab</code>,
+        by each tab's <code>Id</code> (or title). Panels are built when shown, or kept alive with <code>KeepAlive</code>. The tabs
+        can sit on any side; when they do not fit, arrows scroll them. The keyboard follows the ARIA tablist pattern.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column">
+        <NxTabStrip Id="overview-tabs" @bind-ActiveTab="tab" AriaLabel="Job">
+            <NxTab Id="details" Title="Details"><p>Job 55120 · Kiewit Northeast · Albany, NY.</p></NxTab>
+            <NxTab Id="pours" Title="Pours"><p>Two pours scheduled for October 23 and 30.</p></NxTab>
+            <NxTab Id="drawings" Title="Drawings"><p>Twelve shop drawings, all approved.</p></NxTab>
+        </NxTabStrip>
+        <div class="demo-row"><span class="demo-value" id="overview-tab-value">ActiveTab: <strong>@tab</strong></span></div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Tab</td><td>One tab stop for the whole strip: the active tab. The next Tab enters the panel.</td></tr>
+                <tr><td>← / → (↑ / ↓ for left and right tabs)</td><td>Moves to the next enabled tab and activates it, wrapping at the ends.</td></tr>
+                <tr><td>Home / End</td><td>First / last enabled tab.</td></tr>
+                <tr><td>Delete</td><td>Closes a closable tab.</td></tr>
+                <tr><td>role="tablist" / "tab" / "tabpanel"</td><td>With <code>aria-selected</code>, <code>aria-controls</code>, <code>aria-labelledby</code>, <code>aria-orientation</code> and <code>aria-disabled</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="tabstrip" Page="overview" />
+
+@code {
+    string? tab = "details";
+
+    const string basicCode =
+        """
+        <NxTabStrip @bind-ActiveTab="tab">
+            <NxTab Id="details" Title="Details">…</NxTab>
+            <NxTab Id="pours" Title="Pours">…</NxTab>
+            <NxTab Id="drawings" Title="Drawings">…</NxTab>
+        </NxTabStrip>
+        """;
+}

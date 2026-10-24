@@ -1,0 +1,84 @@
+@page "/tabstrip/api"
+
+<DocHeader Slug="tabstrip" Page="api" />
+
+<div class="doc-section">
+    <h2>NxTabStrip Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>The <code>NxTab</code> children.</td></tr>
+                <tr><td>ActiveTab</td><td>string?</td><td>first enabled</td><td>Use <code>@@bind-ActiveTab</code>: the active tab's Id (or title).</td></tr>
+                <tr><td>KeepAlive</td><td>bool</td><td>false</td><td>Keep shown panels rendered (hidden) instead of rebuilding them.</td></tr>
+                <tr><td>Position</td><td>NxTabPosition</td><td>Top</td><td>Top, Bottom, Left, Right. Left and right move to the top on phones.</td></tr>
+                <tr><td>FullWidth</td><td>bool</td><td>false</td><td>Tabs share the full width (top and bottom).</td></tr>
+                <tr><td>AriaLabel</td><td>string?</td><td>—</td><td>Accessible name of the tab list.</td></tr>
+                <tr><td>Id</td><td>string?</td><td>generated</td><td>Tabs get <code>{Id}-tab-{key}</code>, panels <code>{Id}-panel-{key}</code>.</td></tr>
+                <tr><td>Class / Style</td><td>string?</td><td>—</td><td>Outer element; give left and right strips a height.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxTab Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Id</td><td>string?</td><td>Title</td><td>Key for ActiveTab and the close event.</td></tr>
+                <tr><td>Title</td><td>string?</td><td>—</td><td>Header text.</td></tr>
+                <tr><td>Icon</td><td>RenderFragment?</td><td>—</td><td>Icon before the text.</td></tr>
+                <tr><td>HeaderTemplate</td><td>RenderFragment?</td><td>—</td><td>Rich header, in place of Title and Icon.</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>false</td><td>Not clickable; skipped by the arrow keys.</td></tr>
+                <tr><td>Closable</td><td>bool</td><td>false</td><td>Close button and Delete key.</td></tr>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>The panel's content.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Event</th><th>Args</th><th>Raised when</th></tr></thead>
+            <tbody>
+                <tr><td>ActiveTabChanged</td><td>string?</td><td>The user activates a tab, or closing the active tab moves to its neighbour.</td></tr>
+                <tr><td>OnTabClose</td><td>NxTabCloseEventArgs</td><td>The user closes a tab: <code>TabId</code> is its key. Remove it from the markup.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>SelectAsync(key)</td><td>Task</td><td>Activates a tab as a click would.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-tab-active-fg</td><td>= --nx-accent</td><td>Active tab text.</td></tr>
+                <tr><td>--nx-tab-indicator</td><td>= --nx-accent</td><td>The bar under (beside) the active tab.</td></tr>
+                <tr><td>--nx-tab-panel-padding</td><td>16px 0</td><td>Space around a panel's content.</td></tr>
+                <tr><td>--nx-fg-muted / --nx-fg-subtle</td><td></td><td>Inactive and disabled tabs.</td></tr>
+                <tr><td>--nx-surface-hover</td><td></td><td>Tab and arrow hover.</td></tr>
+                <tr><td>--nx-border</td><td></td><td>The line between tabs and panels.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="tabstrip" Page="api" />

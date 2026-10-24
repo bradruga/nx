@@ -1,0 +1,48 @@
+@namespace Nx.Components
+@typeparam TItem
+@implements IDisposable
+
+@code {
+    [CascadingParameter] private IComboBoxColumnHost<TItem>? Host { get; set; }
+
+    private NxComboBoxColumnDefinition<TItem>? registered;
+
+    /// <summary>The cell value. Shown with <see cref="Format"/> and matched by filtering.</summary>
+    [Parameter] public Func<TItem, object?>? Field { get; set; }
+
+    /// <summary>Header text.</summary>
+    [Parameter] public string? Header { get; set; }
+
+    /// <summary>A CSS grid track size: <c>"80px"</c>, <c>"2fr"</c>. Default: <c>minmax(100px, 1fr)</c>.</summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>Header and cell alignment. Default: <see cref="NxColumnAlignment.Start"/>.</summary>
+    [Parameter] public NxColumnAlignment Alignment { get; set; }
+
+    /// <summary>Format string for an <see cref="IFormattable"/> field value.</summary>
+    [Parameter] public string? Format { get; set; }
+
+    /// <summary>Renders the cell instead of the formatted field value.</summary>
+    [Parameter] public RenderFragment<TItem>? Template { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (Host is null)
+            throw new InvalidOperationException("NxComboBoxColumn must be placed inside an NxComboBox's Columns.");
+
+        var definition = new NxComboBoxColumnDefinition<TItem>
+        {
+            Field = Field, Header = Header, Width = Width, Alignment = Alignment, Format = Format, Template = Template
+        };
+        Host.SetColumn(registered, definition);
+        registered = definition;
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        if (registered is not null)
+            Host?.RemoveColumn(registered);
+    }
+}

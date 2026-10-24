@@ -1,0 +1,48 @@
+.nx-radio {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 20px;
+}
+
+/* The native radio, restyled: keeps its keyboard behavior, form semantics and accessibility. */
+.nx-radio-input {
+    appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+    flex-shrink: 0;
+    width: var(--nx-check-size);
+    height: var(--nx-check-size);
+    margin: calc((20px - var(--nx-check-size)) / 2) 0 0;
+    border: 1.5px solid var(--nx-check-border);
+    border-radius: 50%;
+    background: var(--nx-surface);
+    cursor: pointer;
+    transition: border-color var(--nx-transition), box-shadow var(--nx-transition);
+}
+
+.nx-radio-input::before {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: var(--nx-accent);
+    transform: scale(0);
+    transition: transform var(--nx-transition);
+}
+
+.nx-radio-input:checked { border-color: var(--nx-accent); }
+.nx-radio-input:checked::before { transform: scale(1); }
+.nx-radio-input:hover:not(:disabled) { border-color: var(--nx-accent); }
+
+@media (pointer: coarse) {
+    .nx-radio-input::after { content: ""; position: absolute; inset: -13px; }
+}
+
+.nx-radio-label { cursor: pointer; user-select: none; }
+
+.nx-radio-disabled { opacity: var(--nx-disabled-opacity); }
+.nx-radio-disabled .nx-radio-input,
+.nx-radio-disabled .nx-radio-label { cursor: not-allowed; }
+
+.nx-radio-invalid .nx-radio-input { border-color: var(--nx-invalid); }

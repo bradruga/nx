@@ -1,0 +1,64 @@
+@page "/togglegroup"
+@page "/togglegroup/overview"
+
+<DocHeader Slug="togglegroup" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxToggleGroup&lt;TValue&gt;</code> is a row of joined buttons — a segmented control. By default it picks one value, like
+        radio buttons, and is announced as a radio group; with <code>Multiple</code> each button toggles on and off, like check
+        boxes. Items come from <code>Data</code> or <code>NxToggleGroupItem</code> children, can carry icons or be icon-only, and the
+        whole group is one tab stop with arrow-key movement between items.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column">
+        <NxToggleGroup Id="overview-group" @bind-Value="view" AriaLabel="View">
+            <NxToggleGroupItem Value="View.List" Label="List" Icon="@Icon("box")" />
+            <NxToggleGroupItem Value="View.Board" Label="Board" Icon="@Icon("settings")" />
+            <NxToggleGroupItem Value="View.Schedule" Label="Schedule" Icon="@Icon("truck")" />
+        </NxToggleGroup>
+        <span class="demo-value" id="overview-value">Value: <strong>@view</strong></span>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Tab</td><td>Enters the group on the selected item (or the last one focused, or the first), and leaves it on the next Tab.</td></tr>
+                <tr><td>← → ↑ ↓</td><td>Move to the next or previous item, wrapping and skipping disabled ones. In single mode the move also selects.</td></tr>
+                <tr><td>Home / End</td><td>First / last item.</td></tr>
+                <tr><td>Space / Enter</td><td>Selects (single) or toggles (Multiple) the focused item.</td></tr>
+                <tr><td>role</td><td>Single: <code>radiogroup</code> of <code>radio</code> with <code>aria-checked</code>. Multiple: <code>group</code> of buttons with <code>aria-pressed</code>.</td></tr>
+                <tr><td>aria-label</td><td><code>AriaLabel</code> names the group; on an item it names an icon-only button.</td></tr>
+                <tr><td>Touch</td><td>Items are at least 44 px tall on touch screens.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="togglegroup" Page="overview" />
+
+@code {
+    public enum View { List, Board, Schedule }
+
+    View view = View.List;
+
+    static RenderFragment Icon(string name) => @<DemoIcon Name="@name" />;
+
+    const string basicCode =
+        """
+        <NxToggleGroup @bind-Value="view" AriaLabel="View">
+            <NxToggleGroupItem Value="View.List" Label="List" Icon="@listIcon" />
+            <NxToggleGroupItem Value="View.Board" Label="Board" Icon="@boardIcon" />
+            <NxToggleGroupItem Value="View.Schedule" Label="Schedule" Icon="@scheduleIcon" />
+        </NxToggleGroup>
+        """;
+}

@@ -1,0 +1,27 @@
+@namespace Nx.Components
+
+<div class="@CssClass" style="@ItemStyle">
+    @if (ShowLabel)
+    {
+        <label class="nx-form-label" for="@LabelFor">@LabelText</label>
+    }
+    else if (Horizontal)
+    {
+        @* Keeps the editor in the editors' column. *@
+        <span class="nx-form-label" aria-hidden="true"></span>
+    }
+    <div class="nx-form-editor">
+        @if (ChildContent is not null)
+        {
+            @ChildContent
+        }
+        else if (property is not null && model is not null)
+        {
+            @FormEditors.Render(this, model, property, EditorId, CheckBoxLabel, Disabled)
+        }
+        @if (Field is not null && model is not null)
+        {
+            <NxValidationMessage Model="model" Field="@Field" />
+        }
+    </div>
+</div>

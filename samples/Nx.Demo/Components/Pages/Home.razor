@@ -1,0 +1,194 @@
+@page "/"
+
+<PageTitle>Nx Components</PageTitle>
+
+<section class="home-hero">
+    <h1>Blazor components for the ERP portal.</h1>
+    <p>
+        Nx is a small, dependency-free component library for Blazor on .NET 10 — the building blocks that will replace
+        Telerik in the portal. Every component is themed by CSS custom properties, works with <code>EditForm</code>
+        validation, and is driven from the keyboard first.
+    </p>
+    <div class="home-badges">
+        <span class="home-badge">@DemoCatalog.Components.Count components</span>
+        <span class="home-badge">.NET 10 · Interactive Server</span>
+        <span class="home-badge">bUnit + Playwright tested</span>
+        <span class="home-badge">Light &amp; dark themes</span>
+    </div>
+</section>
+
+<div class="doc-section">
+    <h2>Components</h2>
+    @foreach (var category in DemoCatalog.Categories)
+    {
+        <h3 class="home-category">@category</h3>
+        <div class="component-grid">
+            @foreach (var component in DemoCatalog.Components.Where(c => c.Category == category))
+            {
+                <div class="component-card" id="card-@component.Slug">
+                    <div class="component-card-preview">@Preview(component.Slug)</div>
+                    <div class="component-card-body">
+                        <a class="component-card-title" href="@($"{component.Slug}/overview")">@component.Name</a>
+                        <p class="component-card-desc">@component.Summary</p>
+                        <div class="component-card-features">
+                            @foreach (var feature in component.Features)
+                            {
+                                <span>@feature</span>
+                            }
+                        </div>
+                        <a class="component-card-link" href="@($"{component.Slug}/overview")">Open demo →</a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<div class="doc-section">
+    <h2>Getting Started</h2>
+    <div class="home-steps">
+        <div class="home-step">
+            <h3><span class="home-step-num">1</span>Reference the library</h3>
+            <p class="doc-note">Add a project reference to <code>src/Nx.Components</code>.</p>
+            <pre class="doc-code">@step1</pre>
+        </div>
+        <div class="home-step">
+            <h3><span class="home-step-num">2</span>Add the theme</h3>
+            <p class="doc-note">One stylesheet of tokens; each component's layout ships in the scoped CSS bundle.</p>
+            <pre class="doc-code">@step2</pre>
+        </div>
+        <div class="home-step">
+            <h3><span class="home-step-num">3</span>Use the components</h3>
+            <p class="doc-note">Import the namespace in <code>_Imports.razor</code> and go.</p>
+            <pre class="doc-code">@step3</pre>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Theming</h2>
+    <p class="doc-note">
+        Every color, radius and size is a custom property in <code>nx-theme.css</code>. Override them on <code>:root</code>,
+        or on any container to theme part of a page. Add <code>class="nx-theme-dark"</code> for the dark theme — the
+        moon button in the header does exactly that. This site brands the accent green; the library default is blue.
+    </p>
+    <pre class="doc-code">@themeCode</pre>
+</div>
+
+@code {
+    int? customerId;
+    decimal? price = 1240m;
+    DateOnly? pourDate = DateOnly.FromDateTime(DateTime.Today);
+    DateOnly? windowFrom = DateOnly.FromDateTime(DateTime.Today), windowTo = DateOnly.FromDateTime(DateTime.Today.AddDays(4));
+    TimeOnly? arrival = new(7, 15);
+    string? shipVia;
+    IEnumerable<string> homeStates = ["Maine", "Vermont", "New York"];
+    readonly IReadOnlyList<NxMenuItem> homeMenu = DemoMenus.EditItems();
+    readonly IReadOnlyList<NxMenuItem> homeExport = DemoMenus.ExportItems();
+    readonly IReadOnlyList<NxMenuItem> homeSave = [new("Save as draft"), new("Save and release")];
+    bool rush = true, notify = true;
+    string shift = "Day";
+    string? range = "Week";
+
+    string? homeCity;
+    DateTime? gateOpens = DateTime.Today.AddDays(1).AddHours(6);
+    readonly PourForm homeForm = new();
+    static readonly IReadOnlyList<string> HomeCities = SampleData.Places.Select(p => p.City).ToList();
+
+    static readonly string[] Shifts = ["Day", "Swing", "Night"];
+    static readonly string[] Ranges = ["Day", "Week", "Month"];
+
+    RenderFragment Preview(string slug) => slug switch
+    {
+        "button" => @<text>
+            <NxButton Variant="NxButtonVariant.Primary" Icon="@Icon("save")">Save</NxButton>
+            <NxButton>Cancel</NxButton>
+            <NxButton Variant="NxButtonVariant.Ghost" Icon="@Icon("settings")" AriaLabel="Settings" />
+        </text>,
+        "textbox" => @<NxTextBox Label="Customer" Value="Kiewit Northeast" Clearable="true" Style="width:240px" />,
+        "numeric" => @<NxNumericTextBox Label="Unit price" @bind-Value="price" Format="N2" Min="0m" Prefix="@Text("$")" Style="width:240px" />,
+        "combobox" => @<NxComboBox Data="SampleData.Customers" ItemText="c => c.Name" ItemValue="c => c.Id" @bind-Value="customerId"
+                                   Placeholder="Search customers" Clearable="true" Style="width:240px" aria-label="Customer" />,
+        "datepicker" => @<NxDatePicker Label="Pour date" @bind-Value="pourDate" Style="width:240px" />,
+        "daterange" => @<NxDateRangePicker @bind-StartValue="windowFrom" @bind-EndValue="windowTo" Style="width:300px" />,
+        "timepicker" => @<NxTimePicker Label="Truck arrives" @bind-Value="arrival" Step="15" Style="width:240px" />,
+        "checkbox" => @<NxCheckBox @bind-Value="rush" Label="Rush order" />,
+        "switch" => @<NxToggleSwitch @bind-Value="notify" Label="Notify on ship" OnText="On" OffText="Off" />,
+        "radio" => @<NxRadioGroup Data="Shifts" @bind-Value="shift" Orientation="NxOrientation.Horizontal" Label="Shift" />,
+        "togglegroup" => @<NxToggleGroup Data="Ranges" @bind-Value="range" AriaLabel="Range" />,
+        "window" => @<div class="home-window-preview" aria-hidden="true">
+            <div class="home-window-titlebar"><span>Edit pour</span><span class="home-window-x">×</span></div>
+            <div class="home-window-body">P-1042 · North wall</div>
+            <div class="home-window-footer"><NxButton Size="NxButtonSize.Small" tabindex="-1">Cancel</NxButton><NxButton Size="NxButtonSize.Small" Variant="NxButtonVariant.Primary" tabindex="-1">Save</NxButton></div>
+        </div>,
+        "tabstrip" => @<NxTabStrip AriaLabel="Job" Style="width:260px">
+            <NxTab Title="Details"><span class="home-tab-text">Job 55120</span></NxTab>
+            <NxTab Title="Pours"><span class="home-tab-text">2 scheduled</span></NxTab>
+            <NxTab Title="Drawings"><span class="home-tab-text">12 approved</span></NxTab>
+        </NxTabStrip>,
+        "splitter" => @<NxSplitter Style="width:260px; height:110px">
+            <NxSplitterPane Size="40%"><span class="home-tab-text">Jobs</span></NxSplitterPane>
+            <NxSplitterPane><span class="home-tab-text">Details</span></NxSplitterPane>
+        </NxSplitter>,
+        "dropdown" => @<NxDropDown TItem="string" TValue="string" Data="SampleData.ShipVia" @bind-Value="shipVia" DefaultText="Any carrier" Style="width:240px" aria-label="Ship via" />,
+        "multiselect" => @<NxMultiSelect TItem="string" TValue="string" Data="SampleData.States" @bind-Values="homeStates" Style="width:260px" MaxVisibleChips="2" aria-label="States" />,
+        "textarea" => @<NxTextArea Label="Notes" Value="@("Slump 4 in. at 6:40.")" Rows="2" Style="width:260px" />,
+        "tooltip" => @<NxTooltip Text="Saves and sends to the plant" ShowDelay="0"><NxButton Variant="NxButtonVariant.Primary">Hover me</NxButton></NxTooltip>,
+        "contextmenu" => @<NxContextMenu Items="homeMenu"><div class="demo-context-card" style="max-width:240px"><strong>Right-click me</strong><span>Pour P-1042</span></div></NxContextMenu>,
+        "dropdownbutton" => @<NxDropDownButton Items="homeExport">Export</NxDropDownButton>,
+        "splitbutton" => @<NxSplitButton Variant="NxButtonVariant.Primary" Items="homeSave">Save</NxSplitButton>,
+        "autocomplete" => @<NxAutoComplete Data="HomeCities" @bind-Value="homeCity" Placeholder="Type a city" Style="width:240px" aria-label="City">
+            <Prefix><NxIcon Icon="NxIcons.MapMarker" /></Prefix>
+        </NxAutoComplete>,
+        "datetimepicker" => @<NxDateTimePicker Label="Gate opens" @bind-Value="gateOpens" TimeStep="15" Style="width:240px" />,
+        "form" => @<NxForm Model="homeForm" Columns="2" Style="width:280px">
+            <NxFormItem Field="@nameof(PourForm.Trucks)" />
+            <NxFormItem Field="@nameof(PourForm.Status)" />
+        </NxForm>,
+        "icon" => @<div class="demo-row">
+            <NxIcon Icon="NxIcons.Plus" Size="NxIconSize.XLarge" />
+            <NxIcon Icon="NxIcons.Pencil" Size="NxIconSize.XLarge" />
+            <NxIcon Icon="NxIcons.Trash" Size="NxIconSize.XLarge" Color="NxIconColor.Danger" />
+            <NxIcon Icon="NxIcons.Print" Size="NxIconSize.XLarge" />
+            <NxIcon Icon="NxIcons.CheckCircle" Size="NxIconSize.XLarge" Color="NxIconColor.Success" />
+        </div>,
+        "loader" => @<div class="demo-row">
+            <NxLoader />
+            <NxLoader Type="NxLoaderType.Converging" />
+            <NxLoader Type="NxLoaderType.Pulsing" />
+        </div>,
+        _ => @<text></text>
+    };
+
+    static RenderFragment Icon(string name) => @<DemoIcon Name="@name" />;
+    static RenderFragment Text(string text) => @<span>@text</span>;
+
+    const string step1 =
+        """
+        <ProjectReference Include="..\Nx.Components\Nx.Components.csproj" />
+        """;
+
+    const string step2 =
+        """
+        <link rel="stylesheet" href="@Assets["_content/Nx.Components/nx-theme.css"]" />
+        <link rel="stylesheet" href="@Assets["YourApp.styles.css"]" />
+        """;
+
+    const string step3 =
+        """
+        @using Nx.Components
+
+        <NxTextBox Label="Customer" @bind-Value="name" />
+        <NxButton Variant="NxButtonVariant.Primary" OnClick="SaveAsync">Save</NxButton>
+        """;
+
+    const string themeCode =
+        """
+        :root {
+            --nx-accent:        #16A34A;
+            --nx-accent-hover:  #15803D;
+            --nx-radius:        4px;
+            --nx-control-height-md: 32px;
+        }
+        """;
+}

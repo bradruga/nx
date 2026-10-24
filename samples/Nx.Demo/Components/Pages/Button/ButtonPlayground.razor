@@ -1,0 +1,205 @@
+@page "/button/playground"
+
+<DocHeader Slug="button" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live. The code below the preview follows your settings.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner @(pgFullWidth ? "demo-preview-inner-stretch" : "")">
+                <NxButton id="playground-button"
+                          Variant="pgVariant"
+                          Size="pgSize"
+                          Type="pgType"
+                          Disabled="pgDisabled"
+                          Loading="pgLoading"
+                          LoadingText="@(string.IsNullOrWhiteSpace(pgLoadingText) ? null : pgLoadingText)"
+                          FullWidth="pgFullWidth"
+                          PreventDoubleClick="pgPreventDoubleClick"
+                          AutoLoading="pgAutoLoading"
+                          IconPosition="pgIconPosition"
+                          Icon="@(pgIcon ? IconFragment(pgIconName) : null)"
+                          AriaLabel="@(pgIconOnly ? pgLabel : null)"
+                          Title="@(pgIconOnly ? pgLabel : null)"
+                          ChildContent="@(pgIconOnly ? null : Text(pgLabel))"
+                          OnClick="PlaygroundClick" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-counter" id="playground-clicks">Clicks handled: @pgClicks</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Appearance</div>
+            <label class="demo-control">
+                <span>Variant</span>
+                <select @bind="pgVariant" id="pg-variant">
+                    @foreach (var v in Enum.GetValues<NxButtonVariant>())
+                    {
+                        <option value="@v">@v</option>
+                    }
+                </select>
+            </label>
+            <div class="demo-control">
+                <span>Size</span>
+                <div class="demo-segmented" role="group" aria-label="Size">
+                    @foreach (var s in Enum.GetValues<NxButtonSize>())
+                    {
+                        <button type="button" aria-pressed="@(pgSize == s ? "true" : "false")" @onclick="() => pgSize = s">@s</button>
+                    }
+                </div>
+            </div>
+            <label class="demo-control">
+                <span>Label</span>
+                <input type="text" @bind="pgLabel" @bind:event="oninput" />
+            </label>
+            <label class="demo-control">
+                <span>FullWidth</span>
+                <input type="checkbox" @bind="pgFullWidth" />
+            </label>
+
+            <div class="demo-controls-title">Icon</div>
+            <label class="demo-control">
+                <span>Icon</span>
+                <input type="checkbox" @bind="pgIcon" id="pg-icon" />
+            </label>
+            <label class="demo-control">
+                <span>Glyph</span>
+                <select @bind="pgIconName" disabled="@(!pgIcon)">
+                    @foreach (var name in iconNames)
+                    {
+                        <option value="@name">@name</option>
+                    }
+                </select>
+            </label>
+            <div class="demo-control">
+                <span>IconPosition</span>
+                <div class="demo-segmented" role="group" aria-label="Icon position">
+                    @foreach (var p in Enum.GetValues<NxIconPosition>())
+                    {
+                        <button type="button" aria-pressed="@(pgIconPosition == p ? "true" : "false")" @onclick="() => pgIconPosition = p">@p</button>
+                    }
+                </div>
+            </div>
+            <label class="demo-control">
+                <span>Icon only</span>
+                <input type="checkbox" @bind="pgIconOnly" id="pg-icon-only" @bind:after="AfterIconOnly" />
+            </label>
+
+            <div class="demo-controls-title">State</div>
+            <label class="demo-control">
+                <span>Disabled</span>
+                <input type="checkbox" @bind="pgDisabled" id="pg-disabled" />
+            </label>
+            <label class="demo-control">
+                <span>Loading</span>
+                <input type="checkbox" @bind="pgLoading" id="pg-loading" />
+            </label>
+            <label class="demo-control">
+                <span>LoadingText</span>
+                <input type="text" @bind="pgLoadingText" @bind:event="oninput" placeholder="(none)" />
+            </label>
+
+            <div class="demo-controls-title">Behavior</div>
+            <label class="demo-control">
+                <span>Type</span>
+                <select @bind="pgType">
+                    @foreach (var t in Enum.GetValues<NxButtonType>())
+                    {
+                        <option value="@t">@t</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control">
+                <span>PreventDoubleClick</span>
+                <input type="checkbox" @bind="pgPreventDoubleClick" />
+            </label>
+            <label class="demo-control">
+                <span>AutoLoading</span>
+                <input type="checkbox" @bind="pgAutoLoading" id="pg-auto-loading" />
+            </label>
+            <label class="demo-control">
+                <span>Handler delay (ms)</span>
+                <input type="number" min="0" step="250" @bind="pgDelay" />
+            </label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+    <EventLog @ref="playgroundLog" Label="Playground clicks" EmptyText="Click the playground button." />
+</div>
+
+<DocPager Slug="button" Page="playground" />
+
+@code {
+    // ── Playground ─────────────────────────────────────────────────────────────
+    NxButtonVariant pgVariant = NxButtonVariant.Primary;
+    NxButtonSize pgSize = NxButtonSize.Medium;
+    NxButtonType pgType = NxButtonType.Button;
+    NxIconPosition pgIconPosition = NxIconPosition.Start;
+    string pgLabel = "Save changes";
+    string pgLoadingText = "";
+    string pgIconName = "save";
+    bool pgIcon = true;
+    bool pgIconOnly;
+    bool pgDisabled;
+    bool pgLoading;
+    bool pgFullWidth;
+    bool pgPreventDoubleClick = true;
+    bool pgAutoLoading;
+    int pgDelay = 1000;
+    int pgClicks;
+    EventLog? playgroundLog;
+
+    static readonly string[] iconNames = ["save", "plus", "download", "trash", "edit", "arrow-right", "settings", "refresh", "check"];
+
+    static RenderFragment IconFragment(string name) => @<DemoIcon Name="@name" />;
+    static RenderFragment Text(string text) => @<text>@text</text>;
+
+    void AfterIconOnly()
+    {
+        if (pgIconOnly)
+            pgIcon = true;
+    }
+
+    async Task PlaygroundClick()
+    {
+        pgClicks++;
+        playgroundLog?.Add($"OnClick #{pgClicks} started");
+        if (pgDelay > 0)
+            await Task.Delay(pgDelay);
+        playgroundLog?.Add($"OnClick #{pgClicks} finished");
+    }
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string>();
+            if (pgVariant != NxButtonVariant.Secondary) attrs.Add($"Variant=\"NxButtonVariant.{pgVariant}\"");
+            if (pgSize != NxButtonSize.Medium) attrs.Add($"Size=\"NxButtonSize.{pgSize}\"");
+            if (pgType != NxButtonType.Button) attrs.Add($"Type=\"NxButtonType.{pgType}\"");
+            if (pgIcon && pgIconPosition != NxIconPosition.Start && !pgIconOnly) attrs.Add("IconPosition=\"NxIconPosition.End\"");
+            if (pgIconOnly) attrs.Add($"AriaLabel=\"{pgLabel}\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            if (pgLoading) attrs.Add("Loading=\"@saving\"");
+            if (!string.IsNullOrWhiteSpace(pgLoadingText)) attrs.Add($"LoadingText=\"{pgLoadingText}\"");
+            if (pgFullWidth) attrs.Add("FullWidth=\"true\"");
+            if (!pgPreventDoubleClick) attrs.Add("PreventDoubleClick=\"false\"");
+            if (pgAutoLoading) attrs.Add("AutoLoading=\"true\"");
+            attrs.Add("OnClick=\"SaveAsync\"");
+
+            var open = "<NxButton " + string.Join("\n          ", attrs);
+            if (!pgIcon)
+                return $"{open}>\n    {pgLabel}\n</NxButton>";
+            var icon = $"<Icon><svg>…{pgIconName}…</svg></Icon>";
+            return pgIconOnly
+                ? $"{open}>\n    {icon}\n</NxButton>"
+                : $"{open}>\n    {icon}\n    <ChildContent>{pgLabel}</ChildContent>\n</NxButton>";
+        }
+    }
+}

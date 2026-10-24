@@ -1,0 +1,102 @@
+@page "/splitter/examples"
+
+<DocHeader Slug="splitter" Page="examples" />
+
+<div class="doc-section">
+    <h2>Stacked</h2>
+    <p class="doc-note"><code>Orientation="Vertical"</code> stacks the panes; the bars run across and move with ↑ and ↓.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxSplitter Id="vertical-splitter" Orientation="NxOrientation.Vertical" Style="height: 300px">
+            <NxSplitterPane Id="vertical-top" Title="Schedule" @bind-Size="topSize" Min="60px">
+                <p>Pour schedule for the week.</p>
+            </NxSplitterPane>
+            <NxSplitterPane Id="vertical-bottom" Title="Notes">
+                <p>Notes for the selected pour.</p>
+            </NxSplitterPane>
+        </NxSplitter>
+        <div class="demo-row"><span class="demo-value" id="vertical-size">Top: <strong>@topSize</strong></span></div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Three Panes, Min &amp; Max</h2>
+    <p class="doc-note">
+        Sizes take px or %, and a resized pane reports back in its own unit. Here the side panes are 200 px and 25%, the middle
+        takes the rest, and each side pane stops at its <code>Min</code> and <code>Max</code>.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxSplitter Id="three-splitter" Style="height: 220px">
+            <NxSplitterPane Id="three-left" Title="Folders" @bind-Size="leftSize" Min="120px" Max="320px"><p>Folders</p></NxSplitterPane>
+            <NxSplitterPane Id="three-middle" Title="Drawings"><p>Drawings</p></NxSplitterPane>
+            <NxSplitterPane Id="three-right" Title="Preview" @bind-Size="rightSize" Min="15%" Max="40%"><p>Preview</p></NxSplitterPane>
+        </NxSplitter>
+        <div class="demo-row"><span class="demo-value" id="three-size">Left: <strong>@leftSize</strong> · Right: <strong>@rightSize</strong></span></div>
+    </div>
+    <pre class="doc-code">@threeCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Collapsible Panes</h2>
+    <p class="doc-note">
+        <code>Collapsible</code> puts a button on the bar that collapses the pane to nothing and back; <kbd class="doc-kbd">Enter</kbd>
+        on the bar does the same. The content is kept while collapsed. Bind <code>@@bind-Collapsed</code> to drive it from code.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <NxButton id="toggle-nav" OnClick="() => navCollapsed = !navCollapsed">@(navCollapsed ? "Show" : "Hide") navigation</NxButton>
+            <span class="demo-value" id="collapse-state">Navigation: <strong>@(navCollapsed ? "collapsed" : "open")</strong> · Properties: <strong>@(propsCollapsed ? "collapsed" : "open")</strong></span>
+        </div>
+        <NxSplitter Id="collapse-splitter" Style="height: 220px">
+            <NxSplitterPane Id="collapse-nav" Title="Navigation" Size="200px" Collapsible="true" @bind-Collapsed="navCollapsed">
+                <NxTextBox Id="collapse-filter" Label="Filter (kept while collapsed)" @bind-Value="filter" />
+            </NxSplitterPane>
+            <NxSplitterPane Id="collapse-main" Title="Editor"><p>Editor</p></NxSplitterPane>
+            <NxSplitterPane Id="collapse-props" Title="Properties" Size="180px" Collapsible="true" @bind-Collapsed="propsCollapsed"><p>Properties</p></NxSplitterPane>
+        </NxSplitter>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Nested</h2>
+    <p class="doc-note">A pane can hold another splitter: here a list beside a stacked detail and history.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxSplitter Id="nested-splitter" Style="height: 320px">
+            <NxSplitterPane Id="nested-list" Title="Orders" Size="30%" Min="140px"><p>Orders</p></NxSplitterPane>
+            <NxSplitterPane Id="nested-right" Title="Order">
+                <NxSplitter Id="nested-inner" Orientation="NxOrientation.Vertical">
+                    <NxSplitterPane Id="nested-detail" Title="Detail" @bind-Size="innerSize" Min="60px"><p>Order detail</p></NxSplitterPane>
+                    <NxSplitterPane Id="nested-history" Title="History" Collapsible="true"><p>Change history</p></NxSplitterPane>
+                </NxSplitter>
+            </NxSplitterPane>
+        </NxSplitter>
+        <div class="demo-row"><span class="demo-value" id="nested-size">Detail: <strong>@innerSize</strong></span></div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Fixed Panes</h2>
+    <p class="doc-note"><code>Resizable="false"</code> keeps a pane's size; its bar shows no grip and takes no drags.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxSplitter Id="fixed-splitter" Style="height: 160px">
+            <NxSplitterPane Id="fixed-left" Title="Toolbox" Size="160px" Resizable="false"><p>Fixed 160 px</p></NxSplitterPane>
+            <NxSplitterPane Id="fixed-main" Title="Canvas"><p>Canvas</p></NxSplitterPane>
+        </NxSplitter>
+    </div>
+</div>
+
+<DocPager Slug="splitter" Page="examples" />
+
+@code {
+    string? topSize = "40%", leftSize = "200px", rightSize = "25%", innerSize = "55%";
+    bool navCollapsed, propsCollapsed;
+    string filter = "";
+
+    const string threeCode =
+        """
+        <NxSplitter Style="height: 220px">
+            <NxSplitterPane @bind-Size="left" Min="120px" Max="320px">…</NxSplitterPane>
+            <NxSplitterPane>…</NxSplitterPane>
+            <NxSplitterPane @bind-Size="right" Min="15%" Max="40%">…</NxSplitterPane>
+        </NxSplitter>
+        """;
+}

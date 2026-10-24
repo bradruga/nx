@@ -1,0 +1,88 @@
+.nx-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    box-sizing: border-box;
+    height: var(--nx-control-height-md);
+    padding: 0 14px;
+    border: 1px solid transparent;
+    border-radius: var(--nx-radius);
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+    font-weight: var(--nx-font-weight-medium);
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    vertical-align: middle;
+    transition: background-color var(--nx-transition), border-color var(--nx-transition),
+                color var(--nx-transition);
+}
+
+/* ── Sizes ───────────────────────────────────────────────────────────────── */
+
+.nx-button-sm { height: var(--nx-control-height-sm); padding: 0 10px; font-size: var(--nx-font-size-sm); gap: 5px; }
+.nx-button-lg { height: var(--nx-control-height-lg); padding: 0 18px; font-size: var(--nx-font-size-lg); gap: 8px; }
+
+.nx-button-icon-only                { width: var(--nx-control-height-md); padding: 0; }
+.nx-button-icon-only.nx-button-sm   { width: var(--nx-control-height-sm); }
+.nx-button-icon-only.nx-button-lg   { width: var(--nx-control-height-lg); }
+
+.nx-button-full-width { display: flex; width: 100%; }
+
+/* ── Variants ────────────────────────────────────────────────────────────── */
+
+.nx-button-primary { background: var(--nx-accent); color: var(--nx-accent-fg); }
+.nx-button-primary:hover:not(:disabled):not([aria-disabled=true])  { background: var(--nx-accent-hover); }
+.nx-button-primary:active:not(:disabled):not([aria-disabled=true]) { background: var(--nx-accent-active); }
+
+.nx-button-secondary { background: var(--nx-surface); color: var(--nx-fg); border-color: var(--nx-border); }
+.nx-button-secondary:hover:not(:disabled):not([aria-disabled=true])  { background: var(--nx-surface-hover); border-color: var(--nx-border-hover); }
+.nx-button-secondary:active:not(:disabled):not([aria-disabled=true]) { background: var(--nx-surface-active); }
+
+.nx-button-danger { background: var(--nx-danger); color: var(--nx-danger-fg); }
+.nx-button-danger:hover:not(:disabled):not([aria-disabled=true])  { background: var(--nx-danger-hover); }
+.nx-button-danger:active:not(:disabled):not([aria-disabled=true]) { background: var(--nx-danger-active); }
+.nx-button-danger { --nx-focus-ring-color: var(--nx-danger); }
+
+.nx-button-ghost { background: transparent; color: var(--nx-fg); }
+.nx-button-ghost:hover:not(:disabled):not([aria-disabled=true])  { background: var(--nx-surface-hover); }
+.nx-button-ghost:active:not(:disabled):not([aria-disabled=true]) { background: var(--nx-surface-active); }
+
+.nx-button-link {
+    background: transparent;
+    color: var(--nx-accent);
+    height: auto;
+    padding: 0 2px;
+    font-weight: 400;
+}
+.nx-button-link:hover:not(:disabled):not([aria-disabled=true]) { color: var(--nx-accent-hover); text-decoration: underline; }
+
+/* ── States ──────────────────────────────────────────────────────────────── */
+
+.nx-button:disabled,
+.nx-button[aria-disabled=true] {
+    cursor: not-allowed;
+    opacity: var(--nx-disabled-opacity);
+}
+
+.nx-button-loading[aria-disabled=true] { cursor: progress; opacity: 0.8; }
+
+/* ── Parts ───────────────────────────────────────────────────────────────── */
+
+.nx-button-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+}
+
+.nx-button-icon ::deep svg { width: 1.15em; height: 1.15em; }
+
+.nx-button-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nx-button-spinner { width: 1em; height: 1em; }

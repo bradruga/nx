@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <ResourcePreloader />
+    <link rel="stylesheet" href="@Assets["_content/Nx.Components/nx-theme.css"]" />
+    <link rel="stylesheet" href="@Assets["demo.css"]" />
+    <link rel="stylesheet" href="@Assets["Nx.Demo.styles.css"]" />
+    <ImportMap />
+    <HeadOutlet @rendermode="InteractiveServer" />
+    <script>window.__nxSetDark=d=>document.documentElement.classList.toggle('nx-theme-dark',d);try{if(localStorage.getItem('nx-demo-theme')==='dark')document.documentElement.classList.add('nx-theme-dark');}catch{}</script>
+</head>
+
+<body>
+    <Routes @rendermode="InteractiveServer" />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>

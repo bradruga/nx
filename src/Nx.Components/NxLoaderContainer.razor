@@ -1,0 +1,21 @@
+@namespace Nx.Components
+
+@if (Visible)
+{
+    <div @attributes="AdditionalAttributes" class="@CssClass" style="@Style" aria-busy="true">
+        <div class="nx-loader-container-panel" role="status">
+            @if (ChildContent is not null)
+            {
+                @ChildContent
+            }
+            else
+            {
+                <NxLoader Type="LoaderType" Size="LoaderSize" AriaLabel="@(Text ?? "Loading")" />
+                @if (!string.IsNullOrEmpty(Text))
+                {
+                    <span class="nx-loader-container-text">@Text</span>
+                }
+            }
+        </div>
+    </div>
+}

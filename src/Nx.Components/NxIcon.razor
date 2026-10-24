@@ -1,0 +1,17 @@
+@namespace Nx.Components
+
+<svg @attributes="AdditionalAttributes"
+     class="@CssClass"
+     style="@Style"
+     viewBox="@Icon.ViewBox"
+     fill="@(Icon.Filled ? "currentColor" : "none")"
+     stroke="@(Icon.Filled ? null : "currentColor")"
+     stroke-width="@(Icon.Filled ? null : "2")"
+     stroke-linecap="@(Icon.Filled ? null : "round")"
+     stroke-linejoin="@(Icon.Filled ? null : "round")"
+     data-icon="@Icon.Name"
+     focusable="false"
+     role="@(Decorative ? null : "img")"
+     aria-label="@AriaLabel"
+     aria-hidden="@(Decorative ? "true" : null)">@if (Title is not null)
+{<title>@Title</title>}@((MarkupString)Icon.Content)</svg>

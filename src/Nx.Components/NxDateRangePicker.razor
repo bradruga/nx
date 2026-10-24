@@ -1,0 +1,117 @@
+@namespace Nx.Components
+@typeparam TValue
+
+<div class="@RootClass" style="@Style" role="group" aria-labelledby="@(Label is null ? null : LabelId)">
+    @if (Label is not null)
+    {
+        <span class="nx-daterange-label" id="@LabelId">@Label</span>
+    }
+    <div class="nx-daterange-fields" @ref="fields">
+        @RenderSide(start, isEnd: false)
+        <span class="nx-daterange-separator" aria-hidden="true">–</span>
+        @RenderSide(end, isEnd: true)
+    </div>
+
+    @if (popupOpen)
+    {
+        @* No style attribute: nx-picker.js owns the popup's position. *@
+        <div class="nx-daterange-popup" @ref="popup" @onmousedown:preventDefault="true">
+            <div class="nx-daterange-popup-body" @ref="popupBody">
+                @RenderCalendar(focusable: false)
+            </div>
+        </div>
+    }
+    @if (sheetOpen)
+    {
+        <div class="nx-daterange-sheet-host">
+            <NxPickerSheet Title="@SheetTitle" Class="nx-daterange-sheet" OnClose="CloseSheet">
+                <ChildContent>
+                    <div class="nx-daterange-sheet-summary">
+                        <span class="@(activeEnd ? null : "nx-daterange-sheet-active")">@(start.Current is null ? StartLabel : formatter.Display(start.Current))</span>
+                        <span aria-hidden="true">–</span>
+                        <span class="@(activeEnd ? "nx-daterange-sheet-active" : null)">@(end.Current is null ? EndLabel : formatter.Display(end.Current))</span>
+                    </div>
+                    <div class="nx-daterange-sheet-hint" aria-live="polite">@(activeEnd ? "Pick the end date" : "Pick the start date")</div>
+                    @RenderCalendar(focusable: true)
+                </ChildContent>
+                <Footer>
+                    @if (Clearable && DateConversion<TValue>.IsNullable)
+                    {
+                        <button type="button" class="nx-sheet-action nx-daterange-sheet-clear"
+                                disabled="@(start.Current is null && end.Current is null)" @onclick="HandleSheetClear">Clear</button>
+                    }
+                    <button type="button" class="nx-sheet-action nx-daterange-sheet-done" @onclick="CloseSheet">Done</button>
+                </Footer>
+            </NxPickerSheet>
+        </div>
+    }
+</div>
+
+@code {
+    private RenderFragment RenderSide(Side side, bool isEnd) =>
+        @<NxFieldFrame ClassPrefix="nx-daterange"
+                       InputId="@InputIdOf(isEnd)"
+                       Label="@(isEnd ? EndLabel : StartLabel)"
+                       FloatingLabel="FloatingLabel"
+                       HasValue="@(side.Text.Length > 0)"
+                       ShowClear="@(ShowClear && side.Current is not null)"
+                       OnClear="() => HandleClearClick(side)"
+                       Disabled="Disabled"
+                       ReadOnly="ReadOnly"
+                       Invalid="@(isEnd ? endValidation.IsInvalid : startValidation.IsInvalid)"
+                       Class="@(isEnd ? "nx-daterange-end" : "nx-daterange-start")">
+            <ChildContent>
+                <input @ref="side.Input"
+                       id="@InputIdOf(isEnd)"
+                       class="@InputCssClass(isEnd)"
+                       type="text"
+                       role="combobox"
+                       autocomplete="off"
+                       inputmode="@(formatter.Mask is null ? null : "numeric")"
+                       placeholder="@(Placeholder ?? formatter.Hint)"
+                       disabled="@Disabled"
+                       readonly="@ReadOnly"
+                       aria-haspopup="@(UseSheet ? "dialog" : "grid")"
+                       aria-expanded="@(popupOpen ? "true" : "false")"
+                       aria-controls="@(popupOpen ? CalendarId : null)"
+                       aria-activedescendant="@(popupOpen && activeEnd == isEnd ? calendar?.ActiveDescendant : null)"
+                       aria-invalid="@((isEnd ? endValidation : startValidation).IsInvalid ? "true" : null)"
+                       @bind="side.Text"
+                       @bind:event="oninput"
+                       @bind:after="() => HandleInputAfter(side)"
+                       @onchange="() => CommitTextAsync(side)"
+                       @onkeydown="e => HandleKeyDown(e, side)"
+                       @onfocus="() => HandleFocus(side)"
+                       @onblur="() => HandleBlur(side)" />
+            </ChildContent>
+            <Buttons>
+                <button @ref="side.Toggle" type="button" class="nx-field-button nx-daterange-button nx-daterange-toggle" tabindex="-1"
+                        aria-label="@(isEnd ? "Choose end date" : "Choose start date")" title="Choose dates" aria-controls="@InputIdOf(isEnd)"
+                        disabled="@(!Editable)"
+                        @onmousedown:preventDefault="true" @onclick="() => HandleToggleClick(side)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                </button>
+            </Buttons>
+        </NxFieldFrame>;
+
+    private RenderFragment RenderCalendar(bool focusable) =>
+        @<NxCalendar @ref="calendar"
+                     Id="@CalendarId"
+                     Value="@(activeEnd ? end.Current ?? start.Current : start.Current)"
+                     ValueChanged="HandleCalendarPick"
+                     RangeStart="start.Current"
+                     RangeEnd="end.Current"
+                     Min="Min"
+                     Max="Max"
+                     IsDateDisabled="IsDateDisabled"
+                     Months="@(UseSheet ? 1 : Months)"
+                     ShowWeekNumbers="ShowWeekNumbers"
+                     FirstDayOfWeek="FirstDayOfWeek"
+                     Culture="EffectiveCulture"
+                     ShowTodayButton="false"
+                     Focusable="focusable"
+                     AriaLabel="@(Label ?? "Calendar")"
+                     OnNavigate="StateHasChanged" />;
+}

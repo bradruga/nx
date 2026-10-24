@@ -1,0 +1,130 @@
+@page "/daterange/playground"
+@using System.Globalization
+
+<DocHeader Slug="daterange" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live, bound to two <code>DateOnly?</code> values.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                <NxDateRangePicker @key="pgKey" TValue="DateOnly?" Id="playground-range"
+                                   @bind-StartValue="pgFrom" @bind-StartValue:after="Changed"
+                                   @bind-EndValue="pgTo" @bind-EndValue:after="Changed"
+                                   Months="pgMonths" Format="@pgFormat" Culture="Culture" Min="MinOrNull" Max="MaxOrNull"
+                                   IsDateDisabled="@(pgWeekends ? d => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday : null)"
+                                   ShowWeekNumbers="pgWeeks" Label="@LabelOrNull" StartLabel="@pgStartLabel" EndLabel="@pgEndLabel"
+                                   FloatingLabel="pgFloating" Clearable="pgClearable" ReadOnly="pgReadOnly" Disabled="pgDisabled"
+                                   MobileMode="pgMobile" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-value">Range: <strong>@Show(pgFrom) → @Show(pgTo)</strong></span>
+                <span class="demo-counter" id="playground-changes">Changed × @pgChanges</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Range</div>
+            <label class="demo-control"><span>Min (yyyy-MM-dd)</span><input type="text" id="pg-min" @bind="pgMin" /></label>
+            <label class="demo-control"><span>Max (yyyy-MM-dd)</span><input type="text" id="pg-max" @bind="pgMax" /></label>
+            <label class="demo-control"><span>No weekends</span><input type="checkbox" id="pg-weekends" @bind="pgWeekends" /></label>
+
+            <div class="demo-controls-title">Calendar</div>
+            <label class="demo-control">
+                <span>Months</span>
+                <select id="pg-months" @bind="pgMonths">
+                    <option value="2">2</option>
+                    <option value="1">1</option>
+                </select>
+            </label>
+            <label class="demo-control"><span>ShowWeekNumbers</span><input type="checkbox" id="pg-weeks" @bind="pgWeeks" /></label>
+            <label class="demo-control">
+                <span>Format</span>
+                <select id="pg-format" @bind="pgFormat">
+                    <option value="d">d</option>
+                    <option value="yyyy-MM-dd">yyyy-MM-dd</option>
+                    <option value="MMM d, yyyy">MMM d, yyyy</option>
+                </select>
+            </label>
+            <label class="demo-control">
+                <span>Culture</span>
+                <select id="pg-culture" @bind="pgCulture">
+                    <option value="en-US">en-US</option>
+                    <option value="en-GB">en-GB</option>
+                    <option value="de-DE">de-DE</option>
+                </select>
+            </label>
+
+            <div class="demo-controls-title">Labels</div>
+            <label class="demo-control"><span>Label</span><input type="text" @bind="pgLabel" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>StartLabel</span><input type="text" @bind="pgStartLabel" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>EndLabel</span><input type="text" @bind="pgEndLabel" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>FloatingLabel</span><input type="checkbox" id="pg-floating" @bind="pgFloating" /></label>
+
+            <div class="demo-controls-title">Behavior</div>
+            <label class="demo-control"><span>Clearable</span><input type="checkbox" id="pg-clearable" @bind="pgClearable" /></label>
+            <label class="demo-control"><span>ReadOnly</span><input type="checkbox" id="pg-readonly" @bind="pgReadOnly" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+            <label class="demo-control">
+                <span>MobileMode</span>
+                <select id="pg-mobile" @bind="pgMobile" @bind:after="Remount">
+                    <option value="@NxMobileMode.Auto">Auto</option>
+                    <option value="@NxMobileMode.Always">Always</option>
+                    <option value="@NxMobileMode.Never">Never</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="daterange" Page="playground" />
+
+@code {
+    static string Show(DateOnly? d) => d?.ToString("yyyy-MM-dd") ?? "null";
+
+    DateOnly? pgFrom = new(2026, 10, 19), pgTo = new(2026, 10, 23);
+    string pgMin = "", pgMax = "", pgFormat = "d", pgCulture = "en-US";
+    string pgLabel = "Pour window", pgStartLabel = "Start", pgEndLabel = "End";
+    int pgMonths = 2;
+    bool pgWeekends, pgWeeks, pgFloating, pgClearable, pgReadOnly, pgDisabled;
+    NxMobileMode pgMobile = NxMobileMode.Auto;
+    int pgKey, pgChanges;
+
+    CultureInfo Culture => CultureInfo.GetCultureInfo(pgCulture);
+    string? LabelOrNull => string.IsNullOrWhiteSpace(pgLabel) ? null : pgLabel;
+    DateOnly? MinOrNull => DateOnly.TryParseExact(pgMin.Trim(), "yyyy-MM-dd", out var d) ? d : null;
+    DateOnly? MaxOrNull => DateOnly.TryParseExact(pgMax.Trim(), "yyyy-MM-dd", out var d) ? d : null;
+
+    void Changed() => pgChanges++;
+    void Remount() => pgKey++;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "@bind-StartValue=\"from\"", "@bind-EndValue=\"to\"" };
+            if (pgMonths != 2) attrs.Add($"Months=\"{pgMonths}\"");
+            if (pgFormat != "d") attrs.Add($"Format=\"{pgFormat}\"");
+            if (pgCulture != "en-US") attrs.Add($"Culture=\"@CultureInfo.GetCultureInfo(\"{pgCulture}\")\"");
+            if (MinOrNull is { } min) attrs.Add($"Min=\"new DateOnly({min.Year}, {min.Month}, {min.Day})\"");
+            if (MaxOrNull is { } max) attrs.Add($"Max=\"new DateOnly({max.Year}, {max.Month}, {max.Day})\"");
+            if (pgWeekends) attrs.Add("IsDateDisabled=\"d => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday\"");
+            if (pgWeeks) attrs.Add("ShowWeekNumbers=\"true\"");
+            if (LabelOrNull is { } l) attrs.Add($"Label=\"{l}\"");
+            if (pgStartLabel != "Start") attrs.Add($"StartLabel=\"{pgStartLabel}\"");
+            if (pgEndLabel != "End") attrs.Add($"EndLabel=\"{pgEndLabel}\"");
+            if (pgFloating) attrs.Add("FloatingLabel=\"true\"");
+            if (pgClearable) attrs.Add("Clearable=\"true\"");
+            if (pgReadOnly) attrs.Add("ReadOnly=\"true\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            if (pgMobile != NxMobileMode.Auto) attrs.Add($"MobileMode=\"NxMobileMode.{pgMobile}\"");
+            return "<NxDateRangePicker " + string.Join("\n                   ", attrs) + " />";
+        }
+    }
+}

@@ -1,0 +1,37 @@
+@* Previous / next links at the foot of every component page, in nav order. *@
+
+<nav class="doc-pager" aria-label="Previous and next page">
+    @if (previous is { } p)
+    {
+        <a class="doc-pager-link doc-pager-prev" href="@($"{p.Component.Slug}/{p.Page.Slug}")">
+            <span class="doc-pager-hint">← Previous</span>
+            <span class="doc-pager-title">@p.Component.Name · @p.Page.Title</span>
+        </a>
+    }
+    else
+    {
+        <span></span>
+    }
+    @if (next is { } n)
+    {
+        <a class="doc-pager-link doc-pager-next" href="@($"{n.Component.Slug}/{n.Page.Slug}")">
+            <span class="doc-pager-hint">Next →</span>
+            <span class="doc-pager-title">@n.Component.Name · @n.Page.Title</span>
+        </a>
+    }
+</nav>
+
+@code {
+    [Parameter, EditorRequired] public string Slug { get; set; } = "";
+    [Parameter, EditorRequired] public string Page { get; set; } = "";
+
+    (DemoComponent Component, DemoPage Page)? previous, next;
+
+    protected override void OnParametersSet()
+    {
+        var all = DemoCatalog.Sequence.ToList();
+        var index = all.FindIndex(x => x.Component.Slug == Slug && x.Page.Slug == Page);
+        previous = index > 0 ? all[index - 1] : null;
+        next = index >= 0 && index < all.Count - 1 ? all[index + 1] : null;
+    }
+}

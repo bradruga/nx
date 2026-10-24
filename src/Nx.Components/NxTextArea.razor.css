@@ -1,0 +1,4 @@
+/* The resize handle, by data-resize; the textarea itself is styled by the shared field frame. */
+.nx-textarea-input[data-resize="vertical"] { resize: vertical; }
+.nx-textarea-input[data-resize="both"] { resize: both; }
+.nx-textarea-input[data-resize="none"] { resize: none; }

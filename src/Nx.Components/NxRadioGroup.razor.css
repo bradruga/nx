@@ -1,0 +1,27 @@
+.nx-radiogroup {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+    color: var(--nx-fg);
+}
+
+.nx-radiogroup-label {
+    font-size: var(--nx-font-size-sm);
+    font-weight: var(--nx-font-weight-medium);
+}
+
+.nx-radiogroup-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.nx-radiogroup-horizontal .nx-radiogroup-items {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+}
+
+.nx-radiogroup-invalid .nx-radiogroup-label { color: var(--nx-invalid); }

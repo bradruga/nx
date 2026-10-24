@@ -1,0 +1,39 @@
+@namespace Nx.Components
+
+@* The label, bordered box, prefix/suffix slots and clear button around an Nx text input.
+   Every part carries a shared nx-field-* class (styled here) and a {ClassPrefix}-* class (the host's hook). *@
+<div class="@RootClass" style="@Style">
+    @if (Label is not null && !FloatingLabel)
+    {
+        <label class="nx-field-label @(ClassPrefix)-label" for="@InputId">@Label</label>
+    }
+    <div class="nx-field-box @(ClassPrefix)-field">
+        @if (PrefixContent is not null)
+        {
+            <span class="nx-field-prefix @(ClassPrefix)-prefix">@PrefixContent</span>
+        }
+        <div class="nx-field-control @(ClassPrefix)-control">
+            @ChildContent
+            @if (Label is not null && FloatingLabel)
+            {
+                <label class="nx-field-floating-label @(ClassPrefix)-floating-label" for="@InputId">@Label</label>
+            }
+        </div>
+        @if (SuffixContent is not null)
+        {
+            <span class="nx-field-suffix @(ClassPrefix)-suffix">@SuffixContent</span>
+        }
+        @if (ShowClear)
+        {
+            <button type="button" class="nx-field-button nx-field-clear @(ClassPrefix)-button @(ClassPrefix)-clear" tabindex="-1"
+                    aria-label="Clear" title="Clear" aria-controls="@InputId"
+                    @onmousedown:preventDefault="true" @onclick="OnClear">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true">
+                    <line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" />
+                </svg>
+            </button>
+        }
+        @Buttons
+    </div>
+    @Below
+</div>

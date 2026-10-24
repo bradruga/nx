@@ -1,0 +1,84 @@
+.nx-loader {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: var(--nx-loader-size);
+    height: var(--nx-loader-size);
+    color: var(--nx-loader-color);
+    vertical-align: middle;
+}
+
+.nx-loader-sm { --nx-loader-size: var(--nx-loader-size-sm); }
+.nx-loader-md { --nx-loader-size: var(--nx-loader-size-md); }
+.nx-loader-lg { --nx-loader-size: var(--nx-loader-size-lg); }
+
+/* ── Spinner: a ring with a faint track and a turning arc ─────────────────── */
+
+.nx-loader-ring {
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    border: max(2px, calc(var(--nx-loader-size) / 10)) solid color-mix(in srgb, currentColor 18%, transparent);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: nx-loader-turn 0.8s linear infinite;
+}
+
+/* ── Converging: four dots at the corners that gather in and spread out ───── */
+
+.nx-loader-converging { animation: nx-loader-turn 2.4s linear infinite; }
+
+.nx-loader-converging .nx-loader-dot {
+    position: absolute;
+    top: 36%;
+    left: 36%;
+    width: 28%;
+    height: 28%;
+    border-radius: 50%;
+    background: currentColor;
+    animation: nx-loader-converge 1.2s ease-in-out infinite;
+}
+.nx-loader-converging .nx-loader-dot:nth-child(1) { --nx-loader-x: -1; --nx-loader-y: -1; }
+.nx-loader-converging .nx-loader-dot:nth-child(2) { --nx-loader-x: 1;  --nx-loader-y: -1; opacity: 0.8; }
+.nx-loader-converging .nx-loader-dot:nth-child(3) { --nx-loader-x: 1;  --nx-loader-y: 1;  opacity: 0.6; }
+.nx-loader-converging .nx-loader-dot:nth-child(4) { --nx-loader-x: -1; --nx-loader-y: 1;  opacity: 0.4; }
+
+/* ── Pulsing: three dots in a row, pulsing in turn ────────────────────────── */
+
+.nx-loader-pulsing {
+    width: calc(var(--nx-loader-size) * 1.6);
+    gap: 10%;
+}
+
+.nx-loader-pulsing .nx-loader-dot {
+    width: 24%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: currentColor;
+    animation: nx-loader-pulse 1s ease-in-out infinite both;
+}
+.nx-loader-pulsing .nx-loader-dot:nth-child(2) { animation-delay: 0.16s; }
+.nx-loader-pulsing .nx-loader-dot:nth-child(3) { animation-delay: 0.32s; }
+
+@keyframes nx-loader-turn {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes nx-loader-converge {
+    0%, 100% { transform: translate(calc(var(--nx-loader-x) * 120%), calc(var(--nx-loader-y) * 120%)); }
+    50%      { transform: translate(calc(var(--nx-loader-x) * 30%), calc(var(--nx-loader-y) * 30%)); }
+}
+
+@keyframes nx-loader-pulse {
+    0%, 80%, 100% { transform: scale(0.55); opacity: 0.45; }
+    40%           { transform: scale(1);    opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nx-loader-ring,
+    .nx-loader-converging,
+    .nx-loader-converging .nx-loader-dot,
+    .nx-loader-pulsing .nx-loader-dot { animation-duration: 2.4s; }
+}

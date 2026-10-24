@@ -1,0 +1,42 @@
+@namespace Nx.Components
+@typeparam TItem
+@typeparam TValue
+
+@* A pick-only NxComboBox: the cascaded ComboMode turns typing off and adds type-ahead and the default row. *@
+<CascadingValue Name="@ComboMode.CascadeName" Value="mode">
+    <NxComboBox @ref="combo"
+                TItem="TItem"
+                TValue="TValue"
+                Data="Data"
+                DataProvider="DataProvider"
+                ItemText="ItemText"
+                ItemValue="ItemValue"
+                ItemGroup="ItemGroup"
+                Value="Value"
+                ValueChanged="ValueChanged"
+                ValueExpression="ValueExpression"
+                SelectedItem="SelectedItem"
+                SelectedItemChanged="SelectedItemChanged"
+                Columns="Columns"
+                ColumnDefinitions="ColumnDefinitions"
+                PopupWidth="@PopupWidth"
+                MobileMode="MobileMode"
+                MobileBreakpoint="MobileBreakpoint"
+                MobileTitle="@MobileTitle"
+                Placeholder="@Placeholder"
+                Clearable="Clearable"
+                ItemTemplate="ItemTemplate"
+                SelectedItemTemplate="SelectedItemTemplate"
+                GroupHeaderTemplate="GroupHeaderTemplate"
+                NoDataText="@NoDataText"
+                Virtualize="Virtualize"
+                ItemHeight="ItemHeight"
+                PopupMaxHeight="PopupMaxHeight"
+                Loading="Loading"
+                Disabled="Disabled"
+                ReadOnly="ReadOnly"
+                Id="@Id"
+                Class="@CssClass"
+                Style="@Style"
+                AdditionalAttributes="AdditionalAttributes" />
+</CascadingValue>

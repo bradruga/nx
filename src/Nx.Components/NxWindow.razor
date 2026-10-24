@@ -1,0 +1,95 @@
+@namespace Nx.Components
+
+@if (Visible)
+{
+    @* No style attribute on the backdrop or the window: nx-window.js owns their position, size and z-index. *@
+    <div class="nx-window-host">
+        @if (Modal)
+        {
+            <div class="@BackdropClass" @ref="backdrop" @onclick="HandleBackdropClick"></div>
+        }
+        <div @ref="window"
+             @attributes="AdditionalAttributes"
+             id="@WindowId"
+             class="@CssClass"
+             role="dialog"
+             aria-modal="@(Modal && !minimized ? "true" : null)"
+             aria-labelledby="@TitleId"
+             tabindex="-1">
+            <div class="nx-window-titlebar" @ondblclick="HandleTitleDoubleClick">
+                @if (Icon is not null)
+                {
+                    <span class="nx-window-icon" aria-hidden="true">@Icon</span>
+                }
+                <h2 class="nx-window-title" id="@TitleId">
+                    @if (TitleContent is not null)
+                    {
+                        @TitleContent
+                    }
+                    else
+                    {
+                        @Title
+                    }
+                </h2>
+                <div class="nx-window-actions">
+                    @HeaderActions
+                    @if (Minimizable)
+                    {
+                        <button type="button" class="nx-window-action nx-window-minimize"
+                                aria-label="@(minimized ? "Restore" : "Minimize")" title="@(minimized ? "Restore" : "Minimize")"
+                                @onclick="ToggleMinimizeAsync">
+                            @if (minimized)
+                            {
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15" /></svg>
+                            }
+                            else
+                            {
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="5" y1="18" x2="19" y2="18" /></svg>
+                            }
+                        </button>
+                    }
+                    @if (Maximizable && !minimized)
+                    {
+                        <button type="button" class="nx-window-action nx-window-maximize"
+                                aria-label="@(maximized ? "Restore" : "Maximize")" title="@(maximized ? "Restore" : "Maximize")"
+                                @onclick="ToggleMaximizeAsync">
+                            @if (maximized)
+                            {
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="8" width="12" height="12" rx="1" /><path d="M8 8V4h12v12h-4" /></svg>
+                            }
+                            else
+                            {
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="1" /></svg>
+                            }
+                        </button>
+                    }
+                    @if (Closable)
+                    {
+                        <button type="button" class="nx-window-action nx-window-close" aria-label="Close" title="Close" @onclick="HandleCloseClick">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true">
+                                <line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" />
+                            </svg>
+                        </button>
+                    }
+                </div>
+            </div>
+            @* Kept in the DOM while minimized, so the content keeps its state. *@
+            <div class="nx-window-body" hidden="@minimized">@ChildContent</div>
+            @if (Footer is not null)
+            {
+                <div class="nx-window-footer" hidden="@minimized">@Footer</div>
+            }
+            @if (Resizable)
+            {
+                @foreach (var edge in Edges)
+                {
+                    <div class="nx-window-resize nx-window-resize-@edge" data-edge="@edge" aria-hidden="true"></div>
+                }
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private static readonly string[] Edges = ["n", "s", "e", "w", "ne", "nw", "se", "sw"];
+}

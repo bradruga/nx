@@ -1,0 +1,180 @@
+@page "/numeric/playground"
+@using System.Globalization
+
+<DocHeader Slug="numeric" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live. The box is bound to a <code>decimal?</code>; switch the type to try <code>int</code> or <code>double</code>.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                @switch (pgType)
+                {
+                    case "int":
+                        <NxNumericTextBox @key="@($"int-{pgKey}")" TValue="int" Id="playground-numeric" @bind-Value="pgInt"
+                                          @attributes="RangeAttributes(v => (int)v)" Decimals="@DecimalsOrNull" Format="@FormatOrNull" Culture="Culture"
+                                          Label="@LabelOrNull" FloatingLabel="pgFloating" Placeholder="@PlaceholderOrNull"
+                                          Prefix="@(pgPrefix ? Text(PrefixText) : null)" Suffix="@(pgSuffix ? Text(SuffixText) : null)"
+                                          ShowSpinButtons="pgSpin" SelectOnFocus="pgSelect" Clearable="pgClearable"
+                                          ReadOnly="pgReadOnly" Disabled="pgDisabled" AutoFocus="pgAutoFocus"
+                                          @bind-Value:after="Changed" />
+                        break;
+                    case "double":
+                        <NxNumericTextBox @key="@($"double-{pgKey}")" TValue="double" Id="playground-numeric" @bind-Value="pgDouble"
+                                          @attributes="RangeAttributes(v => (double)v)" Decimals="@DecimalsOrNull" Format="@FormatOrNull" Culture="Culture"
+                                          Label="@LabelOrNull" FloatingLabel="pgFloating" Placeholder="@PlaceholderOrNull"
+                                          Prefix="@(pgPrefix ? Text(PrefixText) : null)" Suffix="@(pgSuffix ? Text(SuffixText) : null)"
+                                          ShowSpinButtons="pgSpin" SelectOnFocus="pgSelect" Clearable="pgClearable"
+                                          ReadOnly="pgReadOnly" Disabled="pgDisabled" AutoFocus="pgAutoFocus"
+                                          @bind-Value:after="Changed" />
+                        break;
+                    default:
+                        <NxNumericTextBox @key="@($"decimal-{pgKey}")" TValue="decimal?" Id="playground-numeric" @bind-Value="pgDecimal"
+                                          @attributes="RangeAttributes(v => (decimal?)v)" Decimals="@DecimalsOrNull" Format="@FormatOrNull" Culture="Culture"
+                                          Label="@LabelOrNull" FloatingLabel="pgFloating" Placeholder="@PlaceholderOrNull"
+                                          Prefix="@(pgPrefix ? Text(PrefixText) : null)" Suffix="@(pgSuffix ? Text(SuffixText) : null)"
+                                          ShowSpinButtons="pgSpin" SelectOnFocus="pgSelect" Clearable="pgClearable"
+                                          ReadOnly="pgReadOnly" Disabled="pgDisabled" AutoFocus="pgAutoFocus"
+                                          @bind-Value:after="Changed" />
+                        break;
+                }
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-value">Value: <strong>@CurrentValue</strong></span>
+                <span class="demo-counter" id="playground-changes">ValueChanged × @pgChanges</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Value</div>
+            <label class="demo-control">
+                <span>TValue</span>
+                <select id="pg-type" @bind="pgType" @bind:after="Remount">
+                    <option value="decimal?">decimal?</option>
+                    <option value="int">int</option>
+                    <option value="double">double</option>
+                </select>
+            </label>
+            <label class="demo-control"><span>Min (blank = none)</span><input type="text" id="pg-min" @bind="pgMin" @bind:after="Remount" /></label>
+            <label class="demo-control"><span>Max (blank = none)</span><input type="text" id="pg-max" @bind="pgMax" @bind:after="Remount" /></label>
+            <label class="demo-control"><span>Step</span><input type="text" id="pg-step" @bind="pgStep" @bind:after="Remount" /></label>
+            <label class="demo-control"><span>Decimals (blank = any)</span><input type="text" id="pg-decimals" @bind="pgDecimals" /></label>
+
+            <div class="demo-controls-title">Format</div>
+            <label class="demo-control">
+                <span>Format</span>
+                <select id="pg-format" @bind="pgFormat">
+                    <option value="">(none)</option>
+                    <option value="N0">N0</option>
+                    <option value="N2">N2</option>
+                    <option value="C">C</option>
+                    <option value="#,##0.000">#,##0.000</option>
+                </select>
+            </label>
+            <label class="demo-control">
+                <span>Culture</span>
+                <select id="pg-culture" @bind="pgCulture">
+                    <option value="en-US">en-US</option>
+                    <option value="en-GB">en-GB</option>
+                    <option value="de-DE">de-DE</option>
+                    <option value="fr-CA">fr-CA</option>
+                </select>
+            </label>
+
+            <div class="demo-controls-title">Label &amp; text</div>
+            <label class="demo-control"><span>Label</span><input type="text" @bind="pgLabel" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>FloatingLabel</span><input type="checkbox" id="pg-floating" @bind="pgFloating" /></label>
+            <label class="demo-control"><span>Placeholder</span><input type="text" @bind="pgPlaceholder" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>Prefix ($)</span><input type="checkbox" id="pg-prefix" @bind="pgPrefix" /></label>
+            <label class="demo-control"><span>Suffix (%)</span><input type="checkbox" id="pg-suffix" @bind="pgSuffix" /></label>
+
+            <div class="demo-controls-title">Behavior</div>
+            <label class="demo-control"><span>ShowSpinButtons</span><input type="checkbox" id="pg-spin" @bind="pgSpin" /></label>
+            <label class="demo-control"><span>SelectOnFocus</span><input type="checkbox" id="pg-select" @bind="pgSelect" /></label>
+            <label class="demo-control"><span>Clearable</span><input type="checkbox" id="pg-clearable" @bind="pgClearable" /></label>
+            <label class="demo-control"><span>ReadOnly</span><input type="checkbox" id="pg-readonly" @bind="pgReadOnly" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+            <label class="demo-control"><span>AutoFocus (remounts)</span><input type="checkbox" @bind="pgAutoFocus" @bind:after="Remount" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="numeric" Page="playground" />
+
+@code {
+    static RenderFragment Text(string text) => @<span>@text</span>;
+
+    string pgType = "decimal?";
+    decimal? pgDecimal = 1234.5m;
+    int pgInt = 12;
+    double pgDouble = 2.5;
+    string pgMin = "0", pgMax = "", pgStep = "1", pgDecimals = "", pgFormat = "", pgCulture = "en-US";
+    string pgLabel = "Amount", pgPlaceholder = "";
+    bool pgFloating, pgPrefix, pgSuffix, pgSpin = true, pgSelect, pgClearable, pgReadOnly, pgDisabled, pgAutoFocus;
+    int pgKey, pgChanges;
+
+    CultureInfo Culture => CultureInfo.GetCultureInfo(pgCulture);
+    string? FormatOrNull => pgFormat.Length == 0 ? null : pgFormat;
+    string? LabelOrNull => string.IsNullOrWhiteSpace(pgLabel) ? null : pgLabel;
+    string? PlaceholderOrNull => string.IsNullOrWhiteSpace(pgPlaceholder) ? null : pgPlaceholder;
+    int? DecimalsOrNull => int.TryParse(pgDecimals, out var d) && d >= 0 ? d : null;
+    string PrefixText => "$";
+    string SuffixText => "%";
+
+    string CurrentValue => pgType switch
+    {
+        "int" => pgInt.ToString(CultureInfo.InvariantCulture),
+        "double" => pgDouble.ToString(CultureInfo.InvariantCulture),
+        _ => pgDecimal?.ToString(CultureInfo.InvariantCulture) ?? "null"
+    };
+
+    static decimal? ParseOrNull(string text) =>
+        decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out var d) ? d : null;
+
+    /// <summary>Min, Max and Step are only passed when set, as a caller would write them.</summary>
+    Dictionary<string, object> RangeAttributes(Func<decimal, object> convert)
+    {
+        var attributes = new Dictionary<string, object>();
+        if (ParseOrNull(pgMin) is decimal min) attributes["Min"] = convert(min);
+        if (ParseOrNull(pgMax) is decimal max) attributes["Max"] = convert(max);
+        if (ParseOrNull(pgStep) is decimal step && step > 0) attributes["Step"] = convert(step);
+        return attributes;
+    }
+
+    void Changed() => pgChanges++;
+    void Remount() => pgKey++;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "@bind-Value=\"amount\"" };
+            if (ParseOrNull(pgMin) is decimal min) attrs.Add($"Min=\"{min.ToString(CultureInfo.InvariantCulture)}\"");
+            if (ParseOrNull(pgMax) is decimal max) attrs.Add($"Max=\"{max.ToString(CultureInfo.InvariantCulture)}\"");
+            if (ParseOrNull(pgStep) is decimal step && step != 1) attrs.Add($"Step=\"{step.ToString(CultureInfo.InvariantCulture)}\"");
+            if (DecimalsOrNull is int d) attrs.Add($"Decimals=\"{d}\"");
+            if (FormatOrNull is { } f) attrs.Add($"Format=\"{f}\"");
+            if (pgCulture != "en-US") attrs.Add($"Culture=\"@CultureInfo.GetCultureInfo(\"{pgCulture}\")\"");
+            if (LabelOrNull is { } l) attrs.Add($"Label=\"{l}\"");
+            if (pgFloating) attrs.Add("FloatingLabel=\"true\"");
+            if (PlaceholderOrNull is { } p) attrs.Add($"Placeholder=\"{p}\"");
+            if (!pgSpin) attrs.Add("ShowSpinButtons=\"false\"");
+            if (pgSelect) attrs.Add("SelectOnFocus=\"true\"");
+            if (pgClearable) attrs.Add("Clearable=\"true\"");
+            if (pgReadOnly) attrs.Add("ReadOnly=\"true\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            if (pgAutoFocus) attrs.Add("AutoFocus=\"true\"");
+            var open = "<NxNumericTextBox " + string.Join("\n                  ", attrs);
+            if (!pgPrefix && !pgSuffix)
+                return open + " />";
+            var body = (pgPrefix ? "\n    <Prefix>$</Prefix>" : "") + (pgSuffix ? "\n    <Suffix>%</Suffix>" : "");
+            return open + ">" + body + "\n</NxNumericTextBox>";
+        }
+    }
+}

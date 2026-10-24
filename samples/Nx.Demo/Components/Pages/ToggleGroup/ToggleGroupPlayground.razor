@@ -1,0 +1,97 @@
+@page "/togglegroup/playground"
+
+<DocHeader Slug="togglegroup" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live. Items are product categories; switch Multiple on to bind a list.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch" style="justify-content:center">
+                <NxToggleGroup @key="pgMultiple" TValue="string" Id="playground-group" Data="Categories"
+                               Multiple="pgMultiple" @bind-Value="pgValue" @bind-Values="pgValues"
+                               @bind-Value:after="() => pgChanges++" @bind-Values:after="() => pgChanges++"
+                               AllowDeselect="pgAllowDeselect" Size="pgSize" FullWidth="pgFullWidth" Disabled="pgDisabled"
+                               ItemDisabled="@(pgDisableOne ? c => c == Categories[3] : null)"
+                               ItemTemplate="@(pgIcons ? IconTemplate : null)" AriaLabel="Category" />
+            </div>
+            <div class="demo-row">
+                @if (pgMultiple)
+                {
+                    <span class="demo-value" id="playground-values">Values: <strong>[@string.Join(", ", pgValues)]</strong></span>
+                }
+                else
+                {
+                    <span class="demo-value" id="playground-value">Value: <strong>@(pgValue ?? "null")</strong></span>
+                }
+                <span class="demo-counter" id="playground-changes">Changed × @pgChanges</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Selection</div>
+            <label class="demo-control"><span>Multiple</span><input type="checkbox" id="pg-multiple" @bind="pgMultiple" /></label>
+            <label class="demo-control"><span>AllowDeselect</span><input type="checkbox" id="pg-deselect" @bind="pgAllowDeselect" disabled="@pgMultiple" /></label>
+            <label class="demo-control"><span>Disable "@Categories[3]"</span><input type="checkbox" id="pg-disable-one" @bind="pgDisableOne" /></label>
+
+            <div class="demo-controls-title">Appearance</div>
+            <div class="demo-control">
+                <span>Size</span>
+                <div class="demo-segmented" role="group" aria-label="Size">
+                    @foreach (var s in Enum.GetValues<NxSize>())
+                    {
+                        <button type="button" id="@($"pg-size-{s}")" aria-pressed="@(pgSize == s ? "true" : "false")" @onclick="() => pgSize = s">@s</button>
+                    }
+                </div>
+            </div>
+            <label class="demo-control"><span>Icons (ItemTemplate)</span><input type="checkbox" id="pg-icons" @bind="pgIcons" /></label>
+            <label class="demo-control"><span>FullWidth</span><input type="checkbox" id="pg-full" @bind="pgFullWidth" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="togglegroup" Page="playground" />
+
+@code {
+    static readonly string[] Categories = ["Pipe", "Box", "Manhole", "Barrier"];
+
+    static readonly Dictionary<string, string> CategoryIcons = new()
+    {
+        ["Pipe"] = "refresh", ["Box"] = "box", ["Manhole"] = "settings", ["Barrier"] = "truck",
+    };
+
+    static readonly RenderFragment<string> IconTemplate = c =>
+        @<text><DemoIcon Name="@CategoryIcons[c]" /> @c</text>;
+
+    string? pgValue = Categories[0];
+    IEnumerable<string> pgValues = [Categories[0]];
+    bool pgMultiple, pgAllowDeselect, pgDisableOne, pgIcons, pgFullWidth, pgDisabled;
+    NxSize pgSize = NxSize.Medium;
+    int pgChanges;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "Data=\"categories\"" };
+            if (pgMultiple) { attrs.Add("Multiple=\"true\""); attrs.Add("@bind-Values=\"categories\""); }
+            else attrs.Add("@bind-Value=\"category\"");
+            if (pgAllowDeselect && !pgMultiple) attrs.Add("AllowDeselect=\"true\"");
+            if (pgDisableOne) attrs.Add($"ItemDisabled=\"c => c == \\\"{Categories[3]}\\\"\"");
+            if (pgSize != NxSize.Medium) attrs.Add($"Size=\"NxSize.{pgSize}\"");
+            if (pgFullWidth) attrs.Add("FullWidth=\"true\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            attrs.Add("AriaLabel=\"Category\"");
+            var open = "<NxToggleGroup " + string.Join("\n               ", attrs);
+            return pgIcons
+                ? open + ">\n    <ItemTemplate Context=\"c\"><Icon For=\"@c\" /> @c</ItemTemplate>\n</NxToggleGroup>"
+                : open + " />";
+        }
+    }
+}

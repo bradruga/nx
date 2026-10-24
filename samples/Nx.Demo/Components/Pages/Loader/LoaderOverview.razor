@@ -1,0 +1,71 @@
+@page "/loader"
+@page "/loader/overview"
+
+<DocHeader Slug="loader" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxLoader</code> is a busy indicator — a spinner, converging dots or pulsing dots in three sizes.
+        <code>NxLoaderContainer</code> lays a translucent overlay with a centered loader over an area while it loads, and
+        catches clicks on what is underneath. The area needs <code>position: relative</code>.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <NxLoader />
+            <NxLoader Type="NxLoaderType.Converging" />
+            <NxLoader Type="NxLoaderType.Pulsing" />
+            <NxButton id="overview-reload" OnClick="ReloadAsync">Reload orders</NxButton>
+        </div>
+        <div class="demo-loader-area" id="overview-area">
+            <NxLoaderContainer Visible="loading" Text="Loading orders…" />
+            <ul class="demo-loader-list">
+                <li><strong>P-1042</strong><span>North wall · 14 yd³</span></li>
+                <li><strong>P-1043</strong><span>Footings · 22 yd³</span></li>
+                <li><strong>P-1044</strong><span>Deck · 31 yd³</span></li>
+            </ul>
+        </div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Part</th><th>Rendered as</th></tr></thead>
+            <tbody>
+                <tr><td>NxLoader</td><td><code>role="progressbar"</code> named by <code>AriaLabel</code> ("Loading").</td></tr>
+                <tr><td>NxLoaderContainer</td><td><code>aria-busy="true"</code> on the overlay, a <code>role="status"</code> panel named by <code>Text</code>.</td></tr>
+                <tr><td>Motion</td><td>Slower animations under <code>prefers-reduced-motion</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="loader" Page="overview" />
+
+@code {
+    bool loading;
+
+    async Task ReloadAsync()
+    {
+        loading = true;
+        await Task.Delay(1500);
+        loading = false;
+    }
+
+    const string basicCode =
+        """
+        <NxLoader Type="NxLoaderType.Pulsing" />
+
+        <div style="position: relative">
+            <NxLoaderContainer Visible="loading" Text="Loading orders…" />
+            …
+        </div>
+        """;
+}

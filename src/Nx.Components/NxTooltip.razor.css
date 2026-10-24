@@ -1,0 +1,46 @@
+/* The wrapper adds no box; the wrapped element keeps its own layout. */
+.nx-tooltip-anchor { display: contents; }
+
+/* Fixed and placed by nx-tooltip.js; it never takes pointer events, so it cannot block what is under it. */
+.nx-tooltip {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: var(--nx-z-tooltip);
+    max-width: min(var(--nx-tooltip-max-width), calc(100vw - 16px));
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 120ms ease;
+}
+
+.nx-tooltip[data-open] { opacity: 1; }
+
+.nx-tooltip-body {
+    padding: 6px 10px;
+    border-radius: var(--nx-radius);
+    background: var(--nx-tooltip-bg);
+    color: var(--nx-tooltip-fg);
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size-sm);
+    line-height: 1.4;
+    box-shadow: var(--nx-shadow-popup);
+    overflow-wrap: break-word;
+}
+
+/* The arrow: a rotated square under the body, at --nx-tooltip-arrow-at along the side facing the anchor. */
+.nx-tooltip::before {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: var(--nx-tooltip-bg);
+    transform: rotate(45deg);
+}
+.nx-tooltip[data-placement="top"]::before    { bottom: -4px; left: calc(var(--nx-tooltip-arrow-at, 50%) - 4px); }
+.nx-tooltip[data-placement="bottom"]::before { top: -4px;    left: calc(var(--nx-tooltip-arrow-at, 50%) - 4px); }
+.nx-tooltip[data-placement="left"]::before   { right: -4px;  top: calc(var(--nx-tooltip-arrow-at, 50%) - 4px); }
+.nx-tooltip[data-placement="right"]::before  { left: -4px;   top: calc(var(--nx-tooltip-arrow-at, 50%) - 4px); }
+
+@media (prefers-reduced-motion: reduce) {
+    .nx-tooltip { transition: none; }
+}

@@ -1,0 +1,97 @@
+@page "/multiselect/playground"
+
+<DocHeader Slug="multiselect" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live, over the demo customers bound by id.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                <div style="width:100%">
+                    <label class="demo-field-label" for="playground-multi">Customers</label>
+                    <NxMultiSelect @key="pgKey" Id="playground-multi" Data="SampleData.Customers" ItemText="c => c.Name" ItemValue="c => c.Id"
+                                   ItemGroup="@(pgGroup ? c => c.Region : null)" @bind-Values="pgValues" @bind-Values:after="Changed"
+                                   SelectAll="pgSelectAll" MaxSelections="MaxOrNull" SummaryThreshold="SummaryOrNull" MaxVisibleChips="ChipsOrNull"
+                                   Filterable="pgFilterable" Clearable="pgClearable" Placeholder="@OrNull(pgPlaceholder)"
+                                   Disabled="pgDisabled" ReadOnly="pgReadOnly" MobileMode="pgMobile" />
+                </div>
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-value">Values: <strong>[@string.Join(", ", pgValues)]</strong></span>
+                <span class="demo-counter" id="playground-changes">ValuesChanged × @pgChanges</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Selection</div>
+            <label class="demo-control"><span>SelectAll</span><input type="checkbox" id="pg-selectall" @bind="pgSelectAll" /></label>
+            <label class="demo-control"><span>MaxSelections</span><input type="text" id="pg-max" placeholder="none" @bind="pgMax" /></label>
+            <label class="demo-control"><span>SummaryThreshold</span><input type="text" id="pg-summary" placeholder="none" @bind="pgSummary" /></label>
+            <label class="demo-control"><span>MaxVisibleChips</span><input type="text" id="pg-chips" placeholder="all" @bind="pgChips" /></label>
+
+            <div class="demo-controls-title">List</div>
+            <label class="demo-control"><span>Filterable</span><input type="checkbox" id="pg-filterable" @bind="pgFilterable" @bind:after="Remount" /></label>
+            <label class="demo-control"><span>ItemGroup (region)</span><input type="checkbox" id="pg-group" @bind="pgGroup" /></label>
+            <label class="demo-control"><span>Placeholder</span><input type="text" id="pg-placeholder" @bind="pgPlaceholder" @bind:event="oninput" /></label>
+
+            <div class="demo-controls-title">Behavior</div>
+            <label class="demo-control"><span>Clearable</span><input type="checkbox" id="pg-clearable" @bind="pgClearable" /></label>
+            <label class="demo-control"><span>ReadOnly</span><input type="checkbox" id="pg-readonly" @bind="pgReadOnly" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+            <label class="demo-control">
+                <span>MobileMode</span>
+                <select id="pg-mobile" @bind="pgMobile" @bind:after="Remount">
+                    <option value="@NxComboBoxMobileMode.Auto">Auto</option>
+                    <option value="@NxComboBoxMobileMode.Always">Always</option>
+                    <option value="@NxComboBoxMobileMode.Never">Never</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="multiselect" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+    static int? IntOrNull(string s) => int.TryParse(s, out var n) && n >= 0 ? n : null;
+
+    IEnumerable<int> pgValues = [1, 2];
+    string pgMax = "", pgSummary = "", pgChips = "", pgPlaceholder = "Pick customers";
+    bool pgSelectAll = true, pgFilterable = true, pgGroup, pgClearable = true, pgReadOnly, pgDisabled;
+    NxComboBoxMobileMode pgMobile = NxComboBoxMobileMode.Auto;
+    int pgKey, pgChanges;
+
+    int? MaxOrNull => IntOrNull(pgMax) is int m && m > 0 ? m : null;
+    int? SummaryOrNull => IntOrNull(pgSummary);
+    int? ChipsOrNull => IntOrNull(pgChips);
+
+    void Changed() => pgChanges++;
+    void Remount() => pgKey++;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "Data=\"customers\"", "ItemText=\"c => c.Name\"", "ItemValue=\"c => c.Id\"", "@bind-Values=\"ids\"" };
+            if (pgSelectAll) attrs.Add("SelectAll=\"true\"");
+            if (MaxOrNull is int m) attrs.Add($"MaxSelections=\"{m}\"");
+            if (SummaryOrNull is int s) attrs.Add($"SummaryThreshold=\"{s}\"");
+            if (ChipsOrNull is int c) attrs.Add($"MaxVisibleChips=\"{c}\"");
+            if (!pgFilterable) attrs.Add("Filterable=\"false\"");
+            if (pgGroup) attrs.Add("ItemGroup=\"c => c.Region\"");
+            if (OrNull(pgPlaceholder) is { } p) attrs.Add($"Placeholder=\"{p}\"");
+            if (pgClearable) attrs.Add("Clearable=\"true\"");
+            if (pgReadOnly) attrs.Add("ReadOnly=\"true\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            if (pgMobile != NxComboBoxMobileMode.Auto) attrs.Add($"MobileMode=\"NxComboBoxMobileMode.{pgMobile}\"");
+            return "<NxMultiSelect " + string.Join("\n               ", attrs) + " />";
+        }
+    }
+}

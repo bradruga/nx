@@ -1,0 +1,37 @@
+@namespace Nx.Components
+@typeparam TItem
+
+@* A free-text NxComboBox: custom values on, and the cascaded ComboMode makes the list suggestions only. *@
+<CascadingValue Name="@ComboMode.CascadeName" Value="mode">
+    <NxComboBox @ref="combo"
+                TItem="TItem"
+                TValue="string"
+                Data="Data"
+                DataProvider="DataProvider"
+                DebounceDelay="DebounceDelay"
+                ItemText="ItemText"
+                ItemValue="TextOf"
+                ItemGroup="ItemGroup"
+                Value="@Value"
+                ValueChanged="ValueChanged"
+                ValueExpression="ValueExpression"
+                Filter="Filter"
+                CustomFilter="CustomFilter"
+                AllowCustomValue="true"
+                PopupWidth="@PopupWidth"
+                MobileMode="NxComboBoxMobileMode.Never"
+                Placeholder="@Placeholder"
+                Clearable="Clearable"
+                ItemTemplate="ItemTemplate"
+                GroupHeaderTemplate="GroupHeaderTemplate"
+                Virtualize="Virtualize"
+                ItemHeight="ItemHeight"
+                PopupMaxHeight="PopupMaxHeight"
+                Loading="Loading"
+                Disabled="Disabled"
+                ReadOnly="ReadOnly"
+                Id="@Id"
+                Class="@CssClass"
+                Style="@Style"
+                AdditionalAttributes="AdditionalAttributes" />
+</CascadingValue>

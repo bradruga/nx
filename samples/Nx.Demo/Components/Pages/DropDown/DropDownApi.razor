@@ -1,0 +1,51 @@
+@page "/dropdown/api"
+
+<DocHeader Slug="dropdown" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <p class="doc-note">Every parameter but <code>DefaultText</code> means what it means on <code>NxComboBox</code>; there is no typing, so no filtering parameters.</p>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Data</td><td>IEnumerable&lt;TItem&gt;?</td><td>—</td><td>The items.</td></tr>
+                <tr><td>DataProvider</td><td>Func&lt;NxComboBoxRequest, Task&lt;IEnumerable&lt;TItem&gt;&gt;&gt;?</td><td>—</td><td>Loads the items each time the list opens; the request's filter is empty.</td></tr>
+                <tr><td>ItemText / ItemValue / ItemGroup</td><td>Func&lt;TItem, …&gt;?</td><td>—</td><td>Text (and type-ahead), bound value, group key.</td></tr>
+                <tr><td>Value / SelectedItem</td><td>TValue? / TItem?</td><td>—</td><td><code>@@bind-Value</code>, <code>@@bind-SelectedItem</code>, or both.</td></tr>
+                <tr><td>DefaultText</td><td>string?</td><td>—</td><td>A first item that selects nothing; also shown while nothing is selected.</td></tr>
+                <tr><td>Placeholder</td><td>string?</td><td>—</td><td>Shown while nothing is selected, without DefaultText.</td></tr>
+                <tr><td>Clearable</td><td>bool</td><td>false</td><td>Clear button.</td></tr>
+                <tr><td>ItemTemplate / SelectedItemTemplate / GroupHeaderTemplate</td><td>RenderFragment&lt;…&gt;?</td><td>—</td><td>Templates.</td></tr>
+                <tr><td>Columns / ColumnDefinitions</td><td></td><td>—</td><td>Multi-column list, as in NxComboBox.</td></tr>
+                <tr><td>Virtualize / ItemHeight</td><td>bool / float</td><td>false / 34</td><td>Render only the visible rows.</td></tr>
+                <tr><td>PopupWidth / PopupMaxHeight</td><td>string? / int</td><td>— / 300</td><td>Popup size.</td></tr>
+                <tr><td>NoDataText</td><td>string</td><td>"No items"</td><td>Shown for an empty list.</td></tr>
+                <tr><td>MobileMode / MobileBreakpoint / MobileTitle</td><td></td><td>Auto / 600 / —</td><td>Full-screen sheet on phones.</td></tr>
+                <tr><td>Loading / Disabled / ReadOnly</td><td>bool</td><td>false</td><td>States.</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>Field id; outer class and style. Other attributes go to the field.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events &amp; Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ValueChanged / SelectedItemChanged</td><td>EventCallback</td><td>The selection changed: a pick, type-ahead with the list closed, the default item, clear.</td></tr>
+                <tr><td>FocusAsync()</td><td>ValueTask</td><td>Focuses the field.</td></tr>
+                <tr><td>IsOpen</td><td>bool</td><td>Whether the list is open.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <p class="doc-note">The same as <code>NxComboBox</code>: <code>--nx-popup-*</code>, <code>--nx-item-*</code>, <code>--nx-control-height-md</code>. The outer element also carries <code>nx-dropdown</code>.</p>
+</div>
+
+<DocPager Slug="dropdown" Page="api" />

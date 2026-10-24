@@ -1,0 +1,155 @@
+@page "/togglegroup/examples"
+@using System.ComponentModel.DataAnnotations
+
+<DocHeader Slug="togglegroup" Page="examples" />
+
+<div class="doc-section">
+    <h2>Single Select</h2>
+    <p class="doc-note">The default: one value, bound with <code>@@bind-Value</code>. Clicking the selected item keeps it.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxToggleGroup Id="single-group" Data="Ranges" @bind-Value="range" AriaLabel="Date range" />
+        <span class="demo-value" id="single-value">Value: <strong>@range</strong></span>
+    </div>
+    <pre class="doc-code">@singleCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Multiple</h2>
+    <p class="doc-note">
+        <code>Multiple="true"</code> makes each item a toggle, bound with <code>@@bind-Values</code> — filter chips for a list.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxToggleGroup Id="multi-group" Data="Enum.GetValues<Status>()" Multiple="true" @bind-Values="statuses" AriaLabel="Status filter" />
+        <span class="demo-value" id="multi-value">Values: <strong>[@string.Join(", ", statuses)]</strong></span>
+    </div>
+    <pre class="doc-code">@multipleCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Icons &amp; Icon-Only</h2>
+    <p class="doc-note">
+        Give an item an <code>Icon</code>; with no label it becomes a square icon button — give it an <code>AriaLabel</code> and a
+        <code>Title</code>. A text formatting toolbar, built from three multi-select toggles and one single-select group:
+    </p>
+    <div class="demo-stage">
+        <NxToggleGroup Id="format-group" Multiple="true" @bind-Values="formats" AriaLabel="Text style">
+            <NxToggleGroupItem Value="@("bold")" AriaLabel="Bold" Title="Bold" Icon="@Glyph("B", "font-weight:700")" />
+            <NxToggleGroupItem Value="@("italic")" AriaLabel="Italic" Title="Italic" Icon="@Glyph("I", "font-style:italic")" />
+            <NxToggleGroupItem Value="@("underline")" AriaLabel="Underline" Title="Underline" Icon="@Glyph("U", "text-decoration:underline")" />
+        </NxToggleGroup>
+        <NxToggleGroup Id="align-group" @bind-Value="align" AriaLabel="Alignment">
+            <NxToggleGroupItem Value="@("left")" AriaLabel="Align left" Title="Align left" Icon="@Align(0)" />
+            <NxToggleGroupItem Value="@("center")" AriaLabel="Center" Title="Center" Icon="@Align(1)" />
+            <NxToggleGroupItem Value="@("right")" AriaLabel="Align right" Title="Align right" Icon="@Align(2)" />
+        </NxToggleGroup>
+        <span class="demo-value" id="format-value">[@string.Join(", ", formats)] · @align</span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Sizes</h2>
+    <div class="demo-stage demo-stage-column">
+        @foreach (var size in Enum.GetValues<NxSize>())
+        {
+            <div class="demo-row">
+                <span class="demo-row-label">@size</span>
+                <NxToggleGroup Id="@($"size-{size}")" Data="Ranges" Size="size" Value="sizeValues[size]" ValueChanged="(string? v) => sizeValues[size] = v ?? Ranges[0]" AriaLabel="@($"{size} range")" />
+            </div>
+        }
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Full Width</h2>
+    <p class="doc-note"><code>FullWidth</code> stretches the group and shares the width between items — tab bars and mobile layouts.</p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxToggleGroup Id="full-group" Data="Ranges" @bind-Value="fullRange" FullWidth="true" AriaLabel="Full width range" />
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Disabled Items</h2>
+    <p class="doc-note">
+        <code>ItemDisabled</code> (or <code>Disabled</code> on a declared item) greys an item out; arrow keys skip it.
+        <code>Disabled</code> on the group turns off them all.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxToggleGroup Id="disabled-items" Data="Ranges" @bind-Value="disabledRange" ItemDisabled="r => r == Ranges[1]" AriaLabel="Range with a disabled item" />
+        <NxToggleGroup Id="disabled-group" Data="Ranges" Value="Ranges[0]" Disabled="true" AriaLabel="Disabled group" />
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Item Template</h2>
+    <p class="doc-note"><code>ItemTemplate</code> renders each <code>Data</code> item — here with a live count.</p>
+    <div class="demo-stage">
+        <NxToggleGroup Id="template-group" Data="Enum.GetValues<Status>()" @bind-Value="templateStatus" AriaLabel="Status">
+            <ItemTemplate Context="s">@s <span class="demo-toggle-count">@Counts[s]</span></ItemTemplate>
+        </NxToggleGroup>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Form Validation</h2>
+    <div class="demo-stage demo-stage-column">
+        <EditForm id="toggle-form" Model="form" OnValidSubmit="Submit" FormName="toggle-form">
+            <DataAnnotationsValidator />
+            <div class="demo-field-label">Days the crew is available (at least two)</div>
+            <NxToggleGroup Id="form-days" Data="Days" Multiple="true" @bind-Values="form.Days" AriaLabel="Available days" />
+            <ValidationMessage For="() => form.Days" />
+            <div class="demo-row" style="margin-top:12px">
+                <NxButton id="form-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Save availability</NxButton>
+                <span class="demo-value" id="form-result">@result</span>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<DocPager Slug="togglegroup" Page="examples" />
+
+@code {
+    public enum Status { Open, Scheduled, Poured, Shipped }
+
+    static readonly string[] Ranges = ["Day", "Week", "Month", "Quarter"];
+    static readonly string[] Days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    static readonly Dictionary<Status, int> Counts = new() { [Status.Open] = 12, [Status.Scheduled] = 7, [Status.Poured] = 31, [Status.Shipped] = 104 };
+
+    static RenderFragment Glyph(string text, string style) => @<span style="@style; font-size: 15px; line-height: 1">@text</span>;
+
+    static RenderFragment Align(int which) => @<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="@(which == 0 ? 4 : which == 1 ? 6 : 8)" y1="7" x2="@(which == 0 ? 16 : which == 1 ? 18 : 20)" y2="7" />
+        <line x1="4" y1="12" x2="20" y2="12" />
+        <line x1="@(which == 0 ? 4 : which == 1 ? 7 : 10)" y1="17" x2="@(which == 0 ? 14 : which == 1 ? 17 : 20)" y2="17" />
+    </svg>;
+
+    string? range = "Week", fullRange = "Day", disabledRange = "Day", align = "left";
+    IEnumerable<Status> statuses = [Status.Open, Status.Scheduled];
+    IEnumerable<string> formats = ["bold"];
+    Status templateStatus = Status.Open;
+    readonly Dictionary<NxSize, string> sizeValues = new() { [NxSize.Small] = "Week", [NxSize.Medium] = "Week", [NxSize.Large] = "Week" };
+
+    readonly AvailabilityForm form = new();
+    string result = "Not saved";
+
+    void Submit() => result = $"Saved {string.Join(", ", form.Days)}";
+
+    class AvailabilityForm
+    {
+        [MinLength(2, ErrorMessage = "Pick at least two days.")]
+        public IEnumerable<string> Days { get; set; } = new List<string>();
+    }
+
+    const string singleCode =
+        """
+        <NxToggleGroup Data="ranges" @bind-Value="range" AriaLabel="Date range" />
+        """;
+
+    const string multipleCode =
+        """
+        <NxToggleGroup Data="Enum.GetValues<Status>()" Multiple="true" @bind-Values="statuses" AriaLabel="Status filter" />
+
+        @code {
+            IEnumerable<Status> statuses = [Status.Open];
+        }
+        """;
+}

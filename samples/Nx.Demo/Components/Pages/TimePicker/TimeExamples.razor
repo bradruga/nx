@@ -1,0 +1,148 @@
+@page "/timepicker/examples"
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+
+<DocHeader Slug="timepicker" Page="examples" />
+
+<div class="doc-section">
+    <h2>12 &amp; 24 Hour</h2>
+    <p class="doc-note">
+        The clock follows the culture's short time; <code>Use24Hour</code> overrides it. 24-hour entry is masked — type
+        <em>0930</em> or <em>9:30</em>. 12-hour entry reads <em>930a</em>, <em>9:30 pm</em> or <em>21:30</em>.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <NxTimePicker Id="time-12" Label="en-US (12-hour)" @bind-Value="clockTime" Culture="EnUs" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="time-12-value">Value: <strong>@(clockTime?.ToString("HH:mm") ?? "null")</strong></span></div>
+            </div>
+            <NxTimePicker Id="time-24" Label="de-DE (24-hour)" @bind-Value="clockTime" Culture="DeDe" />
+            <NxTimePicker Id="time-forced" Label="en-US, Use24Hour" @bind-Value="clockTime" Culture="EnUs" Use24Hour="true" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Step, Min &amp; Max</h2>
+    <p class="doc-note">
+        The list runs from <code>Min</code> to <code>Max</code> every <code>Step</code> minutes. Typed times need not be on a
+        step; outside the range they move to the nearest limit. Below: 6:00 AM to 6:00 PM in quarter hours.
+    </p>
+    <div class="demo-stage demo-stage-narrow">
+        <div style="width:100%">
+            <NxTimePicker Id="time-step" Label="Pour starts" @bind-Value="pourStart" Step="15" Min="new TimeOnly(6, 0)" Max="new TimeOnly(18, 0)" Culture="EnUs" />
+            <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="time-step-value">Value: <strong>@(pourStart?.ToString("HH:mm") ?? "null")</strong></span></div>
+        </div>
+    </div>
+    <pre class="doc-code">@stepCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Time Types</h2>
+    <p class="doc-note">
+        Bind <code>TimeOnly</code>, <code>TimeSpan</code> or <code>DateTime</code>, nullable or not. A <code>DateTime</code> keeps
+        its date. Seconds are dropped.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <NxTimePicker Id="type-timespan" Label="TimeSpan" @bind-Value="span" Culture="EnUs" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="type-timespan-value">Value: <strong>@span.ToString(@"hh\:mm")</strong></span></div>
+            </div>
+            <div>
+                <NxTimePicker Id="type-datetime" Label="DateTime (keeps Oct 23)" @bind-Value="stamp" Culture="EnUs" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="type-datetime-value">Value: <strong>@stamp.ToString("yyyy-MM-dd HH:mm")</strong></span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Labels, Clear &amp; State</h2>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <NxTimePicker Id="state-floating" Label="Floating label" FloatingLabel="true" @bind-Value="floating" Culture="EnUs" />
+            <NxTimePicker Id="state-clear" Label="Clearable" @bind-Value="clearable" Clearable="true" Culture="EnUs" />
+            <NxTimePicker Id="state-readonly" Label="Read-only" Value="fixedTime" ReadOnly="true" Culture="EnUs" />
+            <NxTimePicker Id="state-disabled" Label="Disabled" Value="fixedTime" Disabled="true" Culture="EnUs" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Phone Sheet</h2>
+    <p class="doc-note">
+        At 600px and below the clock button opens a full-screen list with 48px rows, scrolled to the current time.
+        <code>MobileMode="Always"</code> forces it here.
+    </p>
+    <div class="demo-stage demo-stage-narrow">
+        <div style="width:100%">
+            <NxTimePicker Id="time-sheet" Label="Delivery window" @bind-Value="sheetTime" MobileMode="NxMobileMode.Always" Step="30" Clearable="true" Culture="EnUs" />
+            <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="time-sheet-value">Value: <strong>@(sheetTime?.ToString("HH:mm") ?? "null")</strong></span></div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Form Validation</h2>
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <EditForm id="time-form" Model="visit" OnValidSubmit="Submit" FormName="time-form">
+            <DataAnnotationsValidator />
+            <div class="demo-form-grid demo-form-grid-2">
+                <div>
+                    <NxTimePicker Id="visit-start" Label="Arrive" @bind-Value="visit.Arrive" Culture="EnUs" Step="15" />
+                    <ValidationMessage For="() => visit.Arrive" />
+                </div>
+                <div>
+                    <NxTimePicker Id="visit-end" Label="Leave" @bind-Value="visit.Leave" Culture="EnUs" Step="15" />
+                    <ValidationMessage For="() => visit.Leave" />
+                </div>
+            </div>
+            <div class="demo-row" style="margin-top:16px">
+                <NxButton id="time-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Book visit</NxButton>
+                <span class="demo-value" id="time-result">@visitResult</span>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<DocPager Slug="timepicker" Page="examples" />
+
+@code {
+    static readonly CultureInfo EnUs = CultureInfo.GetCultureInfo("en-US");
+    static readonly CultureInfo DeDe = CultureInfo.GetCultureInfo("de-DE");
+
+    TimeOnly? clockTime = new(14, 30);
+    TimeOnly? pourStart = new(7, 0);
+    TimeSpan span = new(9, 45, 0);
+    DateTime stamp = new(2026, 10, 23, 16, 0, 0);
+    TimeOnly? floating, clearable = new TimeOnly(12, 0);
+    TimeOnly fixedTime = new(8, 0);
+    TimeOnly? sheetTime;
+
+    readonly VisitForm visit = new();
+    string visitResult = "Not booked";
+
+    void Submit() => visitResult = $"Booked {visit.Arrive:HH:mm}–{visit.Leave:HH:mm}";
+
+    class VisitForm : IValidatableObject
+    {
+        [Required(ErrorMessage = "Enter the arrival time.")]
+        public TimeOnly? Arrive { get; set; }
+
+        [Required(ErrorMessage = "Enter the departure time.")]
+        public TimeOnly? Leave { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext context)
+        {
+            if (Arrive is TimeOnly a && Leave is TimeOnly l && l <= a)
+                yield return new ValidationResult("Leave after arriving.", [nameof(Leave)]);
+        }
+    }
+
+    const string stepCode =
+        """
+        <NxTimePicker @bind-Value="pour.Start" Step="15"
+                      Min="new TimeOnly(6, 0)" Max="new TimeOnly(18, 0)" />
+        """;
+}

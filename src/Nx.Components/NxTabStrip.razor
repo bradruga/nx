@@ -1,0 +1,64 @@
+@namespace Nx.Components
+
+@* Tabs register themselves and render nothing; the strip draws headers and panels from them. *@
+<CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+
+<div id="@BaseId" class="@CssClass" style="@Style">
+    <div class="nx-tabstrip-header" @ref="header">
+        <button type="button" class="nx-tabstrip-scroll nx-tabstrip-scroll-start" tabindex="-1" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+        </button>
+        <div class="nx-tabstrip-list" @ref="list" role="tablist" aria-label="@AriaLabel"
+             aria-orientation="@(Vertical ? "vertical" : "horizontal")">
+            @foreach (var tab in tabs)
+            {
+                var active = IsActive(tab);
+                <div id="@TabId(tab)"
+                     class="@TabClass(tab, active)"
+                     role="tab"
+                     aria-selected="@(active ? "true" : "false")"
+                     aria-controls="@PanelId(tab)"
+                     aria-disabled="@(tab.Disabled ? "true" : null)"
+                     tabindex="@(active ? "0" : "-1")"
+                     @onclick="() => ActivateAsync(tab)"
+                     @onkeydown="e => HandleTabKeyDown(e, tab)">
+                    @if (tab.HeaderTemplate is not null)
+                    {
+                        @tab.HeaderTemplate
+                    }
+                    else
+                    {
+                        @if (tab.Icon is not null)
+                        {
+                            <span class="nx-tabstrip-tab-icon" aria-hidden="true">@tab.Icon</span>
+                        }
+                        <span class="nx-tabstrip-tab-text">@tab.Title</span>
+                    }
+                    @if (tab.Closable && !tab.Disabled)
+                    {
+                        <button type="button" class="nx-tabstrip-close" tabindex="-1"
+                                aria-label="@($"Close {tab.Title ?? tab.Key}")" title="Close"
+                                @onclick="() => CloseAsync(tab)" @onclick:stopPropagation="true">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true">
+                                <line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" />
+                            </svg>
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+        <button type="button" class="nx-tabstrip-scroll nx-tabstrip-scroll-end" tabindex="-1" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+        </button>
+    </div>
+    <div class="nx-tabstrip-panels">
+        @foreach (var tab in tabs.Where(ShouldRender))
+        {
+            var active = IsActive(tab);
+            <div @key="tab" id="@PanelId(tab)" class="nx-tabstrip-panel" role="tabpanel"
+                 aria-labelledby="@TabId(tab)" tabindex="0" hidden="@(!active)">
+                @tab.ChildContent
+            </div>
+        }
+    </div>
+</div>

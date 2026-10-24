@@ -1,0 +1,61 @@
+@page "/radio"
+@page "/radio/overview"
+
+<DocHeader Slug="radio" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxRadioGroup&lt;TValue&gt;</code> picks one value from a few visible options. List them with <code>Data</code> — enum
+        values, strings — or declare <code>NxRadioButton</code> children for full control of each label. It is built on native radio
+        inputs sharing one name, so the browser gives it the standard keyboard model: one tab stop for the whole group, and arrow keys
+        that move and check.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column">
+        <NxRadioGroup Id="overview-radio" @bind-Value="shift" Label="Shift">
+            <NxRadioButton Value="Shift.Day" Label="Day (6:00–14:30)" />
+            <NxRadioButton Value="Shift.Swing" Label="Swing (14:30–23:00)" />
+            <NxRadioButton Value="Shift.Night" Label="Night (23:00–6:00)" />
+        </NxRadioGroup>
+        <span class="demo-value" id="overview-value">Value: <strong>@shift</strong></span>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Tab</td><td>Enters the group at the checked button (or the first, if none is checked), and leaves it on the next Tab.</td></tr>
+                <tr><td>↑ ↓ ← →</td><td>Move to the next or previous button and check it, wrapping, skipping disabled ones.</td></tr>
+                <tr><td>Space</td><td>Checks the focused button.</td></tr>
+                <tr><td>role="radiogroup"</td><td>On the group, named by <code>Label</code> through <code>aria-labelledby</code>, with <code>aria-orientation</code>.</td></tr>
+                <tr><td>aria-invalid</td><td>On the group while the bound field has validation messages.</td></tr>
+                <tr><td>Touch</td><td>The hit area grows to 44 px on touch screens.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="radio" Page="overview" />
+
+@code {
+    public enum Shift { Day, Swing, Night }
+
+    Shift shift = Shift.Day;
+
+    const string basicCode =
+        """
+        <NxRadioGroup @bind-Value="crew.Shift" Label="Shift">
+            <NxRadioButton Value="Shift.Day" Label="Day (6:00–14:30)" />
+            <NxRadioButton Value="Shift.Swing" Label="Swing (14:30–23:00)" />
+            <NxRadioButton Value="Shift.Night" Label="Night (23:00–6:00)" />
+        </NxRadioGroup>
+        """;
+}

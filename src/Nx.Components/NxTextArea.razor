@@ -1,0 +1,43 @@
+@namespace Nx.Components
+
+<NxFieldFrame ClassPrefix="nx-textarea"
+              InputId="@InputId"
+              Label="@Label"
+              FloatingLabel="FloatingLabel"
+              HasValue="@(currentText.Length > 0)"
+              ShowClear="ShowClear"
+              OnClear="HandleClearClick"
+              Disabled="Disabled"
+              ReadOnly="ReadOnly"
+              Invalid="validation.IsInvalid"
+              Multiline="true"
+              Class="@Class"
+              Style="@Style">
+    <ChildContent>
+        <textarea @ref="textarea"
+                  @attributes="AdditionalAttributes"
+                  id="@InputId"
+                  class="@InputCssClass"
+                  rows="@(AutoResize ? MinRows ?? Rows : Rows)"
+                  placeholder="@Placeholder"
+                  maxlength="@MaxLength"
+                  disabled="@Disabled"
+                  readonly="@ReadOnly"
+                  aria-invalid="@(validation.IsInvalid ? "true" : null)"
+                  aria-describedby="@(ShowCounterText ? CounterId : null)"
+                  data-resize="@ResizeName"
+                  @bind="currentText"
+                  @bind:event="oninput"
+                  @bind:after="HandleInputAfter"
+                  @onchange="HandleChange"
+                  @onkeydown="HandleKeyDown"
+                  @onfocus="OnFocus"
+                  @onblur="OnBlur"></textarea>
+    </ChildContent>
+    <Below>
+        @if (ShowCounterText)
+        {
+            <div class="nx-field-counter nx-textarea-counter" id="@CounterId">@currentText.Length / @MaxLength</div>
+        }
+    </Below>
+</NxFieldFrame>

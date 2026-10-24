@@ -1,0 +1,61 @@
+@page "/daterange/api"
+
+<DocHeader Slug="daterange" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>StartValue / EndValue</td><td>TValue?</td><td>—</td><td>Use <code>@@bind-StartValue</code> and <code>@@bind-EndValue</code>. DateOnly, DateTime, or nullable.</td></tr>
+                <tr><td>Min / Max</td><td>DateOnly?</td><td>none</td><td>Pickable range for both ends.</td></tr>
+                <tr><td>IsDateDisabled</td><td>Func&lt;DateOnly, bool&gt;?</td><td>—</td><td>Dates that cannot be a start or an end.</td></tr>
+                <tr><td>Months</td><td>int</td><td>2</td><td>Months side by side in the popup; the phone sheet shows one.</td></tr>
+                <tr><td>Format / Culture</td><td>string / CultureInfo?</td><td>"d" / current</td><td>As in NxDatePicker.</td></tr>
+                <tr><td>ShowWeekNumbers / FirstDayOfWeek</td><td>bool / DayOfWeek?</td><td>false / culture</td><td>As in NxDatePicker.</td></tr>
+                <tr><td>Label</td><td>string?</td><td>—</td><td>Label of the pair; names the group.</td></tr>
+                <tr><td>StartLabel / EndLabel</td><td>string</td><td>"Start" / "End"</td><td>Labels of the two fields.</td></tr>
+                <tr><td>FloatingLabel</td><td>bool</td><td>false</td><td>Start and end labels inside the fields.</td></tr>
+                <tr><td>Placeholder</td><td>string?</td><td>pattern</td><td>Both fields; default the typing pattern.</td></tr>
+                <tr><td>Clearable</td><td>bool</td><td>false</td><td>Clear button in each field. Nullable types only.</td></tr>
+                <tr><td>ReadOnly / Disabled</td><td>bool</td><td>false</td><td>Both fields.</td></tr>
+                <tr><td>MobileMode / MobileBreakpoint / MobileTitle</td><td></td><td>Auto / 600 / Label</td><td>As in NxDatePicker; title default "Choose dates".</td></tr>
+                <tr><td>Id</td><td>string?</td><td>generated</td><td>The inputs get <code>{Id}-start</code> and <code>{Id}-end</code>.</td></tr>
+                <tr><td>Class / Style</td><td>string?</td><td>—</td><td>Outer element.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Event</th><th>Args</th><th>Raised when</th></tr></thead>
+            <tbody>
+                <tr><td>StartValueChanged</td><td>TValue?</td><td>A different start commits: a pick, a typed date, a swap, clear.</td></tr>
+                <tr><td>EndValueChanged</td><td>TValue?</td><td>A different end commits — including clearing an end that a new start passed.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>FocusAsync()</td><td>ValueTask</td><td>Moves keyboard focus to the start field.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <p class="doc-note">The fields read the NxFieldFrame variables and the calendar the <code>--nx-calendar-*</code> ones listed on the NxDatePicker API page; the band between start and end is <code>--nx-calendar-range-bg</code>.</p>
+</div>
+
+<DocPager Slug="daterange" Page="api" />

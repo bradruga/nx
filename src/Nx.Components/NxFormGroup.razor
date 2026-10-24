@@ -1,0 +1,13 @@
+@namespace Nx.Components
+
+<fieldset class="@CssClass" style="@Style">
+    @if (Label is not null)
+    {
+        <legend class="nx-form-group-legend">@Label</legend>
+    }
+    <div class="nx-form-group-items" style="@FormLayout.GridStyle(EffectiveColumns, ColumnSpacing ?? Form?.ColumnSpacing)">
+        <CascadingValue Value="this">
+            @ChildContent
+        </CascadingValue>
+    </div>
+</fieldset>

@@ -1,0 +1,52 @@
+.nx-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    box-sizing: border-box;
+    height: var(--nx-toggle-h, var(--nx-control-height-md));
+    min-width: var(--nx-toggle-h, var(--nx-control-height-md));
+    padding: 0 12px;
+    margin-left: -1px;
+    border: 1px solid var(--nx-border);
+    background: var(--nx-surface);
+    color: var(--nx-fg);
+    font: inherit;
+    font-weight: var(--nx-font-weight-medium);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color var(--nx-transition), color var(--nx-transition), border-color var(--nx-transition);
+}
+
+/* Joined: square inner corners, rounded ends. */
+.nx-toggle:first-child { margin-left: 0; border-radius: var(--nx-radius) 0 0 var(--nx-radius); }
+.nx-toggle:last-child  { border-radius: 0 var(--nx-radius) var(--nx-radius) 0; }
+.nx-toggle:only-child  { border-radius: var(--nx-radius); }
+
+.nx-toggle:hover:not(:disabled) { background: var(--nx-surface-hover); z-index: 1; }
+
+.nx-toggle-selected,
+.nx-toggle-selected:hover:not(:disabled) {
+    z-index: 2;
+    background: var(--nx-toggle-selected-bg);
+    border-color: var(--nx-toggle-selected-border);
+    color: var(--nx-toggle-selected-fg);
+}
+
+/* The ring is drawn by nx-theme.css; lift the item so its neighbors do not cover it. */
+.nx-toggle:focus-visible { z-index: 3; }
+
+.nx-toggle:disabled { cursor: not-allowed; color: var(--nx-fg-subtle); }
+
+.nx-toggle-icon-only { padding: 0; }
+
+.nx-toggle-icon { display: inline-flex; line-height: 0; }
+.nx-toggle-icon ::deep svg { width: 1.1em; height: 1.1em; }
+
+.nx-toggle-label { overflow: hidden; text-overflow: ellipsis; }
+
+@media (pointer: coarse) {
+    .nx-toggle { min-height: 44px; }
+}

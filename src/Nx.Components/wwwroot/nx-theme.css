@@ -1,0 +1,280 @@
+/* ── Nx design tokens ─────────────────────────────────────────────────────────
+   Every visual property of every Nx component reads one of these custom properties.
+   Override them on :root, or on any ancestor to theme part of a page.
+   Component layout lives in each component's scoped .razor.css; this file holds values only. */
+
+:root {
+    /* Typography */
+    --nx-font-family:        inherit;
+    --nx-font-size:          14px;
+    --nx-font-size-sm:       13px;
+    --nx-font-size-lg:       15px;
+    --nx-font-weight-medium: 500;
+
+    /* Surfaces and text */
+    --nx-fg:                 #1f1f23;
+    --nx-fg-muted:           #6b6b78;
+    --nx-fg-subtle:          #9a9aa6;
+    --nx-surface:            #ffffff;
+    --nx-surface-hover:      #f3f3f5;
+    --nx-surface-active:     #e9e9ec;
+    --nx-surface-disabled:   #f5f5f7;
+    --nx-border:             #d4d4da;
+    --nx-border-hover:       #b4b4be;
+
+    /* Accent (primary) */
+    --nx-accent:             #0078d4;
+    --nx-accent-hover:       #006abc;
+    --nx-accent-active:      #005a9e;
+    --nx-accent-fg:          #ffffff;
+    --nx-accent-subtle:      rgba(0, 120, 212, 0.10);
+
+    /* Danger */
+    --nx-danger:             #d13438;
+    --nx-danger-hover:       #bb2d31;
+    --nx-danger-active:      #a4262c;
+    --nx-danger-fg:          #ffffff;
+    --nx-danger-subtle:      rgba(209, 52, 56, 0.10);
+
+    /* Validation */
+    --nx-valid:              #107c10;
+    --nx-invalid:            var(--nx-danger);
+
+    /* Status colors (NxIcon Color) */
+    --nx-success:            #107c10;
+    --nx-warning:            #b86e00;
+
+    /* Focus: keyboard focus ring (an outline, so it follows each control's border-radius) and the
+       inset ring a text field draws while focused */
+    --nx-focus-ring-color:   var(--nx-accent);
+    --nx-focus-ring-width:   2px;
+    --nx-focus-ring-offset:  2px;
+    --nx-focus-ring-inset:   0 0 0 1px var(--nx-accent);
+
+    /* Shape and depth */
+    --nx-radius:             6px;
+    --nx-radius-sm:          4px;
+    --nx-shadow-popup:       0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+    --nx-transition:         120ms ease;
+    --nx-disabled-opacity:   0.55;
+
+    /* Control sizing — buttons, text boxes and combo boxes share one height scale */
+    --nx-control-height-sm:  28px;
+    --nx-control-height-md:  34px;
+    --nx-control-height-lg:  42px;
+    --nx-control-padding-x:  10px;
+    --nx-textarea-line-height: 20px;
+
+    /* Popup (combo box list) */
+    --nx-popup-bg:           var(--nx-surface);
+    --nx-popup-max-height:   280px;
+    --nx-item-hover-bg:      var(--nx-surface-hover);
+    --nx-item-active-bg:     var(--nx-accent-subtle);
+    --nx-item-selected-fg:   var(--nx-accent);
+    --nx-group-header-fg:    var(--nx-fg-muted);
+    --nx-popup-header-bg:    var(--nx-surface-hover);
+    --nx-z-popup:            1000;
+    --nx-z-overlay:          1100;
+
+    /* Check boxes and radio buttons */
+    --nx-check-size:         18px;
+    --nx-check-border:       var(--nx-border-hover);
+
+    /* Toggle switch */
+    --nx-switch-off-bg:      #c4c4cc;
+    --nx-switch-off-fg:      #ffffff;
+    --nx-switch-thumb-bg:    #ffffff;
+
+    /* Toggle group */
+    --nx-toggle-selected-bg:     var(--nx-accent-subtle);
+    --nx-toggle-selected-border: var(--nx-accent);
+    --nx-toggle-selected-fg:     var(--nx-accent);
+
+    /* Chips (NxComboBox Multiple) */
+    --nx-chip-bg:            var(--nx-accent-subtle);
+    --nx-chip-fg:            var(--nx-fg);
+    --nx-chip-remove-hover-bg: rgba(0, 0, 0, 0.08);
+
+    /* Calendar (NxCalendar and the date pickers) */
+    --nx-calendar-cell-size:     36px;
+    --nx-calendar-selected-bg:   var(--nx-accent);
+    --nx-calendar-selected-fg:   var(--nx-accent-fg);
+    --nx-calendar-range-bg:      var(--nx-accent-subtle);
+    --nx-calendar-today-border:  var(--nx-accent);
+
+    /* Window (NxWindow). Below --nx-z-popup, so a combo box or date picker inside a window opens above it;
+       each window opened or pressed later stacks 2 higher. */
+    --nx-z-window:           900;
+    --nx-window-radius:      10px;
+    --nx-window-backdrop:    rgba(15, 15, 22, 0.45);
+    --nx-shadow-window:      0 24px 64px rgba(0, 0, 0, 0.22), 0 4px 12px rgba(0, 0, 0, 0.10);
+
+    /* Tab strip (NxTabStrip) */
+    --nx-tab-active-fg:      var(--nx-accent);
+    --nx-tab-indicator:      var(--nx-accent);
+    --nx-tab-panel-padding:  16px 0;
+
+    /* Splitter (NxSplitter) */
+    --nx-splitter-bar-size:      6px;
+    --nx-splitter-bar-bg:        var(--nx-surface-hover);
+    --nx-splitter-bar-hover-bg:  var(--nx-accent-subtle);
+    --nx-splitter-grip:          var(--nx-border-hover);
+    --nx-splitter-pane-padding:  12px;
+
+    /* Tooltip (NxTooltip); above windows, popups and sheets */
+    --nx-z-tooltip:          1200;
+    --nx-tooltip-bg:         #2b2b31;
+    --nx-tooltip-fg:         #ffffff;
+    --nx-tooltip-max-width:  280px;
+
+    /* Icons (NxIcon Size) */
+    --nx-icon-size-xs:       12px;
+    --nx-icon-size-sm:       14px;
+    --nx-icon-size-md:       16px;
+    --nx-icon-size-lg:       20px;
+    --nx-icon-size-xl:       24px;
+    --nx-icon-size-2xl:      32px;
+    --nx-icon-size-3xl:      48px;
+
+    /* Loader (NxLoader, NxLoaderContainer). The container's overlay sits below windows. */
+    --nx-loader-color:       var(--nx-accent);
+    --nx-loader-size-sm:     16px;
+    --nx-loader-size-md:     28px;
+    --nx-loader-size-lg:     44px;
+    --nx-loader-overlay-bg:  rgba(255, 255, 255, 0.72);
+    --nx-loader-text-color:  var(--nx-fg-muted);
+    --nx-z-loader:           800;
+
+    /* Form (NxForm, NxFormItem, NxValidationMessage) */
+    --nx-form-row-gap:       16px;
+    --nx-form-column-gap:    16px;
+    --nx-form-label-width:   160px;
+    --nx-form-label-gap:     6px;
+    --nx-form-group-gap:     24px;
+    --nx-validation-color:   var(--nx-invalid);
+    --nx-validation-font-size: 12.5px;
+}
+
+/* Dark theme: add class="nx-theme-dark" to <html> or any container. */
+.nx-theme-dark {
+    --nx-fg:                 #ededef;
+    --nx-fg-muted:           #9a9aab;
+    --nx-fg-subtle:          #6a6a7c;
+    --nx-surface:            #16161a;
+    --nx-surface-hover:      #212126;
+    --nx-surface-active:     #2a2a30;
+    --nx-surface-disabled:   #1b1b1f;
+    --nx-border:             #34343d;
+    --nx-border-hover:       #4a4a55;
+
+    --nx-accent:             #4ca3ff;
+    --nx-accent-hover:       #6db4ff;
+    --nx-accent-active:      #8cc4ff;
+    --nx-accent-fg:          #0b0b0d;
+    --nx-accent-subtle:      rgba(76, 163, 255, 0.14);
+
+    --nx-danger:             #ff6b6f;
+    --nx-danger-hover:       #ff8a8d;
+    --nx-danger-active:      #ffa5a7;
+    --nx-danger-fg:          #0b0b0d;
+    --nx-danger-subtle:      rgba(255, 107, 111, 0.14);
+
+    --nx-valid:              #54c454;
+    --nx-success:            #54c454;
+    --nx-warning:            #ffb547;
+    --nx-loader-overlay-bg:  rgba(22, 22, 26, 0.72);
+
+    --nx-switch-off-bg:      #4a4a55;
+    --nx-switch-off-fg:      #d0d0da;
+    --nx-switch-thumb-bg:    #f4f4f6;
+    --nx-chip-remove-hover-bg: rgba(255, 255, 255, 0.12);
+
+    --nx-shadow-popup:       0 8px 24px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
+    --nx-window-backdrop:    rgba(0, 0, 0, 0.6);
+    --nx-tooltip-bg:         #e8e8ee;
+    --nx-tooltip-fg:         #16161a;
+    --nx-shadow-window:      0 24px 64px rgba(0, 0, 0, 0.7), 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Focus and tap feedback for every interactive Nx part ───────────────────────
+   Mouse and touch focus draw nothing; keyboard focus (:focus-visible) draws one ring in the accent
+   color. It is an outline, which browsers draw along the element's border-radius, so pills,
+   circles and rounded buttons get a ring of their own shape instead of a rectangle. The touch
+   tap flash, a grey rectangle on mobile, is turned off. :where() keeps the specificity at zero so a
+   component can still adjust the ring with --nx-focus-ring-color / -offset. */
+
+:where(.nx-button, .nx-field-button, .nx-field-label, .nx-field-floating-label, .nx-numeric-spin-button,
+       .nx-combobox-field, .nx-combobox-button, .nx-combobox-chip, .nx-combobox-chip-remove, .nx-combobox-item,
+       .nx-combobox-overlay-back, .nx-combobox-overlay-done,
+       .nx-calendar-nav, .nx-calendar-title, .nx-calendar-today-button, .nx-calendar-cell,
+       .nx-sheet-close, .nx-sheet-action, .nx-timepicker-item, .nx-datepicker-sheet-clear, .nx-window-action,
+       .nx-tabstrip-tab, .nx-tabstrip-close, .nx-tabstrip-scroll, .nx-splitter-toggle,
+       .nx-checkbox, .nx-checkbox-box, .nx-checkbox-label, .nx-switch, .nx-switch-track, .nx-switch-label,
+       .nx-radio, .nx-radio-input, .nx-radio-label, .nx-toggle) {
+    -webkit-tap-highlight-color: transparent;
+}
+
+:where(.nx-button, .nx-field-button, .nx-numeric-spin-button, .nx-combobox-button, .nx-combobox-chip-remove,
+       .nx-combobox-overlay-back, .nx-combobox-overlay-done,
+       .nx-calendar-nav, .nx-calendar-title, .nx-calendar-today-button, .nx-sheet-close, .nx-sheet-action, .nx-datepicker-sheet-clear,
+       .nx-window-action, .nx-tabstrip-tab,
+       .nx-checkbox-box, .nx-switch-track, .nx-radio-input, .nx-toggle):focus {
+    outline: none;
+}
+
+:where(.nx-button, .nx-field-button, .nx-numeric-spin-button, .nx-combobox-button, .nx-combobox-chip-remove,
+       .nx-combobox-overlay-back, .nx-combobox-overlay-done,
+       .nx-calendar-nav, .nx-calendar-title, .nx-calendar-today-button, .nx-sheet-close, .nx-sheet-action, .nx-datepicker-sheet-clear,
+       .nx-window-action, .nx-tabstrip-tab,
+       .nx-checkbox-box, .nx-switch-track, .nx-radio-input, .nx-toggle):focus-visible {
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline-offset: var(--nx-focus-ring-offset);
+}
+
+/* Buttons inside a field's border ring tightly, so the ring stays inside the field. */
+:where(.nx-field-button, .nx-numeric-spin-button, .nx-combobox-button, .nx-combobox-chip-remove) {
+    --nx-focus-ring-offset: 0px;
+}
+
+/* Visually hidden but announced by screen readers. Shared by every component. */
+.nx-visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Shared spinner, used by NxButton's loading state and NxComboBox's loading row. */
+.nx-spinner {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: nx-spin 0.7s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes nx-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nx-spinner { animation-duration: 1.6s; }
+}
+
+/* Set while an NxComboBox overlay, a picker's phone sheet or a modal NxWindow is open. */
+html.nx-scroll-locked,
+html.nx-scroll-locked body { overflow: hidden; }
+/* A page with scrollbar-gutter: stable would keep an empty strip beside the full-screen sheet. */
+html.nx-scroll-locked { scrollbar-gutter: auto; }
+
+/* NxForm's <form> is EditForm's element, which its scoped CSS cannot reach. A definite width keeps a flex parent
+   from sizing the form by its one-column (container query) layout, which leaves empty space under it. */
+form.nx-form { box-sizing: border-box; width: 100%; }

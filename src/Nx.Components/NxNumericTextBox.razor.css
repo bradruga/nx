@@ -1,0 +1,27 @@
+/* Field, label and input styles come from NxFieldFrame; this file only adds the spin buttons. */
+
+.nx-numeric-input { font-variant-numeric: tabular-nums; }
+
+.nx-numeric-spin {
+    display: inline-flex;
+    flex-direction: column;
+    align-self: stretch;
+    justify-content: center;
+    gap: 1px;
+    margin-left: 2px;
+}
+
+/* Doubled class beats NxFieldFrame's button size. */
+.nx-numeric-spin .nx-numeric-spin-button {
+    width: 22px;
+    height: 14px;
+    border-radius: 3px;
+}
+
+.nx-numeric-spin .nx-numeric-spin-button:disabled { opacity: 0.35; cursor: default; }
+
+/* On touch screens the stacked arrows are too small to hit: lay them side by side at full height. */
+@media (pointer: coarse) {
+    .nx-numeric-spin { flex-direction: row; gap: 2px; }
+    .nx-numeric-spin .nx-numeric-spin-button { width: 32px; height: 30px; }
+}

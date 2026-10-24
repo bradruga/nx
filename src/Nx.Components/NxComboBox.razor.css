@@ -1,0 +1,412 @@
+.nx-combobox {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+    color: var(--nx-fg);
+    min-width: 0;
+}
+
+/* ── Field ────────────────────────────────────────────────────────────────── */
+
+.nx-combobox-field {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    height: var(--nx-control-height-md);
+    padding-right: 3px;
+    background: var(--nx-surface);
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius);
+    transition: border-color var(--nx-transition);
+}
+
+.nx-combobox-field:hover { border-color: var(--nx-border-hover); }
+
+.nx-combobox-field:focus-within,
+.nx-combobox-open .nx-combobox-field {
+    border-color: var(--nx-accent);
+    box-shadow: var(--nx-focus-ring-inset);
+}
+
+.nx-combobox-control {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+}
+
+.nx-combobox-input {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 0 6px 0 var(--nx-control-padding-x);
+    border: none;
+    outline: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-overflow: ellipsis;
+}
+
+.nx-combobox-input::placeholder { color: var(--nx-fg-subtle); opacity: 1; }
+
+/* SelectedItemTemplate sits over the input while it is not focused; the input text hides behind it. */
+.nx-combobox-templated .nx-combobox-input { color: transparent; }
+
+.nx-combobox-selected {
+    position: absolute;
+    inset: 0 6px 0 var(--nx-control-padding-x);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.nx-combobox-spinner { width: 14px; height: 14px; margin: 0 6px; color: var(--nx-fg-muted); }
+
+.nx-combobox-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    padding: 0;
+    border: none;
+    border-radius: var(--nx-radius-sm);
+    background: transparent;
+    color: var(--nx-fg-muted);
+    cursor: pointer;
+}
+
+.nx-combobox-button:hover:not(:disabled) { background: var(--nx-surface-hover); color: var(--nx-fg); }
+.nx-combobox-button:disabled { cursor: not-allowed; }
+
+.nx-combobox-toggle svg { transition: transform var(--nx-transition); }
+.nx-combobox-open .nx-combobox-toggle svg { transform: rotate(180deg); }
+
+/* ── Popup ────────────────────────────────────────────────────────────────── */
+
+/* Fixed, so a scroll container or dialog does not clip it; nx-combobox.js sets its coordinates
+   and reveals it once placed. */
+.nx-combobox-popup {
+    position: fixed;
+    z-index: var(--nx-z-popup);
+    visibility: hidden;
+    box-sizing: border-box;
+    max-width: calc(100vw - 16px);
+    background: var(--nx-popup-bg);
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius);
+    box-shadow: var(--nx-shadow-popup);
+    overflow: hidden;
+}
+
+.nx-combobox-list {
+    max-height: var(--nx-popup-max-height);
+    overflow-y: auto;
+    padding: 4px;
+    /* Virtualize resizes its spacers on every update; scroll anchoring would answer each change by
+       moving the scroll offset, which Virtualize reads as a scroll — a feedback loop. */
+    overflow-anchor: none;
+    overscroll-behavior: contain;
+}
+
+/* Under virtualization row arithmetic must start at the list's top edge. */
+.nx-combobox-list-virtual { padding: 0; }
+
+.nx-combobox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-sizing: border-box;
+    min-height: 32px;
+    padding: 0 10px;
+    border-radius: var(--nx-radius-sm);
+    cursor: pointer;
+    user-select: none;
+}
+
+.nx-combobox-list-virtual .nx-combobox-item { border-radius: 0; }
+
+.nx-combobox-item:hover { background: var(--nx-item-hover-bg); }
+.nx-combobox-item-active,
+.nx-combobox-item-active:hover { background: var(--nx-item-active-bg); }
+
+.nx-combobox-item-selected { color: var(--nx-item-selected-fg); font-weight: var(--nx-font-weight-medium); }
+
+.nx-combobox-item-content {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Template content is laid out in a row, so an icon or avatar sits beside the text. */
+.nx-combobox-item-template {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+}
+
+.nx-combobox-check { flex-shrink: 0; }
+
+/* ── Multiple: chips in the field ─────────────────────────────────────────── */
+
+.nx-combobox-multiple .nx-combobox-field { height: auto; min-height: var(--nx-control-height-md); }
+
+.nx-combobox-multiple .nx-combobox-control {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 0 3px 4px;
+    height: auto;
+}
+
+.nx-combobox-multiple .nx-combobox-input {
+    flex: 1;
+    min-width: 80px;
+    width: auto;
+    height: 26px;
+    padding-left: 6px;
+}
+
+.nx-combobox-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    max-width: 100%;
+    height: 24px;
+    padding: 0 2px 0 8px;
+    border-radius: 999px;
+    background: var(--nx-chip-bg);
+    color: var(--nx-chip-fg);
+    font-size: var(--nx-font-size-sm);
+    line-height: 1;
+    user-select: none;
+}
+
+.nx-combobox-chip-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.nx-combobox-chip-more { padding-right: 8px; background: transparent; color: var(--nx-fg-muted); }
+
+.nx-combobox-chip-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    opacity: 0.7;
+    cursor: pointer;
+}
+.nx-combobox-chip-remove:hover { opacity: 1; background: var(--nx-chip-remove-hover-bg); }
+
+/* ── Columns: the list as an aligned grid under a sticky header ──────────── */
+
+.nx-combobox-popup-body { max-width: 100%; }
+
+.nx-combobox-list-columns { padding-top: 0; scroll-padding-top: 30px; }
+
+.nx-combobox-columns-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: grid;
+    align-items: center;
+    column-gap: 12px;
+    height: 30px;
+    padding: 0 10px;
+    background: var(--nx-popup-header-bg);
+    border-bottom: 1px solid var(--nx-border);
+    color: var(--nx-fg-muted);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.nx-combobox-item-grid { display: grid; column-gap: 12px; }
+
+.nx-combobox-cell {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.nx-combobox-cell-center { text-align: center; }
+.nx-combobox-cell-end { text-align: right; font-variant-numeric: tabular-nums; }
+
+.nx-combobox-check-cell { display: inline-flex; justify-content: flex-end; }
+
+/* ── Mobile: the full-screen overlay ──────────────────────────────────────── */
+
+.nx-combobox-mobile .nx-combobox-input { cursor: pointer; caret-color: transparent; }
+.nx-combobox-mobile .nx-combobox-field { cursor: pointer; }
+
+.nx-combobox-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--nx-z-overlay);
+    display: flex;
+    flex-direction: column;
+    background: var(--nx-surface);
+    color: var(--nx-fg);
+}
+
+.nx-combobox-overlay-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 8px 8px 4px;
+    padding-top: max(8px, env(safe-area-inset-top));
+    border-bottom: 1px solid var(--nx-border);
+}
+
+.nx-combobox-overlay-back,
+.nx-combobox-overlay-done {
+    flex-shrink: 0;
+    min-width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: var(--nx-radius);
+    background: transparent;
+    color: var(--nx-fg);
+    font: inherit;
+    cursor: pointer;
+}
+.nx-combobox-overlay-back { display: inline-flex; align-items: center; justify-content: center; }
+.nx-combobox-overlay-done { padding: 0 14px; color: var(--nx-accent); font-weight: 600; }
+
+.nx-combobox-overlay-search {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    padding: 0 12px;
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius);
+    background: var(--nx-surface);
+    color: inherit;
+    font: inherit;
+    font-size: 16px;   /* 16px stops iOS zooming in on focus */
+    outline: none;
+}
+.nx-combobox-overlay-search:focus { border-color: var(--nx-accent); box-shadow: var(--nx-focus-ring-inset); }
+
+.nx-combobox-overlay-list {
+    flex: 1;
+    max-height: none;
+    overflow-y: auto;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nx-combobox-overlay .nx-combobox-item { min-height: 44px; }
+
+.nx-combobox-match {
+    background: transparent;
+    color: inherit;
+    font-weight: 650;
+    text-decoration: underline;
+    text-decoration-color: var(--nx-accent);
+    text-underline-offset: 2px;
+}
+
+.nx-combobox-group {
+    display: flex;
+    align-items: flex-end;
+    box-sizing: border-box;
+    min-height: 28px;
+    padding: 6px 10px 4px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--nx-group-header-fg);
+    user-select: none;
+}
+
+.nx-combobox-empty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 10px;
+    color: var(--nx-fg-muted);
+}
+
+/* ── States ───────────────────────────────────────────────────────────────── */
+
+.nx-combobox-disabled .nx-combobox-field {
+    background: var(--nx-surface-disabled);
+    opacity: var(--nx-disabled-opacity);
+    cursor: not-allowed;
+}
+.nx-combobox-disabled .nx-combobox-input { cursor: not-allowed; }
+.nx-combobox-disabled .nx-combobox-field:hover { border-color: var(--nx-border); }
+
+.nx-combobox-readonly .nx-combobox-field { background: var(--nx-surface-disabled); }
+
+.nx-combobox-invalid .nx-combobox-field,
+.nx-combobox-invalid .nx-combobox-field:hover { border-color: var(--nx-invalid); }
+.nx-combobox-invalid .nx-combobox-field:focus-within { box-shadow: 0 0 0 1px var(--nx-invalid); }
+
+/* ── Modes (NxDropDown, NxMultiSelect) ────────────────────────────────────── */
+
+/* Pick-only: the field is a button-like control, no caret. */
+.nx-combobox-pick .nx-combobox-input { cursor: pointer; caret-color: transparent; user-select: none; }
+.nx-combobox-pick .nx-combobox-field { cursor: pointer; }
+
+.nx-combobox-item-special { color: var(--nx-fg-muted); }
+.nx-combobox-item-special.nx-combobox-item-selected { color: var(--nx-item-selected-fg); }
+
+/* The default and select-all rows sit apart from the items below them. */
+/* No margin: under Virtualize every row must be exactly ItemHeight tall. */
+.nx-combobox-item-special { box-shadow: inset 0 -1px 0 var(--nx-border); }
+
+.nx-combobox-item-disabled { opacity: 0.45; cursor: not-allowed; }
+.nx-combobox-item-disabled:hover { background: transparent; }
+
+.nx-combobox-summary { background: var(--nx-chip-bg); color: var(--nx-chip-fg); font-weight: var(--nx-font-weight-medium); }
+
+.nx-combobox-overlay-title {
+    flex: 1;
+    min-width: 0;
+    font-size: var(--nx-font-size-lg);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.nx-combobox-overlay-list:focus { outline: none; }
+
+/* ── Suggestions (NxAutoComplete): no arrow button, no selected mark, an optional prefix ── */
+
+.nx-combobox-prefix {
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    color: var(--nx-fg-muted);
+}
+.nx-combobox-prefix + .nx-combobox-control .nx-combobox-input { padding-left: 8px; }
+
+.nx-combobox-suggest .nx-combobox-field { padding-right: 4px; }
+.nx-combobox-suggest .nx-combobox-check { display: none; }
+.nx-combobox-suggest .nx-combobox-item-selected { color: inherit; font-weight: inherit; }

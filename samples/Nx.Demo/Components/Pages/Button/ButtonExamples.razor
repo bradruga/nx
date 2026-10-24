@@ -1,0 +1,225 @@
+@page "/button/examples"
+
+<DocHeader Slug="button" Page="examples" />
+
+<div class="doc-section">
+    <h2>Variants</h2>
+    <p class="doc-note">
+        <code>Primary</code> for the one main action, <code>Secondary</code> (the default) for the rest,
+        <code>Danger</code> for destructive actions, <code>Ghost</code> for toolbars, and <code>Link</code>
+        for an action that sits inside text.
+    </p>
+    <div class="demo-stage">
+        <NxButton Variant="NxButtonVariant.Primary">Primary</NxButton>
+        <NxButton Variant="NxButtonVariant.Secondary">Secondary</NxButton>
+        <NxButton Variant="NxButtonVariant.Danger">Danger</NxButton>
+        <NxButton Variant="NxButtonVariant.Ghost">Ghost</NxButton>
+        <NxButton Variant="NxButtonVariant.Link">Link</NxButton>
+    </div>
+    <pre class="doc-code">@variantsCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Sizes</h2>
+    <p class="doc-note">
+        <code>Small</code>, <code>Medium</code> and <code>Large</code> share the control height scale with
+        <code>NxTextBox</code> and <code>NxComboBox</code>, so a button lines up with the field beside it.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        @foreach (var s in Enum.GetValues<NxButtonSize>())
+        {
+            <div class="demo-row">
+                <span class="demo-row-label">@s</span>
+                <NxButton Size="s" Variant="NxButtonVariant.Primary">Save</NxButton>
+                <NxButton Size="s">Cancel</NxButton>
+                <NxButton Size="s" Icon="@IconFragment("plus")">Add line</NxButton>
+                <NxButton Size="s" Icon="@IconFragment("settings")" AriaLabel="Settings" Title="Settings" Variant="NxButtonVariant.Ghost" />
+            </div>
+        }
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Icons</h2>
+    <p class="doc-note">
+        Pass any markup to <code>Icon</code>; an inline <code>&lt;svg&gt;</code> is sized to the text.
+        <code>IconPosition="End"</code> puts it after the label. With no label the button becomes square
+        and icon-only — give it an <code>AriaLabel</code>, which screen readers announce instead.
+    </p>
+    <div class="demo-stage">
+        <NxButton Variant="NxButtonVariant.Primary" Icon="@IconFragment("save")">Save</NxButton>
+        <NxButton Icon="@IconFragment("download")">Export</NxButton>
+        <NxButton Icon="@IconFragment("arrow-right")" IconPosition="NxIconPosition.End">Next</NxButton>
+        <NxButton Icon="@IconFragment("edit")" AriaLabel="Edit" Title="Edit" />
+        <NxButton Icon="@IconFragment("trash")" AriaLabel="Delete" Title="Delete" Variant="NxButtonVariant.Danger" />
+        <NxButton Icon="@IconFragment("refresh")" AriaLabel="Refresh" Title="Refresh" Variant="NxButtonVariant.Ghost" />
+    </div>
+    <pre class="doc-code">@iconsCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Loading State</h2>
+    <p class="doc-note">
+        <code>Loading</code> swaps the icon for a spinner and blocks clicks and form submission. Unlike
+        <code>Disabled</code>, the button keeps focus and stays in the tab order, and reports
+        <code>aria-busy="true"</code>. <code>LoadingText</code> optionally replaces the label.
+    </p>
+    <div class="demo-stage">
+        <NxButton Variant="NxButtonVariant.Primary" Loading="loadingDemo" Icon="@IconFragment("save")">Save</NxButton>
+        <NxButton Loading="loadingDemo" LoadingText="Exporting…" Icon="@IconFragment("download")">Export</NxButton>
+        <NxButton Loading="loadingDemo" Icon="@IconFragment("refresh")" AriaLabel="Refresh" />
+        <NxButton Variant="NxButtonVariant.Ghost" Size="NxButtonSize.Small" OnClick="() => loadingDemo = !loadingDemo">
+            @(loadingDemo ? "Stop loading" : "Start loading")
+        </NxButton>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Busy-Click Guard</h2>
+    <p class="doc-note">
+        Each button below runs a 1.5-second async handler. Click each one several times quickly. The guarded
+        button ignores clicks while its handler is running (<code>PreventDoubleClick</code>, on by default);
+        the unguarded one runs the handler once per click. <code>AutoLoading</code> also shows the spinner
+        while the handler runs, with no <code>Loading</code> flag to manage.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <span class="demo-row-label">Guarded</span>
+            <NxButton id="guard-on" Variant="NxButtonVariant.Primary" OnClick="GuardedClick">Post invoice</NxButton>
+            <span class="demo-counter" id="guard-on-count">Handler ran @guardedRuns×</span>
+        </div>
+        <div class="demo-row">
+            <span class="demo-row-label">Unguarded</span>
+            <NxButton id="guard-off" PreventDoubleClick="false" OnClick="UnguardedClick">Post invoice</NxButton>
+            <span class="demo-counter" id="guard-off-count">Handler ran @unguardedRuns×</span>
+        </div>
+        <div class="demo-row">
+            <span class="demo-row-label">AutoLoading</span>
+            <NxButton id="guard-auto" Variant="NxButtonVariant.Primary" AutoLoading="true" Icon="@IconFragment("save")" OnClick="AutoClick">Post invoice</NxButton>
+            <span class="demo-counter" id="guard-auto-count">Handler ran @autoRuns×</span>
+        </div>
+    </div>
+    <pre class="doc-code">@guardCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Disabled</h2>
+    <p class="doc-note">
+        <code>Disabled</code> renders the native <code>disabled</code> attribute: the button leaves the tab
+        order and neither clicks nor submits.
+    </p>
+    <div class="demo-stage">
+        @foreach (var v in Enum.GetValues<NxButtonVariant>())
+        {
+            <NxButton Variant="v" Disabled="true">@v</NxButton>
+        }
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Form Types</h2>
+    <p class="doc-note">
+        <code>Type="NxButtonType.Submit"</code> submits the enclosing <code>EditForm</code>, including by
+        <kbd class="doc-kbd">Enter</kbd> in a field. Combine it with <code>Loading</code> while the save runs
+        and the form cannot be submitted twice. <code>Reset</code> resets a native form's inputs;
+        <code>Button</code>, the default, never submits.
+    </p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <EditForm Model="order" OnValidSubmit="SubmitOrder" FormName="button-form">
+            <DataAnnotationsValidator />
+            <div class="demo-row" style="align-items:flex-start">
+                <div style="flex:1">
+                    <InputText id="order-number" class="demo-native-input" @bind-Value="order.Number" placeholder="Order number" />
+                    <ValidationMessage For="() => order.Number" />
+                </div>
+                <NxButton id="form-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary" Loading="submitting">Submit</NxButton>
+                <NxButton id="form-plain" OnClick="@(() => formLog?.Add("Plain button clicked — form not submitted"))">Button</NxButton>
+            </div>
+        </EditForm>
+        <EventLog @ref="formLog" Label="Form events" EmptyText="Submit the form; plain clicks do not submit." />
+
+        <form id="native-form" @onsubmit:preventDefault="true">
+            <div class="demo-row">
+                <input id="native-input" class="demo-native-input" value="Type, then reset" style="flex:1" />
+                <NxButton id="form-reset" Type="NxButtonType.Reset">Reset</NxButton>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Full Width</h2>
+    <p class="doc-note"><code>FullWidth</code> stretches the button to its container — dialog footers and mobile layouts.</p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxButton Variant="NxButtonVariant.Primary" FullWidth="true" Size="NxButtonSize.Large">Sign in</NxButton>
+        <NxButton FullWidth="true">Create an account</NxButton>
+    </div>
+</div>
+
+<DocPager Slug="button" Page="examples" />
+
+@code {
+    static RenderFragment IconFragment(string name) => @<DemoIcon Name="@name" />;
+
+    // ── Loading ────────────────────────────────────────────────────────────────
+    bool loadingDemo = true;
+
+    // ── Busy-click guard ───────────────────────────────────────────────────────
+    int guardedRuns, unguardedRuns, autoRuns;
+
+    async Task GuardedClick()   { guardedRuns++;   await Task.Delay(1500); }
+    async Task UnguardedClick() { unguardedRuns++; await Task.Delay(1500); }
+    async Task AutoClick()      { autoRuns++;      await Task.Delay(1500); }
+
+    // ── Form ───────────────────────────────────────────────────────────────────
+    readonly OrderForm order = new();
+    bool submitting;
+    EventLog? formLog;
+
+    async Task SubmitOrder()
+    {
+        submitting = true;
+        formLog?.Add($"OnValidSubmit — order {order.Number}");
+        await Task.Delay(1200);
+        submitting = false;
+        formLog?.Add("Save finished");
+    }
+
+    class OrderForm
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Enter an order number.")]
+        public string? Number { get; set; }
+    }
+
+    // ── Code samples ───────────────────────────────────────────────────────────
+    const string variantsCode =
+        """
+        <NxButton Variant="NxButtonVariant.Primary">Primary</NxButton>
+        <NxButton>Secondary</NxButton>
+        <NxButton Variant="NxButtonVariant.Danger">Danger</NxButton>
+        <NxButton Variant="NxButtonVariant.Ghost">Ghost</NxButton>
+        <NxButton Variant="NxButtonVariant.Link">Link</NxButton>
+        """;
+
+    const string iconsCode =
+        """
+        <NxButton Icon="@saveIcon">Save</NxButton>
+        <NxButton Icon="@nextIcon" IconPosition="NxIconPosition.End">Next</NxButton>
+
+        @* Icon-only: no label, so give it an accessible name *@
+        <NxButton Icon="@editIcon" AriaLabel="Edit" Title="Edit" />
+
+        @code {
+            RenderFragment saveIcon = @<svg>…</svg>;
+        }
+        """;
+
+    const string guardCode =
+        """
+        @* Repeat clicks are ignored until PostAsync finishes (default) *@
+        <NxButton OnClick="PostAsync">Post invoice</NxButton>
+
+        @* ...and the spinner shows meanwhile *@
+        <NxButton OnClick="PostAsync" AutoLoading="true">Post invoice</NxButton>
+        """;
+}

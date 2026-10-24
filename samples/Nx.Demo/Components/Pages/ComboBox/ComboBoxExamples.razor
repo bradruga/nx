@@ -1,0 +1,543 @@
+@page "/combobox/examples"
+@using System.ComponentModel.DataAnnotations
+
+<DocHeader Slug="combobox" Page="examples" />
+
+<div class="doc-section">
+    <h2>Simple List</h2>
+    <p class="doc-note">
+        When the items are the values — a list of strings — no selectors are needed. Type to filter, or press
+        <kbd class="doc-kbd">↓</kbd> to open the whole list.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <label class="demo-field-label" for="simple-combo">State</label>
+                <NxComboBox Id="simple-combo" Data="SampleData.States" @bind-Value="simpleState" Placeholder="Pick a state" Clearable="true" />
+            </div>
+            <div class="demo-row"><span class="demo-value" id="simple-value">Value: <strong>@(simpleState ?? "null")</strong></span></div>
+        </div>
+    </div>
+    <pre class="doc-code">@simpleCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Value &amp; Selected Item</h2>
+    <p class="doc-note">
+        <code>ItemText</code> is what the user sees and types against; <code>ItemValue</code> is what is stored — here the
+        customer's <code>Id</code>. Bind <code>@@bind-Value</code> for the key, <code>@@bind-SelectedItem</code> for the
+        whole record. Setting either from code updates the field.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-form-grid">
+            <div>
+                <label class="demo-field-label" for="value-combo">Customer</label>
+                <NxComboBox Id="value-combo" TItem="Customer" TValue="int?" Data="SampleData.Customers" ItemText="c => c.Name" ItemValue="c => c.Id"
+                            @bind-Value="customerId" @bind-SelectedItem="customer" Clearable="true" Placeholder="Search customers" />
+            </div>
+            <div class="demo-row" style="align-self:end">
+                <span class="demo-value" id="value-id">Value: <strong>@(customerId?.ToString() ?? "null")</strong></span>
+                <span class="demo-value" id="value-item">City: <strong>@(customer?.City ?? "—")</strong></span>
+            </div>
+        </div>
+        <div class="demo-row">
+            <NxButton id="value-set-11" Size="NxButtonSize.Small" OnClick="() => customerId = 11">Set Value = 11</NxButton>
+            <NxButton id="value-set-item" Size="NxButtonSize.Small" OnClick="() => customer = SampleData.Customers[3]">Set SelectedItem = Cape Cod</NxButton>
+            <NxButton id="value-clear" Size="NxButtonSize.Small" Variant="NxButtonVariant.Ghost" OnClick="() => { customerId = null; customer = null; }">Clear from code</NxButton>
+        </div>
+    </div>
+    <pre class="doc-code">@valueCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Filtering</h2>
+    <p class="doc-note">
+        <code>Contains</code> (the default) and <code>StartsWith</code> match the item text, ignoring case, and the matched
+        text is underlined. <code>None</code> keeps the list whole and only moves the highlight. <code>CustomFilter</code>
+        replaces them all — this one matches the customer code or any word of the name, so <em>gran</em> and
+        <em>KIEW</em> both work.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <label class="demo-field-label" for="filter-contains">Contains</label>
+                <NxComboBox Id="filter-contains" Data="SampleData.Customers" ItemText="c => c.Name" ItemValue="c => c.Id" @bind-Value="filterContains" />
+            </div>
+            <div>
+                <label class="demo-field-label" for="filter-starts">StartsWith</label>
+                <NxComboBox Id="filter-starts" Data="SampleData.Customers" ItemText="c => c.Name" ItemValue="c => c.Id" Filter="NxComboBoxFilter.StartsWith" @bind-Value="filterStarts" />
+            </div>
+            <div>
+                <label class="demo-field-label" for="filter-none">None</label>
+                <NxComboBox Id="filter-none" Data="SampleData.Customers" ItemText="c => c.Name" ItemValue="c => c.Id" Filter="NxComboBoxFilter.None" @bind-Value="filterNone" />
+            </div>
+            <div>
+                <label class="demo-field-label" for="filter-custom">CustomFilter: code or word</label>
+                <NxComboBox Id="filter-custom" Data="SampleData.Customers" ItemText="@(c => $"{c.Code} — {c.Name}")" ItemValue="c => c.Id"
+                            CustomFilter="MatchCodeOrWord" @bind-Value="filterCustom" />
+            </div>
+        </div>
+    </div>
+    <pre class="doc-code">@filterCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Popup Positioning</h2>
+    <p class="doc-note">
+        The popup opens below the field and flips above it when there is not enough room below — scroll this field to the
+        bottom of the window and open it. It is positioned against the window, so a clipping container like the one on the
+        right (<code>overflow: hidden</code>, 60 px tall) does not cut it off. It closes on <kbd class="doc-kbd">Esc</kbd>,
+        on <kbd class="doc-kbd">Tab</kbd>, and on a click anywhere outside.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <label class="demo-field-label" for="position-combo">Flips near the bottom edge</label>
+                <NxComboBox Id="position-combo" Data="SampleData.States" @bind-Value="positionState" />
+            </div>
+            <div class="demo-clip-box">
+                <label class="demo-field-label" for="clip-combo">Inside overflow: hidden</label>
+                <NxComboBox Id="clip-combo" Data="SampleData.States" @bind-Value="clipState" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Async Data Provider</h2>
+    <p class="doc-note">
+        <code>DataProvider</code> is called when the list opens and, after <code>DebounceDelay</code> (300 ms by default),
+        as the user types. Each call gets the typed text and a <code>CancellationToken</code> that is cancelled when a newer
+        call starts, so a slow response never overwrites a newer one. A spinner shows while it runs. This one waits 700 ms.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-form-grid">
+            <div>
+                <label class="demo-field-label" for="provider-combo">Customer (server search)</label>
+                <NxComboBox Id="provider-combo" TItem="Customer" TValue="int?" DataProvider="SearchCustomers"
+                            ItemText="c => c.Name" ItemValue="c => c.Id"
+                            @bind-Value="providerId" @bind-SelectedItem="providerCustomer"
+                            Placeholder="Type a name, code or city" Clearable="true">
+                    <ItemTemplate Context="c">
+                        <span>@c.Name</span>
+                        <span class="demo-item-meta">@c.City</span>
+                    </ItemTemplate>
+                </NxComboBox>
+            </div>
+            <div class="demo-row" style="align-self:end">
+                <span class="demo-value" id="provider-value">Value: <strong>@(providerId?.ToString() ?? "null")</strong></span>
+            </div>
+        </div>
+        <EventLog @ref="providerLog" Label="Provider calls" EmptyText="Open the list or type to call the provider." />
+    </div>
+    <pre class="doc-code">@providerCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Virtualization</h2>
+    <p class="doc-note">
+        With <code>Virtualize</code>, only the visible rows are rendered, so this list of
+        <strong>@SampleData.Parts.Count.ToString("N0")</strong> parts opens and scrolls instantly. Rows are a fixed
+        <code>ItemHeight</code> (34 px by default). Keyboard navigation and <kbd class="doc-kbd">PgDn</kbd> scroll the list to
+        keep the highlighted row in view.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <label class="demo-field-label" for="virtual-combo">Part</label>
+                <NxComboBox Id="virtual-combo" Data="SampleData.Parts" ItemText="@(p => $"{p.Number}  {p.Description}")" ItemValue="p => p.Id"
+                            Virtualize="true" @bind-Value="partId" Placeholder="50,000 parts — type to filter" Clearable="true" />
+            </div>
+            <div class="demo-row" style="align-self:end"><span class="demo-value" id="virtual-value">Value: <strong>@(partId?.ToString() ?? "null")</strong></span></div>
+        </div>
+    </div>
+    <pre class="doc-code">@virtualCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Grouping</h2>
+    <p class="doc-note">
+        <code>ItemGroup</code> puts items under headers, in the order each group first appears. Headers are skipped by the
+        arrow keys. <code>GroupHeaderTemplate</code> customizes them — here with a count.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <label class="demo-field-label" for="group-combo">Customer by region</label>
+                <NxComboBox Id="group-combo" Data="CustomersByRegion" ItemText="c => c.Name" ItemValue="c => c.Id" ItemGroup="c => c.Region"
+                            @bind-Value="groupedId">
+                    <GroupHeaderTemplate Context="region">
+                        @region <span class="demo-group-count">@SampleData.Customers.Count(c => c.Region == region)</span>
+                    </GroupHeaderTemplate>
+                </NxComboBox>
+            </div>
+            <div>
+                <label class="demo-field-label" for="group-employee">Employee by department</label>
+                <NxComboBox Id="group-employee" Data="EmployeesByDepartment" ItemText="e => e.Name" ItemValue="e => e.Id" ItemGroup="e => e.Department"
+                            @bind-Value="groupedEmployee" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Templates</h2>
+    <p class="doc-note">
+        <code>ItemTemplate</code> renders each row; <code>SelectedItemTemplate</code> renders the choice in the field while
+        it is not focused. Focus the field and it shows plain text again, ready to type.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <label class="demo-field-label" for="template-combo">Assigned to</label>
+                <NxComboBox Id="template-combo" Data="SampleData.Employees" ItemText="e => e.Name" ItemValue="e => e.Id"
+                            @bind-Value="assigneeId" Clearable="true" Placeholder="Pick an engineer">
+                    <ItemTemplate Context="e">
+                        <span class="demo-avatar">@Initials(e.Name)</span>
+                        <span class="demo-item-main">
+                            <span>@e.Name</span>
+                            <span class="demo-item-meta">@e.Title · @e.Department</span>
+                        </span>
+                    </ItemTemplate>
+                    <SelectedItemTemplate Context="e">
+                        <span class="demo-avatar demo-avatar-sm">@Initials(e.Name)</span>
+                        <span>@e.Name</span>
+                        <span class="demo-item-meta">@e.Title</span>
+                    </SelectedItemTemplate>
+                </NxComboBox>
+            </div>
+        </div>
+    </div>
+    <pre class="doc-code">@templateCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Custom Values</h2>
+    <p class="doc-note">
+        <code>AllowCustomValue</code> keeps typed text that matches no item — the list becomes suggestions. It needs a
+        <code>string</code> value. <kbd class="doc-kbd">Enter</kbd> keeps what you typed unless you arrowed to an item.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <label class="demo-field-label" for="custom-combo">Ship via</label>
+                <NxComboBox Id="custom-combo" Data="SampleData.ShipVia" AllowCustomValue="true" @bind-Value="shipVia" Clearable="true" Placeholder="Pick or type" />
+            </div>
+            <div class="demo-row" style="align-self:end"><span class="demo-value" id="custom-value">Value: <strong>@(shipVia ?? "null")</strong></span></div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Multi-Column</h2>
+    <p class="doc-note">
+        Declare <code>NxComboBoxColumn</code> children inside <code>Columns</code> — or pass <code>ColumnDefinitions</code> — and the
+        list becomes an aligned grid under a header that stays put while you scroll. Typing matches any column (here, type a city
+        or a region); set <code>FilterAllColumns="false"</code> to match the item text only. The field still shows
+        <code>ItemText</code>. Keyboard navigation and virtualization work as before — the second list is the 50,000 parts.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid demo-form-grid-2">
+            <div>
+                <label class="demo-field-label" for="columns-combo">Customer</label>
+                <NxComboBox Id="columns-combo" Data="SampleData.Customers" ItemText="c => c.Name" ItemValue="c => c.Id"
+                            @bind-Value="columnsCustomerId" PopupWidth="520px" Placeholder="Name, code, city or region" Clearable="true">
+                    <Columns>
+                        <NxComboBoxColumn Field="c => c.Code" Header="Code" Width="64px" />
+                        <NxComboBoxColumn Field="c => c.Name" Header="Customer" Width="minmax(150px, 2fr)" />
+                        <NxComboBoxColumn Field="c => c.City" Header="City" Width="minmax(90px, 1fr)" />
+                        <NxComboBoxColumn Field="c => c.Region" Header="Region" Width="110px">
+                            <Template Context="c"><span class="demo-region demo-region-@RegionKey(c.Region)">@c.Region</span></Template>
+                        </NxComboBoxColumn>
+                    </Columns>
+                </NxComboBox>
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="columns-value">Value: <strong>@(columnsCustomerId?.ToString() ?? "null")</strong></span></div>
+            </div>
+            <div>
+                <label class="demo-field-label" for="columns-parts">Part (50,000, virtualized)</label>
+                <NxComboBox Id="columns-parts" Data="SampleData.Parts" ItemText="p => p.Number" ItemValue="p => p.Id" Virtualize="true"
+                            ColumnDefinitions="PartColumns" PopupWidth="460px" @bind-Value="columnsPartId" Placeholder="Number, description or category" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="columns-part-value">Value: <strong>@(columnsPartId?.ToString() ?? "null")</strong></span></div>
+            </div>
+        </div>
+    </div>
+    <pre class="doc-code">@columnsCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Multi-Select</h2>
+    <p class="doc-note">
+        <code>Multiple="true"</code> keeps the list open while you pick: click, <kbd class="doc-kbd">Enter</kbd>, or
+        <kbd class="doc-kbd">Space</kbd> once you have arrowed to an item toggles it. Choices show as chips;
+        <kbd class="doc-kbd">Backspace</kbd> in the empty field removes the last one, the clear button removes them all.
+        Bind <code>@@bind-Values</code> and/or <code>@@bind-SelectedItems</code>. <code>MaxVisibleChips</code> collapses the rest into
+        "+N more", and <code>ChipTemplate</code> renders each chip.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-form-grid demo-form-grid-2">
+            <div>
+                <label class="demo-field-label" for="multi-combo">Crew</label>
+                <NxComboBox Id="multi-combo" Data="SampleData.Employees" ItemText="e => e.Name" ItemValue="e => e.Id"
+                            Multiple="true" @bind-Values="crewIds" MaxVisibleChips="3" Clearable="true" Placeholder="Add people">
+                    <ChipTemplate Context="e"><span class="demo-avatar demo-avatar-xs">@Initials(e.Name)</span>@e.Name</ChipTemplate>
+                </NxComboBox>
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="multi-values">Values: <strong>[@string.Join(", ", crewIds)]</strong></span></div>
+            </div>
+            <div>
+                <label class="demo-field-label" for="multi-states">Service area, with columns</label>
+                <NxComboBox Id="multi-states" Data="SampleData.Customers" ItemText="c => c.City" ItemValue="c => c.Id"
+                            Multiple="true" @bind-SelectedItems="serviceCities" ColumnDefinitions="CityColumns" PopupWidth="380px"
+                            Clearable="true" Placeholder="Cities" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="multi-items">SelectedItems: <strong>@serviceCities.Count()</strong></span></div>
+            </div>
+        </div>
+        <EditForm id="multi-form" Model="crewForm" OnValidSubmit="SubmitCrew" FormName="multi-form">
+            <DataAnnotationsValidator />
+            <label class="demo-field-label" for="multi-required">Inspectors (at least two)</label>
+            <NxComboBox Id="multi-required" Data="SampleData.Employees" ItemText="e => e.Name" ItemValue="e => e.Id"
+                        Multiple="true" @bind-Values="crewForm.InspectorIds" Placeholder="Pick two or more" />
+            <ValidationMessage For="() => crewForm.InspectorIds" />
+            <div class="demo-row" style="margin-top:12px">
+                <NxButton id="multi-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Assign</NxButton>
+                <span class="demo-value" id="multi-result">@crewResult</span>
+            </div>
+        </EditForm>
+    </div>
+    <pre class="doc-code">@multipleCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Mobile Overlay</h2>
+    <p class="doc-note">
+        On a phone the list opens full screen: a search box at the top that takes focus, a back button, and the list in the rest
+        of the screen — virtualized and multi-column when configured. Picking an item closes it; back and
+        <kbd class="doc-kbd">Esc</kbd> close without a change; with <code>Multiple</code>, Done commits. It switches on below
+        <code>MobileBreakpoint</code> (600 px) by default; <code>MobileMode="Always"</code> forces it, as on these two, so you can
+        try it on a desktop.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid demo-form-grid-2">
+            <div>
+                <label class="demo-field-label" for="mobile-combo">Customer (overlay)</label>
+                <NxComboBox Id="mobile-combo" Data="SampleData.Customers" ItemText="c => c.Name" ItemValue="c => c.Id"
+                            MobileMode="NxComboBoxMobileMode.Always" MobileTitle="Find a customer" @bind-Value="mobileCustomerId" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="mobile-value">Value: <strong>@(mobileCustomerId?.ToString() ?? "null")</strong></span></div>
+            </div>
+            <div>
+                <label class="demo-field-label" for="mobile-multi">Parts (overlay, Multiple, columns)</label>
+                <NxComboBox Id="mobile-multi" Data="SampleData.Parts" ItemText="p => p.Number" ItemValue="p => p.Id" Virtualize="true"
+                            ColumnDefinitions="PartColumns" Multiple="true" MaxVisibleChips="2" @bind-Values="mobilePartIds"
+                            MobileMode="NxComboBoxMobileMode.Always" MobileTitle="Find parts" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="mobile-multi-values">Values: <strong>[@string.Join(", ", mobilePartIds)]</strong></span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Form Validation</h2>
+    <p class="doc-note">
+        Inside an <code>EditForm</code>, <code>@@bind-Value</code> identifies the field: the combo box turns red with
+        <code>aria-invalid</code> while it has messages and works with the built-in <code>ValidationMessage</code>.
+    </p>
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <EditForm id="combo-form" Model="ticket" OnValidSubmit="SubmitTicket" FormName="combo-form">
+            <DataAnnotationsValidator />
+            <div class="demo-form-grid demo-form-grid-2">
+                <div>
+                    <label class="demo-field-label" for="form-customer">Customer</label>
+                    <NxComboBox Id="form-customer" Data="SampleData.Customers" ItemText="c => c.Name" ItemValue="c => c.Id"
+                                @bind-Value="ticket.CustomerId" Placeholder="Required" Clearable="true" />
+                    <ValidationMessage For="() => ticket.CustomerId" />
+                </div>
+                <div>
+                    <label class="demo-field-label" for="form-state">Job state</label>
+                    <NxComboBox Id="form-state" Data="SampleData.States" @bind-Value="ticket.State" Placeholder="Required" />
+                    <ValidationMessage For="() => ticket.State" />
+                </div>
+            </div>
+            <div class="demo-row" style="margin-top:16px">
+                <NxButton id="combo-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Create ticket</NxButton>
+                <span class="demo-value" id="combo-result">@ticketResult</span>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<DocPager Slug="combobox" Page="examples" />
+
+@code {
+    static string Initials(string name) => string.Concat(name.Split(' ').Select(w => w[0]));
+
+    static bool MatchCodeOrWord(Customer c, string text) =>
+        c.Code.StartsWith(text, StringComparison.OrdinalIgnoreCase) ||
+        c.Name.Split(' ').Any(w => w.StartsWith(text, StringComparison.OrdinalIgnoreCase));
+
+    static readonly List<Customer> CustomersByRegion = SampleData.Customers.OrderBy(c => c.Region).ThenBy(c => c.Name).ToList();
+    static readonly List<Employee> EmployeesByDepartment = SampleData.Employees.OrderBy(e => e.Department).ThenBy(e => e.Name).ToList();
+
+    // ── Sections ───────────────────────────────────────────────────────────────
+    string? simpleState;
+    int? customerId = 8;
+    Customer? customer = SampleData.Customers[7];
+    int? filterContains, filterStarts, filterNone, filterCustom;
+    int? providerId;
+    Customer? providerCustomer;
+    EventLog? providerLog;
+    int providerCalls;
+    int? partId;
+    int? groupedId, groupedEmployee;
+    int? assigneeId = 3;
+    string? shipVia;
+    string? positionState, clipState;
+
+    async Task<IEnumerable<Customer>> SearchCustomers(NxComboBoxRequest request)
+    {
+        var call = ++providerCalls;
+        providerLog?.Add($"#{call} DataProvider(\"{request.Filter}\") started");
+        try
+        {
+            var result = (await SampleData.SearchCustomersAsync(request.Filter, 700, request.CancellationToken)).ToList();
+            providerLog?.Add($"#{call} returned {result.Count} item(s)");
+            return result;
+        }
+        catch (OperationCanceledException)
+        {
+            providerLog?.Add($"#{call} cancelled by a newer call");
+            throw;
+        }
+    }
+
+    // ── Columns, Multiple, Mobile ──────────────────────────────────────────────
+    static string RegionKey(string region) => region.Replace(" ", "").Replace("-", "").ToLowerInvariant();
+
+    static readonly List<NxComboBoxColumnDefinition<Part>> PartColumns =
+    [
+        new() { Field = p => p.Number, Header = "Part", Width = "80px" },
+        new() { Field = p => p.Description, Header = "Description", Width = "minmax(160px, 2fr)" },
+        new() { Field = p => p.Category, Header = "Category", Width = "minmax(90px, 1fr)" },
+    ];
+
+    static readonly List<NxComboBoxColumnDefinition<Customer>> CityColumns =
+    [
+        new() { Field = c => c.City, Header = "City", Width = "minmax(110px, 1fr)" },
+        new() { Field = c => c.Region, Header = "Region", Width = "110px" },
+    ];
+
+    int? columnsCustomerId, columnsPartId, mobileCustomerId;
+    IEnumerable<int> crewIds = [2, 4];
+    IEnumerable<Customer> serviceCities = [];
+    IEnumerable<int> mobilePartIds = [];
+    readonly CrewForm crewForm = new();
+    string crewResult = "Not assigned";
+
+    void SubmitCrew() =>
+        crewResult = $"Assigned {string.Join(", ", SampleData.Employees.Where(e => crewForm.InspectorIds.Contains(e.Id)).Select(e => e.Name))}";
+
+    class CrewForm
+    {
+        [MinLength(2, ErrorMessage = "Pick at least two inspectors.")]
+        public IEnumerable<int> InspectorIds { get; set; } = new List<int>();
+    }
+
+    const string columnsCode =
+        """
+        <NxComboBox Data="customers" ItemText="c => c.Name" ItemValue="c => c.Id"
+                    @bind-Value="customerId" PopupWidth="520px">
+            <Columns>
+                <NxComboBoxColumn Field="c => c.Code"   Header="Code"     Width="64px" />
+                <NxComboBoxColumn Field="c => c.Name"   Header="Customer" Width="minmax(150px, 2fr)" />
+                <NxComboBoxColumn Field="c => c.City"   Header="City" />
+                <NxComboBoxColumn Field="c => c.Region" Header="Region"   Width="110px">
+                    <Template Context="c"><RegionBadge Region="@c.Region" /></Template>
+                </NxComboBoxColumn>
+            </Columns>
+        </NxComboBox>
+        """;
+
+    const string multipleCode =
+        """
+        <NxComboBox Data="employees" ItemText="e => e.Name" ItemValue="e => e.Id"
+                    Multiple="true" @bind-Values="crewIds" MaxVisibleChips="3" Clearable="true">
+            <ChipTemplate Context="e"><Avatar Name="@e.Name" /> @e.Name</ChipTemplate>
+        </NxComboBox>
+
+        @code {
+            IEnumerable<int> crewIds = [];
+        }
+        """;
+
+    // ── Validation ─────────────────────────────────────────────────────────────
+    readonly Ticket ticket = new();
+    string ticketResult = "Not created";
+
+    void SubmitTicket() =>
+        ticketResult = $"Created for {SampleData.Customers.First(c => c.Id == ticket.CustomerId).Name}, {ticket.State}";
+
+    class Ticket
+    {
+        [Required(ErrorMessage = "Pick a customer.")]
+        public int? CustomerId { get; set; }
+
+        [Required(ErrorMessage = "Pick the job's state.")]
+        public string? State { get; set; }
+    }
+
+    // ── Code samples ───────────────────────────────────────────────────────────
+    const string simpleCode =
+        """
+        <NxComboBox Data="states" @bind-Value="state" Placeholder="Pick a state" Clearable="true" />
+        """;
+
+    const string valueCode =
+        """
+        <NxComboBox Data="customers"
+                    ItemText="c => c.Name"
+                    ItemValue="c => c.Id"
+                    @bind-Value="order.CustomerId"
+                    @bind-SelectedItem="customer" />
+        """;
+
+    const string filterCode =
+        """
+        <NxComboBox ... Filter="NxComboBoxFilter.StartsWith" />
+        <NxComboBox ... CustomFilter="MatchCodeOrWord" />
+
+        @code {
+            static bool MatchCodeOrWord(Customer c, string text) =>
+                c.Code.StartsWith(text, StringComparison.OrdinalIgnoreCase) ||
+                c.Name.Split(' ').Any(w => w.StartsWith(text, StringComparison.OrdinalIgnoreCase));
+        }
+        """;
+
+    const string providerCode =
+        """
+        <NxComboBox TItem="Customer" TValue="int?"
+                    DataProvider="SearchAsync"
+                    ItemText="c => c.Name" ItemValue="c => c.Id"
+                    @bind-Value="order.CustomerId" @bind-SelectedItem="customer" />
+
+        @code {
+            async Task<IEnumerable<Customer>> SearchAsync(NxComboBoxRequest request) =>
+                await api.SearchCustomersAsync(request.Filter, request.CancellationToken);
+        }
+        """;
+
+    const string virtualCode =
+        """
+        <NxComboBox Data="parts" ItemText="p => p.Number + ' ' + p.Description" ItemValue="p => p.Id"
+                    Virtualize="true" @bind-Value="partId" />
+        """;
+
+    const string templateCode =
+        """
+        <NxComboBox Data="employees" ItemText="e => e.Name" ItemValue="e => e.Id" @bind-Value="assigneeId">
+            <ItemTemplate Context="e">
+                <Avatar Name="@e.Name" /> @e.Name <small>@e.Title</small>
+            </ItemTemplate>
+            <SelectedItemTemplate Context="e">
+                <Avatar Name="@e.Name" Small /> @e.Name
+            </SelectedItemTemplate>
+        </NxComboBox>
+        """;
+}

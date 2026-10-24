@@ -1,0 +1,50 @@
+@page "/autocomplete/api"
+
+<DocHeader Slug="autocomplete" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Value</td><td>string?</td><td>—</td><td>The text. Use <code>@@bind-Value</code>; act on a pick with <code>@@bind-Value:after</code>.</td></tr>
+                <tr><td>Data</td><td>IEnumerable&lt;TItem&gt;?</td><td>—</td><td>The suggestions, filtered in memory.</td></tr>
+                <tr><td>DataProvider</td><td>Func&lt;NxComboBoxRequest, Task&lt;IEnumerable&lt;TItem&gt;&gt;&gt;?</td><td>—</td><td>Loads matches for the typed text instead.</td></tr>
+                <tr><td>DebounceDelay</td><td>int</td><td>300</td><td>Milliseconds of quiet before the provider is called.</td></tr>
+                <tr><td>ItemText</td><td>Func&lt;TItem, string&gt;?</td><td>ToString()</td><td>A suggestion's text: matched, and put in the field when picked.</td></tr>
+                <tr><td>ItemGroup</td><td>Func&lt;TItem, string?&gt;?</td><td>—</td><td>Groups the suggestions under headers.</td></tr>
+                <tr><td>Filter / CustomFilter</td><td>NxComboBoxFilter / Func&lt;TItem, string, bool&gt;?</td><td>Contains</td><td>How text matches: Contains, StartsWith, None, or your own test.</td></tr>
+                <tr><td>MinLength</td><td>int</td><td>1</td><td>Characters to type before suggestions show.</td></tr>
+                <tr><td>Placeholder / Clearable</td><td>string? / bool</td><td>— / false</td><td>Empty-field text; the clear button (and Esc).</td></tr>
+                <tr><td>Prefix</td><td>RenderFragment?</td><td>—</td><td>Content before the text, e.g. a search icon.</td></tr>
+                <tr><td>ItemTemplate / GroupHeaderTemplate</td><td>RenderFragment&lt;TItem&gt; / &lt;string&gt;</td><td>—</td><td>Render suggestions and group headers.</td></tr>
+                <tr><td>PopupWidth / PopupMaxHeight</td><td>string? / int</td><td>field / 300</td><td>The list's size.</td></tr>
+                <tr><td>Virtualize / ItemHeight</td><td>bool / float</td><td>false / 34</td><td>Render only rows in view, each ItemHeight px.</td></tr>
+                <tr><td>Loading / ReadOnly / Disabled</td><td>bool</td><td>false</td><td>As NxComboBox.</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>Input id; outer class and style. Other attributes go to the input.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events &amp; Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ValueChanged</td><td>string?</td><td>The text was committed: a pick, Enter, or leaving the field.</td></tr>
+                <tr><td>IsOpen</td><td>bool</td><td>Suggestions are showing.</td></tr>
+                <tr><td>FocusAsync()</td><td>ValueTask</td><td>Focuses the input.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <p class="doc-note">NxComboBox's: the field, list and item tokens (<code>--nx-control-height-md</code>, <code>--nx-item-active-bg</code>, <code>--nx-popup-bg</code>…). The prefix is <code>--nx-fg-muted</code>.</p>
+</div>
+
+<DocPager Slug="autocomplete" Page="api" />

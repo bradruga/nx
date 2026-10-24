@@ -1,0 +1,81 @@
+@page "/icon/playground"
+
+<DocHeader Slug="icon" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner">
+                <NxIcon Icon="NxIcons.All[pgIcon]" Size="pgSize" Color="pgColor" AriaLabel="@OrNull(pgAriaLabel)" Title="@OrNull(pgTitle)" id="playground-icon" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-size">Rendered: <strong>@pgSize</strong>, <code>data-icon="@NxIcons.All[pgIcon].Name"</code></span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Icon</div>
+            <label class="demo-control">
+                <span>Icon</span>
+                <select id="pg-icon" @bind="pgIcon">
+                    @foreach (var name in NxIcons.All.Keys.Order(StringComparer.Ordinal))
+                    {
+                        <option value="@name">@name</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control">
+                <span>Size</span>
+                <select id="pg-size" @bind="pgSize">
+                    @foreach (var s in Enum.GetValues<NxIconSize>())
+                    {
+                        <option value="@s">@s</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control">
+                <span>Color</span>
+                <select id="pg-color" @bind="pgColor">
+                    @foreach (var c in Enum.GetValues<NxIconColor>())
+                    {
+                        <option value="@c">@c</option>
+                    }
+                </select>
+            </label>
+
+            <div class="demo-controls-title">Accessibility</div>
+            <label class="demo-control"><span>AriaLabel</span><input type="text" id="pg-aria-label" placeholder="decorative" @bind="pgAriaLabel" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>Title</span><input type="text" id="pg-title" @bind="pgTitle" @bind:event="oninput" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="icon" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+
+    string pgIcon = "Gear", pgAriaLabel = "", pgTitle = "";
+    NxIconSize pgSize = NxIconSize.XXLarge;
+    NxIconColor pgColor = NxIconColor.Primary;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { $"Icon=\"NxIcons.{pgIcon}\"" };
+            if (pgSize != NxIconSize.Medium) attrs.Add($"Size=\"NxIconSize.{pgSize}\"");
+            if (pgColor != NxIconColor.Inherit) attrs.Add($"Color=\"NxIconColor.{pgColor}\"");
+            if (OrNull(pgAriaLabel) is { } a) attrs.Add($"AriaLabel=\"{a}\"");
+            if (OrNull(pgTitle) is { } t) attrs.Add($"Title=\"{t}\"");
+            return "<NxIcon " + string.Join(" ", attrs) + " />";
+        }
+    }
+}

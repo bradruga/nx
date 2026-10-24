@@ -1,0 +1,71 @@
+@namespace Nx.Components
+@typeparam TValue
+@implements IDisposable
+
+<span class="@CssClass">
+    <input @ref="input"
+           @attributes="AdditionalAttributes"
+           id="@InputId"
+           class="nx-radio-input"
+           type="radio"
+           name="@Group?.GroupName"
+           checked="@Checked"
+           disabled="@IsDisabled"
+           @onchange="HandleChange" />
+    <label class="nx-radio-label" for="@InputId">@Label@ChildContent</label>
+</span>
+
+@code {
+    private readonly string generatedId = $"nx-radio-{Guid.NewGuid():N}"[..17];
+    private ElementReference input;
+
+    [CascadingParameter] private NxRadioGroup<TValue>? Group { get; set; }
+
+    /// <summary>The value the group takes when this button is checked.</summary>
+    [Parameter, EditorRequired] public TValue? Value { get; set; }
+
+    /// <summary>Label text.</summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>Rich label content, after <see cref="Label"/>.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Makes this one button unavailable.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>The input's <c>id</c>, which the label targets. Generated when not set.</summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>Any other attributes are passed to the <c>&lt;input type="radio"&gt;</c>.</summary>
+    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    /// <summary>Moves keyboard focus to this button.</summary>
+    public ValueTask FocusAsync() => input.FocusAsync();
+
+    private string InputId => Id ?? generatedId;
+    private bool Checked => Group?.IsChecked(Value) ?? false;
+    private bool IsDisabled => Disabled || (Group?.Disabled ?? false);
+
+    private string CssClass => string.Join(' ', new[]
+    {
+        "nx-radio",
+        Checked                       ? "nx-radio-checked" : null,
+        IsDisabled                    ? "nx-radio-disabled" : null,
+        Group?.IsInvalid == true      ? "nx-radio-invalid" : null
+    }.Where(c => c is not null));
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Group is null)
+            throw new InvalidOperationException("NxRadioButton must be placed inside an NxRadioGroup.");
+        Group.Register(this);
+    }
+
+    internal void Refresh() => StateHasChanged();
+
+    private Task HandleChange() => Group!.CheckAsync(Value);
+
+    /// <inheritdoc />
+    public void Dispose() => Group?.Unregister(this);
+}

@@ -1,0 +1,151 @@
+@page "/checkbox/examples"
+
+<DocHeader Slug="checkbox" Page="examples" />
+
+<div class="doc-section">
+    <h2>bool and bool?</h2>
+    <p class="doc-note">
+        Bound to <code>bool</code> it is checked or not. Bound to <code>bool?</code>, <code>null</code> shows as indeterminate; the
+        first click checks it.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <NxCheckBox Id="bool-box" @bind-Value="plain" Label="bool" />
+            <span class="demo-value" id="bool-value">Value: <strong>@plain</strong></span>
+        </div>
+        <div class="demo-row">
+            <NxCheckBox Id="nullable-box" @bind-Value="nullable" Label="bool?, starts null" />
+            <span class="demo-value" id="nullable-value">Value: <strong>@(nullable?.ToString() ?? "null")</strong></span>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Select All</h2>
+    <p class="doc-note">
+        The classic use of the indeterminate state: a parent box that is checked when all children are, unchecked when none are,
+        and mixed in between. Clicking it checks or clears them all.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxCheckBox Id="all-box" TValue="bool?" Value="AllState" ValueChanged="SetAll" Label="All pours" />
+        <div class="demo-check-children">
+            @foreach (var pour in pours)
+            {
+                <NxCheckBox Id="@($"pour-{pour.Id}")" @bind-Value="pour.Done" Label="@pour.Name" />
+            }
+        </div>
+        <span class="demo-value" id="all-count">Done: <strong>@pours.Count(p => p.Done) of @pours.Count</strong></span>
+    </div>
+    <pre class="doc-code">@selectAllCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Three-State</h2>
+    <p class="doc-note">
+        <code>ThreeState</code> lets the user reach the indeterminate state too: unchecked → checked → indeterminate → unchecked. Use it
+        for filters where <code>null</code> means "either".
+    </p>
+    <div class="demo-stage">
+        <div class="demo-row">
+            <NxCheckBox Id="three-box" @bind-Value="threeState" ThreeState="true" Label="Taxable" />
+            <span class="demo-value" id="three-value">Value: <strong>@(threeState?.ToString() ?? "null (either)")</strong></span>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Label Position &amp; Rich Labels</h2>
+    <p class="doc-note"><code>LabelPosition="Start"</code> puts the label first. <code>ChildContent</code> takes markup, such as a link.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxCheckBox Id="label-start" @bind-Value="labelStart" Label="Label before the box" LabelPosition="NxLabelPosition.Start" />
+        <NxCheckBox Id="label-rich" @bind-Value="accepted" Label="I accept the ">
+            <a href="checkbox/examples" @onclick:preventDefault="true">terms of sale</a>
+        </NxCheckBox>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Disabled &amp; Read-Only</h2>
+    <p class="doc-note">
+        <code>Disabled</code> removes the box from the tab order. <code>ReadOnly</code> keeps it focusable and announced, greyed, and
+        ignores clicks — for values a user may see but not change.
+    </p>
+    <div class="demo-stage">
+        <NxCheckBox Id="state-disabled" Value="true" Disabled="true" Label="Disabled, checked" />
+        <NxCheckBox Id="state-disabled-off" Value="false" Disabled="true" Label="Disabled" />
+        <NxCheckBox Id="state-readonly" Value="true" ReadOnly="true" Label="Read-only, checked" />
+        <NxCheckBox Id="state-readonly-mixed" TValue="bool?" Value="null" ReadOnly="true" Label="Read-only, mixed" />
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Form Validation</h2>
+    <p class="doc-note">Inside an <code>EditForm</code> the box reports changes and turns red with its label while invalid.</p>
+    <div class="demo-stage demo-stage-column">
+        <EditForm id="checkbox-form" Model="consent" OnValidSubmit="Submit" FormName="checkbox-form">
+            <DataAnnotationsValidator />
+            <NxCheckBox Id="consent-box" @bind-Value="consent.Accepted" Label="I have reviewed the shop drawings" />
+            <ValidationMessage For="() => consent.Accepted" />
+            <div class="demo-row" style="margin-top:12px">
+                <NxButton id="consent-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Release to production</NxButton>
+                <span class="demo-value" id="consent-result">@result</span>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<DocPager Slug="checkbox" Page="examples" />
+
+@code {
+    bool plain, labelStart, accepted;
+    bool? nullable, threeState;
+
+    sealed class Pour
+    {
+        public required int Id { get; init; }
+        public required string Name { get; init; }
+        public bool Done { get; set; }
+    }
+
+    readonly List<Pour> pours =
+    [
+        new() { Id = 1, Name = "Box culvert 8×6 — bed 3", Done = true },
+        new() { Id = 2, Name = "Catch basin 4×4 — bed 1" },
+        new() { Id = 3, Name = "Headwall 60\" — bed 2" },
+    ];
+
+    bool? AllState => pours.All(p => p.Done) ? true : pours.Any(p => p.Done) ? null : false;
+
+    void SetAll(bool? value)
+    {
+        // Mixed → checked: a click on the parent finishes the set.
+        var done = value ?? true;
+        foreach (var pour in pours)
+            pour.Done = done;
+    }
+
+    readonly Consent consent = new();
+    string result = "Not released";
+
+    void Submit() => result = "Released";
+
+    class Consent
+    {
+        [System.ComponentModel.DataAnnotations.Range(typeof(bool), "true", "true", ErrorMessage = "Review the drawings first.")]
+        public bool Accepted { get; set; }
+    }
+
+    const string selectAllCode =
+        """
+        <NxCheckBox TValue="bool?" Value="AllState" ValueChanged="SetAll" Label="All pours" />
+        @foreach (var pour in pours)
+        {
+            <NxCheckBox @bind-Value="pour.Done" Label="@pour.Name" />
+        }
+
+        @code {
+            bool? AllState => pours.All(p => p.Done) ? true : pours.Any(p => p.Done) ? null : false;
+            void SetAll(bool? value) { foreach (var p in pours) p.Done = value ?? true; }
+        }
+        """;
+}

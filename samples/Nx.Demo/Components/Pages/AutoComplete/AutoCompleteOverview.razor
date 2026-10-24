@@ -1,0 +1,53 @@
+@page "/autocomplete"
+@page "/autocomplete/overview"
+
+<DocHeader Slug="autocomplete" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxAutoComplete</code> is a text box that suggests. The value is whatever is typed; once enough is typed a list
+        of matches opens, and picking one puts its text in the field. It runs on the <code>NxComboBox</code> engine — the
+        same data provider, templates, grouping, virtualization and validation — with free text on, no arrow button and
+        nothing highlighted until you arrow to it. Like the other Nx inputs it commits on Enter, on a pick and on leaving.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <label class="demo-field-label" for="overview-city">City</label>
+        <NxAutoComplete Id="overview-city" Data="Cities" @bind-Value="city" Placeholder="Type a city" Clearable="true" />
+        <span class="demo-value" id="overview-value">Value: <strong>@city</strong></span>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Typing</td><td>Opens the matches once <code>MinLength</code> characters are typed; closes when none match.</td></tr>
+                <tr><td>↓ / ↑, Page Down / Up</td><td>Moves through the suggestions; ↓ also reopens them.</td></tr>
+                <tr><td>Enter</td><td>Picks the highlighted suggestion, else commits the typed text.</td></tr>
+                <tr><td>Esc</td><td>Closes the suggestions and keeps the text; with the list closed, clears when <code>Clearable</code>.</td></tr>
+                <tr><td>Tab / leaving</td><td>Commits the typed text.</td></tr>
+                <tr><td>role="combobox"</td><td><code>aria-autocomplete="list"</code>, <code>aria-expanded</code>, <code>aria-activedescendant</code> on the suggestion.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="autocomplete" Page="overview" />
+
+@code {
+    static readonly IReadOnlyList<string> Cities = SampleData.Places.Select(p => p.City).ToList();
+    string? city;
+
+    const string basicCode =
+        """
+        <NxAutoComplete Data="cities" @bind-Value="site.City" Placeholder="Type a city" Clearable="true" />
+        """;
+}

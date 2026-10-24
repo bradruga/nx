@@ -1,0 +1,120 @@
+@page "/combobox/api"
+
+<DocHeader Slug="combobox" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Data</td><td>IEnumerable&lt;TItem&gt;?</td><td>—</td><td>The items, filtered in memory.</td></tr>
+                <tr><td>DataProvider</td><td>Func&lt;NxComboBoxRequest, Task&lt;IEnumerable&lt;TItem&gt;&gt;&gt;?</td><td>—</td><td>Loads matches for the typed text.</td></tr>
+                <tr><td>DebounceDelay</td><td>int (ms)</td><td>300</td><td>Wait after typing before calling the provider.</td></tr>
+                <tr><td>ItemText</td><td>Func&lt;TItem, string&gt;?</td><td>ToString()</td><td>Displayed and filtered text; the field always shows it.</td></tr>
+                <tr><td>ItemValue</td><td>Func&lt;TItem, TValue&gt;?</td><td>the item</td><td>The bound value.</td></tr>
+                <tr><td>ItemGroup</td><td>Func&lt;TItem, string?&gt;?</td><td>—</td><td>Group key; headers in first-appearance order.</td></tr>
+                <tr><td>Value</td><td>TValue?</td><td>—</td><td>Use <code>@@bind-Value</code>.</td></tr>
+                <tr><td>SelectedItem</td><td>TItem?</td><td>—</td><td>Use <code>@@bind-SelectedItem</code>.</td></tr>
+                <tr><td>Multiple</td><td>bool</td><td>false</td><td>Select many items, shown as chips.</td></tr>
+                <tr><td>Values</td><td>IEnumerable&lt;TValue&gt;?</td><td>—</td><td>With Multiple. Use <code>@@bind-Values</code>.</td></tr>
+                <tr><td>SelectedItems</td><td>IEnumerable&lt;TItem&gt;?</td><td>—</td><td>With Multiple. Use <code>@@bind-SelectedItems</code>.</td></tr>
+                <tr><td>MaxVisibleChips</td><td>int?</td><td>all</td><td>Chips shown before "+N more".</td></tr>
+                <tr><td>ChipTemplate</td><td>RenderFragment&lt;TItem&gt;?</td><td>—</td><td>Chip content.</td></tr>
+                <tr><td>Columns</td><td>RenderFragment?</td><td>—</td><td><code>NxComboBoxColumn</code> children: a multi-column grid list.</td></tr>
+                <tr><td>ColumnDefinitions</td><td>IEnumerable&lt;NxComboBoxColumnDefinition&lt;TItem&gt;&gt;?</td><td>—</td><td>Columns as a list; wins over Columns.</td></tr>
+                <tr><td>FilterAllColumns</td><td>bool</td><td>true</td><td>With columns, match any column's text.</td></tr>
+                <tr><td>PopupWidth</td><td>string?</td><td>field width</td><td>Popup width as a CSS length.</td></tr>
+                <tr><td>Filter</td><td>NxComboBoxFilter</td><td>Contains</td><td>Contains, StartsWith, None.</td></tr>
+                <tr><td>CustomFilter</td><td>Func&lt;TItem, string, bool&gt;?</td><td>—</td><td>Replaces Filter.</td></tr>
+                <tr><td>AllowCustomValue</td><td>bool</td><td>false</td><td>Keep unmatched text. TValue must be string; not with Multiple.</td></tr>
+                <tr><td>MobileMode</td><td>NxComboBoxMobileMode</td><td>Auto</td><td>Auto, Always, Never: when to open the full-screen overlay.</td></tr>
+                <tr><td>MobileBreakpoint</td><td>int (px)</td><td>600</td><td>Viewport width at or below which Auto uses the overlay.</td></tr>
+                <tr><td>MobileTitle</td><td>string?</td><td>Placeholder</td><td>Overlay name and search placeholder.</td></tr>
+                <tr><td>Placeholder</td><td>string?</td><td>—</td><td>Shown while nothing is selected.</td></tr>
+                <tr><td>Clearable</td><td>bool</td><td>false</td><td>Clear button (clears every chip with Multiple); Esc clears when closed.</td></tr>
+                <tr><td>ItemTemplate</td><td>RenderFragment&lt;TItem&gt;?</td><td>—</td><td>Row content (ignored with columns).</td></tr>
+                <tr><td>SelectedItemTemplate</td><td>RenderFragment&lt;TItem&gt;?</td><td>—</td><td>The choice, shown in the field when not focused.</td></tr>
+                <tr><td>GroupHeaderTemplate</td><td>RenderFragment&lt;string&gt;?</td><td>—</td><td>Group header content.</td></tr>
+                <tr><td>NoDataText</td><td>string</td><td>"No matches"</td><td>Shown when nothing matches.</td></tr>
+                <tr><td>Virtualize / ItemHeight</td><td>bool / float</td><td>false / 34</td><td>Render only visible rows of a fixed height.</td></tr>
+                <tr><td>PopupMaxHeight</td><td>int (px)</td><td>300</td><td>Largest popup height; shrinks to fit the window.</td></tr>
+                <tr><td>Loading</td><td>bool</td><td>false</td><td>Show the loading state.</td></tr>
+                <tr><td>Disabled / ReadOnly</td><td>bool</td><td>false</td><td>Native disabled / read-only, list does not open.</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>Input id; outer class and style. Other attributes go to the input.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxComboBoxColumn</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Field</td><td>Func&lt;TItem, object?&gt;?</td><td>—</td><td>Cell value; shown and matched by filtering.</td></tr>
+                <tr><td>Header</td><td>string?</td><td>—</td><td>Header text.</td></tr>
+                <tr><td>Width</td><td>string?</td><td>minmax(100px, 1fr)</td><td>CSS grid track size.</td></tr>
+                <tr><td>Alignment</td><td>NxColumnAlignment</td><td>Start</td><td>Start, Center, End.</td></tr>
+                <tr><td>Format</td><td>string?</td><td>—</td><td>Format for IFormattable values, e.g. N2.</td></tr>
+                <tr><td>Template</td><td>RenderFragment&lt;TItem&gt;?</td><td>—</td><td>Cell content instead of the formatted value.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Event</th><th>Args</th><th>Raised when</th></tr></thead>
+            <tbody>
+                <tr><td>ValueChanged</td><td>TValue?</td><td>The single selection changes, including from a bound SelectedItem set in code.</td></tr>
+                <tr><td>SelectedItemChanged</td><td>TItem?</td><td>The single selection changes, including from a bound Value set in code.</td></tr>
+                <tr><td>ValuesChanged</td><td>IEnumerable&lt;TValue&gt;</td><td>With Multiple, an item is toggled, a chip removed or all cleared. In the overlay, on Done.</td></tr>
+                <tr><td>SelectedItemsChanged</td><td>IEnumerable&lt;TItem&gt;</td><td>As ValuesChanged.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Methods &amp; Properties</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>FocusAsync()</td><td>ValueTask</td><td>Moves keyboard focus to the input.</td></tr>
+                <tr><td>IsOpen</td><td>bool</td><td><code>true</code> while the popup or overlay is open.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-surface / --nx-border / -hover</td><td>#fff / #d4d4da</td><td>Field background and border.</td></tr>
+                <tr><td>--nx-accent / --nx-focus-ring-inset</td><td>#0078d4</td><td>Focus and open border.</td></tr>
+                <tr><td>--nx-popup-bg</td><td>= --nx-surface</td><td>Popup background.</td></tr>
+                <tr><td>--nx-popup-max-height</td><td>280px</td><td>CSS cap before JS sizing.</td></tr>
+                <tr><td>--nx-popup-header-bg</td><td>= --nx-surface-hover</td><td>Column header row.</td></tr>
+                <tr><td>--nx-shadow-popup</td><td>soft 24px</td><td>Popup shadow.</td></tr>
+                <tr><td>--nx-item-hover-bg / -active-bg</td><td>hover / accent-subtle</td><td>Hovered and highlighted rows.</td></tr>
+                <tr><td>--nx-item-selected-fg</td><td>= --nx-accent</td><td>Selected row text and check.</td></tr>
+                <tr><td>--nx-group-header-fg</td><td>= --nx-fg-muted</td><td>Group headers.</td></tr>
+                <tr><td>--nx-chip-bg / -fg</td><td>accent-subtle / fg</td><td>Multiple chips.</td></tr>
+                <tr><td>--nx-chip-remove-hover-bg</td><td>rgba(0,0,0,.08)</td><td>Chip remove button hover.</td></tr>
+                <tr><td>--nx-z-popup / --nx-z-overlay</td><td>1000 / 1100</td><td>Stacking of the popup and mobile overlay.</td></tr>
+                <tr><td>--nx-invalid</td><td>= --nx-danger</td><td>Border while invalid.</td></tr>
+                <tr><td>--nx-control-height-md</td><td>34px</td><td>Field height (minimum with chips).</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="combobox" Page="api" />

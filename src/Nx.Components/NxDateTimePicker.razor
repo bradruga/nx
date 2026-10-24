@@ -1,0 +1,146 @@
+@namespace Nx.Components
+@typeparam TValue
+
+<NxFieldFrame ClassPrefix="nx-datetimepicker"
+              InputId="@InputId"
+              Label="@Label"
+              FloatingLabel="FloatingLabel"
+              HasValue="@(currentText.Length > 0)"
+              ShowClear="ShowClear"
+              OnClear="HandleClearClick"
+              Disabled="Disabled"
+              ReadOnly="ReadOnly"
+              Invalid="validation.IsInvalid"
+              Class="@RootClass"
+              Style="@Style">
+    <ChildContent>
+        <input @ref="input"
+               @attributes="AdditionalAttributes"
+               id="@InputId"
+               class="@InputCssClass"
+               type="text"
+               role="combobox"
+               autocomplete="off"
+               inputmode="@(formatter.Mask is null ? null : "numeric")"
+               placeholder="@PlaceholderText"
+               disabled="@Disabled"
+               readonly="@ReadOnly"
+               aria-haspopup="dialog"
+               aria-expanded="@(popupOpen ? "true" : "false")"
+               aria-controls="@(popupOpen ? PopupId : null)"
+               aria-activedescendant="@ActiveDescendant"
+               aria-invalid="@(validation.IsInvalid ? "true" : null)"
+               @bind="currentText"
+               @bind:event="oninput"
+               @bind:after="HandleInputAfter"
+               @onchange="HandleChange"
+               @onkeydown="HandleKeyDown"
+               @onfocus="HandleFocus"
+               @onblur="HandleBlur" />
+    </ChildContent>
+    <Buttons>
+        <button @ref="toggle" type="button" class="nx-field-button nx-datetimepicker-button nx-datetimepicker-toggle" tabindex="-1"
+                aria-label="Choose date and time" title="Choose date and time" aria-controls="@InputId"
+                aria-expanded="@(popupOpen || sheetOpen ? "true" : "false")"
+                disabled="@(!Editable)"
+                @onmousedown:preventDefault="true" @onclick="HandleToggleClick">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5" /><path d="M16 2v4" /><path d="M8 2v4" /><path d="M3 10h5" /><path d="M17.5 17.5 16 16.3V14" /><circle cx="16" cy="16" r="6" />
+            </svg>
+        </button>
+    </Buttons>
+    <Below>
+        @if (popupOpen)
+        {
+            @* No style attribute: nx-picker.js owns the popup's position. *@
+            <div class="nx-datetimepicker-popup" id="@PopupId" @ref="popup" @onmousedown:preventDefault="true">
+                <div class="nx-datetimepicker-popup-body" @ref="popupBody">
+                    <div class="@PaneClass(DateTimePane.Date)">
+                        @RenderCalendar(focusable: false)
+                    </div>
+                    <div class="@PaneClass(DateTimePane.Time) nx-datetimepicker-times">
+                        <div class="nx-datetimepicker-times-title" aria-hidden="true">@TimeTitle</div>
+                        <div class="nx-timepicker-list nx-datetimepicker-time-list" @ref="timeList" id="@TimeListId" role="listbox" aria-label="Time">
+                            @RenderTimes(sheet: false)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        @if (sheetOpen)
+        {
+            <div class="nx-datetimepicker-sheet-host">
+                <NxPickerSheet Title="@SheetTitle" Class="nx-datetimepicker-sheet" OnClose="CloseSheet"
+                               HeaderActions="@(Clearable && DateTimeConversion<TValue>.IsNullable ? SheetClear : null)">
+                    <div class="nx-datetimepicker-sheet-tabs" role="tablist">
+                        <button type="button" role="tab" class="@SheetTabClass(DateTimePane.Date)" aria-selected="@(pane == DateTimePane.Date ? "true" : "false")"
+                                @onclick="() => ShowSheetPane(DateTimePane.Date)">
+                            <span>Date</span><span class="nx-datetimepicker-sheet-tab-value">@SheetDateText</span>
+                        </button>
+                        <button type="button" role="tab" class="@SheetTabClass(DateTimePane.Time)" aria-selected="@(pane == DateTimePane.Time ? "true" : "false")"
+                                @onclick="() => ShowSheetPane(DateTimePane.Time)">
+                            <span>Time</span><span class="nx-datetimepicker-sheet-tab-value">@SheetTimeText</span>
+                        </button>
+                    </div>
+                    @if (pane == DateTimePane.Date)
+                    {
+                        @RenderCalendar(focusable: true)
+                    }
+                    else
+                    {
+                        <div class="nx-timepicker-list nx-datetimepicker-sheet-list" @ref="sheetList" role="listbox" aria-label="Time">
+                            @RenderTimes(sheet: true)
+                        </div>
+                    }
+                </NxPickerSheet>
+            </div>
+        }
+    </Below>
+</NxFieldFrame>
+
+@code {
+    private RenderFragment RenderCalendar(bool focusable) =>
+        @<NxCalendar @ref="calendar"
+                     Id="@CalendarId"
+                     Value="CurrentDate"
+                     ValueChanged="HandleCalendarPick"
+                     Min="MinDate"
+                     Max="MaxDate"
+                     IsDateDisabled="IsDateDisabled"
+                     ShowWeekNumbers="ShowWeekNumbers"
+                     FirstDayOfWeek="FirstDayOfWeek"
+                     Culture="EffectiveCulture"
+                     ShowTodayButton="ShowTodayButton"
+                     Focusable="focusable"
+                     AriaLabel="@(Label ?? "Calendar")"
+                     OnNavigate="StateHasChanged" />;
+
+    private RenderFragment RenderTimes(bool sheet) => __builder =>
+    {
+        for (var i = 0; i < times.Count; i++)
+        {
+            var time = times[i];
+            if (sheet)
+            {
+                <button type="button" class="@TimeClass(-1, time)" role="option"
+                        aria-selected="@(time == CurrentTime ? "true" : "false")"
+                        @onclick="() => PickTimeAsync(time)">
+                    @FormatTime(time)
+                </button>
+            }
+            else
+            {
+                <div id="@TimeOptionId(i)"
+                     class="@TimeClass(i, time)"
+                     role="option"
+                     aria-selected="@(time == CurrentTime ? "true" : "false")"
+                     @onclick="() => PickTimeAsync(time)">
+                    @FormatTime(time)
+                </div>
+            }
+        }
+    };
+
+    private RenderFragment SheetClear =>
+        @<button type="button" class="nx-sheet-action nx-datetimepicker-sheet-clear" disabled="@(current is null)" @onclick="HandleSheetClear">Clear</button>;
+}

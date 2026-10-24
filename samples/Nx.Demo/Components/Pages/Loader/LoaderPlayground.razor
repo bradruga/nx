@@ -1,0 +1,89 @@
+@page "/loader/playground"
+
+<DocHeader Slug="loader" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter of both components, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                @if (pgContainer)
+                {
+                    <div class="demo-loader-area demo-loader-short" id="playground-area">
+                        <NxLoaderContainer Visible="pgVisible" Text="@OrNull(pgText)" LoaderType="pgType" LoaderSize="pgSize" />
+                        <ul class="demo-loader-list"><li><strong>P-1042</strong><span>North wall</span></li><li><strong>P-1043</strong><span>Footings</span></li><li><strong>P-1044</strong><span>Deck</span></li></ul>
+                    </div>
+                }
+                else
+                {
+                    <NxLoader Type="pgType" Size="pgSize" AriaLabel="@(OrNull(pgAriaLabel) ?? "Loading")" id="playground-loader" />
+                }
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Loader</div>
+            <label class="demo-control">
+                <span>Type</span>
+                <select id="pg-type" @bind="pgType">
+                    @foreach (var t in Enum.GetValues<NxLoaderType>())
+                    {
+                        <option value="@t">@t</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control">
+                <span>Size</span>
+                <select id="pg-size" @bind="pgSize">
+                    @foreach (var s in Enum.GetValues<NxSize>())
+                    {
+                        <option value="@s">@s</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control"><span>AriaLabel</span><input type="text" id="pg-aria-label" placeholder="Loading" @bind="pgAriaLabel" @bind:event="oninput" /></label>
+
+            <div class="demo-controls-title">Container</div>
+            <label class="demo-control"><span>In a container</span><input type="checkbox" id="pg-container" @bind="pgContainer" /></label>
+            <label class="demo-control"><span>Visible</span><input type="checkbox" id="pg-visible" @bind="pgVisible" /></label>
+            <label class="demo-control"><span>Text</span><input type="text" id="pg-text" @bind="pgText" @bind:event="oninput" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="loader" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+
+    NxLoaderType pgType;
+    NxSize pgSize = NxSize.Large;
+    string pgAriaLabel = "", pgText = "Loading…";
+    bool pgContainer = true, pgVisible = true;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            if (!pgContainer)
+            {
+                var attrs = new List<string>();
+                if (pgType != NxLoaderType.Spinner) attrs.Add($"Type=\"NxLoaderType.{pgType}\"");
+                if (pgSize != NxSize.Medium) attrs.Add($"Size=\"NxSize.{pgSize}\"");
+                if (OrNull(pgAriaLabel) is { } a) attrs.Add($"AriaLabel=\"{a}\"");
+                return "<NxLoader " + string.Join(" ", attrs) + " />";
+            }
+            var c = new List<string> { pgVisible ? "Visible=\"true\"" : "Visible=\"false\"" };
+            if (OrNull(pgText) is { } t) c.Add($"Text=\"{t}\"");
+            if (pgType != NxLoaderType.Spinner) c.Add($"LoaderType=\"NxLoaderType.{pgType}\"");
+            if (pgSize != NxSize.Large) c.Add($"LoaderSize=\"NxSize.{pgSize}\"");
+            return "<div style=\"position: relative\">\n    <NxLoaderContainer " + string.Join(" ", c) + " />\n    …\n</div>";
+        }
+    }
+}

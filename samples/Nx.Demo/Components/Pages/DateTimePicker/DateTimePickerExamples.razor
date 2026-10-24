@@ -1,0 +1,123 @@
+@page "/datetimepicker/examples"
+@using System.ComponentModel.DataAnnotations
+
+<DocHeader Slug="datetimepicker" Page="examples" />
+
+<div class="doc-section">
+    <h2>Formats</h2>
+    <p class="doc-note">
+        Any .NET format. An all-number 24-hour one (<code>MM/dd/yyyy HH:mm</code>) is typed behind a mask; the others are
+        typed freely and read leniently — <code>3/5 2pm</code> works.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <NxDateTimePicker Id="format-12h" Label="M/d/yyyy h:mm tt" Format="M/d/yyyy h:mm tt" @bind-Value="a" />
+            <NxDateTimePicker Id="format-masked" Label="MM/dd/yyyy HH:mm (masked)" Format="MM/dd/yyyy HH:mm" @bind-Value="b" />
+            <NxDateTimePicker Id="format-seconds" Label="yyyy-MM-dd HH:mm:ss" Format="yyyy-MM-dd HH:mm:ss" @bind-Value="c" />
+            <NxDateTimePicker Id="format-words" Label="MMM d 'at' h:mm tt" Format="MMM d 'at' h:mm tt" @bind-Value="d" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Time Step</h2>
+    <p class="doc-note"><code>TimeStep</code> is the minutes between listed times (30 by default). Typed times need not be on a step.</p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <NxDateTimePicker Id="step-15" Label="Every 15 minutes" TimeStep="15" @bind-Value="stepped" />
+            <NxDateTimePicker Id="step-60" Label="Every hour" TimeStep="60" @bind-Value="hourly" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Min &amp; Max</h2>
+    <p class="doc-note">
+        <code>Min</code> and <code>Max</code> are date-times: days outside them are off in the calendar, times outside them
+        are left out of the list on the first and last day, and typed values are moved to the nearest limit.
+    </p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxDateTimePicker Id="injury-time" Label="Injury occurred" Min="hireDate" Max="now" @bind-Value="injury" TimeStep="15" />
+        <span class="demo-value">Between hire (@hireDate.ToString("g")) and now (@now.ToString("g")).</span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Nullable &amp; Clear</h2>
+    <p class="doc-note">
+        Bind <code>DateTime?</code> for a value that can be empty; <code>Clearable</code> adds the clear button and Esc. A
+        plain <code>DateTime</code> is never empty: clearing the text puts the value back.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <NxDateTimePicker Id="clear-nullable" Label="Deactivate at (DateTime?)" Placeholder="Unset" Clearable="true" @bind-Value="deactivate" />
+                <span class="demo-value" id="clear-nullable-value">Value: <strong>@(deactivate?.ToString("g") ?? "null")</strong></span>
+            </div>
+            <div>
+                <NxDateTimePicker Id="clear-required" Label="Restart at (DateTime)" @bind-Value="restart" />
+                <span class="demo-value">Value: <strong>@restart.ToString("g")</strong></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Floating Label &amp; State</h2>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <NxDateTimePicker Id="floating" Label="Floating label" FloatingLabel="true" @bind-Value="floating" />
+            <NxDateTimePicker Id="state-readonly" Label="Read-only" ReadOnly="true" Value="fixedValue" />
+            <NxDateTimePicker Id="state-disabled" Label="Disabled" Disabled="true" Value="fixedValue" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Phone Sheet</h2>
+    <p class="doc-note">
+        At 600 px and below the popup is a full-screen sheet: Date and Time tabs showing the current choice, a big calendar,
+        then a list of times. <code>MobileMode="Always"</code> shows it here on any screen.
+    </p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxDateTimePicker Id="sheet-always" Label="Gate opens" MobileMode="NxMobileMode.Always" TimeStep="15" Clearable="true" @bind-Value="gate" />
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Form Validation</h2>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <EditForm id="datetime-form" Model="meeting" OnValidSubmit="Submit" FormName="datetime-form">
+            <DataAnnotationsValidator />
+            <NxDateTimePicker Id="meeting-start" Label="Meeting starts" @bind-Value="meeting.Start" TimeStep="15" Clearable="true" />
+            <NxValidationMessage For="() => meeting.Start" />
+            <div class="demo-row" style="margin-top:16px">
+                <NxButton id="datetime-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Schedule</NxButton>
+                <span class="demo-value" id="datetime-result">@result</span>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<DocPager Slug="datetimepicker" Page="examples" />
+
+@code {
+    static readonly DateTime Base = DateTime.Today.AddDays(2).AddHours(14).AddMinutes(30);
+
+    DateTime? a = Base, b = Base, c = Base.AddSeconds(15), d = Base, stepped, hourly, deactivate, floating, gate;
+    DateTime restart = DateTime.Today.AddDays(1).AddHours(3);
+    DateTime? injury;
+    readonly DateTime hireDate = DateTime.Today.AddDays(-20).AddHours(7);
+    readonly DateTime now = DateTime.Today.AddHours(16);
+    readonly DateTime fixedValue = DateTime.Today.AddHours(9);
+    string result = "Not scheduled";
+    readonly MeetingForm meeting = new();
+
+    void Submit() => result = $"Scheduled for {meeting.Start:g}";
+
+    class MeetingForm
+    {
+        [Required(ErrorMessage = "Pick when the meeting starts.")]
+        public DateTime? Start { get; set; }
+    }
+}

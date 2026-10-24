@@ -1,0 +1,239 @@
+@page "/form/examples"
+@implements IDisposable
+
+<DocHeader Slug="form" Page="examples" />
+
+<div class="doc-section">
+    <h2>Generated Editors</h2>
+    <p class="doc-note">
+        <code>Field</code> alone is enough: each item picks the editor for its property's type and binds it. The model updates
+        as you edit (shown live beside the form, or under it on a phone).
+    </p>
+    <div class="demo-stage demo-form-split">
+        <NxForm Id="generated-form" EditContext="pourContext" Columns="2">
+            <NxFormItem Field="@nameof(PourForm.Name)" ColSpan="2" />
+            <NxFormItem Field="@nameof(PourForm.Volume)" />
+            <NxFormItem Field="@nameof(PourForm.Trucks)" />
+            <NxFormItem Field="@nameof(PourForm.PourDate)" />
+            <NxFormItem Field="@nameof(PourForm.StartTime)" />
+            <NxFormItem Field="@nameof(PourForm.Status)" />
+            <NxFormItem Field="@nameof(PourForm.PumpTruck)" />
+        </NxForm>
+        <pre class="doc-code demo-form-model" id="generated-model">@PourText</pre>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Columns &amp; Spans</h2>
+    <p class="doc-note">
+        <code>Columns</code> sets the grid; <code>ColSpan</code> spans it. ERP's contact forms use 12 columns — names in
+        thirds, the rest in halves. Narrow the window: under 540 px of form width every item takes the full row.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxForm Id="columns-form" Model="contact" Columns="12" ColumnSpacing="12px">
+            <NxFormItem Field="@nameof(ContactForm.FirstName)" ColSpan="4" Label="First*" />
+            <NxFormItem Field="@nameof(ContactForm.MiddleName)" ColSpan="4" Label="Middle" />
+            <NxFormItem Field="@nameof(ContactForm.LastName)" ColSpan="4" Label="Last*" />
+            <NxFormItem Field="@nameof(ContactForm.Title)" ColSpan="6" />
+            <NxFormItem Field="@nameof(ContactForm.Company)" ColSpan="6" />
+            <NxFormItem Field="@nameof(ContactForm.Phone)" ColSpan="6" />
+            <NxFormItem Field="@nameof(ContactForm.Email)" ColSpan="6" />
+        </NxForm>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Groups</h2>
+    <p class="doc-note"><code>NxFormGroup</code> puts a legend over its items and has a grid of its own; it spans the whole form.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxForm Id="groups-form" Model="contact" Columns="2">
+            <NxFormGroup Label="Site contact">
+                <NxFormItem Field="@nameof(ContactForm.SiteContactName)" Label="Name" />
+                <NxFormItem Field="@nameof(ContactForm.SiteContactPhone)" Label="Phone" />
+            </NxFormGroup>
+            <NxFormGroup Label="Other contact" Columns="3">
+                <NxFormItem Field="@nameof(ContactForm.OtherContactName)" Label="Name" ColSpan="2" />
+                <NxFormItem Field="@nameof(ContactForm.OtherContactPhone)" Label="Phone" />
+            </NxFormGroup>
+        </NxForm>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Labels Beside Editors</h2>
+    <p class="doc-note">
+        <code>Orientation="NxOrientation.Horizontal"</code> puts labels in a right-aligned column (<code>--nx-form-label-width</code>);
+        on a narrow form they go back above.
+    </p>
+    <div class="demo-stage demo-stage-column" style="max-width:640px">
+        <NxForm Id="horizontal-form" Model="pour2" Orientation="NxOrientation.Horizontal">
+            <NxFormItem Field="@nameof(PourForm.Name)" />
+            <NxFormItem Field="@nameof(PourForm.PourDate)" />
+            <NxFormItem Field="@nameof(PourForm.Volume)" />
+            <NxFormItem Field="@nameof(PourForm.PumpTruck)" />
+        </NxForm>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Your Own Editors</h2>
+    <p class="doc-note">
+        Anything inside an item is its editor; the item still adds the label and the field's messages. Give the editor the
+        item's <code>Id</code> so the label points at it.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxForm Id="custom-form" Model="contact" Columns="2">
+            <NxFormItem Field="@nameof(ContactForm.CustomerId)" Label="Customer" Id="custom-customer">
+                <NxComboBox Id="custom-customer" Data="SampleData.Customers" ItemText="c => c.Name" ItemValue="c => (int?)c.Id"
+                            @bind-Value="contact.CustomerId" Placeholder="Search customers" Clearable="true" />
+            </NxFormItem>
+            <NxFormItem Field="@nameof(ContactForm.PONumber)" Label="PO number" Id="custom-po">
+                <NxTextBox Id="custom-po" @bind-Value="contact.PONumber">
+                    <Prefix><NxIcon Icon="NxIcons.File" /></Prefix>
+                </NxTextBox>
+            </NxFormItem>
+            <NxFormItem Label="Notes" Id="custom-notes" ColSpan="2">
+                <NxTextArea Id="custom-notes" @bind-Value="notes" AutoResize="true" MaxRows="5" />
+            </NxFormItem>
+            <NxFormItem Field="@nameof(ContactForm.SendUpdates)" ColSpan="2">
+                <NxToggleSwitch @bind-Value="contact.SendUpdates" Label="Send schedule updates by email" />
+            </NxFormItem>
+        </NxForm>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Your Own Layout</h2>
+    <p class="doc-note">
+        Items work inside any markup in the form — no separate list of items and renderer. Here a side panel sits beside two
+        stacked items.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxForm Id="layout-form" Model="pour3">
+            <div class="demo-form-layout">
+                <div class="demo-form-layout-main">
+                    <NxFormItem Field="@nameof(PourForm.Name)" />
+                    <NxFormItem Field="@nameof(PourForm.Notes)" Id="layout-notes">
+                        <NxTextArea Id="layout-notes" @bind-Value="pour3.Notes" Rows="4" />
+                    </NxFormItem>
+                </div>
+                <aside class="demo-form-layout-side">
+                    <NxFormItem Field="@nameof(PourForm.Status)" />
+                    <NxFormItem Field="@nameof(PourForm.Trucks)" />
+                </aside>
+            </div>
+        </NxForm>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Validation</h2>
+    <p class="doc-note">
+        Submit with empty fields, or call <code>IsValid()</code> on the form from outside it. With
+        <code>SubmitOnEnter="false"</code> Enter in a field does not submit — only the button does.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxForm @ref="validationForm" Id="validation-form" Model="newContact" Columns="2" SubmitOnEnter="false"
+                OnValidSubmit="() => validationResult = Saved()" OnInvalidSubmit="() => validationResult = Fix()">
+            <ChildContent>
+                <NxFormItem Field="@nameof(ContactForm.FirstName)" Label="First name" />
+                <NxFormItem Field="@nameof(ContactForm.LastName)" Label="Last name" />
+                <NxFormItem Field="@nameof(ContactForm.Email)" />
+                <NxFormItem Field="@nameof(ContactForm.Phone)" />
+            </ChildContent>
+            <Buttons>
+                <NxButton id="validation-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Add contact</NxButton>
+                <NxButton id="validation-check" OnClick="Check">Check with IsValid()</NxButton>
+                <span class="demo-value" id="validation-result">@validationResult</span>
+            </Buttons>
+        </NxForm>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Other Validators</h2>
+    <p class="doc-note">
+        Anything in <code>Validation</code> replaces the default <code>DataAnnotationsValidator</code> — ERP's
+        <code>FluentValidationValidator</code>, or your own. This one requires a phone or an email.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxForm Id="custom-validator-form" Model="reachable" Columns="2" OnValidSubmit="() => reachResult = Saved()">
+            <Validation><ReachableValidator /></Validation>
+            <ChildContent>
+                <NxFormItem Field="@nameof(ContactForm.Phone)" />
+                <NxFormItem Field="@nameof(ContactForm.Email)" />
+            </ChildContent>
+            <Buttons>
+                <NxButton id="reach-submit" Type="NxButtonType.Submit">Save</NxButton>
+                <span class="demo-value" id="reach-result">@reachResult</span>
+            </Buttons>
+        </NxForm>
+    </div>
+    <pre class="doc-code">@validatorCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>NxValidationMessage</h2>
+    <p class="doc-note">
+        One field's messages, anywhere under an <code>EditForm</code> or <code>NxForm</code> — the replacement for
+        <code>TelerikValidationMessage</code>.
+    </p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <EditForm id="message-form" Model="messageModel" FormName="message-form">
+            <DataAnnotationsValidator />
+            <NxNumericTextBox Id="message-trucks" Label="Trucks" @bind-Value="messageModel.Trucks" />
+            <NxValidationMessage For="() => messageModel.Trucks" />
+            <div class="demo-row" style="margin-top:12px">
+                <NxButton id="message-submit" Type="NxButtonType.Submit">Check</NxButton>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<DocPager Slug="form" Page="examples" />
+
+@code {
+    readonly PourForm pour = new(), pour2 = new(), pour3 = new();
+    readonly PourForm messageModel = new() { Trucks = 20 };
+    readonly ContactForm contact = new() { FirstName = "Dana", LastName = "Ortiz", Title = "Project manager", Company = "Baldwin Paving" };
+    readonly ContactForm newContact = new(), reachable = new();
+    NxForm? validationForm;
+    string? notes;
+    string validationResult = "Not submitted", reachResult = "Not saved";
+    EditContext pourContext = null!;
+
+    protected override void OnInitialized()
+    {
+        // The model text follows every field change in the first form.
+        pourContext = new EditContext(pour);
+        pourContext.OnFieldChanged += PourChanged;
+    }
+
+    void PourChanged(object? sender, FieldChangedEventArgs e) => StateHasChanged();
+
+    string PourText =>
+        $"""
+        Name      = "{pour.Name}"
+        Volume    = {pour.Volume}
+        Trucks    = {pour.Trucks}
+        PourDate  = {pour.PourDate:yyyy-MM-dd}
+        StartTime = {pour.StartTime:HH:mm}
+        Status    = {pour.Status}
+        PumpTruck = {pour.PumpTruck}
+        """;
+
+    static string Saved() => "Saved";
+    static string Fix() => "Fix the marked fields";
+
+    void Check() => validationResult = validationForm?.IsValid() == true ? "IsValid() = true" : "IsValid() = false";
+
+    public void Dispose() => pourContext.OnFieldChanged -= PourChanged;
+
+    const string validatorCode =
+        """
+        <NxForm Model="contact" OnValidSubmit="SaveAsync">
+            <Validation><FluentValidationValidator Validator="validator" /></Validation>
+            <ChildContent>…</ChildContent>
+        </NxForm>
+        """;
+}

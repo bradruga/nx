@@ -1,0 +1,55 @@
+.nx-datepicker-open .nx-datepicker-toggle { color: var(--nx-accent); }
+
+.nx-datepicker-input { font-variant-numeric: tabular-nums; }
+
+/* ── Popup ────────────────────────────────────────────────────────────────── */
+
+/* Fixed, so a scroll container or dialog does not clip it; nx-picker.js sets its coordinates and
+   reveals it once placed. */
+.nx-datepicker-popup {
+    position: fixed;
+    z-index: var(--nx-z-popup);
+    visibility: hidden;
+    box-sizing: border-box;
+    width: max-content;
+    max-width: calc(100vw - 16px);
+    background: var(--nx-popup-bg);
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius);
+    box-shadow: var(--nx-shadow-popup);
+    overflow: hidden;
+}
+
+.nx-datepicker-popup-body {
+    display: flex;
+    justify-content: center;
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+/* ── Phone sheet: a bigger calendar, cells sized to the screen ────────────── */
+
+.nx-datepicker-sheet-host ::deep .nx-calendar {
+    --nx-calendar-cell-size: min(48px, calc((100vw - 48px) / 8));
+    font-size: 16px;
+}
+.nx-datepicker-sheet-host ::deep .nx-calendar-nav,
+.nx-datepicker-sheet-host ::deep .nx-calendar-title,
+.nx-datepicker-sheet-host ::deep .nx-calendar-today-button { height: 44px; }
+.nx-datepicker-sheet-host ::deep .nx-calendar-nav { width: 44px; }
+
+/* Opened by a tap, the sheet's grid has focus but needs no ring; the keyboard's day is still drawn. */
+.nx-datepicker-sheet-host ::deep .nx-calendar-grids:focus-visible { outline: none; }
+
+.nx-datepicker-sheet-clear {
+    height: 44px;
+    padding: 0 14px;
+    border: none;
+    border-radius: var(--nx-radius);
+    background: transparent;
+    color: var(--nx-fg-muted);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+.nx-datepicker-sheet-clear:disabled { color: var(--nx-fg-subtle); cursor: default; }

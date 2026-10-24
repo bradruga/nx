@@ -1,0 +1,29 @@
+.nx-loader-container {
+    position: absolute;
+    inset: 0;
+    z-index: var(--nx-z-loader);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--nx-loader-overlay-bg);
+    animation: nx-loader-container-in 0.15s ease-out;
+}
+
+.nx-loader-container-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    max-width: calc(100% - 32px);
+    text-align: center;
+}
+
+.nx-loader-container-text {
+    color: var(--nx-loader-text-color);
+    font-size: var(--nx-font-size);
+    font-weight: var(--nx-font-weight-medium);
+}
+
+@keyframes nx-loader-container-in {
+    from { opacity: 0; }
+}

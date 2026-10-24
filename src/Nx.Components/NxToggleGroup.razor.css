@@ -1,0 +1,19 @@
+.nx-togglegroup {
+    --nx-toggle-h: var(--nx-control-height-md);
+    display: inline-flex;
+    flex-wrap: wrap;
+    max-width: 100%;
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+    vertical-align: middle;
+}
+
+.nx-togglegroup-sm { --nx-toggle-h: var(--nx-control-height-sm); font-size: var(--nx-font-size-sm); }
+.nx-togglegroup-lg { --nx-toggle-h: var(--nx-control-height-lg); font-size: var(--nx-font-size-lg); }
+
+.nx-togglegroup-full-width { display: flex; width: 100%; }
+.nx-togglegroup-full-width ::deep .nx-toggle { flex: 1 1 0; min-width: 0; }
+
+.nx-togglegroup-disabled { opacity: var(--nx-disabled-opacity); }
+
+.nx-togglegroup-invalid { border-radius: var(--nx-radius); box-shadow: 0 0 0 1.5px var(--nx-invalid); }

@@ -1,0 +1,98 @@
+.nx-switch {
+    --nx-switch-h: 20px;
+    --nx-switch-w: 36px;
+    --nx-switch-gap: 2px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+    color: var(--nx-fg);
+    vertical-align: middle;
+}
+
+.nx-switch-sm { --nx-switch-h: 16px; --nx-switch-w: 28px; font-size: var(--nx-font-size-sm); }
+.nx-switch-lg { --nx-switch-h: 26px; --nx-switch-w: 48px; font-size: var(--nx-font-size-lg); }
+
+/* Inside text needs a wider track to fit "Off" opposite the thumb. */
+.nx-switch-text-inside        { --nx-switch-w: 52px; }
+.nx-switch-text-inside.nx-switch-sm { --nx-switch-w: 42px; }
+.nx-switch-text-inside.nx-switch-lg { --nx-switch-w: 66px; }
+
+.nx-switch-label-start { flex-direction: row-reverse; }
+.nx-switch-label-start .nx-switch-state-beside { order: -1; }
+
+.nx-switch-track {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    width: var(--nx-switch-w);
+    height: var(--nx-switch-h);
+    padding: 0;
+    border: none;
+    border-radius: 999px;
+    background: var(--nx-switch-off-bg);
+    cursor: pointer;
+    transition: background-color var(--nx-transition);
+}
+
+@media (pointer: coarse) {
+    .nx-switch-track::after { content: ""; position: absolute; inset: -12px -4px; }
+}
+
+.nx-switch-on .nx-switch-track { background: var(--nx-accent); }
+
+.nx-switch-thumb {
+    position: absolute;
+    top: var(--nx-switch-gap);
+    left: var(--nx-switch-gap);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--nx-switch-h) - 2 * var(--nx-switch-gap));
+    height: calc(var(--nx-switch-h) - 2 * var(--nx-switch-gap));
+    border-radius: 50%;
+    background: var(--nx-switch-thumb-bg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    transition: left var(--nx-transition);
+}
+
+.nx-switch-on .nx-switch-thumb { left: calc(var(--nx-switch-w) - var(--nx-switch-h) + var(--nx-switch-gap)); }
+
+.nx-switch-spinner { width: 70%; height: 70%; border-width: 2px; color: var(--nx-accent); }
+
+.nx-switch-state {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    user-select: none;
+}
+
+.nx-switch-state-inside {
+    position: absolute;
+    right: 7px;
+    color: var(--nx-switch-off-fg);
+}
+.nx-switch-on .nx-switch-state-inside { right: auto; left: 8px; color: var(--nx-accent-fg); }
+.nx-switch-sm .nx-switch-state-inside { font-size: 9.5px; }
+
+.nx-switch-state-beside { min-width: 2.2em; color: var(--nx-fg-muted); }
+
+.nx-switch-label { cursor: pointer; user-select: none; }
+
+/* ── States ───────────────────────────────────────────────────────────────── */
+
+.nx-switch-disabled { opacity: var(--nx-disabled-opacity); }
+.nx-switch-disabled .nx-switch-track,
+.nx-switch-disabled .nx-switch-label { cursor: not-allowed; }
+
+.nx-switch-loading .nx-switch-track { cursor: progress; }
+
+.nx-switch-invalid .nx-switch-track { box-shadow: 0 0 0 1.5px var(--nx-invalid); }
+.nx-switch-invalid .nx-switch-label { color: var(--nx-invalid); }
+
+@media (prefers-reduced-motion: reduce) {
+    .nx-switch-thumb, .nx-switch-track { transition: none; }
+}

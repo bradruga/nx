@@ -1,0 +1,80 @@
+@page "/checkbox/playground"
+
+<DocHeader Slug="checkbox" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live. The box is bound to a <code>bool?</code>.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner">
+                <NxCheckBox Id="playground-checkbox" @bind-Value="pgValue" @bind-Value:after="() => pgChanges++"
+                            Label="@(string.IsNullOrWhiteSpace(pgLabel) ? null : pgLabel)"
+                            LabelPosition="pgPosition" ThreeState="pgThreeState"
+                            Disabled="pgDisabled" ReadOnly="pgReadOnly" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-value">Value: <strong>@(pgValue?.ToString() ?? "null")</strong></span>
+                <span class="demo-counter" id="playground-changes">ValueChanged × @pgChanges</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Value</div>
+            <div class="demo-control">
+                <span>Set Value</span>
+                <div class="demo-segmented" role="group" aria-label="Set value">
+                    <button type="button" id="pg-set-true" aria-pressed="@(pgValue == true ? "true" : "false")" @onclick="() => pgValue = true">true</button>
+                    <button type="button" id="pg-set-false" aria-pressed="@(pgValue == false ? "true" : "false")" @onclick="() => pgValue = false">false</button>
+                    <button type="button" id="pg-set-null" aria-pressed="@(pgValue is null ? "true" : "false")" @onclick="() => pgValue = null">null</button>
+                </div>
+            </div>
+            <label class="demo-control"><span>ThreeState</span><input type="checkbox" id="pg-three" @bind="pgThreeState" /></label>
+
+            <div class="demo-controls-title">Label</div>
+            <label class="demo-control"><span>Label</span><input type="text" @bind="pgLabel" @bind:event="oninput" /></label>
+            <div class="demo-control">
+                <span>LabelPosition</span>
+                <div class="demo-segmented" role="group" aria-label="Label position">
+                    @foreach (var p in Enum.GetValues<NxLabelPosition>())
+                    {
+                        <button type="button" aria-pressed="@(pgPosition == p ? "true" : "false")" @onclick="() => pgPosition = p">@p</button>
+                    }
+                </div>
+            </div>
+
+            <div class="demo-controls-title">State</div>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+            <label class="demo-control"><span>ReadOnly</span><input type="checkbox" id="pg-readonly" @bind="pgReadOnly" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="checkbox" Page="playground" />
+
+@code {
+    bool? pgValue = false;
+    string pgLabel = "Send a copy to the customer";
+    NxLabelPosition pgPosition = NxLabelPosition.End;
+    bool pgThreeState, pgDisabled, pgReadOnly;
+    int pgChanges;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "@bind-Value=\"sendCopy\"" };
+            if (!string.IsNullOrWhiteSpace(pgLabel)) attrs.Add($"Label=\"{pgLabel}\"");
+            if (pgPosition != NxLabelPosition.End) attrs.Add("LabelPosition=\"NxLabelPosition.Start\"");
+            if (pgThreeState) attrs.Add("ThreeState=\"true\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            if (pgReadOnly) attrs.Add("ReadOnly=\"true\"");
+            return "<NxCheckBox " + string.Join("\n            ", attrs) + " />";
+        }
+    }
+}

@@ -1,0 +1,95 @@
+@page "/contextmenu/playground"
+
+<DocHeader Slug="contextmenu" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Build the menu, then right-click (or long-press) the card.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                <NxContextMenu Id="playground-menu" Items="Items" OnItemClick="Picked" Disabled="pgDisabled" AriaLabel="Playground menu">
+                    <div class="demo-context-card" id="playground-card">
+                        <strong>Right-click me</strong>
+                        <span>@(pgDisabled ? "Disabled: the browser menu shows" : "Opens the menu below")</span>
+                    </div>
+                </NxContextMenu>
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-value">Picked: <strong>@picked</strong></span>
+                <span class="demo-counter" id="playground-changes">OnItemClick × @clicks</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Items</div>
+            <label class="demo-control"><span>Icons</span><input type="checkbox" id="pg-icons" @bind="pgIcons" /></label>
+            <label class="demo-control"><span>Shortcuts</span><input type="checkbox" id="pg-shortcuts" @bind="pgShortcuts" /></label>
+            <label class="demo-control"><span>Separator</span><input type="checkbox" id="pg-separator" @bind="pgSeparator" /></label>
+            <label class="demo-control"><span>Disabled item</span><input type="checkbox" id="pg-disabled-item" @bind="pgDisabledItem" /></label>
+            <label class="demo-control"><span>Check item</span><input type="checkbox" id="pg-check" @bind="pgCheck" /></label>
+            <label class="demo-control"><span>Submenu</span><input type="checkbox" id="pg-submenu" @bind="pgSubmenu" /></label>
+
+            <div class="demo-controls-title">Menu</div>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="contextmenu" Page="playground" />
+
+@code {
+    bool pgIcons = true, pgShortcuts = true, pgSeparator = true, pgDisabledItem, pgCheck, pgSubmenu, pgDisabled, gridOn = true;
+    string picked = "—";
+    int clicks;
+
+    IReadOnlyList<NxMenuItem> Items
+    {
+        get
+        {
+            var list = new List<NxMenuItem>
+            {
+                new("Edit") { Id = "edit", Icon = pgIcons ? DemoMenus.Icon("edit") : null, Shortcut = pgShortcuts ? "F2" : null },
+                new("Copy") { Id = "copy", Icon = pgIcons ? DemoMenus.Icon("plus") : null, Shortcut = pgShortcuts ? "Ctrl+C" : null },
+            };
+            if (pgDisabledItem) list.Add(new("Paste") { Id = "paste", Disabled = true, Shortcut = pgShortcuts ? "Ctrl+V" : null });
+            if (pgCheck) list.Add(new("Show grid") { Id = "grid", Checked = gridOn });
+            if (pgSubmenu) list.Add(new("Send to") { Id = "send", Items = [new("Plant") { Id = "plant" }, new("Office") { Id = "office" }, new("Customer") { Id = "customer" }] });
+            if (pgSeparator) list.Add(NxMenuItem.Separator());
+            list.Add(new("Delete") { Id = "delete", Icon = pgIcons ? DemoMenus.Icon("trash") : null, Shortcut = pgShortcuts ? "Del" : null });
+            return list;
+        }
+    }
+
+    void Picked(NxMenuItemClickEventArgs e)
+    {
+        picked = e.Item.Text;
+        clicks++;
+        if (e.Item.Id == "grid")
+            gridOn = !gridOn;
+    }
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var lines = new List<string>
+            {
+                $"new(\"Edit\") {{ {(pgIcons ? "Icon = editIcon, " : "")}{(pgShortcuts ? "Shortcut = \"F2\"" : "")} }},",
+                $"new(\"Copy\") {{ {(pgIcons ? "Icon = copyIcon, " : "")}{(pgShortcuts ? "Shortcut = \"Ctrl+C\"" : "")} }},",
+            };
+            if (pgDisabledItem) lines.Add("new(\"Paste\") { Disabled = true },");
+            if (pgCheck) lines.Add("new(\"Show grid\") { Checked = gridOn },");
+            if (pgSubmenu) lines.Add("new(\"Send to\") { Items = [new(\"Plant\"), new(\"Office\"), new(\"Customer\")] },");
+            if (pgSeparator) lines.Add("NxMenuItem.Separator(),");
+            lines.Add("new(\"Delete\") { … },");
+            var attrs = "Items=\"items\" OnItemClick=\"Run\"" + (pgDisabled ? " Disabled=\"true\"" : "");
+            return $"<NxContextMenu {attrs}>\n    <div>Right-click me</div>\n</NxContextMenu>\n\nIReadOnlyList<NxMenuItem> items =\n[\n    " + string.Join("\n    ", lines) + "\n];";
+        }
+    }
+}

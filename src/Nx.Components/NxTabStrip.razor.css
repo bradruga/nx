@@ -1,0 +1,191 @@
+.nx-tabstrip {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+    color: var(--nx-fg);
+}
+
+.nx-tabstrip-bottom { flex-direction: column-reverse; }
+.nx-tabstrip-left   { flex-direction: row; }
+.nx-tabstrip-right  { flex-direction: row-reverse; }
+
+/* ── Header: overflow arrows around a scrolling list ──────────────────────── */
+
+.nx-tabstrip-header {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    min-width: 0;
+    flex-shrink: 0;
+}
+
+.nx-tabstrip-top .nx-tabstrip-header    { border-bottom: 1px solid var(--nx-border); }
+.nx-tabstrip-bottom .nx-tabstrip-header { border-top: 1px solid var(--nx-border); }
+.nx-tabstrip-left .nx-tabstrip-header,
+.nx-tabstrip-right .nx-tabstrip-header  { flex-direction: column; max-width: 40%; }
+.nx-tabstrip-left .nx-tabstrip-header   { border-right: 1px solid var(--nx-border); }
+.nx-tabstrip-right .nx-tabstrip-header  { border-left: 1px solid var(--nx-border); }
+
+.nx-tabstrip-list {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    overflow: auto;
+    scrollbar-width: none;
+    overscroll-behavior: contain;
+}
+.nx-tabstrip-list::-webkit-scrollbar { display: none; }
+
+/* The tabs' total width is fractional but scrollLeft stops at a whole pixel: a 1 px spacer at the end lets
+   the last tab scroll fully into view instead of staying a fraction of a pixel clipped. */
+.nx-tabstrip-list::after { content: ""; flex: 0 0 1px; }
+
+.nx-tabstrip-left .nx-tabstrip-list,
+.nx-tabstrip-right .nx-tabstrip-list { flex-direction: column; }
+
+.nx-tabstrip-scroll {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 32px;
+    padding: 0;
+    border: none;
+    background: var(--nx-surface);
+    color: var(--nx-fg-muted);
+    cursor: pointer;
+}
+.nx-tabstrip-scroll:hover { background: var(--nx-surface-hover); color: var(--nx-fg); }
+.nx-tabstrip-scroll:disabled { opacity: 0.35; cursor: default; }
+
+/* nx-tabstrip.js sets data-overflow when the tabs do not fit, and which way there is more. */
+.nx-tabstrip-header[data-overflow] .nx-tabstrip-scroll { display: inline-flex; }
+.nx-tabstrip-header[data-overflow]:not([data-can-scroll-start]) .nx-tabstrip-scroll-start,
+.nx-tabstrip-header[data-overflow]:not([data-can-scroll-end]) .nx-tabstrip-scroll-end { opacity: 0.3; pointer-events: none; }
+
+.nx-tabstrip-left .nx-tabstrip-scroll,
+.nx-tabstrip-right .nx-tabstrip-scroll { width: auto; height: 28px; transform: rotate(90deg); }
+
+/* ── Tabs ─────────────────────────────────────────────────────────────────── */
+
+.nx-tabstrip-tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    min-height: 40px;
+    padding: 0 14px;
+    color: var(--nx-fg-muted);
+    font-weight: var(--nx-font-weight-medium);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: color var(--nx-transition), background var(--nx-transition);
+}
+
+.nx-tabstrip-tab:hover { color: var(--nx-fg); background: var(--nx-surface-hover); }
+
+/* The list scrolls, which clips an outside ring: draw the keyboard ring inside the tab. */
+.nx-tabstrip-tab { --nx-focus-ring-offset: -3px; }
+
+.nx-tabstrip-tab-active,
+.nx-tabstrip-tab-active:hover { color: var(--nx-tab-active-fg); }
+
+/* The active indicator: a bar on the side that faces the content. */
+.nx-tabstrip-tab-active::after {
+    content: "";
+    position: absolute;
+    background: var(--nx-tab-indicator);
+    border-radius: 2px;
+}
+.nx-tabstrip-top .nx-tabstrip-tab-active::after    { left: 8px; right: 8px; bottom: -1px; height: 2px; }
+.nx-tabstrip-bottom .nx-tabstrip-tab-active::after { left: 8px; right: 8px; top: -1px; height: 2px; }
+.nx-tabstrip-left .nx-tabstrip-tab-active::after   { top: 6px; bottom: 6px; right: -1px; width: 2px; }
+.nx-tabstrip-right .nx-tabstrip-tab-active::after  { top: 6px; bottom: 6px; left: -1px; width: 2px; }
+
+.nx-tabstrip-left .nx-tabstrip-tab,
+.nx-tabstrip-right .nx-tabstrip-tab { justify-content: flex-start; }
+
+.nx-tabstrip-full-width .nx-tabstrip-tab { flex: 1 0 auto; justify-content: center; }
+
+.nx-tabstrip-tab-disabled,
+.nx-tabstrip-tab-disabled:hover {
+    color: var(--nx-fg-subtle);
+    background: transparent;
+    cursor: not-allowed;
+}
+
+.nx-tabstrip-tab-icon { display: inline-flex; }
+.nx-tabstrip-tab-icon ::deep svg { width: 16px; height: 16px; }
+
+.nx-tabstrip-tab-closable { padding-right: 6px; }
+
+.nx-tabstrip-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: none;
+    border-radius: var(--nx-radius-sm);
+    background: transparent;
+    color: var(--nx-fg-muted);
+    cursor: pointer;
+}
+.nx-tabstrip-close:hover { background: var(--nx-surface-active); color: var(--nx-fg); }
+
+/* ── Panels ───────────────────────────────────────────────────────────────── */
+
+.nx-tabstrip-panels {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+}
+
+.nx-tabstrip-panel {
+    height: 100%;
+    box-sizing: border-box;
+    padding: var(--nx-tab-panel-padding);
+    overflow: auto;
+}
+.nx-tabstrip-panel[hidden] { display: none; }
+.nx-tabstrip-panel:focus { outline: none; }
+.nx-tabstrip-panel:focus-visible { outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color); outline-offset: -2px; }
+
+@media (prefers-reduced-motion: reduce) {
+    .nx-tabstrip-tab { transition: none; }
+}
+
+/* ── Phone: side tabs move to the top; every tab is a 44 px target ─────────── */
+
+@media (max-width: 600px) {
+    .nx-tabstrip-left,
+    .nx-tabstrip-right { flex-direction: column; }
+
+    .nx-tabstrip-left .nx-tabstrip-header,
+    .nx-tabstrip-right .nx-tabstrip-header {
+        flex-direction: row;
+        max-width: none;
+        border: none;
+        border-bottom: 1px solid var(--nx-border);
+    }
+
+    .nx-tabstrip-left .nx-tabstrip-list,
+    .nx-tabstrip-right .nx-tabstrip-list { flex-direction: row; }
+
+    .nx-tabstrip-left .nx-tabstrip-scroll,
+    .nx-tabstrip-right .nx-tabstrip-scroll { width: 32px; height: auto; transform: none; }
+
+    .nx-tabstrip-left .nx-tabstrip-tab-active::after,
+    .nx-tabstrip-right .nx-tabstrip-tab-active::after { top: auto; left: 8px; right: 8px; bottom: -1px; width: auto; height: 2px; }
+
+    .nx-tabstrip-tab { min-height: 44px; }
+    .nx-tabstrip-close { width: 32px; height: 32px; }
+}

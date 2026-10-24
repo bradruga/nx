@@ -1,0 +1,85 @@
+@page "/splitter/playground"
+
+<DocHeader Slug="splitter" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter of the first pane, live; the second pane takes the rest.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                <NxSplitter @key="pgKey" Id="playground-splitter" Orientation="pgOrientation" Style="height: 240px">
+                    <NxSplitterPane Id="pg-first" Title="First" @bind-Size="pgSize" @bind-Size:after="Changed"
+                                    Min="@OrNull(pgMin)" Max="@OrNull(pgMax)" Resizable="pgResizable"
+                                    Collapsible="pgCollapsible" @bind-Collapsed="pgCollapsed">
+                        <p>First pane</p>
+                    </NxSplitterPane>
+                    <NxSplitterPane Id="pg-second" Title="Second" Collapsible="pgSecondCollapsible">
+                        <p>Second pane</p>
+                    </NxSplitterPane>
+                </NxSplitter>
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-value">Size: <strong>@(pgSize ?? "null")</strong> · Collapsed: <strong>@(pgCollapsed ? "true" : "false")</strong></span>
+                <span class="demo-counter" id="playground-changes">SizeChanged × @pgChanges</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Splitter</div>
+            <label class="demo-control">
+                <span>Orientation</span>
+                <select id="pg-orientation" @bind="pgOrientation" @bind:after="Remount">
+                    <option value="@NxOrientation.Horizontal">Horizontal</option>
+                    <option value="@NxOrientation.Vertical">Vertical</option>
+                </select>
+            </label>
+
+            <div class="demo-controls-title">First pane</div>
+            <label class="demo-control"><span>Size</span><input type="text" id="pg-size" @bind="pgSize" /></label>
+            <label class="demo-control"><span>Min</span><input type="text" id="pg-min" placeholder="e.g. 120px" @bind="pgMin" /></label>
+            <label class="demo-control"><span>Max</span><input type="text" id="pg-max" placeholder="e.g. 70%" @bind="pgMax" /></label>
+            <label class="demo-control"><span>Resizable</span><input type="checkbox" id="pg-resizable" @bind="pgResizable" /></label>
+            <label class="demo-control"><span>Collapsible</span><input type="checkbox" id="pg-collapsible" @bind="pgCollapsible" /></label>
+            <label class="demo-control"><span>Collapsed</span><input type="checkbox" id="pg-collapsed" @bind="pgCollapsed" /></label>
+
+            <div class="demo-controls-title">Second pane</div>
+            <label class="demo-control"><span>Collapsible</span><input type="checkbox" id="pg-second-collapsible" @bind="pgSecondCollapsible" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="splitter" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
+
+    NxOrientation pgOrientation = NxOrientation.Horizontal;
+    string? pgSize = "40%";
+    string pgMin = "120px", pgMax = "";
+    bool pgResizable = true, pgCollapsible = true, pgCollapsed, pgSecondCollapsible;
+    int pgKey, pgChanges;
+
+    void Changed() => pgChanges++;
+    void Remount() => pgKey++;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var root = pgOrientation == NxOrientation.Vertical ? "<NxSplitter Orientation=\"NxOrientation.Vertical\" Style=\"height: 240px\">" : "<NxSplitter Style=\"height: 240px\">";
+            var attrs = new List<string> { "@bind-Size=\"size\"" };
+            if (OrNull(pgMin) is { } min) attrs.Add($"Min=\"{min}\"");
+            if (OrNull(pgMax) is { } max) attrs.Add($"Max=\"{max}\"");
+            if (!pgResizable) attrs.Add("Resizable=\"false\"");
+            if (pgCollapsible) attrs.Add("Collapsible=\"true\" @bind-Collapsed=\"collapsed\"");
+            var second = pgSecondCollapsible ? "    <NxSplitterPane Collapsible=\"true\">…</NxSplitterPane>" : "    <NxSplitterPane>…</NxSplitterPane>";
+            return root + "\n    <NxSplitterPane " + string.Join(" ", attrs) + ">…</NxSplitterPane>\n" + second + "\n</NxSplitter>";
+        }
+    }
+}

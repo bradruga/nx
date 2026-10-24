@@ -1,0 +1,27 @@
+@namespace Nx.Components
+@typeparam TValue
+
+<div @ref="container"
+     @attributes="AdditionalAttributes"
+     id="@Id"
+     class="@CssClass"
+     style="@Style"
+     role="@(Multiple ? "group" : "radiogroup")"
+     aria-label="@AriaLabel"
+     aria-disabled="@(Disabled ? "true" : null)"
+     aria-invalid="@(validation.IsInvalid ? "true" : null)">
+    <CascadingValue Value="this" IsFixed="true">
+        @if (Data is not null)
+        {
+            foreach (var item in Data)
+            {
+                <NxToggleGroupItem TValue="TValue"
+                                   Value="item"
+                                   Label="@(ItemTemplate is null ? ItemText?.Invoke(item) ?? item?.ToString() : null)"
+                                   Disabled="@(ItemDisabled?.Invoke(item) ?? false)"
+                                   ChildContent="@(ItemTemplate?.Invoke(item))" />
+            }
+        }
+        @ChildContent
+    </CascadingValue>
+</div>

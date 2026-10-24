@@ -1,0 +1,99 @@
+@page "/datepicker/api"
+
+<DocHeader Slug="datepicker" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Value</td><td>TValue?</td><td>—</td><td>Use <code>@@bind-Value</code>. DateOnly, DateTime, or nullable. A DateTime keeps its time.</td></tr>
+                <tr><td>Min / Max</td><td>DateOnly?</td><td>none</td><td>Pickable range. Typed dates outside it move to the nearest limit.</td></tr>
+                <tr><td>IsDateDisabled</td><td>Func&lt;DateOnly, bool&gt;?</td><td>—</td><td>Dates that cannot be picked; typing one reverts.</td></tr>
+                <tr><td>Format</td><td>string</td><td>"d"</td><td>.NET date format while not focused. All-number formats also set the typing order.</td></tr>
+                <tr><td>Culture</td><td>CultureInfo?</td><td>current</td><td>Typing order and separator, names, first day of week, week numbering.</td></tr>
+                <tr><td>ShowWeekNumbers</td><td>bool</td><td>false</td><td>Week column in the calendar.</td></tr>
+                <tr><td>FirstDayOfWeek</td><td>DayOfWeek?</td><td>culture</td><td>The calendar's first column.</td></tr>
+                <tr><td>ShowTodayButton</td><td>bool</td><td>true</td><td>Today button under the calendar.</td></tr>
+                <tr><td>Label / FloatingLabel</td><td>string? / bool</td><td>— / false</td><td>As in NxTextBox.</td></tr>
+                <tr><td>Placeholder</td><td>string?</td><td>pattern</td><td>Default: the typing pattern, e.g. mm/dd/yyyy.</td></tr>
+                <tr><td>Clearable</td><td>bool</td><td>false</td><td>Clear button and Esc. Nullable types only.</td></tr>
+                <tr><td>ReadOnly / Disabled</td><td>bool</td><td>false</td><td>Native readonly / disabled; the calendar does not open.</td></tr>
+                <tr><td>AutoFocus</td><td>bool</td><td>false</td><td>Focus after first render.</td></tr>
+                <tr><td>MobileMode</td><td>NxMobileMode</td><td>Auto</td><td>Full-screen sheet below <code>MobileBreakpoint</code>, always, or never.</td></tr>
+                <tr><td>MobileBreakpoint</td><td>int</td><td>600</td><td>Viewport width in px at or below which Auto uses the sheet.</td></tr>
+                <tr><td>MobileTitle</td><td>string?</td><td>Label</td><td>The sheet's title; else "Choose a date".</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>Input id; outer class and style. Other attributes go to the input.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Event</th><th>Args</th><th>Raised when</th></tr></thead>
+            <tbody>
+                <tr><td>ValueChanged</td><td>TValue?</td><td>A different date commits: a pick, Enter, leaving the field, clear.</td></tr>
+                <tr><td>OnFocus / OnBlur</td><td>FocusEventArgs</td><td>The input gains / loses focus (after the commit).</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>FocusAsync()</td><td>ValueTask</td><td>Moves keyboard focus to the input.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxCalendar</h2>
+    <p class="doc-note">The calendar inside the pickers, usable on its own.</p>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Value</td><td>DateOnly?</td><td>—</td><td>Use <code>@@bind-Value</code>.</td></tr>
+                <tr><td>RangeStart / RangeEnd</td><td>DateOnly?</td><td>—</td><td>A range to highlight.</td></tr>
+                <tr><td>Min / Max / IsDateDisabled</td><td></td><td>—</td><td>As on the picker.</td></tr>
+                <tr><td>Months</td><td>int</td><td>1</td><td>1 or 2 months side by side.</td></tr>
+                <tr><td>ShowWeekNumbers / FirstDayOfWeek / Culture</td><td></td><td></td><td>As on the picker.</td></tr>
+                <tr><td>ShowTodayButton</td><td>bool</td><td>true</td><td>Today button.</td></tr>
+                <tr><td>FooterContent</td><td>RenderFragment?</td><td>—</td><td>Extra footer content.</td></tr>
+                <tr><td>Focusable</td><td>bool</td><td>true</td><td>Takes focus and handles its own keys. Pickers set false and forward keys.</td></tr>
+                <tr><td>OnNavigate</td><td>EventCallback</td><td>—</td><td>The highlighted cell or the view changed.</td></tr>
+                <tr><td>HandleKeyAsync(e)</td><td>Task&lt;bool&gt;</td><td></td><td>Method: handles a navigation key as the grid would.</td></tr>
+                <tr><td>GoTo(date)</td><td>void</td><td></td><td>Method: shows and highlights a date.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <p class="doc-note">The field is <code>NxFieldFrame</code>, shared with NxTextBox, so it reads the same field variables, plus:</p>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-calendar-cell-size</td><td>36px</td><td>Day cell width and height (48px in the phone sheet).</td></tr>
+                <tr><td>--nx-calendar-selected-bg / -fg</td><td>= --nx-accent / -fg</td><td>The picked day.</td></tr>
+                <tr><td>--nx-calendar-range-bg</td><td>= --nx-accent-subtle</td><td>Days inside a range.</td></tr>
+                <tr><td>--nx-calendar-today-border</td><td>= --nx-accent</td><td>Ring around today.</td></tr>
+                <tr><td>--nx-popup-bg / --nx-shadow-popup</td><td></td><td>Popup surface and shadow.</td></tr>
+                <tr><td>--nx-z-popup / --nx-z-overlay</td><td>1000 / 1100</td><td>Popup and phone sheet stacking.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="datepicker" Page="api" />

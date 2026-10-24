@@ -1,0 +1,53 @@
+@page "/loader/api"
+
+<DocHeader Slug="loader" Page="api" />
+
+<div class="doc-section">
+    <h2>NxLoader Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Type</td><td>NxLoaderType</td><td>Spinner</td><td>Spinner, Converging, Pulsing.</td></tr>
+                <tr><td>Size</td><td>NxSize</td><td>Medium</td><td>Small 16, Medium 28, Large 44 px.</td></tr>
+                <tr><td>AriaLabel</td><td>string</td><td>"Loading"</td><td>The progress bar's accessible name.</td></tr>
+                <tr><td>Class / Style</td><td>string?</td><td>—</td><td>On the outer element; other attributes go there too.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxLoaderContainer Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Visible</td><td>bool</td><td>true</td><td>Shows the overlay.</td></tr>
+                <tr><td>Text</td><td>string?</td><td>—</td><td>Text under the loader; also its accessible name.</td></tr>
+                <tr><td>LoaderType</td><td>NxLoaderType</td><td>Spinner</td><td>The loader's animation.</td></tr>
+                <tr><td>LoaderSize</td><td>NxSize</td><td>Large</td><td>The loader's size.</td></tr>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>Replaces the loader and text.</td></tr>
+                <tr><td>Class / Style</td><td>string?</td><td>—</td><td>On the overlay; other attributes go there too.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-loader-color</td><td>var(--nx-accent)</td><td>The loader.</td></tr>
+                <tr><td>--nx-loader-size-sm / -md / -lg</td><td>16 / 28 / 44px</td><td>The sizes.</td></tr>
+                <tr><td>--nx-loader-overlay-bg</td><td>white 72% (dark: #16161a 72%)</td><td>The container's overlay.</td></tr>
+                <tr><td>--nx-loader-text-color</td><td>var(--nx-fg-muted)</td><td>The container's text.</td></tr>
+                <tr><td>--nx-z-loader</td><td>800</td><td>The overlay's stacking: under windows (900) and popups.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="loader" Page="api" />

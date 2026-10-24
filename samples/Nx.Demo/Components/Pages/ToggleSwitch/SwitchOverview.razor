@@ -1,0 +1,51 @@
+@page "/switch"
+@page "/switch/overview"
+
+<DocHeader Slug="switch" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxToggleSwitch</code> flips a <code>bool</code> on and off. It reads as "this takes effect now", so use it for settings
+        and live toggles, and <code>NxCheckBox</code> for choices that are submitted with a form. It is a
+        <code>&lt;button role="switch"&gt;</code>, can show On/Off text inside or beside the track, comes in three sizes, and has a
+        loading state for a change that is still being saved.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column">
+        <NxToggleSwitch Id="overview-switch" @bind-Value="notify" Label="Email me when the order ships" />
+        <span class="demo-value" id="overview-value">Value: <strong>@notify</strong></span>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Tab</td><td>Moves focus to the switch.</td></tr>
+                <tr><td>Space / Enter</td><td>Flips it — it is a native button.</td></tr>
+                <tr><td>role="switch"</td><td>With <code>aria-checked</code> <code>true</code> or <code>false</code>; screen readers say "on" or "off".</td></tr>
+                <tr><td>aria-busy</td><td><code>true</code> while <code>Loading</code>; it stays focusable and ignores clicks (<code>aria-disabled</code>).</td></tr>
+                <tr><td>On/Off text</td><td><code>aria-hidden</code>: the state is already announced from <code>aria-checked</code>.</td></tr>
+                <tr><td>Label</td><td>A real <code>&lt;label for&gt;</code>; clicking it flips the switch.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="switch" Page="overview" />
+
+@code {
+    bool notify = true;
+
+    const string basicCode =
+        """
+        <NxToggleSwitch @bind-Value="settings.NotifyOnShip" Label="Email me when the order ships" />
+        """;
+}

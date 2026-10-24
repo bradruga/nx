@@ -1,0 +1,125 @@
+@page "/timepicker/playground"
+@using System.Globalization
+
+<DocHeader Slug="timepicker" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live, bound to a <code>TimeOnly?</code>.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                <NxTimePicker @key="pgKey" TValue="TimeOnly?" Id="playground-timepicker" @bind-Value="pgTime" @bind-Value:after="Changed"
+                              Step="StepValue" Min="MinOrNull" Max="MaxOrNull" Use24Hour="Clock" Culture="Culture"
+                              Label="@LabelOrNull" FloatingLabel="pgFloating" Placeholder="@PlaceholderOrNull"
+                              Clearable="pgClearable" ReadOnly="pgReadOnly" Disabled="pgDisabled" AutoFocus="pgAutoFocus"
+                              MobileMode="pgMobile" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-value">Value: <strong>@(pgTime?.ToString("HH:mm") ?? "null")</strong></span>
+                <span class="demo-counter" id="playground-changes">ValueChanged × @pgChanges</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Value</div>
+            <label class="demo-control">
+                <span>Step (minutes)</span>
+                <select id="pg-step" @bind="pgStep">
+                    <option value="5">5</option>
+                    <option value="15">15</option>
+                    <option value="30">30</option>
+                    <option value="60">60</option>
+                </select>
+            </label>
+            <label class="demo-control"><span>Min (HH:mm)</span><input type="text" id="pg-min" @bind="pgMin" /></label>
+            <label class="demo-control"><span>Max (HH:mm)</span><input type="text" id="pg-max" @bind="pgMax" /></label>
+
+            <div class="demo-controls-title">Format</div>
+            <label class="demo-control">
+                <span>Use24Hour</span>
+                <select id="pg-clock" @bind="pgClock">
+                    <option value="">(culture)</option>
+                    <option value="true">true</option>
+                    <option value="false">false</option>
+                </select>
+            </label>
+            <label class="demo-control">
+                <span>Culture</span>
+                <select id="pg-culture" @bind="pgCulture">
+                    <option value="en-US">en-US</option>
+                    <option value="en-GB">en-GB</option>
+                    <option value="de-DE">de-DE</option>
+                </select>
+            </label>
+
+            <div class="demo-controls-title">Label &amp; text</div>
+            <label class="demo-control"><span>Label</span><input type="text" @bind="pgLabel" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>FloatingLabel</span><input type="checkbox" id="pg-floating" @bind="pgFloating" /></label>
+            <label class="demo-control"><span>Placeholder</span><input type="text" @bind="pgPlaceholder" @bind:event="oninput" /></label>
+
+            <div class="demo-controls-title">Behavior</div>
+            <label class="demo-control"><span>Clearable</span><input type="checkbox" id="pg-clearable" @bind="pgClearable" /></label>
+            <label class="demo-control"><span>ReadOnly</span><input type="checkbox" id="pg-readonly" @bind="pgReadOnly" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+            <label class="demo-control"><span>AutoFocus (remounts)</span><input type="checkbox" @bind="pgAutoFocus" @bind:after="Remount" /></label>
+            <label class="demo-control">
+                <span>MobileMode</span>
+                <select id="pg-mobile" @bind="pgMobile" @bind:after="Remount">
+                    <option value="@NxMobileMode.Auto">Auto</option>
+                    <option value="@NxMobileMode.Always">Always</option>
+                    <option value="@NxMobileMode.Never">Never</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="timepicker" Page="playground" />
+
+@code {
+    TimeOnly? pgTime = new(9, 30);
+    string pgStep = "30", pgMin = "", pgMax = "", pgClock = "", pgCulture = "en-US";
+    string pgLabel = "Start time", pgPlaceholder = "";
+    bool pgFloating, pgClearable, pgReadOnly, pgDisabled, pgAutoFocus;
+    NxMobileMode pgMobile = NxMobileMode.Auto;
+    int pgKey, pgChanges;
+
+    CultureInfo Culture => CultureInfo.GetCultureInfo(pgCulture);
+    int StepValue => int.Parse(pgStep, CultureInfo.InvariantCulture);
+    bool? Clock => bool.TryParse(pgClock, out var b) ? b : null;
+    string? LabelOrNull => string.IsNullOrWhiteSpace(pgLabel) ? null : pgLabel;
+    string? PlaceholderOrNull => string.IsNullOrWhiteSpace(pgPlaceholder) ? null : pgPlaceholder;
+    TimeOnly? MinOrNull => TimeOnly.TryParseExact(pgMin.Trim(), "HH:mm", out var t) ? t : null;
+    TimeOnly? MaxOrNull => TimeOnly.TryParseExact(pgMax.Trim(), "HH:mm", out var t) ? t : null;
+
+    void Changed() => pgChanges++;
+    void Remount() => pgKey++;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "@bind-Value=\"time\"" };
+            if (StepValue != 30) attrs.Add($"Step=\"{StepValue}\"");
+            if (MinOrNull is { } min) attrs.Add($"Min=\"new TimeOnly({min.Hour}, {min.Minute})\"");
+            if (MaxOrNull is { } max) attrs.Add($"Max=\"new TimeOnly({max.Hour}, {max.Minute})\"");
+            if (Clock is bool c) attrs.Add($"Use24Hour=\"{(c ? "true" : "false")}\"");
+            if (pgCulture != "en-US") attrs.Add($"Culture=\"@CultureInfo.GetCultureInfo(\"{pgCulture}\")\"");
+            if (LabelOrNull is { } l) attrs.Add($"Label=\"{l}\"");
+            if (pgFloating) attrs.Add("FloatingLabel=\"true\"");
+            if (PlaceholderOrNull is { } p) attrs.Add($"Placeholder=\"{p}\"");
+            if (pgClearable) attrs.Add("Clearable=\"true\"");
+            if (pgReadOnly) attrs.Add("ReadOnly=\"true\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            if (pgAutoFocus) attrs.Add("AutoFocus=\"true\"");
+            if (pgMobile != NxMobileMode.Auto) attrs.Add($"MobileMode=\"NxMobileMode.{pgMobile}\"");
+            return "<NxTimePicker " + string.Join("\n              ", attrs) + " />";
+        }
+    }
+}

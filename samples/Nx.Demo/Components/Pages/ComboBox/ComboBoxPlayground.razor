@@ -1,0 +1,213 @@
+@page "/combobox/playground"
+
+<DocHeader Slug="combobox" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live. The value is the customer <code>Code</code>, a string, so custom values can be tried too.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                <div>
+                    <label class="demo-field-label" for="playground-combo">Customer</label>
+                    <NxComboBox @key="pgKey"
+                                TItem="Customer" TValue="string"
+                                Id="playground-combo"
+                                Data="@(pgSource == "data" ? PlaygroundData : null)"
+                                DataProvider="@(pgSource == "provider" ? PlaygroundProvider : null)"
+                                ItemText="c => c.Name"
+                                ItemValue="c => c.Code"
+                                ItemGroup="@(pgGroup ? c => c.Region : null)"
+                                @bind-Value="pgValue"
+                                @bind-SelectedItem="pgItem"
+                                Multiple="pgMultiple"
+                                @bind-Values="pgValues"
+                                MaxVisibleChips="@(pgMaxChips > 0 ? pgMaxChips : null)"
+                                ColumnDefinitions="@(pgColumns ? PlaygroundColumns : null)"
+                                PopupWidth="@(pgColumns ? "560px" : null)"
+                                MobileMode="pgMobile"
+                                Filter="pgFilter"
+                                CustomFilter="@(pgCustomFilter ? MatchCodeOrName : null)"
+                                AllowCustomValue="@(pgAllowCustom && !pgMultiple)"
+                                Clearable="pgClearable"
+                                Placeholder="@(string.IsNullOrWhiteSpace(pgPlaceholder) ? null : pgPlaceholder)"
+                                NoDataText="@pgNoData"
+                                Virtualize="pgVirtualize"
+                                Loading="pgLoading"
+                                Disabled="pgDisabled"
+                                ReadOnly="pgReadOnly"
+                                ItemTemplate="@(pgItemTemplate ? CustomerItem : null)"
+                                SelectedItemTemplate="@(pgSelectedTemplate ? CustomerSelected : null)" />
+                </div>
+            </div>
+            <div class="demo-row">
+                @if (pgMultiple)
+                {
+                    <span class="demo-value" id="playground-values">Values: <strong>[@string.Join(", ", pgValues)]</strong></span>
+                }
+                else
+                {
+                    <span class="demo-value" id="playground-value">Value: <strong>@(pgValue is null ? "null" : $"\"{pgValue}\"")</strong></span>
+                    <span class="demo-value" id="playground-item">SelectedItem: <strong>@(pgItem?.Name ?? "null")</strong></span>
+                }
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Modes</div>
+            <label class="demo-control"><span>Multiple</span><input type="checkbox" id="pg-multiple" @bind="pgMultiple" @bind:after="Remount" /></label>
+            <label class="demo-control"><span>MaxVisibleChips</span><input type="number" id="pg-max-chips" min="0" @bind="pgMaxChips" disabled="@(!pgMultiple)" /></label>
+            <label class="demo-control"><span>Columns</span><input type="checkbox" id="pg-columns" @bind="pgColumns" /></label>
+            <label class="demo-control">
+                <span>MobileMode</span>
+                <select id="pg-mobile" @bind="pgMobile" @bind:after="Remount">
+                    @foreach (var m in Enum.GetValues<NxComboBoxMobileMode>())
+                    {
+                        <option value="@m">@m</option>
+                    }
+                </select>
+            </label>
+
+            <div class="demo-controls-title">Data</div>
+            <div class="demo-control">
+                <span>Source</span>
+                <div class="demo-segmented" role="group" aria-label="Source">
+                    <button type="button" id="pg-source-data" aria-pressed="@(pgSource == "data" ? "true" : "false")" @onclick="@(() => SetSource("data"))">Data</button>
+                    <button type="button" id="pg-source-provider" aria-pressed="@(pgSource == "provider" ? "true" : "false")" @onclick="@(() => SetSource("provider"))">DataProvider</button>
+                </div>
+            </div>
+            <label class="demo-control"><span>Provider latency (ms)</span><input type="number" min="0" step="100" @bind="pgLatency" disabled="@(pgSource != "provider")" /></label>
+            <label class="demo-control"><span>×1000 rows (Data)</span><input type="checkbox" id="pg-large" @bind="pgLarge" /></label>
+            <label class="demo-control"><span>ItemGroup (Region)</span><input type="checkbox" id="pg-group" @bind="pgGroup" /></label>
+            <label class="demo-control"><span>Virtualize</span><input type="checkbox" id="pg-virtualize" @bind="pgVirtualize" /></label>
+
+            <div class="demo-controls-title">Filtering</div>
+            <label class="demo-control">
+                <span>Filter</span>
+                <select id="pg-filter" @bind="pgFilter" disabled="@pgCustomFilter">
+                    @foreach (var f in Enum.GetValues<NxComboBoxFilter>())
+                    {
+                        <option value="@f">@f</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control"><span>CustomFilter (code or name)</span><input type="checkbox" id="pg-custom-filter" @bind="pgCustomFilter" /></label>
+            <label class="demo-control"><span>AllowCustomValue</span><input type="checkbox" id="pg-allow-custom" @bind="pgAllowCustom" disabled="@pgMultiple" /></label>
+
+            <div class="demo-controls-title">Presentation</div>
+            <label class="demo-control"><span>Placeholder</span><input type="text" @bind="pgPlaceholder" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>NoDataText</span><input type="text" @bind="pgNoData" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>Clearable</span><input type="checkbox" id="pg-clearable" @bind="pgClearable" /></label>
+            <label class="demo-control"><span>ItemTemplate</span><input type="checkbox" id="pg-item-template" @bind="pgItemTemplate" /></label>
+            <label class="demo-control"><span>SelectedItemTemplate</span><input type="checkbox" id="pg-selected-template" @bind="pgSelectedTemplate" /></label>
+
+            <div class="demo-controls-title">State</div>
+            <label class="demo-control"><span>Loading</span><input type="checkbox" id="pg-loading" @bind="pgLoading" /></label>
+            <label class="demo-control"><span>ReadOnly</span><input type="checkbox" id="pg-readonly" @bind="pgReadOnly" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="combobox" Page="playground" />
+
+@code {
+    static bool MatchCodeOrName(Customer c, string text) =>
+        c.Code.StartsWith(text, StringComparison.OrdinalIgnoreCase) || c.Name.Contains(text, StringComparison.OrdinalIgnoreCase);
+
+    // ── Playground ─────────────────────────────────────────────────────────────
+    string pgSource = "data";
+    int pgLatency = 600, pgKey;
+    bool pgLarge, pgGroup, pgVirtualize, pgCustomFilter, pgAllowCustom, pgClearable = true;
+    bool pgItemTemplate, pgSelectedTemplate, pgLoading, pgReadOnly, pgDisabled;
+    string pgPlaceholder = "Search customers";
+    string pgNoData = "No matches";
+    NxComboBoxFilter pgFilter = NxComboBoxFilter.Contains;
+    string? pgValue;
+    Customer? pgItem;
+    bool pgMultiple, pgColumns;
+    int pgMaxChips;
+    IEnumerable<string> pgValues = [];
+    NxComboBoxMobileMode pgMobile = NxComboBoxMobileMode.Auto;
+
+    static readonly List<NxComboBoxColumnDefinition<Customer>> PlaygroundColumns =
+    [
+        new() { Field = c => c.Code, Header = "Code", Width = "70px" },
+        new() { Field = c => c.Name, Header = "Customer", Width = "minmax(140px, 2fr)" },
+        new() { Field = c => c.City, Header = "City", Width = "minmax(90px, 1fr)" },
+        new() { Field = c => c.Region, Header = "Region", Width = "minmax(90px, 1fr)" },
+    ];
+
+    void Remount() => pgKey++;
+
+    static readonly List<Customer> LargeCustomers = Enumerable.Range(0, 1000)
+        .SelectMany(n => SampleData.Customers.Select(c => c with { Id = n * 100 + c.Id, Code = $"{c.Code}{n:000}", Name = $"{c.Name} #{n + 1}" }))
+        .ToList();
+
+    IEnumerable<Customer> PlaygroundData => pgLarge ? LargeCustomers : SampleData.Customers;
+
+    Task<IEnumerable<Customer>> PlaygroundProvider(NxComboBoxRequest request) =>
+        SampleData.SearchCustomersAsync(request.Filter, pgLatency, request.CancellationToken);
+
+    void SetSource(string source)
+    {
+        pgSource = source;
+        pgKey++;
+    }
+
+    static readonly RenderFragment<Customer> CustomerItem = c =>
+        @<text><span class="demo-code-chip">@c.Code</span><span>@c.Name</span><span class="demo-item-meta">@c.City</span></text>;
+
+    static readonly RenderFragment<Customer> CustomerSelected = c =>
+        @<text><span class="demo-code-chip">@c.Code</span><span>@c.Name</span></text>;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string>
+            {
+                pgSource == "data" ? "Data=\"customers\"" : "DataProvider=\"SearchAsync\"",
+                "ItemText=\"c => c.Name\"",
+                "ItemValue=\"c => c.Code\"",
+            };
+            if (pgGroup) attrs.Add("ItemGroup=\"c => c.Region\"");
+            if (pgMultiple)
+            {
+                attrs.Add("Multiple=\"true\"");
+                attrs.Add("@bind-Values=\"customerCodes\"");
+                if (pgMaxChips > 0) attrs.Add($"MaxVisibleChips=\"{pgMaxChips}\"");
+            }
+            else
+            {
+                attrs.Add("@bind-Value=\"customerCode\"");
+                attrs.Add("@bind-SelectedItem=\"customer\"");
+            }
+            if (pgColumns) attrs.Add("ColumnDefinitions=\"customerColumns\"");
+            if (pgMobile != NxComboBoxMobileMode.Auto) attrs.Add($"MobileMode=\"NxComboBoxMobileMode.{pgMobile}\"");
+            if (pgCustomFilter) attrs.Add("CustomFilter=\"MatchCodeOrName\"");
+            else if (pgFilter != NxComboBoxFilter.Contains) attrs.Add($"Filter=\"NxComboBoxFilter.{pgFilter}\"");
+            if (pgAllowCustom && !pgMultiple) attrs.Add("AllowCustomValue=\"true\"");
+            if (pgClearable) attrs.Add("Clearable=\"true\"");
+            if (!string.IsNullOrWhiteSpace(pgPlaceholder)) attrs.Add($"Placeholder=\"{pgPlaceholder}\"");
+            if (pgNoData != "No matches") attrs.Add($"NoDataText=\"{pgNoData}\"");
+            if (pgVirtualize) attrs.Add("Virtualize=\"true\"");
+            if (pgLoading) attrs.Add("Loading=\"true\"");
+            if (pgReadOnly) attrs.Add("ReadOnly=\"true\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+
+            var open = "<NxComboBox " + string.Join("\n            ", attrs);
+            if (!pgItemTemplate && !pgSelectedTemplate)
+                return open + " />";
+            var body = "";
+            if (pgItemTemplate) body += "\n    <ItemTemplate Context=\"c\">@c.Code @c.Name @c.City</ItemTemplate>";
+            if (pgSelectedTemplate) body += "\n    <SelectedItemTemplate Context=\"c\">@c.Code @c.Name</SelectedItemTemplate>";
+            return open + ">" + body + "\n</NxComboBox>";
+        }
+    }
+}

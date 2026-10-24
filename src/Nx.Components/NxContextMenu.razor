@@ -1,0 +1,8 @@
+@namespace Nx.Components
+
+@if (ChildContent is not null)
+{
+    @* display: contents — the wrapper adds no box; its first element is the target. *@
+    <span class="nx-context-target" @ref="wrapper">@ChildContent</span>
+}
+<NxMenu @ref="menu" Items="Items" OnItemClick="OnItemClick" AriaLabel="@AriaLabel" Id="@Id" Class="@MenuClass" />

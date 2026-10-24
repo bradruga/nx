@@ -1,0 +1,80 @@
+@page "/splitter/api"
+
+<DocHeader Slug="splitter" Page="api" />
+
+<div class="doc-section">
+    <h2>NxSplitter Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>Two or more <code>NxSplitterPane</code>s.</td></tr>
+                <tr><td>Orientation</td><td>NxOrientation</td><td>Horizontal</td><td>Horizontal: side by side. Vertical: stacked.</td></tr>
+                <tr><td>Id / Class</td><td>string?</td><td>—</td><td>Outer element.</td></tr>
+                <tr><td>Style</td><td>string?</td><td>—</td><td>Give the splitter a height. On phones it grows with its stacked panes.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxSplitterPane Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Size</td><td>string?</td><td>rest</td><td>Use <code>@@bind-Size</code>: <code>"30%"</code> or <code>"240px"</code>. None: shares what is left.</td></tr>
+                <tr><td>Min / Max</td><td>string?</td><td>—</td><td>Resize limits, px or %.</td></tr>
+                <tr><td>Resizable</td><td>bool</td><td>true</td><td>Whether the bar next to the pane resizes it.</td></tr>
+                <tr><td>Collapsible</td><td>bool</td><td>false</td><td>Collapse button on the bar and, on phones, the pane header; Enter on the bar.</td></tr>
+                <tr><td>Collapsed</td><td>bool</td><td>false</td><td>Use <code>@@bind-Collapsed</code>, or leave it to the buttons.</td></tr>
+                <tr><td>Title</td><td>string?</td><td>—</td><td>The bar's accessible name; the pane header on phones.</td></tr>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>Pane content; scrolls when larger than the pane.</td></tr>
+                <tr><td>Id / Class</td><td>string?</td><td>—</td><td>The pane element.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Event</th><th>Args</th><th>Raised when</th></tr></thead>
+            <tbody>
+                <tr><td>SizeChanged</td><td>string?</td><td>A drag or key resized the pane: in % if its size was in %, else px.</td></tr>
+                <tr><td>CollapsedChanged</td><td>bool</td><td>A button, header or Enter collapsed or expanded the pane.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>NxSplitterPane.ToggleAsync()</td><td>Task</td><td>Collapses or expands a collapsible pane.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-splitter-bar-size</td><td>6px</td><td>Bar thickness (the hit area is 8 px wider).</td></tr>
+                <tr><td>--nx-splitter-bar-bg / -hover-bg</td><td>surface-hover / accent-subtle</td><td>Bar, and bar on hover or keyboard focus.</td></tr>
+                <tr><td>--nx-splitter-grip</td><td>= --nx-border-hover</td><td>The grip line on the bar.</td></tr>
+                <tr><td>--nx-splitter-pane-padding</td><td>12px</td><td>Space around a pane's content.</td></tr>
+                <tr><td>--nx-border / --nx-radius</td><td></td><td>The splitter's outline.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="splitter" Page="api" />

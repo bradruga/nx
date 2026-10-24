@@ -1,0 +1,162 @@
+@namespace Nx.Components
+
+<div class="@RootClass" style="@Style" @onmousedown:preventDefault="!Focusable">
+    <div class="nx-calendar-header">
+        <button type="button" class="nx-calendar-nav nx-calendar-prev" tabindex="@TabIndex"
+                aria-label="@PrevLabel" title="@PrevLabel" disabled="@PrevDisabled" @onclick="() => HandlePrevNext(-1)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6" />
+            </svg>
+        </button>
+        <button type="button" class="nx-calendar-title" id="@TitleId" tabindex="@TabIndex" aria-live="polite"
+                disabled="@(Disabled || view == NxCalendarView.Decade)" @onclick="HandleTitleClick">
+            @TitleText
+        </button>
+        <button type="button" class="nx-calendar-nav nx-calendar-next" tabindex="@TabIndex"
+                aria-label="@NextLabel" title="@NextLabel" disabled="@NextDisabled" @onclick="() => HandlePrevNext(+1)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6" />
+            </svg>
+        </button>
+    </div>
+
+    @* One stable focusable element for every view: nx-input.js binds its key handling to it once. *@
+    <div class="nx-calendar-grids" @ref="grids" id="@GridId" role="group"
+         aria-label="@(AriaLabel ?? TitleText)"
+         tabindex="@(Focusable && !Disabled ? "0" : null)"
+         aria-activedescendant="@(Focusable ? ActiveDescendant : null)"
+         @onkeydown="HandleKeyDown">
+        @if (view == NxCalendarView.Month)
+        {
+            @for (var m = 0; m < MonthCount; m++)
+            {
+                var month = AddMonthsSafe(display, m);
+                <table class="nx-calendar-grid nx-calendar-month" role="grid" aria-label="@MonthTitle(month)">
+                    @if (MonthCount == 2)
+                    {
+                        <caption class="nx-calendar-caption">@MonthTitle(month)</caption>
+                    }
+                    <thead>
+                        <tr>
+                            @if (ShowWeekNumbers)
+                            {
+                                <th class="nx-calendar-weekday nx-calendar-week-header" scope="col" abbr="Week">#</th>
+                            }
+                            @foreach (var day in WeekDays)
+                            {
+                                <th class="nx-calendar-weekday" scope="col" abbr="@EffectiveCulture.DateTimeFormat.GetDayName(day)">
+                                    @EffectiveCulture.DateTimeFormat.GetShortestDayName(day)
+                                </th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var week in Weeks(month))
+                        {
+                            <tr>
+                                @if (ShowWeekNumbers)
+                                {
+                                    <th class="nx-calendar-week" scope="row">@WeekNumber(week)</th>
+                                }
+                                @foreach (var date in week)
+                                {
+                                    var other = date.Month != month.Month;
+                                    @if (other && MonthCount == 2)
+                                    {
+                                        <td class="nx-calendar-blank" role="presentation"></td>
+                                    }
+                                    else
+                                    {
+                                        var disabled = IsDisabled(date);
+                                        <td id="@CellId(date, NxCalendarView.Month)"
+                                            class="@DayClass(date, month)"
+                                            role="gridcell"
+                                            aria-label="@date.ToString("D", EffectiveCulture)"
+                                            aria-selected="@(date == Value || date == RangeStart || date == RangeEnd ? "true" : "false")"
+                                            aria-disabled="@(disabled ? "true" : null)"
+                                            aria-current="@(date == Today ? "date" : null)"
+                                            data-date="@date.ToString("yyyy-MM-dd")"
+                                            @onclick="() => PickAsync(date)">
+                                            <span class="nx-calendar-day">@date.Day</span>
+                                        </td>
+                                    }
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        }
+        else if (view == NxCalendarView.Year)
+        {
+            <table class="nx-calendar-grid nx-calendar-year" role="grid" aria-label="@TitleText">
+                <tbody>
+                    @for (var r = 0; r < 3; r++)
+                    {
+                        <tr>
+                            @for (var c = 1; c <= 4; c++)
+                            {
+                                var month = r * 4 + c;
+                                var date = new DateOnly(focused.Year, month, 1);
+                                <td id="@CellId(date, NxCalendarView.Year)"
+                                    class="@CellClass(Value is DateOnly v && v.Year == date.Year && v.Month == month, focused.Month == month, MonthDisabled(date.Year, month), false, Today.Year == date.Year && Today.Month == month)"
+                                    role="gridcell"
+                                    aria-label="@MonthTitle(date)"
+                                    aria-selected="@(Value is DateOnly sv && sv.Year == date.Year && sv.Month == month ? "true" : "false")"
+                                    aria-disabled="@(MonthDisabled(date.Year, month) ? "true" : null)"
+                                    @onclick="() => PickMonthAsync(date.Year, month)">
+                                    <span class="nx-calendar-day">@EffectiveCulture.DateTimeFormat.GetAbbreviatedMonthName(month)</span>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            var decade = DecadeStart(focused.Year);
+            <table class="nx-calendar-grid nx-calendar-decade" role="grid" aria-label="@TitleText">
+                <tbody>
+                    @for (var r = 0; r < 3; r++)
+                    {
+                        <tr>
+                            @for (var c = 0; c < 4; c++)
+                            {
+                                var year = decade - 1 + r * 4 + c;
+                                @if (year < 1 || year > 9999)
+                                {
+                                    <td class="nx-calendar-blank" role="presentation"></td>
+                                }
+                                else
+                                {
+                                    var date = new DateOnly(year, 1, 1);
+                                    <td id="@CellId(date, NxCalendarView.Decade)"
+                                        class="@CellClass(Value?.Year == year, focused.Year == year, YearDisabled(year), year < decade || year > decade + 9, Today.Year == year)"
+                                        role="gridcell"
+                                        aria-selected="@(Value?.Year == year ? "true" : "false")"
+                                        aria-disabled="@(YearDisabled(year) ? "true" : null)"
+                                        @onclick="() => PickYearAsync(year)">
+                                        <span class="nx-calendar-day">@year</span>
+                                    </td>
+                                }
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    @if (ShowTodayButton || FooterContent is not null)
+    {
+        <div class="nx-calendar-footer">
+            @if (ShowTodayButton)
+            {
+                <button type="button" class="nx-calendar-today-button" tabindex="@TabIndex"
+                        disabled="@IsDisabled(Today)" @onclick="HandleTodayClick">Today</button>
+            }
+            @FooterContent
+        </div>
+    }
+</div>

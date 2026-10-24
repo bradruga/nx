@@ -1,0 +1,80 @@
+@page "/togglegroup/api"
+
+<DocHeader Slug="togglegroup" Page="api" />
+
+<div class="doc-section">
+    <h2>NxToggleGroup Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Value</td><td>TValue?</td><td>—</td><td>Single mode. Use <code>@@bind-Value</code>.</td></tr>
+                <tr><td>Multiple</td><td>bool</td><td>false</td><td>Each item toggles; bind Values.</td></tr>
+                <tr><td>Values</td><td>IEnumerable&lt;TValue&gt;?</td><td>—</td><td>With Multiple. Use <code>@@bind-Values</code>.</td></tr>
+                <tr><td>AllowDeselect</td><td>bool</td><td>false</td><td>Single mode: clicking the selected item clears the value.</td></tr>
+                <tr><td>Data</td><td>IEnumerable&lt;TValue&gt;?</td><td>—</td><td>Values to list as items.</td></tr>
+                <tr><td>ItemText</td><td>Func&lt;TValue, string&gt;?</td><td>ToString()</td><td>Text for a Data item.</td></tr>
+                <tr><td>ItemDisabled</td><td>Func&lt;TValue, bool&gt;?</td><td>—</td><td>Disables Data items.</td></tr>
+                <tr><td>ItemTemplate</td><td>RenderFragment&lt;TValue&gt;?</td><td>—</td><td>Content for Data items.</td></tr>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>NxToggleGroupItem children.</td></tr>
+                <tr><td>Size</td><td>NxSize</td><td>Medium</td><td>Small, Medium, Large (button heights).</td></tr>
+                <tr><td>FullWidth</td><td>bool</td><td>false</td><td>Stretch and share the width.</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>false</td><td>Disables every item.</td></tr>
+                <tr><td>AriaLabel</td><td>string?</td><td>—</td><td>Names the group.</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>On the group. Other attributes go to the group.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxToggleGroupItem Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Value</td><td>TValue?</td><td>—</td><td>The value this item stands for.</td></tr>
+                <tr><td>Label</td><td>string?</td><td>—</td><td>Text.</td></tr>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>Rich content.</td></tr>
+                <tr><td>Icon</td><td>RenderFragment?</td><td>—</td><td>Icon before the text; icon-only without text.</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>false</td><td>Makes this item unavailable.</td></tr>
+                <tr><td>AriaLabel / Title</td><td>string?</td><td>—</td><td>Accessible name (required icon-only) and tooltip.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Event</th><th>Args</th><th>Raised when</th></tr></thead>
+            <tbody>
+                <tr><td>ValueChanged</td><td>TValue?</td><td>Single mode: an item is clicked or reached with the arrow keys.</td></tr>
+                <tr><td>ValuesChanged</td><td>IEnumerable&lt;TValue&gt;</td><td>Multiple: an item is toggled.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-toggle-selected-bg</td><td>= --nx-accent-subtle</td><td>Selected item fill.</td></tr>
+                <tr><td>--nx-toggle-selected-border</td><td>= --nx-accent</td><td>Selected item border.</td></tr>
+                <tr><td>--nx-toggle-selected-fg</td><td>= --nx-accent</td><td>Selected item text.</td></tr>
+                <tr><td>--nx-surface / -hover</td><td>#fff / #f3f3f5</td><td>Items and hover.</td></tr>
+                <tr><td>--nx-border</td><td>#d4d4da</td><td>Item borders.</td></tr>
+                <tr><td>--nx-control-height-sm / md / lg</td><td>28 / 34 / 42px</td><td>Item heights per Size.</td></tr>
+                <tr><td>--nx-radius</td><td>6px</td><td>Rounded ends.</td></tr>
+                <tr><td>--nx-focus-ring-color / -width / -offset</td><td>accent / 2px / 2px</td><td>Keyboard focus ring, shaped like the control; none on mouse or touch focus.</td></tr>
+                <tr><td>--nx-invalid</td><td>= --nx-danger</td><td>Outline while invalid.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="togglegroup" Page="api" />

@@ -1,0 +1,90 @@
+@page "/dropdownbutton/playground"
+
+<DocHeader Slug="dropdownbutton" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner">
+                <NxDropDownButton Id="playground-button" Items="items" OnItemClick="Picked" Variant="pgVariant" Size="pgSize"
+                                  ShowArrow="pgArrow" AlignEnd="pgAlignEnd" Disabled="pgDisabled" FullWidth="pgFullWidth"
+                                  Icon="@(pgIcon ? DemoMenus.Icon("download") : null)" AriaLabel="Export">
+                    @if (pgLabel)
+                    {
+                        <text>Export</text>
+                    }
+                </NxDropDownButton>
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-value">Picked: <strong>@picked</strong></span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Button</div>
+            <label class="demo-control">
+                <span>Variant</span>
+                <select id="pg-variant" @bind="pgVariant">
+                    @foreach (var v in Enum.GetValues<NxButtonVariant>())
+                    {
+                        <option value="@v">@v</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control">
+                <span>Size</span>
+                <select id="pg-size" @bind="pgSize">
+                    @foreach (var s in Enum.GetValues<NxButtonSize>())
+                    {
+                        <option value="@s">@s</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control"><span>Label</span><input type="checkbox" id="pg-label" @bind="pgLabel" /></label>
+            <label class="demo-control"><span>Icon</span><input type="checkbox" id="pg-icon" @bind="pgIcon" /></label>
+            <label class="demo-control"><span>ShowArrow</span><input type="checkbox" id="pg-arrow" @bind="pgArrow" /></label>
+            <label class="demo-control"><span>FullWidth</span><input type="checkbox" id="pg-full" @bind="pgFullWidth" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+
+            <div class="demo-controls-title">Menu</div>
+            <label class="demo-control"><span>AlignEnd</span><input type="checkbox" id="pg-align" @bind="pgAlignEnd" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="dropdownbutton" Page="playground" />
+
+@code {
+    readonly IReadOnlyList<NxMenuItem> items = DemoMenus.ExportItems();
+    NxButtonVariant pgVariant = NxButtonVariant.Secondary;
+    NxButtonSize pgSize = NxButtonSize.Medium;
+    bool pgLabel = true, pgIcon, pgArrow = true, pgFullWidth, pgDisabled, pgAlignEnd;
+    string picked = "—";
+
+    void Picked(NxMenuItemClickEventArgs e) => picked = e.Item.Text;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "Items=\"items\"", "OnItemClick=\"ExportAsync\"" };
+            if (pgVariant != NxButtonVariant.Secondary) attrs.Add($"Variant=\"NxButtonVariant.{pgVariant}\"");
+            if (pgSize != NxButtonSize.Medium) attrs.Add($"Size=\"NxButtonSize.{pgSize}\"");
+            if (pgIcon) attrs.Add("Icon=\"@downloadIcon\"");
+            if (!pgLabel) attrs.Add("AriaLabel=\"Export\"");
+            if (!pgArrow) attrs.Add("ShowArrow=\"false\"");
+            if (pgFullWidth) attrs.Add("FullWidth=\"true\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            if (pgAlignEnd) attrs.Add("AlignEnd=\"true\"");
+            var open = "<NxDropDownButton " + string.Join("\n                  ", attrs);
+            return pgLabel ? open + ">Export</NxDropDownButton>" : open + " />";
+        }
+    }
+}

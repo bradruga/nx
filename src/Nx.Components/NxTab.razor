@@ -1,0 +1,57 @@
+@namespace Nx.Components
+@implements IDisposable
+
+@* A tab registers with its NxTabStrip and renders nothing here: the strip draws its header and panel. *@
+
+@code {
+    [CascadingParameter] private NxTabStrip? Strip { get; set; }
+
+    /// <summary>Key for <c>@bind-ActiveTab</c> and the close event. Default: <see cref="Title"/>.</summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>Header text.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Icon before the header text.</summary>
+    [Parameter] public RenderFragment? Icon { get; set; }
+
+    /// <summary>Rich header content, in place of <see cref="Title"/> and <see cref="Icon"/>.</summary>
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+
+    /// <summary>Makes the tab unavailable; the arrow keys skip it.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Shows a close button on the tab (<kbd>Delete</kbd> too); the strip raises <c>OnTabClose</c>.</summary>
+    [Parameter] public bool Closable { get; set; }
+
+    /// <summary>The tab's content.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private (string?, string?, bool, bool, bool, bool) shown;
+
+    internal string Key => Id ?? Title ?? "";
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Strip is null)
+            throw new InvalidOperationException("NxTab must be placed inside an NxTabStrip.");
+        Strip.Register(this);
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // The strip drew this header before these parameters arrived; redraw only when what it shows changed
+        // (content fragments are new objects on every render, so they cannot be compared).
+        var now = (Id, Title, Disabled, Closable, Icon is null, HeaderTemplate is null);
+        if (now != shown)
+        {
+            shown = now;
+            Strip?.TabChanged();
+        }
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => Strip?.Unregister(this);
+}

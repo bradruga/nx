@@ -1,0 +1,74 @@
+.nx-timepicker-open .nx-timepicker-toggle { color: var(--nx-accent); }
+
+.nx-timepicker-input { font-variant-numeric: tabular-nums; }
+
+/* ── Popup ────────────────────────────────────────────────────────────────── */
+
+.nx-timepicker-popup {
+    position: fixed;
+    z-index: var(--nx-z-popup);
+    visibility: hidden;
+    box-sizing: border-box;
+    max-width: calc(100vw - 16px);
+    background: var(--nx-popup-bg);
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius);
+    box-shadow: var(--nx-shadow-popup);
+    overflow: hidden;
+}
+
+.nx-timepicker-list {
+    max-height: var(--nx-popup-max-height);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 4px;
+}
+
+.nx-timepicker-item {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 32px;
+    padding: 0 10px;
+    border: none;
+    border-radius: var(--nx-radius-sm);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.nx-timepicker-item:hover { background: var(--nx-item-hover-bg); }
+.nx-timepicker-item-active,
+.nx-timepicker-item-active:hover { background: var(--nx-item-active-bg); }
+.nx-timepicker-item-selected { color: var(--nx-item-selected-fg); font-weight: 600; }
+
+/* ── Phone sheet ──────────────────────────────────────────────────────────── */
+
+.nx-timepicker-sheet-list {
+    width: 100%;
+    max-width: 420px;
+    max-height: none;
+    padding: 0;
+}
+
+.nx-timepicker-sheet-list .nx-timepicker-item {
+    min-height: 48px;
+    justify-content: center;
+    font-size: 17px;
+}
+
+.nx-timepicker-sheet-list .nx-timepicker-item:focus { outline: none; }
+.nx-timepicker-sheet-list .nx-timepicker-item:focus-visible {
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline-offset: -2px;
+}
+
+.nx-timepicker-sheet-list .nx-timepicker-item-selected {
+    background: var(--nx-calendar-selected-bg);
+    color: var(--nx-calendar-selected-fg);
+}

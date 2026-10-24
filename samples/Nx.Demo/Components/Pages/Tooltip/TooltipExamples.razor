@@ -1,0 +1,106 @@
+@page "/tooltip/examples"
+
+<DocHeader Slug="tooltip" Page="examples" />
+
+<div class="doc-section">
+    <h2>Placement &amp; Flip</h2>
+    <p class="doc-note">
+        <code>Placement</code> is the preferred side. Without room there, the tooltip flips to the opposite side, and it is nudged
+        in from the viewport edge with the arrow still on the element.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-row demo-tooltip-grid">
+            @foreach (var placement in Enum.GetValues<NxTooltipPlacement>())
+            {
+                <NxTooltip Id="@($"tip-{placement.ToString().ToLowerInvariant()}")" Text="@($"{placement}")" Placement="placement" ShowDelay="0">
+                    <NxButton id="@($"place-{placement.ToString().ToLowerInvariant()}")">@placement</NxButton>
+                </NxTooltip>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Triggers &amp; Delay</h2>
+    <p class="doc-note">
+        <code>Trigger</code> combines <code>Hover</code>, <code>Focus</code> (keyboard) and <code>Click</code>; a long press always
+        works on touch. <code>ShowDelay</code> is how long the pointer must rest — focus and clicks show at once.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-row">
+            <NxTooltip Id="tip-instant" Text="No delay" ShowDelay="0">
+                <NxButton id="trigger-instant">Instant</NxButton>
+            </NxTooltip>
+            <NxTooltip Id="tip-slow" Text="Shown after a second" ShowDelay="1000">
+                <NxButton id="trigger-slow">One second</NxButton>
+            </NxTooltip>
+            <NxTooltip Id="tip-click" Text="Shown by a click; click again or press Esc to hide" Trigger="NxTooltipTrigger.Click">
+                <NxButton id="trigger-click">Click me</NxButton>
+            </NxTooltip>
+            <NxTooltip Id="tip-focus" Text="Only on keyboard focus" Trigger="NxTooltipTrigger.Focus">
+                <NxButton id="trigger-focus">Tab to me</NxButton>
+            </NxTooltip>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Rich Content</h2>
+    <p class="doc-note"><code>Content</code> takes markup. Keep it short and non-interactive: the pointer cannot reach it.</p>
+    <div class="demo-stage">
+        <NxTooltip Id="tip-rich" ShowDelay="0" Placement="NxTooltipPlacement.Bottom">
+            <ChildContent>
+                <span class="demo-status-badge" id="rich-anchor" tabindex="0">Pour P-1042 · Scheduled</span>
+            </ChildContent>
+            <Content>
+                <div class="demo-tip-rich">
+                    <strong>Pour P-1042</strong>
+                    <span>North wall · 14.5 yd³</span>
+                    <span>Thu Oct 23, 6:00 AM</span>
+                </div>
+            </Content>
+        </NxTooltip>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Targeting an Element</h2>
+    <p class="doc-note">
+        With <code>Target</code> the tooltip describes any element by CSS selector — a cell, a heading, something rendered by
+        another component.
+    </p>
+    <div class="demo-stage">
+        <span class="demo-status-badge" id="target-badge" tabindex="0">QC hold</span>
+        <NxTooltip Id="tip-target" Target="#target-badge" Text="Held for a slump test since 9:40" ShowDelay="0" />
+    </div>
+    <pre class="doc-code">@targetCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>From Code &amp; Disabled</h2>
+    <p class="doc-note"><code>ShowAsync()</code> and <code>HideAsync()</code> drive a tooltip from code; <code>Disabled</code> turns it off.</p>
+    <div class="demo-stage">
+        <div class="demo-row">
+            <NxTooltip @ref="coded" Id="tip-coded" Text="Shown from code" Trigger="NxTooltipTrigger.None">
+                <span class="demo-status-badge" id="coded-anchor">Anchor</span>
+            </NxTooltip>
+            <NxButton id="show-coded" OnClick="() => coded!.ShowAsync()">Show</NxButton>
+            <NxButton id="hide-coded" OnClick="() => coded!.HideAsync()">Hide</NxButton>
+            <NxTooltip Id="tip-disabled" Text="Never shown" Disabled="true" ShowDelay="0">
+                <NxButton id="trigger-disabled">Disabled tooltip</NxButton>
+            </NxTooltip>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="tooltip" Page="examples" />
+
+@code {
+    NxTooltip? coded;
+
+    const string targetCode =
+        """
+        <span id="status">QC hold</span>
+        <NxTooltip Target="#status" Text="Held for a slump test since 9:40" />
+        """;
+}

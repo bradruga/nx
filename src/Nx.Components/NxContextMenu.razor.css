@@ -1,0 +1,2 @@
+/* The wrapper adds no box; the wrapped element keeps its own layout. */
+.nx-context-target { display: contents; }

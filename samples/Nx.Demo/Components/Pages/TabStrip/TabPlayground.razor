@@ -1,0 +1,100 @@
+@page "/tabstrip/playground"
+
+<DocHeader Slug="tabstrip" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                <NxTabStrip Id="playground-tabs" @bind-ActiveTab="pgActive" @bind-ActiveTab:after="Changed" OnTabClose="CloseTab"
+                            Position="pgPosition" KeepAlive="pgKeepAlive" FullWidth="pgFullWidth" AriaLabel="Playground"
+                            Style="@(pgPosition is NxTabPosition.Left or NxTabPosition.Right ? "min-height: 200px" : null)">
+                    @foreach (var name in pgTabs)
+                    {
+                        <NxTab @key="name" Id="@name" Title="@name" Icon="@(pgIcons ? Icon : null)"
+                               Disabled="@(pgDisableSecond && name == pgTabs.ElementAtOrDefault(1))" Closable="pgClosable">
+                            <p>Panel <strong>@name</strong>.</p>
+                        </NxTab>
+                    }
+                </NxTabStrip>
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-value">ActiveTab: <strong>@(pgActive ?? "null")</strong></span>
+                <span class="demo-counter" id="playground-changes">ActiveTabChanged × @pgChanges</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Layout</div>
+            <label class="demo-control">
+                <span>Position</span>
+                <select id="pg-position" @bind="pgPosition">
+                    @foreach (var p in Enum.GetValues<NxTabPosition>())
+                    {
+                        <option value="@p">@p</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control"><span>FullWidth</span><input type="checkbox" id="pg-full" @bind="pgFullWidth" /></label>
+            <label class="demo-control"><span>KeepAlive</span><input type="checkbox" id="pg-keepalive" @bind="pgKeepAlive" /></label>
+
+            <div class="demo-controls-title">Tabs</div>
+            <label class="demo-control">
+                <span>Count</span>
+                <select id="pg-count" @bind="pgCount" @bind:after="Rebuild">
+                    <option value="3">3</option>
+                    <option value="6">6</option>
+                    <option value="12">12 (overflows)</option>
+                </select>
+            </label>
+            <label class="demo-control"><span>Icons</span><input type="checkbox" id="pg-icons" @bind="pgIcons" /></label>
+            <label class="demo-control"><span>Closable</span><input type="checkbox" id="pg-closable" @bind="pgClosable" /></label>
+            <label class="demo-control"><span>Second disabled</span><input type="checkbox" id="pg-disable-second" @bind="pgDisableSecond" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="tabstrip" Page="playground" />
+
+@code {
+    static readonly RenderFragment Icon = @<DemoIcon Name="box" />;
+
+    NxTabPosition pgPosition = NxTabPosition.Top;
+    bool pgFullWidth, pgKeepAlive, pgIcons, pgClosable, pgDisableSecond;
+    int pgCount = 3, pgChanges;
+    string? pgActive = "Tab 1";
+    List<string> pgTabs = Names(3);
+
+    static List<string> Names(int count) => Enumerable.Range(1, count).Select(i => $"Tab {i}").ToList();
+
+    void Rebuild()
+    {
+        pgTabs = Names(pgCount);
+        pgActive = pgTabs[0];
+    }
+
+    void CloseTab(NxTabCloseEventArgs e) => pgTabs.Remove(e.TabId);
+    void Changed() => pgChanges++;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "@bind-ActiveTab=\"active\"" };
+            if (pgPosition != NxTabPosition.Top) attrs.Add($"Position=\"NxTabPosition.{pgPosition}\"");
+            if (pgFullWidth) attrs.Add("FullWidth=\"true\"");
+            if (pgKeepAlive) attrs.Add("KeepAlive=\"true\"");
+            if (pgClosable) attrs.Add("OnTabClose=\"e => tabs.Remove(e.TabId)\"");
+            var tab = "    <NxTab Title=\"Tab 1\"" + (pgIcons ? " Icon=\"@icon\"" : "") + (pgClosable ? " Closable=\"true\"" : "") + ">…</NxTab>";
+            var second = "    <NxTab Title=\"Tab 2\"" + (pgDisableSecond ? " Disabled=\"true\"" : "") + ">…</NxTab>";
+            return "<NxTabStrip " + string.Join("\n            ", attrs) + ">\n" + tab + "\n" + second + "\n    …\n</NxTabStrip>";
+        }
+    }
+}

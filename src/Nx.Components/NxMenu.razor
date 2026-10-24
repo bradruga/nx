@@ -1,0 +1,72 @@
+@namespace Nx.Components
+
+@if (isOpen)
+{
+    @* The host holds the phone backdrop and the menu tree. Submenus are rendered hidden: nx-menu.js opens
+       and places them. No style attribute on the lists: nx-menu.js owns their position. *@
+    <div class="@HostClass" id="@MenuId" @ref="host">
+        <div class="nx-menu-backdrop" @onclick="DismissAsync"></div>
+        @RenderList(Items ?? [], root: true, parentText: null)
+    </div>
+}
+
+@code {
+    private RenderFragment RenderList(IReadOnlyList<NxMenuItem> items, bool root, string? parentText) => __builder =>
+    {
+        <ul class="nx-menu-list" role="menu" tabindex="-1" aria-label="@(root ? AriaLabel : parentText)" hidden="@(!root)">
+            @if (!root)
+            {
+                @* Only shown in the phone sheet, where a submenu replaces its parent. *@
+                <li class="nx-menu-back-row" role="none">
+                    <button type="button" class="nx-menu-back" tabindex="-1">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
+                        @parentText
+                    </button>
+                </li>
+            }
+            @foreach (var item in items)
+            {
+                if (item.IsSeparator)
+                {
+                    <li class="nx-menu-separator" role="separator"></li>
+                    continue;
+                }
+                <li class="nx-menu-row" role="none">
+                    <div class="@ItemClass(item)"
+                         role="@(item.Checked is null ? "menuitem" : "menuitemcheckbox")"
+                         tabindex="-1"
+                         aria-disabled="@(item.Disabled ? "true" : null)"
+                         aria-checked="@(item.Checked is bool c ? (c ? "true" : "false") : null)"
+                         aria-haspopup="@(item.HasSubmenu ? "menu" : null)"
+                         aria-expanded="@(item.HasSubmenu ? "false" : null)"
+                         data-id="@item.Id"
+                         @onclick="() => HandleItemClickAsync(item)">
+                        <span class="nx-menu-check" aria-hidden="true">
+                            @if (item.Checked == true)
+                            {
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                            }
+                        </span>
+                        @if (HasIcons(items))
+                        {
+                            <span class="nx-menu-icon" aria-hidden="true">@item.Icon</span>
+                        }
+                        <span class="nx-menu-text">@item.Text</span>
+                        @if (item.Shortcut is not null)
+                        {
+                            <span class="nx-menu-shortcut" aria-hidden="true">@item.Shortcut</span>
+                        }
+                        @if (item.HasSubmenu)
+                        {
+                            <svg class="nx-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+                        }
+                    </div>
+                    @if (item.HasSubmenu)
+                    {
+                        @RenderList(item.Items!, root: false, parentText: item.Text)
+                    }
+                </li>
+            }
+        </ul>
+    };
+}

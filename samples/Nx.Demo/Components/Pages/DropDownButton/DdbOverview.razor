@@ -1,0 +1,59 @@
+@page "/dropdownbutton"
+@page "/dropdownbutton/overview"
+
+<DocHeader Slug="dropdownbutton" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxDropDownButton</code> is an <code>NxButton</code> that opens a menu below it. It takes every NxButton variant and
+        size, and its items are the same <code>NxMenuItem</code>s as <code>NxContextMenu</code>: icons, shortcut text, separators,
+        disabled and check items, submenus. On a phone the menu is a bottom sheet.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage">
+        <div class="demo-row">
+            <NxDropDownButton Id="overview-export" Items="exportItems" OnItemClick="Picked">Export</NxDropDownButton>
+            <NxDropDownButton Id="overview-kebab" Items="rowItems" OnItemClick="Picked" Variant="NxButtonVariant.Ghost"
+                              Icon="@DemoMenus.Icon("settings")" AriaLabel="Row actions" AlignEnd="true" />
+            <span class="demo-value" id="overview-picked">Picked: <strong>@picked</strong></span>
+        </div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Enter / Space / ↓ / ↑</td><td>Opens the menu with focus on the first item.</td></tr>
+                <tr><td>In the menu</td><td>As NxContextMenu: arrows, Home/End, letters, →/← for submenus, Enter to pick, Esc to close.</td></tr>
+                <tr><td>Esc / pick</td><td>Closes the menu; focus returns to the button.</td></tr>
+                <tr><td>Button</td><td><code>aria-haspopup="menu"</code>, <code>aria-expanded</code> and <code>aria-controls</code> naming the menu.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="dropdownbutton" Page="overview" />
+
+@code {
+    readonly IReadOnlyList<NxMenuItem> exportItems = DemoMenus.ExportItems();
+    readonly IReadOnlyList<NxMenuItem> rowItems = DemoMenus.EditItems();
+    string picked = "—";
+
+    void Picked(NxMenuItemClickEventArgs e) => picked = e.Item.Text;
+
+    const string basicCode =
+        """
+        <NxDropDownButton Items="exportItems" OnItemClick="ExportAsync">Export</NxDropDownButton>
+
+        <NxDropDownButton Items="rowItems" OnItemClick="RunAsync" Variant="NxButtonVariant.Ghost"
+                          Icon="@moreIcon" AriaLabel="Row actions" AlignEnd="true" />
+        """;
+}

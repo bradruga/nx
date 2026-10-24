@@ -1,0 +1,60 @@
+@page "/icon"
+@page "/icon/overview"
+
+<DocHeader Slug="icon" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxIcon</code> draws an inline SVG icon in the text color, at one of seven token sizes. <code>NxIcons</code> holds
+        the @NxIcons.All.Count icons ERP uses today, each named after the Telerik <code>SvgIcon</code> it replaces
+        (<code>SvgIcon.Trash</code> → <code>NxIcons.Trash</code>), drawn from the open-source Lucide set. Icons are decorative
+        unless you give them an <code>AriaLabel</code>.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage">
+        <div class="demo-row" id="overview-icons">
+            <NxIcon Icon="NxIcons.Plus" />
+            <NxIcon Icon="NxIcons.Pencil" />
+            <NxIcon Icon="NxIcons.Trash" Color="NxIconColor.Danger" />
+            <NxIcon Icon="NxIcons.CheckCircle" Size="NxIconSize.Large" Color="NxIconColor.Success" AriaLabel="Approved" id="overview-approved" />
+            <NxButton Variant="NxButtonVariant.Primary" Icon="@Plus">Add pour</NxButton>
+        </div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Case</th><th>Rendered as</th></tr></thead>
+            <tbody>
+                <tr><td>No <code>AriaLabel</code></td><td><code>aria-hidden="true"</code> — the text next to it says what it means.</td></tr>
+                <tr><td><code>AriaLabel="Approved"</code></td><td><code>role="img"</code> with that name, for an icon that stands alone.</td></tr>
+                <tr><td><code>Title</code></td><td>An SVG <code>&lt;title&gt;</code>: a native tooltip on hover.</td></tr>
+                <tr><td>Focus</td><td><code>focusable="false"</code>; icons never take a tab stop.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="icon" Page="overview" />
+
+@code {
+    static readonly RenderFragment Plus = @<NxIcon Icon="NxIcons.Plus" />;
+
+    const string basicCode =
+        """
+        <NxIcon Icon="NxIcons.Trash" Color="NxIconColor.Danger" />
+        <NxIcon Icon="NxIcons.CheckCircle" Size="NxIconSize.Large" Color="NxIconColor.Success" AriaLabel="Approved" />
+
+        <NxButton Variant="NxButtonVariant.Primary">
+            <Icon><NxIcon Icon="NxIcons.Plus" /></Icon>
+            Add pour
+        </NxButton>
+        """;
+}

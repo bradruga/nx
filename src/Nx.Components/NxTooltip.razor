@@ -1,0 +1,20 @@
+@namespace Nx.Components
+
+@if (ChildContent is not null)
+{
+    @* display: contents — the wrapper adds no box; its first element is the anchor. *@
+    <span class="nx-tooltip-anchor" @ref="wrapper">@ChildContent</span>
+}
+@* Always rendered, hidden: aria-describedby can point at it. No style attribute: nx-tooltip.js places it. *@
+<div @ref="tip" id="@TipId" class="@CssClass" role="tooltip" hidden>
+    <div class="nx-tooltip-body">
+        @if (Content is not null)
+        {
+            @Content
+        }
+        else
+        {
+            @Text
+        }
+    </div>
+</div>

@@ -1,0 +1,81 @@
+@page "/contextmenu/api"
+
+<DocHeader Slug="contextmenu" Page="api" />
+
+<div class="doc-section">
+    <h2>NxContextMenu Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>The element whose right click opens the menu (its first element).</td></tr>
+                <tr><td>Target</td><td>string?</td><td>—</td><td>A CSS selector for the element, instead of wrapping it.</td></tr>
+                <tr><td>Items</td><td>IReadOnlyList&lt;NxMenuItem&gt;?</td><td>—</td><td>The items.</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>false</td><td>The browser's own menu shows instead.</td></tr>
+                <tr><td>AriaLabel / Id / Class</td><td>string?</td><td>—</td><td>On the menu.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxMenuItem</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>new NxMenuItem(text)</td><td></td><td>An item; set the rest with an initializer.</td></tr>
+                <tr><td>NxMenuItem.Separator()</td><td>NxMenuItem</td><td>A separator line.</td></tr>
+                <tr><td>Id / Data</td><td>string? / object?</td><td>Your own key and value, back in OnItemClick.</td></tr>
+                <tr><td>Icon</td><td>RenderFragment?</td><td>Icon before the text.</td></tr>
+                <tr><td>Shortcut</td><td>string?</td><td>Shortcut text at the end (display only).</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>Greyed out; skipped by the keys.</td></tr>
+                <tr><td>Checked</td><td>bool?</td><td>true / false make a check item; null a plain one.</td></tr>
+                <tr><td>Items</td><td>IReadOnlyList&lt;NxMenuItem&gt;?</td><td>A submenu.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events &amp; Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>OnOpening</td><td>NxContextMenuOpeningEventArgs</td><td>Before opening: X, Y, Context (the pressed element's <code>data-nx-context</code>); set Items or Cancel.</td></tr>
+                <tr><td>OnItemClick</td><td>NxMenuItemClickEventArgs</td><td>An item was picked: Item and Context. The menu has closed.</td></tr>
+                <tr><td>OpenAtAsync(x, y, context)</td><td>Task</td><td>Opens at a viewport point.</td></tr>
+                <tr><td>CloseAsync()</td><td>Task</td><td>Closes the menu.</td></tr>
+                <tr><td>IsOpen</td><td>bool</td><td>Whether it is open.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxMenu</h2>
+    <p class="doc-note">
+        The menu underneath, also used by NxDropDownButton and NxSplitButton. Use it directly for a menu opened only from code:
+        <code>Items</code>, <code>OnItemClick</code>, <code>OpenChanged</code>, <code>AriaLabel</code>; methods
+        <code>OpenAtAsync(x, y)</code>, <code>OpenBelowAsync(element, alignEnd)</code>, <code>CloseAsync()</code>.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-popup-bg / --nx-shadow-popup / --nx-border</td><td>Menu surface.</td></tr>
+                <tr><td>--nx-item-active-bg / --nx-item-hover-bg</td><td>Focused item; open submenu's parent.</td></tr>
+                <tr><td>--nx-fg-subtle</td><td>Disabled items.</td></tr>
+                <tr><td>--nx-z-popup / --nx-z-overlay</td><td>Desktop menu; phone sheet and its backdrop.</td></tr>
+                <tr><td>--nx-window-backdrop</td><td>The phone sheet's backdrop.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="contextmenu" Page="api" />

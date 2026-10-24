@@ -1,0 +1,130 @@
+/* Panes are flex items of the splitter; the inline style sets their basis (size) and limits. */
+
+.nx-splitter-pane {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.nx-splitter-pane-content {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: var(--nx-splitter-pane-padding);
+    box-sizing: border-box;
+}
+
+.nx-splitter-pane-content[hidden] { display: none; }
+
+/* Only on phones, where the panes stack. */
+.nx-splitter-pane-header { display: none; }
+
+/* ── Split bar ────────────────────────────────────────────────────────────── */
+
+.nx-splitter-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 var(--nx-splitter-bar-size);
+    gap: 4px;
+    background: var(--nx-splitter-bar-bg);
+    touch-action: none;
+    transition: background var(--nx-transition);
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Only the bar carries this file's scope attribute, so the splitter's class can be matched as its parent. */
+.nx-splitter-horizontal > .nx-splitter-bar { flex-direction: column; cursor: col-resize; }
+.nx-splitter-vertical > .nx-splitter-bar { flex-direction: row; cursor: row-resize; }
+.nx-splitter-vertical > .nx-splitter-bar .nx-splitter-grip { width: 24px; height: 2px; }
+
+.nx-splitter-bar:hover,
+.nx-splitter-bar:focus-visible { background: var(--nx-splitter-bar-hover-bg); }
+
+.nx-splitter-bar:focus { outline: none; }
+.nx-splitter-bar:focus-visible { outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color); outline-offset: -2px; }
+
+.nx-splitter-bar-fixed { cursor: default !important; }
+.nx-splitter-bar-fixed:hover { background: var(--nx-splitter-bar-bg); }
+
+/* A wider invisible hit area than the bar itself, for pointers and fingers. */
+.nx-splitter-bar::before {
+    content: "";
+    position: absolute;
+    inset: 0 -4px;
+}
+.nx-splitter-vertical > .nx-splitter-bar::before { inset: -4px 0; }
+
+.nx-splitter-grip {
+    flex-shrink: 0;
+    border-radius: 2px;
+    background: var(--nx-splitter-grip);
+    width: 2px;
+    height: 24px;
+}
+
+.nx-splitter-toggle {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: none;
+    border-radius: var(--nx-radius-sm);
+    background: var(--nx-surface);
+    color: var(--nx-fg-muted);
+    box-shadow: 0 0 0 1px var(--nx-border);
+    cursor: pointer;
+}
+.nx-splitter-toggle:hover { color: var(--nx-fg); background: var(--nx-surface-hover); }
+
+/* ── Phone: panes stack, each with a header that collapses it ─────────────── */
+
+@media (max-width: 600px) {
+    .nx-splitter-bar { display: none; }
+
+    .nx-splitter-pane {
+        flex: none !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        width: 100%;
+        border-top: 1px solid var(--nx-border);
+    }
+    .nx-splitter-pane:first-child { border-top: none; }
+
+    .nx-splitter-pane-content { max-height: 60vh; }
+
+    .nx-splitter-pane-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        width: 100%;
+        min-height: 44px;
+        padding: 0 12px;
+        border: none;
+        background: var(--nx-popup-header-bg);
+        color: var(--nx-fg);
+        font: inherit;
+        font-weight: 600;
+        text-align: left;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .nx-splitter-pane-header:disabled { cursor: default; color: var(--nx-fg); }
+    .nx-splitter-pane-header:focus { outline: none; }
+    .nx-splitter-pane-header:focus-visible { outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color); outline-offset: -2px; }
+
+    .nx-splitter-pane-chevron { transition: transform var(--nx-transition); }
+    .nx-splitter-pane-collapsed .nx-splitter-pane-chevron { transform: rotate(-90deg); }
+}

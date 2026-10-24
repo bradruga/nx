@@ -1,0 +1,62 @@
+.nx-checkbox {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+    color: var(--nx-fg);
+    line-height: 20px;
+    vertical-align: middle;
+}
+
+.nx-checkbox-label-start { flex-direction: row-reverse; }
+
+.nx-checkbox-box {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: var(--nx-check-size);
+    height: var(--nx-check-size);
+    margin-top: calc((20px - var(--nx-check-size)) / 2);
+    padding: 0;
+    border: 1.5px solid var(--nx-check-border);
+    border-radius: var(--nx-radius-sm);
+    background: var(--nx-surface);
+    color: var(--nx-accent-fg);
+    cursor: pointer;
+    transition: background-color var(--nx-transition), border-color var(--nx-transition);
+}
+
+/* A 44px invisible hit area on touch screens, without changing the layout. */
+@media (pointer: coarse) {
+    .nx-checkbox-box::after { content: ""; position: absolute; inset: -12px; }
+}
+
+.nx-checkbox-box:hover:not(:disabled) { border-color: var(--nx-accent); }
+
+.nx-checkbox-checked .nx-checkbox-box,
+.nx-checkbox-indeterminate .nx-checkbox-box {
+    background: var(--nx-accent);
+    border-color: var(--nx-accent);
+}
+
+.nx-checkbox-label { cursor: pointer; user-select: none; }
+
+/* ── States ───────────────────────────────────────────────────────────────── */
+
+.nx-checkbox-disabled { opacity: var(--nx-disabled-opacity); }
+.nx-checkbox-disabled .nx-checkbox-box,
+.nx-checkbox-disabled .nx-checkbox-label { cursor: not-allowed; }
+
+.nx-checkbox-readonly .nx-checkbox-box { cursor: default; background: var(--nx-surface-disabled); }
+.nx-checkbox-readonly.nx-checkbox-checked .nx-checkbox-box,
+.nx-checkbox-readonly.nx-checkbox-indeterminate .nx-checkbox-box {
+    background: var(--nx-fg-muted);
+    border-color: var(--nx-fg-muted);
+}
+.nx-checkbox-readonly .nx-checkbox-label { cursor: default; }
+
+.nx-checkbox-invalid .nx-checkbox-box { border-color: var(--nx-invalid); }
+.nx-checkbox-invalid .nx-checkbox-label { color: var(--nx-invalid); }

@@ -1,0 +1,46 @@
+@page "/textarea/api"
+
+<DocHeader Slug="textarea" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Value</td><td>string?</td><td>—</td><td>Use <code>@@bind-Value</code>.</td></tr>
+                <tr><td>Immediate / DebounceDelay</td><td>bool / int</td><td>false / 0</td><td>Update as you type, after a pause; else on leaving the field.</td></tr>
+                <tr><td>Rows</td><td>int</td><td>3</td><td>Height in lines.</td></tr>
+                <tr><td>AutoResize</td><td>bool</td><td>false</td><td>Grow with the text between MinRows and MaxRows.</td></tr>
+                <tr><td>MinRows / MaxRows</td><td>int?</td><td>Rows / none</td><td>AutoResize limits; past MaxRows it scrolls.</td></tr>
+                <tr><td>Resize</td><td>NxTextAreaResize</td><td>Vertical</td><td>None, Vertical, Both. None with AutoResize.</td></tr>
+                <tr><td>Label / FloatingLabel / Placeholder</td><td></td><td></td><td>As NxTextBox.</td></tr>
+                <tr><td>MaxLength / ShowCounter</td><td>int? / bool</td><td>— / false</td><td>Limit and the "120 / 500" counter.</td></tr>
+                <tr><td>Clearable</td><td>bool</td><td>false</td><td>Clear button and Esc.</td></tr>
+                <tr><td>ReadOnly / Disabled / AutoFocus</td><td>bool</td><td>false</td><td>As NxTextBox.</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>Textarea id; outer class and style. Other attributes go to the textarea.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events &amp; Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ValueChanged</td><td>string?</td><td>The text was committed.</td></tr>
+                <tr><td>OnFocus / OnBlur</td><td>FocusEventArgs</td><td>Focus in and out (after the commit).</td></tr>
+                <tr><td>FocusAsync()</td><td>ValueTask</td><td>Focuses the textarea.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <p class="doc-note">The field is <code>NxFieldFrame</code> in its multi-line form, so it reads NxTextBox's variables, plus <code>--nx-textarea-line-height</code> (20px), which AutoResize measures rows by.</p>
+</div>
+
+<DocPager Slug="textarea" Page="api" />

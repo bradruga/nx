@@ -1,0 +1,70 @@
+.nx-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: var(--nx-z-overlay);
+    display: flex;
+    flex-direction: column;
+    background: var(--nx-surface);
+    color: var(--nx-fg);
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+}
+
+.nx-sheet-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 8px 8px 4px;
+    padding-top: max(8px, env(safe-area-inset-top));
+    border-bottom: 1px solid var(--nx-border);
+}
+
+.nx-sheet-title {
+    flex: 1;
+    min-width: 0;
+    font-size: var(--nx-font-size-lg);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nx-sheet-close,
+.nx-sheet ::deep .nx-sheet-action {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 44px;
+    padding: 0;
+    border: none;
+    border-radius: var(--nx-radius);
+    background: transparent;
+    color: var(--nx-fg);
+    font: inherit;
+    cursor: pointer;
+}
+
+.nx-sheet ::deep .nx-sheet-action { padding: 0 14px; color: var(--nx-accent); font-weight: 600; }
+.nx-sheet ::deep .nx-sheet-action:disabled { color: var(--nx-fg-subtle); cursor: default; }
+
+.nx-sheet-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 8px;
+}
+
+.nx-sheet-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 8px 12px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    border-top: 1px solid var(--nx-border);
+}

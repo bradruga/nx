@@ -1,0 +1,80 @@
+@page "/window/api"
+
+<DocHeader Slug="window" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Visible</td><td>bool</td><td>false</td><td>Use <code>@@bind-Visible</code>.</td></tr>
+                <tr><td>Modal</td><td>bool</td><td>true</td><td>Backdrop, focus trap and page scroll lock.</td></tr>
+                <tr><td>CloseOnEscape</td><td>bool</td><td>true</td><td>Esc closes, unless a control inside used it.</td></tr>
+                <tr><td>CloseOnBackdropClick</td><td>bool</td><td>false</td><td>A click on the backdrop closes.</td></tr>
+                <tr><td>Title / TitleContent</td><td>string? / RenderFragment?</td><td>—</td><td>Title text or rich title; the dialog's accessible name.</td></tr>
+                <tr><td>Icon</td><td>RenderFragment?</td><td>—</td><td>Icon before the title.</td></tr>
+                <tr><td>HeaderActions</td><td>RenderFragment?</td><td>—</td><td>Extra title-bar buttons; give them <code>class="nx-window-action"</code>.</td></tr>
+                <tr><td>Closable</td><td>bool</td><td>true</td><td>Close button (and Esc).</td></tr>
+                <tr><td>Minimizable / Maximizable</td><td>bool</td><td>false</td><td>Minimize and maximize / restore buttons.</td></tr>
+                <tr><td>Minimized / Maximized</td><td>bool</td><td>false</td><td><code>@@bind-Minimized</code>, <code>@@bind-Maximized</code>, or leave them to the buttons.</td></tr>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>The body; scrolls when taller than the window.</td></tr>
+                <tr><td>Footer</td><td>RenderFragment?</td><td>—</td><td>Action buttons, end-aligned.</td></tr>
+                <tr><td>Size</td><td>NxWindowSize</td><td>Medium</td><td>Auto, Small 400, Medium 600, Large 900 px.</td></tr>
+                <tr><td>Width / Height</td><td>string?</td><td>—</td><td>Any CSS length; Width overrides Size.</td></tr>
+                <tr><td>Left / Top</td><td>string?</td><td>centered</td><td>Position from the viewport's top-left corner.</td></tr>
+                <tr><td>Draggable</td><td>bool</td><td>true</td><td>Move by the title bar; it stays on screen.</td></tr>
+                <tr><td>Resizable</td><td>bool</td><td>false</td><td>Handles on every edge and corner.</td></tr>
+                <tr><td>MinWidth / MinHeight</td><td>int</td><td>240 / 120</td><td>Resize limits in px.</td></tr>
+                <tr><td>Id / Class</td><td>string?</td><td>—</td><td>On the window element; other attributes go there too.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Event</th><th>Args</th><th>Raised when</th></tr></thead>
+            <tbody>
+                <tr><td>OnClosing</td><td>NxWindowClosingEventArgs</td><td>Before the user closes it; set <code>Cancel</code> to keep it open.</td></tr>
+                <tr><td>VisibleChanged</td><td>bool</td><td>The user closed it: close button, Esc, backdrop, <code>CloseAsync()</code>.</td></tr>
+                <tr><td>MinimizedChanged / MaximizedChanged</td><td>bool</td><td>A title-bar button or double click changed the state.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>CloseAsync()</td><td>Task</td><td>Closes as the close button does, OnClosing included.</td></tr>
+                <tr><td>CenterAsync()</td><td>Task</td><td>Moves the window back to the middle of the viewport.</td></tr>
+                <tr><td>BringToFrontAsync()</td><td>Task</td><td>Stacks the window above every other open window.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-z-window</td><td>900</td><td>First window; each later one stacks 2 higher. Below <code>--nx-z-popup</code> so popups inside open above.</td></tr>
+                <tr><td>--nx-window-backdrop</td><td>rgba(15,15,22,.45)</td><td>The modal backdrop.</td></tr>
+                <tr><td>--nx-window-radius</td><td>10px</td><td>Window corners.</td></tr>
+                <tr><td>--nx-shadow-window</td><td></td><td>Window shadow.</td></tr>
+                <tr><td>--nx-surface / --nx-border</td><td></td><td>Window background and borders.</td></tr>
+                <tr><td>--nx-danger-subtle / --nx-danger</td><td></td><td>Close button hover.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="window" Page="api" />

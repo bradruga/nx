@@ -1,0 +1,66 @@
+@page "/timepicker"
+@page "/timepicker/overview"
+@using System.Globalization
+
+<DocHeader Slug="timepicker" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxTimePicker&lt;TValue&gt;</code> edits a <code>TimeOnly</code>, <code>TimeSpan</code> or the time of a
+        <code>DateTime</code>, nullable or not, to the minute. Type it — <em>930</em>, <em>9:30p</em>, <em>14:30</em> all read —
+        or pick from a list of times every <code>Step</code> minutes between <code>Min</code> and <code>Max</code>. The clock is
+        12- or 24-hour by culture, or by <code>Use24Hour</code>. On a phone the list opens as a full-screen sheet with large rows.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <NxTimePicker Id="overview-time" Label="Truck arrives" @bind-Value="arrival" Step="15" Culture="EnUs" Clearable="true" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="overview-time-value">Value: <strong>@(arrival?.ToString("HH:mm") ?? "null")</strong></span></div>
+            </div>
+            <div>
+                <NxTimePicker Id="overview-shift" Label="Shift starts (24h)" @bind-Value="shiftStart" Use24Hour="true" Min="new TimeOnly(5, 0)" Max="new TimeOnly(9, 0)" Step="30" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="overview-shift-value">Value: <strong>@shiftStart.ToString("HH:mm")</strong></span></div>
+            </div>
+        </div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>↓ or Alt+↓</td><td>Opens the list at the typed or bound time, else the next step after now.</td></tr>
+                <tr><td>↑ / ↓, PgUp / PgDn</td><td>Moves the highlighted time; the list follows what you type.</td></tr>
+                <tr><td>Enter</td><td>Picks the highlighted time; typed text that reads as a different time wins. Closed, commits the text.</td></tr>
+                <tr><td>Esc / Alt+↑ / Tab</td><td>Closes the list. Closed, Esc clears when <code>Clearable</code>.</td></tr>
+                <tr><td>role="combobox"</td><td>With a <code>listbox</code> popup and <code>aria-activedescendant</code> on the highlighted time.</td></tr>
+                <tr><td>inputmode</td><td><code>numeric</code> for 24-hour entry, which is masked to <em>hh:mm</em>; the full keyboard for AM/PM.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="timepicker" Page="overview" />
+
+@code {
+    static readonly CultureInfo EnUs = CultureInfo.GetCultureInfo("en-US");
+
+    TimeOnly? arrival = new(7, 15);
+    TimeOnly shiftStart = new(6, 0);
+
+    const string basicCode =
+        """
+        <NxTimePicker Label="Truck arrives" @bind-Value="load.Arrival" Step="15" Clearable="true" />
+
+        <NxTimePicker Label="Shift starts" @bind-Value="shift.Start" Use24Hour="true"
+                      Min="new TimeOnly(5, 0)" Max="new TimeOnly(9, 0)" />
+        """;
+}

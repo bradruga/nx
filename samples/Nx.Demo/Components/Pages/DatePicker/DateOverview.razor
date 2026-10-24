@@ -1,0 +1,73 @@
+@page "/datepicker"
+@page "/datepicker/overview"
+@using System.Globalization
+
+<DocHeader Slug="datepicker" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxDatePicker&lt;TValue&gt;</code> edits a <code>DateOnly</code> or <code>DateTime</code>, nullable or not. Type the
+        digits and the separators fill themselves in, in the culture's order — <em>10232026</em> becomes <em>10/23/2026</em> in
+        en-US, <em>23.10.2026</em> in de-DE — or open the calendar and pick. While you are not editing, the date shows in any .NET
+        <code>Format</code>. The calendar zooms out to months and years, respects <code>Min</code>, <code>Max</code> and a
+        disabled-dates callback, and is driven entirely by the keyboard without leaving the field. On a phone it opens as a
+        full-screen sheet. Label, floating label, clear and validation work as in <code>NxTextBox</code>; both are built on the same
+        field frame, and the calendar is <code>NxCalendar</code>, which you can also use on its own.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <NxDatePicker Id="overview-date" Label="Pour date" @bind-Value="pourDate" Culture="EnUs" Clearable="true" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="overview-date-value">Value: <strong>@(pourDate?.ToString("yyyy-MM-dd") ?? "null")</strong></span></div>
+            </div>
+            <div>
+                <NxDatePicker Id="overview-ship" Label="Ship date" @bind-Value="shipDate" Culture="EnUs" Format="ddd, MMM d, yyyy" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="overview-ship-value">Value: <strong>@shipDate.ToString("yyyy-MM-dd")</strong></span></div>
+            </div>
+        </div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <p class="doc-note">Focus stays in the field while the calendar is open; the keys below move the calendar's highlighted day.</p>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>↓ or Alt+↓</td><td>Opens the calendar at the date in the field, else today.</td></tr>
+                <tr><td>← / →</td><td>Previous / next day (month or year in the zoomed-out views).</td></tr>
+                <tr><td>↑ / ↓</td><td>Previous / next week.</td></tr>
+                <tr><td>PgUp / PgDn</td><td>Previous / next month; with Shift, a year.</td></tr>
+                <tr><td>Ctrl+↑ / Ctrl+↓</td><td>Zooms out to months, then years; zooms back in.</td></tr>
+                <tr><td>Enter</td><td>Picks the highlighted day and closes. Closed, commits the typed text.</td></tr>
+                <tr><td>Esc / Alt+↑ / Tab</td><td>Closes the calendar. Closed, Esc clears when <code>Clearable</code>.</td></tr>
+                <tr><td>role="combobox"</td><td>With <code>aria-haspopup="grid"</code>, <code>aria-expanded</code>, and <code>aria-activedescendant</code> on the highlighted day.</td></tr>
+                <tr><td>Calendar</td><td>Day cells are <code>gridcell</code>s with the full date as their name, <code>aria-selected</code>, <code>aria-disabled</code> and <code>aria-current="date"</code> on today.</td></tr>
+                <tr><td>Phone sheet</td><td>A modal <code>dialog</code>; focus moves into the calendar, Back and Esc close it, and focus returns to the calendar button.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="datepicker" Page="overview" />
+
+@code {
+    static readonly CultureInfo EnUs = CultureInfo.GetCultureInfo("en-US");
+
+    DateOnly? pourDate = new DateOnly(2026, 10, 23);
+    DateTime shipDate = new(2026, 11, 2, 7, 30, 0);
+
+    const string basicCode =
+        """
+        <NxDatePicker Label="Pour date" @bind-Value="job.PourDate" Clearable="true" />
+
+        <NxDatePicker Label="Ship date" @bind-Value="job.ShipDate" Format="ddd, MMM d, yyyy" />
+        """;
+}

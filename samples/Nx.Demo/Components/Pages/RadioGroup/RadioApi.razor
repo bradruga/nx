@@ -1,0 +1,73 @@
+@page "/radio/api"
+
+<DocHeader Slug="radio" Page="api" />
+
+<div class="doc-section">
+    <h2>NxRadioGroup Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Value</td><td>TValue?</td><td>—</td><td>Use <code>@@bind-Value</code>.</td></tr>
+                <tr><td>Data</td><td>IEnumerable&lt;TValue&gt;?</td><td>—</td><td>Values to list as buttons.</td></tr>
+                <tr><td>ItemText</td><td>Func&lt;TValue, string&gt;?</td><td>ToString()</td><td>Label for a Data item.</td></tr>
+                <tr><td>ItemDisabled</td><td>Func&lt;TValue, bool&gt;?</td><td>—</td><td>Disables Data items.</td></tr>
+                <tr><td>ItemTemplate</td><td>RenderFragment&lt;TValue&gt;?</td><td>—</td><td>Label markup for Data items.</td></tr>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>NxRadioButton children, after Data items.</td></tr>
+                <tr><td>Label</td><td>string?</td><td>—</td><td>Caption; names the group.</td></tr>
+                <tr><td>Orientation</td><td>NxOrientation</td><td>Vertical</td><td>Vertical or Horizontal.</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>false</td><td>Disables every button.</td></tr>
+                <tr><td>Name</td><td>string?</td><td>generated</td><td>The radios' shared <code>name</code>.</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>Group id; outer class and style.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxRadioButton Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Value</td><td>TValue?</td><td>—</td><td>The group's value when this is checked.</td></tr>
+                <tr><td>Label</td><td>string?</td><td>—</td><td>Label text.</td></tr>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>Rich label content.</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>false</td><td>Makes this button unavailable.</td></tr>
+                <tr><td>Id</td><td>string?</td><td>generated</td><td>Input id. Other attributes go to the input.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events &amp; Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ValueChanged</td><td>EventCallback&lt;TValue?&gt;</td><td>The user checked another button (click, Space or arrow key).</td></tr>
+                <tr><td>NxRadioButton.FocusAsync()</td><td>ValueTask</td><td>Moves focus to that button.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-check-size</td><td>18px</td><td>Circle size (shared with NxCheckBox).</td></tr>
+                <tr><td>--nx-check-border</td><td>= --nx-border-hover</td><td>Unchecked ring.</td></tr>
+                <tr><td>--nx-accent</td><td>#0078d4</td><td>Checked ring and dot.</td></tr>
+                <tr><td>--nx-invalid</td><td>= --nx-danger</td><td>Rings and caption while invalid.</td></tr>
+                <tr><td>--nx-focus-ring-color / -width / -offset</td><td>accent / 2px / 2px</td><td>Keyboard focus ring, shaped like the control; none on mouse or touch focus.</td></tr>
+                <tr><td>--nx-font-size-sm / --nx-font-weight-medium</td><td>13px / 500</td><td>Caption.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="radio" Page="api" />

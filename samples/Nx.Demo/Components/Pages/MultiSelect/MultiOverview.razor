@@ -1,0 +1,56 @@
+@page "/multiselect"
+@page "/multiselect/overview"
+
+<DocHeader Slug="multiselect" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxMultiSelect&lt;TItem, TValue&gt;</code> picks any number of items. They show as chips, or past
+        <code>SummaryThreshold</code> as one summary ("5 selected"). Typing in the field filters the list; <code>SelectAll</code>
+        adds a row that selects every listed item; <code>MaxSelections</code> caps the count. On a phone the list opens full
+        screen and changes apply on Done. It is <code>NxComboBox</code> with <code>Multiple</code> — the same code, not a
+        copy — so data sources, templates, grouping, virtualization, columns and validation behave the same.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <label class="demo-field-label" for="overview-multi">Customers</label>
+        <NxMultiSelect Id="overview-multi" Data="SampleData.Customers" ItemText="c => c.Name" ItemValue="c => c.Id"
+                       @bind-Values="customerIds" Placeholder="Pick customers" SelectAll="true" Clearable="true" />
+        <div class="demo-row"><span class="demo-value" id="overview-multi-value">Values: <strong>[@string.Join(", ", customerIds)]</strong></span></div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Typing</td><td>Filters the list (with <code>Filterable="false"</code>, letters jump to items instead).</td></tr>
+                <tr><td>↓ / ↑, PgUp / PgDn</td><td>Opens the list and moves the highlight.</td></tr>
+                <tr><td>Enter</td><td>Toggles the highlighted item — or Select all — and keeps the list open.</td></tr>
+                <tr><td>Space</td><td>Toggles once you have arrowed to an item; before that it types a space.</td></tr>
+                <tr><td>Backspace (empty field)</td><td>Removes the last chip.</td></tr>
+                <tr><td>Esc</td><td>Closes the list.</td></tr>
+                <tr><td>aria-multiselectable</td><td>The listbox is multi-select; options carry <code>aria-selected</code>, and <code>aria-disabled</code> once <code>MaxSelections</code> is reached.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="multiselect" Page="overview" />
+
+@code {
+    IEnumerable<int> customerIds = [11, 5];
+
+    const string basicCode =
+        """
+        <NxMultiSelect Data="customers" ItemText="c => c.Name" ItemValue="c => c.Id"
+                       @bind-Values="filter.CustomerIds" SelectAll="true" Clearable="true" />
+        """;
+}

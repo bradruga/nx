@@ -1,0 +1,135 @@
+@page "/daterange/examples"
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+
+<DocHeader Slug="daterange" Page="examples" />
+
+<div class="doc-section">
+    <h2>Picking a Range</h2>
+    <p class="doc-note">
+        Open the calendar from either field. The first pick sets the start and moves to the end; the second sets the end and
+        closes. Picking a day before the start starts over from there. Two months show side by side; <code>Months="1"</code> shows one.
+    </p>
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <NxDateRangePicker Id="range-basic" Label="Two months" @bind-StartValue="basicFrom" @bind-EndValue="basicTo" Culture="EnUs" />
+        <div class="demo-row"><span class="demo-value" id="range-basic-value">Range: <strong>@Show(basicFrom) → @Show(basicTo)</strong></span></div>
+        <NxDateRangePicker Id="range-one" Label="One month" Months="1" @bind-StartValue="oneFrom" @bind-EndValue="oneTo" Culture="EnUs" />
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Typing</h2>
+    <p class="doc-note">
+        Each field takes typed dates with the date picker's mask. Type a start after the end and the two swap, so the range is
+        always in order.
+    </p>
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <NxDateRangePicker Id="range-typed" Label="Typed (de-DE)" @bind-StartValue="typedFrom" @bind-EndValue="typedTo" Culture="DeDe" />
+        <div class="demo-row"><span class="demo-value" id="range-typed-value">Range: <strong>@Show(typedFrom) → @Show(typedTo)</strong></span></div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Min, Max &amp; Disabled Dates</h2>
+    <p class="doc-note">The same limits as NxDatePicker: here the next 60 days from October 1, 2026, Sundays excluded.</p>
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <NxDateRangePicker Id="range-limits" Label="Crane booking" @bind-StartValue="limitFrom" @bind-EndValue="limitTo"
+                           Min="LimitMin" Max="LimitMin.AddDays(60)" IsDateDisabled="d => d.DayOfWeek == DayOfWeek.Sunday"
+                           ShowWeekNumbers="true" Culture="EnUs" />
+    </div>
+    <pre class="doc-code">@limitsCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>DateTime &amp; Labels</h2>
+    <p class="doc-note">
+        Bound to <code>DateTime</code>, each end keeps its time of day. <code>StartLabel</code> and <code>EndLabel</code> name the
+        fields; <code>FloatingLabel</code> puts them inside.
+    </p>
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <NxDateRangePicker Id="range-datetime" @bind-StartValue="dtFrom" @bind-EndValue="dtTo" StartLabel="Check in" EndLabel="Check out"
+                           FloatingLabel="true" Culture="EnUs" />
+        <div class="demo-row"><span class="demo-value" id="range-datetime-value">Range: <strong>@dtFrom.ToString("yyyy-MM-dd HH:mm") → @dtTo.ToString("yyyy-MM-dd HH:mm")</strong></span></div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>State</h2>
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <NxDateRangePicker Id="range-readonly" Label="Read-only" StartValue="basicFrom" EndValue="basicTo" ReadOnly="true" Culture="EnUs" />
+        <NxDateRangePicker Id="range-disabled" Label="Disabled" StartValue="basicFrom" EndValue="basicTo" Disabled="true" Culture="EnUs" />
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Phone Sheet</h2>
+    <p class="doc-note">
+        At 600px and below the calendar opens full screen, one month at a time, with the range so far at the top and a hint for
+        the next pick. <code>MobileMode="Always"</code> forces it here.
+    </p>
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <NxDateRangePicker Id="range-sheet" Label="Shutdown" @bind-StartValue="sheetFrom" @bind-EndValue="sheetTo"
+                           MobileMode="NxMobileMode.Always" Clearable="true" Culture="EnUs" />
+        <div class="demo-row"><span class="demo-value" id="range-sheet-value">Range: <strong>@Show(sheetFrom) → @Show(sheetTo)</strong></span></div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Form Validation</h2>
+    <p class="doc-note">Each end validates on its own field; a rule across both goes on the model.</p>
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <EditForm id="range-form" Model="leave" OnValidSubmit="Submit" FormName="range-form">
+            <DataAnnotationsValidator />
+            <NxDateRangePicker Id="leave" Label="Leave" @bind-StartValue="leave.From" @bind-EndValue="leave.To" Culture="EnUs" />
+            <ValidationMessage For="() => leave.From" />
+            <ValidationMessage For="() => leave.To" />
+            <div class="demo-row" style="margin-top:16px">
+                <NxButton id="range-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Request</NxButton>
+                <span class="demo-value" id="range-result">@leaveResult</span>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<DocPager Slug="daterange" Page="examples" />
+
+@code {
+    static readonly CultureInfo EnUs = CultureInfo.GetCultureInfo("en-US");
+    static readonly CultureInfo DeDe = CultureInfo.GetCultureInfo("de-DE");
+    static readonly DateOnly LimitMin = new(2026, 10, 1);
+    static string Show(DateOnly? d) => d?.ToString("yyyy-MM-dd") ?? "null";
+
+    DateOnly? basicFrom = new(2026, 10, 19), basicTo = new(2026, 10, 23);
+    DateOnly? oneFrom, oneTo;
+    DateOnly? typedFrom = new(2026, 10, 5), typedTo = new(2026, 10, 9);
+    DateOnly? limitFrom, limitTo;
+    DateTime dtFrom = new(2026, 11, 2, 15, 0, 0), dtTo = new(2026, 11, 6, 11, 0, 0);
+    DateOnly? sheetFrom, sheetTo;
+
+    readonly LeaveForm leave = new();
+    string leaveResult = "Not requested";
+
+    void Submit() => leaveResult = $"Requested {leave.From:yyyy-MM-dd} to {leave.To:yyyy-MM-dd}";
+
+    class LeaveForm : IValidatableObject
+    {
+        [Required(ErrorMessage = "Pick the first day.")]
+        public DateOnly? From { get; set; }
+
+        [Required(ErrorMessage = "Pick the last day.")]
+        public DateOnly? To { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext context)
+        {
+            if (From is DateOnly f && To is DateOnly t && t.DayNumber - f.DayNumber > 13)
+                yield return new ValidationResult("Leave is at most 14 days.", [nameof(To)]);
+        }
+    }
+
+    const string limitsCode =
+        """
+        <NxDateRangePicker @bind-StartValue="from" @bind-EndValue="to"
+                           Min="firstDay" Max="firstDay.AddDays(60)"
+                           IsDateDisabled="d => d.DayOfWeek == DayOfWeek.Sunday" />
+        """;
+}

@@ -1,0 +1,143 @@
+@page "/icon/examples"
+
+<DocHeader Slug="icon" Page="examples" />
+
+<div class="doc-section">
+    <h2>The Icon Set</h2>
+    <p class="doc-note">
+        Every icon on <code>NxIcons</code>, named after the Telerik icon it replaces. Filter by name; click a tile to copy its
+        markup into the box below.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxTextBox Id="icon-filter" Placeholder="Filter icons" @bind-Value="filter" Immediate="true" Clearable="true" Style="max-width:320px">
+            <Prefix><NxIcon Icon="NxIcons.Search" /></Prefix>
+        </NxTextBox>
+        <div class="demo-icon-grid" id="icon-grid">
+            @foreach (var (name, icon) in Filtered)
+            {
+                <button type="button" class="demo-icon-tile" title="@name" data-name="@name" @onclick="() => picked = name">
+                    <NxIcon Icon="icon" Size="NxIconSize.XLarge" />
+                    <span>@name</span>
+                </button>
+            }
+            @if (!Filtered.Any())
+            {
+                <span class="demo-log-empty">No icon matches “@filter”.</span>
+            }
+        </div>
+        <span class="demo-value" id="icon-count">@Filtered.Count() of @NxIcons.All.Count icons</span>
+        @if (picked is not null)
+        {
+            <pre class="doc-code" id="icon-picked">&lt;NxIcon Icon="NxIcons.@picked" /&gt;</pre>
+        }
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Sizes</h2>
+    <p class="doc-note">Seven steps, each a <code>--nx-icon-size-*</code> token: 12, 14, 16 (default), 20, 24, 32 and 48 px.</p>
+    <div class="demo-stage">
+        <div class="demo-row demo-icon-sizes" id="icon-sizes">
+            @foreach (var size in Enum.GetValues<NxIconSize>())
+            {
+                <div class="demo-icon-size">
+                    <NxIcon Icon="NxIcons.Gear" Size="size" data-size="@size" />
+                    <span>@size</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Colors</h2>
+    <p class="doc-note">The text color by default; <code>Color</code> picks a theme token. Switch the theme in the header to see the dark values.</p>
+    <div class="demo-stage">
+        <div class="demo-row" id="icon-colors">
+            @foreach (var color in Enum.GetValues<NxIconColor>())
+            {
+                <div class="demo-icon-size">
+                    <NxIcon Icon="NxIcons.CheckCircle" Size="NxIconSize.XLarge" Color="color" data-color="@color" />
+                    <span>@color</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>In Buttons and Text</h2>
+    <p class="doc-note">
+        Pass an icon to <code>NxButton</code>'s <code>Icon</code> slot; without a label the button is icon-only and needs an
+        <code>AriaLabel</code>. Inline with text, an icon centers on the line.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <NxButton Variant="NxButtonVariant.Primary" Icon="@IconOf(NxIcons.Save)">Save</NxButton>
+            <NxButton Icon="@IconOf(NxIcons.Print)">Print</NxButton>
+            <NxButton Variant="NxButtonVariant.Danger" Icon="@IconOf(NxIcons.Trash)">Delete</NxButton>
+            <NxButton Variant="NxButtonVariant.Ghost" Icon="@IconOf(NxIcons.MoreVertical)" AriaLabel="More" />
+        </div>
+        <p class="demo-icon-inline">
+            <NxIcon Icon="NxIcons.ExclamationCircle" Color="NxIconColor.Warning" /> Two pours are waiting for a mix design.
+            <NxIcon Icon="NxIcons.HyperlinkOpen" Size="NxIconSize.Small" Color="NxIconColor.Primary" /> Open schedule
+        </p>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Your Own Icons</h2>
+    <p class="doc-note">
+        An <code>NxIconData</code> is the inside of an <code>&lt;svg&gt;</code>. Any 24×24 stroked icon works as is; set
+        <code>Filled</code> and <code>ViewBox</code> for others, such as a logo.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-row" id="icon-custom">
+            <NxIcon Icon="Truck" Size="NxIconSize.XXLarge" Color="NxIconColor.Primary" />
+            <NxIcon Icon="Diamond" Size="NxIconSize.XXLarge" />
+        </div>
+    </div>
+    <pre class="doc-code">@customCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Labelled Icons</h2>
+    <p class="doc-note">A status icon with no text beside it gets an <code>AriaLabel</code> (and a <code>Title</code> for the mouse).</p>
+    <div class="demo-stage">
+        <div class="demo-row" id="icon-labelled">
+            <span>Pour P-1042</span>
+            <NxIcon Icon="NxIcons.CheckCircle" Color="NxIconColor.Success" AriaLabel="Released" Title="Released" id="icon-released" />
+            <span>Pour P-1043</span>
+            <NxIcon Icon="NxIcons.Clock" Color="NxIconColor.Muted" AriaLabel="Waiting" Title="Waiting" />
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="icon" Page="examples" />
+
+@code {
+    string? filter, picked;
+
+    IEnumerable<KeyValuePair<string, NxIconData>> Filtered =>
+        NxIcons.All.Where(i => string.IsNullOrWhiteSpace(filter) || i.Key.Contains(filter.Trim(), StringComparison.OrdinalIgnoreCase))
+                   .OrderBy(i => i.Key, StringComparer.Ordinal);
+
+    static RenderFragment IconOf(NxIconData icon) => @<NxIcon Icon="icon" />;
+
+    static readonly NxIconData Truck = new("truck",
+        """<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>""");
+
+    static readonly NxIconData Diamond = new("diamond", """<path d="M8 0 16 8 8 16 0 8z"/>""") { Filled = true, ViewBox = "0 0 16 16" };
+
+    const string customCode =
+        """"
+        static readonly NxIconData Truck = new("truck", """<path d="M14 18V6a2 2 0 0 0-2-2H4…"/>…""");
+        static readonly NxIconData Diamond = new("diamond", """<path d="M8 0 16 8 8 16 0 8z"/>""")
+        {
+            Filled = true,
+            ViewBox = "0 0 16 16"
+        };
+
+        <NxIcon Icon="Truck" Size="NxIconSize.XXLarge" Color="NxIconColor.Primary" />
+        """";
+}

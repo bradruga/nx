@@ -1,0 +1,98 @@
+@page "/textarea/playground"
+
+<DocHeader Slug="textarea" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                <NxTextArea Id="playground-textarea" @bind-Value="pgValue" @bind-Value:after="Changed"
+                            Label="@OrNull(pgLabel)" FloatingLabel="pgFloating" Placeholder="@OrNull(pgPlaceholder)"
+                            Rows="pgRows" AutoResize="pgAuto" MinRows="IntOrNull(pgMinRows)" MaxRows="IntOrNull(pgMaxRows)" Resize="pgResize"
+                            MaxLength="IntOrNull(pgMaxLength)" ShowCounter="pgCounter" Clearable="pgClearable"
+                            Immediate="pgImmediate" DebounceDelay="pgDebounce" ReadOnly="pgReadOnly" Disabled="pgDisabled" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-value">Length: <strong>@(pgValue?.Length ?? 0)</strong></span>
+                <span class="demo-counter" id="playground-changes">ValueChanged × @pgChanges</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Size</div>
+            <label class="demo-control"><span>Rows</span><input type="number" id="pg-rows" min="1" @bind="pgRows" /></label>
+            <label class="demo-control"><span>AutoResize</span><input type="checkbox" id="pg-auto" @bind="pgAuto" /></label>
+            <label class="demo-control"><span>MinRows</span><input type="text" id="pg-min-rows" placeholder="Rows" @bind="pgMinRows" /></label>
+            <label class="demo-control"><span>MaxRows</span><input type="text" id="pg-max-rows" placeholder="none" @bind="pgMaxRows" /></label>
+            <label class="demo-control">
+                <span>Resize</span>
+                <select id="pg-resize" @bind="pgResize">
+                    @foreach (var r in Enum.GetValues<NxTextAreaResize>())
+                    {
+                        <option value="@r">@r</option>
+                    }
+                </select>
+            </label>
+
+            <div class="demo-controls-title">Text</div>
+            <label class="demo-control"><span>Label</span><input type="text" @bind="pgLabel" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>FloatingLabel</span><input type="checkbox" id="pg-floating" @bind="pgFloating" /></label>
+            <label class="demo-control"><span>Placeholder</span><input type="text" @bind="pgPlaceholder" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>MaxLength</span><input type="text" id="pg-max-length" placeholder="none" @bind="pgMaxLength" /></label>
+            <label class="demo-control"><span>ShowCounter</span><input type="checkbox" id="pg-counter" @bind="pgCounter" /></label>
+
+            <div class="demo-controls-title">Behavior</div>
+            <label class="demo-control"><span>Immediate</span><input type="checkbox" id="pg-immediate" @bind="pgImmediate" /></label>
+            <label class="demo-control"><span>DebounceDelay</span><input type="number" id="pg-debounce" @bind="pgDebounce" /></label>
+            <label class="demo-control"><span>Clearable</span><input type="checkbox" id="pg-clearable" @bind="pgClearable" /></label>
+            <label class="demo-control"><span>ReadOnly</span><input type="checkbox" id="pg-readonly" @bind="pgReadOnly" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="textarea" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+    static int? IntOrNull(string s) => int.TryParse(s, out var n) && n > 0 ? n : null;
+
+    string? pgValue = "";
+    string pgLabel = "Notes", pgPlaceholder = "", pgMinRows = "", pgMaxRows = "", pgMaxLength = "";
+    int pgRows = 3, pgDebounce, pgChanges;
+    bool pgAuto, pgFloating, pgCounter, pgImmediate, pgClearable, pgReadOnly, pgDisabled;
+    NxTextAreaResize pgResize = NxTextAreaResize.Vertical;
+
+    void Changed() => pgChanges++;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "@bind-Value=\"notes\"" };
+            if (OrNull(pgLabel) is { } l) attrs.Add($"Label=\"{l}\"");
+            if (pgFloating) attrs.Add("FloatingLabel=\"true\"");
+            if (OrNull(pgPlaceholder) is { } p) attrs.Add($"Placeholder=\"{p}\"");
+            if (pgRows != 3) attrs.Add($"Rows=\"{pgRows}\"");
+            if (pgAuto) attrs.Add("AutoResize=\"true\"");
+            if (IntOrNull(pgMinRows) is int mi) attrs.Add($"MinRows=\"{mi}\"");
+            if (IntOrNull(pgMaxRows) is int ma) attrs.Add($"MaxRows=\"{ma}\"");
+            if (pgResize != NxTextAreaResize.Vertical) attrs.Add($"Resize=\"NxTextAreaResize.{pgResize}\"");
+            if (IntOrNull(pgMaxLength) is int ml) attrs.Add($"MaxLength=\"{ml}\"");
+            if (pgCounter) attrs.Add("ShowCounter=\"true\"");
+            if (pgImmediate) attrs.Add("Immediate=\"true\"");
+            if (pgDebounce > 0) attrs.Add($"DebounceDelay=\"{pgDebounce}\"");
+            if (pgClearable) attrs.Add("Clearable=\"true\"");
+            if (pgReadOnly) attrs.Add("ReadOnly=\"true\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            return "<NxTextArea " + string.Join("\n            ", attrs) + " />";
+        }
+    }
+}

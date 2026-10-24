@@ -1,0 +1,48 @@
+@namespace Nx.Components
+@typeparam TItem
+@typeparam TValue
+
+@* NxComboBox with Multiple on; the cascaded ComboMode adds select-all, the limit, the summary and pick-only. *@
+<CascadingValue Name="@ComboMode.CascadeName" Value="mode">
+    <NxComboBox @ref="combo"
+                TItem="TItem"
+                TValue="TValue"
+                Multiple="true"
+                Data="Data"
+                DataProvider="DataProvider"
+                DebounceDelay="DebounceDelay"
+                ItemText="ItemText"
+                ItemValue="ItemValue"
+                ItemGroup="ItemGroup"
+                Values="Values"
+                ValuesChanged="ValuesChanged"
+                ValuesExpression="ValuesExpression"
+                SelectedItems="SelectedItems"
+                SelectedItemsChanged="SelectedItemsChanged"
+                MaxVisibleChips="MaxVisibleChips"
+                ChipTemplate="ChipTemplate"
+                Filter="Filter"
+                CustomFilter="CustomFilter"
+                FilterAllColumns="FilterAllColumns"
+                Columns="Columns"
+                ColumnDefinitions="ColumnDefinitions"
+                PopupWidth="@PopupWidth"
+                MobileMode="MobileMode"
+                MobileBreakpoint="MobileBreakpoint"
+                MobileTitle="@MobileTitle"
+                Placeholder="@Placeholder"
+                Clearable="Clearable"
+                ItemTemplate="ItemTemplate"
+                GroupHeaderTemplate="GroupHeaderTemplate"
+                NoDataText="@NoDataText"
+                Virtualize="Virtualize"
+                ItemHeight="ItemHeight"
+                PopupMaxHeight="PopupMaxHeight"
+                Loading="Loading"
+                Disabled="Disabled"
+                ReadOnly="ReadOnly"
+                Id="@Id"
+                Class="@CssClass"
+                Style="@Style"
+                AdditionalAttributes="AdditionalAttributes" />
+</CascadingValue>

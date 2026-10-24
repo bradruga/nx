@@ -1,0 +1,112 @@
+@page "/form/playground"
+
+<DocHeader Slug="form" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">The form's and an item's parameters, live, over a pour.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch demo-preview-form">
+                <NxForm Id="playground-form" Model="pour" Columns="pgColumns" ColumnSpacing="@OrNull(pgSpacing)" Orientation="pgOrientation"
+                        SubmitOnEnter="pgEnter" OnValidSubmit="() => pgSubmits++">
+                    <ChildContent>
+                        <NxFormItem Field="@nameof(PourForm.Name)" ColSpan="pgNameSpan" Label="@OrNull(pgNameLabel)" Disabled="pgDisabled" />
+                        <NxFormItem Field="@nameof(PourForm.Volume)" />
+                        <NxFormItem Field="@nameof(PourForm.PourDate)" />
+                        <NxFormItem Field="@nameof(PourForm.Status)" />
+                        @if (pgGroup)
+                        {
+                            <NxFormGroup Label="Crew">
+                                <NxFormItem Field="@nameof(PourForm.Trucks)" />
+                                <NxFormItem Field="@nameof(PourForm.PumpTruck)" />
+                            </NxFormGroup>
+                        }
+                    </ChildContent>
+                    <Buttons>
+                        <NxButton id="playground-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Save</NxButton>
+                        <span class="demo-counter" id="playground-submits">OnValidSubmit × @pgSubmits</span>
+                    </Buttons>
+                </NxForm>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">NxForm</div>
+            <label class="demo-control"><span>Columns</span><input type="number" id="pg-columns" min="1" max="12" @bind="pgColumns" /></label>
+            <label class="demo-control"><span>ColumnSpacing</span><input type="text" id="pg-spacing" placeholder="16px" @bind="pgSpacing" /></label>
+            <label class="demo-control">
+                <span>Orientation</span>
+                <select id="pg-orientation" @bind="pgOrientation">
+                    <option value="@NxOrientation.Vertical">Vertical</option>
+                    <option value="@NxOrientation.Horizontal">Horizontal</option>
+                </select>
+            </label>
+            <label class="demo-control"><span>SubmitOnEnter</span><input type="checkbox" id="pg-enter" @bind="pgEnter" /></label>
+
+            <div class="demo-controls-title">NxFormItem (Name)</div>
+            <label class="demo-control"><span>ColSpan</span><input type="number" id="pg-span" min="1" max="12" @bind="pgNameSpan" /></label>
+            <label class="demo-control"><span>Label</span><input type="text" id="pg-label" placeholder="Name" @bind="pgNameLabel" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+
+            <div class="demo-controls-title">NxFormGroup</div>
+            <label class="demo-control"><span>Crew group</span><input type="checkbox" id="pg-group" @bind="pgGroup" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="form" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+
+    readonly PourForm pour = new();
+    int pgColumns = 2, pgNameSpan = 2, pgSubmits;
+    string pgSpacing = "", pgNameLabel = "";
+    NxOrientation pgOrientation = NxOrientation.Vertical;
+    bool pgEnter = true, pgDisabled, pgGroup;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var form = new List<string> { "Model=\"pour\"" };
+            if (pgColumns != 1) form.Add($"Columns=\"{pgColumns}\"");
+            if (OrNull(pgSpacing) is { } s) form.Add($"ColumnSpacing=\"{s}\"");
+            if (pgOrientation != NxOrientation.Vertical) form.Add("Orientation=\"NxOrientation.Horizontal\"");
+            if (!pgEnter) form.Add("SubmitOnEnter=\"false\"");
+            form.Add("OnValidSubmit=\"SaveAsync\"");
+
+            var name = new List<string> { "Field=\"@nameof(PourForm.Name)\"" };
+            if (pgNameSpan != 1) name.Add($"ColSpan=\"{pgNameSpan}\"");
+            if (OrNull(pgNameLabel) is { } l) name.Add($"Label=\"{l}\"");
+            if (pgDisabled) name.Add("Disabled=\"true\"");
+
+            var lines = new List<string>
+            {
+                "<NxForm " + string.Join(" ", form) + ">",
+                "    <ChildContent>",
+                "        <NxFormItem " + string.Join(" ", name) + " />",
+                "        <NxFormItem Field=\"@nameof(PourForm.Volume)\" />",
+                "        <NxFormItem Field=\"@nameof(PourForm.PourDate)\" />",
+                "        <NxFormItem Field=\"@nameof(PourForm.Status)\" />",
+            };
+            if (pgGroup)
+            {
+                lines.Add("        <NxFormGroup Label=\"Crew\">");
+                lines.Add("            <NxFormItem Field=\"@nameof(PourForm.Trucks)\" />");
+                lines.Add("            <NxFormItem Field=\"@nameof(PourForm.PumpTruck)\" />");
+                lines.Add("        </NxFormGroup>");
+            }
+            lines.Add("    </ChildContent>");
+            lines.Add("    <Buttons><NxButton Type=\"NxButtonType.Submit\">Save</NxButton></Buttons>");
+            lines.Add("</NxForm>");
+            return string.Join("\n", lines);
+        }
+    }
+}

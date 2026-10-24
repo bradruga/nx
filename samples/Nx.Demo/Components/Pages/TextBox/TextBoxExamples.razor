@@ -1,0 +1,271 @@
+@page "/textbox/examples"
+@using System.ComponentModel.DataAnnotations
+
+<DocHeader Slug="textbox" Page="examples" />
+
+<div class="doc-section">
+    <h2>Binding Modes</h2>
+    <p class="doc-note">
+        Type the same text into each field and watch the counters. On-change (the default) commits when you leave the
+        field or press <kbd class="doc-kbd">Enter</kbd>. <code>Immediate</code> commits every keystroke.
+        <code>DebounceDelay</code> waits for a pause in typing — use it for search boxes that query the server — and
+        still commits at once when you leave the field.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <NxTextBox Id="bind-change" Label="On change (default)" @bind-Value="changeValue" @bind-Value:after="() => changeCount++" />
+                <div class="demo-row" style="margin-top:8px">
+                    <span class="demo-value" id="bind-change-value">Value: <strong>@changeValue</strong></span>
+                    <span class="demo-counter" id="bind-change-count">× @changeCount</span>
+                </div>
+            </div>
+            <div>
+                <NxTextBox Id="bind-immediate" Label="Immediate" Immediate="true" @bind-Value="immediateValue" @bind-Value:after="() => immediateCount++" />
+                <div class="demo-row" style="margin-top:8px">
+                    <span class="demo-value" id="bind-immediate-value">Value: <strong>@immediateValue</strong></span>
+                    <span class="demo-counter" id="bind-immediate-count">× @immediateCount</span>
+                </div>
+            </div>
+            <div>
+                <NxTextBox Id="bind-debounce" Label="Immediate, debounced 400 ms" Immediate="true" DebounceDelay="400"
+                           @bind-Value="debounceValue" @bind-Value:after="() => debounceCount++" />
+                <div class="demo-row" style="margin-top:8px">
+                    <span class="demo-value" id="bind-debounce-value">Value: <strong>@debounceValue</strong></span>
+                    <span class="demo-counter" id="bind-debounce-count">× @debounceCount</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <pre class="doc-code">@bindingCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Labels &amp; Placeholder</h2>
+    <p class="doc-note">
+        <code>Label</code> renders a real <code>&lt;label for&gt;</code>, so clicking it focuses the field and screen
+        readers announce it. <code>FloatingLabel</code> moves the label inside the field and lifts it on focus or
+        once there is a value; the placeholder then shows only while focused.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <NxTextBox Id="label-fixed" Label="Job name" Placeholder="e.g. Route 9 culvert" @bind-Value="labelFixed" />
+            <NxTextBox Id="label-floating" Label="Job name" FloatingLabel="true" Placeholder="e.g. Route 9 culvert" @bind-Value="labelFloating" />
+            <NxTextBox Id="label-floating-filled" Label="Customer" FloatingLabel="true" @bind-Value="labelFloatingFilled" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Prefix &amp; Suffix</h2>
+    <p class="doc-note">
+        <code>Prefix</code> and <code>Suffix</code> take any markup and sit inside the border: icons, currency signs,
+        units, domains. Pair a numeric field with <code>InputMode="NxInputMode.Decimal"</code> for the right
+        on-screen keyboard.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <NxTextBox Id="affix-search" Label="Search" Placeholder="Order, customer, PO…" Prefix="@Icon("search")" Type="NxTextBoxType.Search" @bind-Value="affixSearch" />
+            <NxTextBox Id="affix-price" Label="Unit price" Prefix="@Text("$")" Suffix="@Text("USD")" InputMode="NxInputMode.Decimal" @bind-Value="affixPrice" />
+            <NxTextBox Id="affix-weight" Label="Weight" Suffix="@Text("lbs")" InputMode="NxInputMode.Numeric" @bind-Value="affixWeight" />
+            <NxTextBox Id="affix-email" Label="Mailbox" Prefix="@Icon("mail")" Suffix="@Text("@northeastprecast.com")" @bind-Value="affixEmail" />
+        </div>
+    </div>
+    <pre class="doc-code">@affixCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Clear Button &amp; Password Toggle</h2>
+    <p class="doc-note">
+        <code>Clearable</code> shows a clear button while the field has text; <kbd class="doc-kbd">Esc</kbd> clears too,
+        so the button stays out of the tab order. A <code>Password</code> field gets a reveal toggle — a focusable button
+        with <code>aria-pressed</code> — unless <code>ShowPasswordToggle="false"</code>.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <NxTextBox Id="clear-demo" Label="Clearable" Clearable="true" @bind-Value="clearValue" />
+            <NxTextBox Id="password-demo" Label="Password" Type="NxTextBoxType.Password" AutoComplete="new-password" @bind-Value="passwordValue" />
+            <NxTextBox Id="password-plain" Label="Password, no toggle" Type="NxTextBoxType.Password" ShowPasswordToggle="false" AutoComplete="new-password" @bind-Value="passwordPlain" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Max Length &amp; Counter</h2>
+    <p class="doc-note">
+        <code>MaxLength</code> sets the native limit; <code>ShowCounter</code> adds a live count, linked to the input with
+        <code>aria-describedby</code>. Match it to the database column so a save never truncates.
+    </p>
+    <div class="demo-stage demo-stage-narrow">
+        <div style="width:100%">
+            <NxTextBox Id="counter-demo" Label="PO number" MaxLength="12" ShowCounter="true" @bind-Value="counterValue" Immediate="true" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Read-Only &amp; Disabled</h2>
+    <p class="doc-note">
+        <code>ReadOnly</code> keeps the field focusable and selectable — use it for values the user may copy but not edit.
+        <code>Disabled</code> removes it from the tab order.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <NxTextBox Id="readonly-demo" Label="Read-only" ReadOnly="true" Value="INV-2026-00418" Clearable="true" />
+            <NxTextBox Id="disabled-demo" Label="Disabled" Disabled="true" Value="Locked after posting" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Types &amp; Input Modes</h2>
+    <p class="doc-note">
+        <code>Type</code> sets the HTML input type; <code>InputMode</code> picks the on-screen keyboard on phones and
+        tablets without changing validation. Open this page on a phone to compare.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <NxTextBox Label="Email (type=email)" Type="NxTextBoxType.Email" InputMode="NxInputMode.Email" AutoComplete="email" Prefix="@Icon("mail")" />
+            <NxTextBox Label="Phone (type=tel)" Type="NxTextBoxType.Tel" InputMode="NxInputMode.Tel" AutoComplete="tel" Prefix="@Icon("phone")" />
+            <NxTextBox Label="Quantity (inputmode=numeric)" InputMode="NxInputMode.Numeric" />
+            <NxTextBox Label="Website (type=url)" Type="NxTextBoxType.Url" InputMode="NxInputMode.Url" Placeholder="https://" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Form Validation</h2>
+    <p class="doc-note">
+        Inside an <code>EditForm</code>, <code>@@bind-Value</code> also identifies the field, so the text box reports changes,
+        turns red with <code>aria-invalid</code> when the field has messages, and works with the built-in
+        <code>ValidationMessage</code>. Submit the empty form to see it.
+    </p>
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <EditForm id="validation-form" Model="contact" OnValidSubmit="SubmitContact" FormName="textbox-form">
+            <DataAnnotationsValidator />
+            <div class="demo-form-grid demo-form-grid-2">
+                <div>
+                    <NxTextBox Id="contact-name" Label="Contact name" @bind-Value="contact.Name" />
+                    <ValidationMessage For="() => contact.Name" />
+                </div>
+                <div>
+                    <NxTextBox Id="contact-email" Label="Email" Type="NxTextBoxType.Email" Prefix="@Icon("mail")" @bind-Value="contact.Email" />
+                    <ValidationMessage For="() => contact.Email" />
+                </div>
+                <div>
+                    <NxTextBox Id="contact-po" Label="PO number" MaxLength="10" ShowCounter="true" Immediate="true" @bind-Value="contact.PoNumber" />
+                    <ValidationMessage For="() => contact.PoNumber" />
+                </div>
+                <div>
+                    <NxTextBox Id="contact-phone" Label="Phone" Type="NxTextBoxType.Tel" InputMode="NxInputMode.Tel" Prefix="@Icon("phone")" @bind-Value="contact.Phone" />
+                    <ValidationMessage For="() => contact.Phone" />
+                </div>
+            </div>
+            <div class="demo-row" style="margin-top:16px">
+                <NxButton id="contact-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary" Loading="saving">Save contact</NxButton>
+                <span class="demo-value" id="contact-result">@contactResult</span>
+            </div>
+        </EditForm>
+    </div>
+    <pre class="doc-code">@validationCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Auto Focus</h2>
+    <p class="doc-note">
+        <code>AutoFocus</code> focuses the input once, after it first renders — for a field in a dialog or a panel that
+        just opened. Call <code>FocusAsync()</code> on a reference to focus it later.
+    </p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <div class="demo-row">
+            <NxButton id="autofocus-open" OnClick="() => showPanel = !showPanel">@(showPanel ? "Close panel" : "Open panel")</NxButton>
+            <NxButton id="autofocus-focus" Variant="NxButtonVariant.Ghost" OnClick="FocusLater">Focus with FocusAsync()</NxButton>
+        </div>
+        @if (showPanel)
+        {
+            <NxTextBox Id="autofocus-panel" Label="Note" AutoFocus="true" Placeholder="Focused on open" />
+        }
+        <NxTextBox @ref="laterBox" Id="autofocus-later" Label="Focused by a button" />
+    </div>
+</div>
+
+<DocPager Slug="textbox" Page="examples" />
+
+@code {
+    static RenderFragment Icon(string name) => @<DemoIcon Name="@name" />;
+    static RenderFragment Text(string text) => @<span>@text</span>;
+
+    // ── Binding modes ──────────────────────────────────────────────────────────
+    string? changeValue, immediateValue, debounceValue;
+    int changeCount, immediateCount, debounceCount;
+
+    // ── Other sections ─────────────────────────────────────────────────────────
+    string? labelFixed, labelFloating, labelFloatingFilled = "Kiewit Northeast";
+    string? affixSearch, affixPrice = "1,240.00", affixWeight, affixEmail = "dispatch";
+    string? clearValue = "Clear me", passwordValue = "hunter22", passwordPlain;
+    string? counterValue = "PO-4471";
+    bool showPanel;
+    NxTextBox? laterBox;
+
+    async Task FocusLater()
+    {
+        if (laterBox is not null)
+            await laterBox.FocusAsync();
+    }
+
+    // ── Validation ─────────────────────────────────────────────────────────────
+    readonly Contact contact = new();
+    bool saving;
+    string contactResult = "Not saved";
+
+    async Task SubmitContact()
+    {
+        saving = true;
+        await Task.Delay(600);
+        saving = false;
+        contactResult = $"Saved {contact.Name}";
+    }
+
+    class Contact
+    {
+        [Required(ErrorMessage = "Enter a contact name.")]
+        public string? Name { get; set; }
+
+        [Required(ErrorMessage = "Enter an email address.")]
+        [EmailAddress(ErrorMessage = "That is not an email address.")]
+        public string? Email { get; set; }
+
+        [StringLength(10, MinimumLength = 4, ErrorMessage = "A PO number is 4 to 10 characters.")]
+        public string? PoNumber { get; set; }
+
+        [Phone(ErrorMessage = "That is not a phone number.")]
+        public string? Phone { get; set; }
+    }
+
+    // ── Code samples ───────────────────────────────────────────────────────────
+    const string bindingCode =
+        """
+        <NxTextBox Label="On change (default)" @bind-Value="name" />
+        <NxTextBox Label="Immediate" @bind-Value="name" Immediate="true" />
+        <NxTextBox Label="Search" @bind-Value="query" Immediate="true" DebounceDelay="400"
+                   @bind-Value:after="SearchAsync" />
+        """;
+
+    const string affixCode =
+        """
+        <NxTextBox Label="Unit price" @bind-Value="price" InputMode="NxInputMode.Decimal">
+            <Prefix>$</Prefix>
+            <Suffix>USD</Suffix>
+        </NxTextBox>
+        """;
+
+    const string validationCode =
+        """
+        <EditForm Model="contact" OnValidSubmit="SaveAsync">
+            <DataAnnotationsValidator />
+            <NxTextBox Label="Contact name" @bind-Value="contact.Name" />
+            <ValidationMessage For="() => contact.Name" />
+            <NxButton Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Save contact</NxButton>
+        </EditForm>
+        """;
+}

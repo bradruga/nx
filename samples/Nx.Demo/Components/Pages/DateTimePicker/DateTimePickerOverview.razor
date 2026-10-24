@@ -1,0 +1,54 @@
+@page "/datetimepicker"
+@page "/datetimepicker/overview"
+
+<DocHeader Slug="datetimepicker" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxDateTimePicker</code> edits a <code>DateTime</code> in one field. Type it in any .NET format, or open the
+        popup: <code>NxDatePicker</code>'s calendar beside a list of times every <code>TimeStep</code> minutes. Picking a day
+        keeps the time and moves on to the list; picking a time closes the popup. On a phone it is a full-screen sheet with
+        Date and Time tabs.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxDateTimePicker Id="overview-start" Label="Pour starts" @bind-Value="start" Format="M/d/yyyy h:mm tt" TimeStep="15" Clearable="true" />
+        <span class="demo-value" id="overview-value">Value: <strong>@(start?.ToString("yyyy-MM-dd HH:mm") ?? "null")</strong></span>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>↓ (closed)</td><td>Opens the popup; the calendar takes the keys.</td></tr>
+                <tr><td>Arrows, Page Up / Down</td><td>Move the calendar's day and month, as NxDatePicker.</td></tr>
+                <tr><td>Enter on a day</td><td>Picks the day (keeping the time) and moves the keys to the time list.</td></tr>
+                <tr><td>↑ / ↓, Page Up / Down in the list</td><td>Move through the times; ← goes back to the calendar.</td></tr>
+                <tr><td>Enter on a time</td><td>Picks it and closes the popup.</td></tr>
+                <tr><td>Esc / Tab</td><td>Close the popup. Esc on a closed field clears it when <code>Clearable</code>.</td></tr>
+                <tr><td>Typing</td><td>Committed on Enter or leaving; unreadable text reverts.</td></tr>
+                <tr><td>role="combobox"</td><td><code>aria-expanded</code>; <code>aria-activedescendant</code> follows the day, then the time.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="datetimepicker" Page="overview" />
+
+@code {
+    DateTime? start = DateTime.Today.AddDays(1).AddHours(7);
+
+    const string basicCode =
+        """
+        <NxDateTimePicker Label="Pour starts" @bind-Value="pour.Start"
+                          Format="M/d/yyyy h:mm tt" TimeStep="15" Clearable="true" />
+        """;
+}

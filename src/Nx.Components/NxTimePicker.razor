@@ -1,0 +1,99 @@
+@namespace Nx.Components
+@typeparam TValue
+
+<NxFieldFrame ClassPrefix="nx-timepicker"
+              InputId="@InputId"
+              Label="@Label"
+              FloatingLabel="FloatingLabel"
+              HasValue="@(currentText.Length > 0)"
+              ShowClear="ShowClear"
+              OnClear="HandleClearClick"
+              Disabled="Disabled"
+              ReadOnly="ReadOnly"
+              Invalid="validation.IsInvalid"
+              Class="@RootClass"
+              Style="@Style">
+    <ChildContent>
+        <input @ref="input"
+               @attributes="AdditionalAttributes"
+               id="@InputId"
+               class="@InputCssClass"
+               type="text"
+               role="combobox"
+               autocomplete="off"
+               inputmode="@(Is24Hour ? "numeric" : null)"
+               placeholder="@PlaceholderText"
+               disabled="@Disabled"
+               readonly="@ReadOnly"
+               aria-autocomplete="none"
+               aria-haspopup="@(UseSheet ? "dialog" : "listbox")"
+               aria-expanded="@(popupOpen ? "true" : "false")"
+               aria-controls="@(popupOpen ? ListId : null)"
+               aria-activedescendant="@(popupOpen && activeIndex >= 0 ? OptionId(activeIndex) : null)"
+               aria-invalid="@(validation.IsInvalid ? "true" : null)"
+               @bind="currentText"
+               @bind:event="oninput"
+               @bind:after="HandleInputAfter"
+               @onchange="HandleChange"
+               @onkeydown="HandleKeyDown"
+               @onfocus="HandleFocus"
+               @onblur="HandleBlur" />
+    </ChildContent>
+    <Buttons>
+        <button @ref="toggle" type="button" class="nx-field-button nx-timepicker-button nx-timepicker-toggle" tabindex="-1"
+                aria-label="Choose time" title="Choose time" aria-controls="@InputId"
+                aria-expanded="@(popupOpen || sheetOpen ? "true" : "false")"
+                disabled="@(!Editable)"
+                @onmousedown:preventDefault="true" @onclick="HandleToggleClick">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" /><polyline points="12 7 12 12 15 14" />
+            </svg>
+        </button>
+    </Buttons>
+    <Below>
+        @if (popupOpen)
+        {
+            @* No style attribute: nx-picker.js owns the popup's position. *@
+            <div class="nx-timepicker-popup" @ref="popup" @onmousedown:preventDefault="true">
+                <div class="nx-timepicker-list" @ref="list" id="@ListId" role="listbox" aria-label="@(Label ?? "Times")">
+                    @for (var i = 0; i < times.Count; i++)
+                    {
+                        var time = times[i];
+                        <div id="@OptionId(i)"
+                             class="@ItemClass(i, time)"
+                             role="option"
+                             aria-selected="@(time == current ? "true" : "false")"
+                             @onclick="() => PickAsync(time)">
+                            @FormatDisplay(time)
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        @if (sheetOpen)
+        {
+            <div class="nx-timepicker-sheet-host">
+                <NxPickerSheet Title="@SheetTitle" Class="nx-timepicker-sheet" OnClose="CloseSheet"
+                               HeaderActions="@(Clearable && TimeConversion<TValue>.IsNullable ? SheetClear : null)">
+                    <ChildContent>
+                        <div class="nx-timepicker-list nx-timepicker-sheet-list" @ref="sheetList" role="listbox" aria-label="@SheetTitle">
+                            @foreach (var time in times)
+                            {
+                                <button type="button" class="@ItemClass(-1, time)" role="option"
+                                        aria-selected="@(time == current ? "true" : "false")"
+                                        @onclick="() => PickAsync(time)">
+                                    @FormatDisplay(time)
+                                </button>
+                            }
+                        </div>
+                    </ChildContent>
+                </NxPickerSheet>
+            </div>
+        }
+    </Below>
+</NxFieldFrame>
+
+@code {
+    private RenderFragment SheetClear =>
+        @<button type="button" class="nx-sheet-action nx-timepicker-sheet-clear" disabled="@(current is null)" @onclick="HandleSheetClear">Clear</button>;
+}

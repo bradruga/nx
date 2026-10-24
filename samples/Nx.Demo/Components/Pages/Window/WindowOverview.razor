@@ -1,0 +1,83 @@
+@page "/window"
+@page "/window/overview"
+
+<DocHeader Slug="window" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxWindow</code> is a dialog. Show it with <code>@@bind-Visible</code>. Modal by default: a backdrop blocks the page,
+        Tab stays inside, the page stops scrolling, and Escape closes it. When it closes, focus goes back to whatever had it
+        before. Drag it by the title bar; with <code>Resizable</code>, pull its edges; with <code>Minimizable</code> and
+        <code>Maximizable</code>, shrink it to its title bar or fill the screen. Windows opened from windows stack on top,
+        and pressing a non-modal window brings it forward. On a phone every window fills the screen.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <NxButton id="overview-open" Variant="NxButtonVariant.Primary" OnClick="() => editing = true">Edit pour</NxButton>
+            <span class="demo-value" id="overview-result">@result</span>
+        </div>
+    </div>
+    <NxWindow Id="overview-window" @bind-Visible="editing" Title="Edit pour" Size="NxWindowSize.Small" Icon="@Icon("edit")">
+        <ChildContent>
+            <NxTextBox Id="overview-name" Label="Pour" @bind-Value="pour" />
+        </ChildContent>
+        <Footer>
+            <NxButton id="overview-cancel" OnClick="() => editing = false">Cancel</NxButton>
+            <NxButton id="overview-save" Variant="NxButtonVariant.Primary" OnClick="Save">Save</NxButton>
+        </Footer>
+    </NxWindow>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Open</td><td>Focus moves to the first focusable element of the body (or one with <code>autofocus</code>), else the window.</td></tr>
+                <tr><td>Tab / Shift+Tab</td><td>In a modal window, wraps from the last focusable element to the first and back.</td></tr>
+                <tr><td>Esc</td><td>Closes the window — unless a control inside used it first, as an open combo box or date picker does. Only the top window of a nested pair closes.</td></tr>
+                <tr><td>Close</td><td>Focus returns to the element that had it when the window opened.</td></tr>
+                <tr><td>role="dialog"</td><td>With <code>aria-modal="true"</code> when modal, labelled by the title.</td></tr>
+                <tr><td>Title bar buttons</td><td>Labelled Close, Minimize / Restore and Maximize / Restore.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="window" Page="overview" />
+
+@code {
+    static RenderFragment Icon(string name) => @<DemoIcon Name="@name" />;
+
+    bool editing;
+    string pour = "P-1042 · North wall";
+    string result = "Not saved";
+
+    void Save()
+    {
+        result = $"Saved {pour}";
+        editing = false;
+    }
+
+    const string basicCode =
+        """
+        <NxButton OnClick="() => editing = true">Edit pour</NxButton>
+
+        <NxWindow @bind-Visible="editing" Title="Edit pour" Size="NxWindowSize.Small">
+            <ChildContent>
+                <NxTextBox Label="Pour" @bind-Value="pour" />
+            </ChildContent>
+            <Footer>
+                <NxButton OnClick="() => editing = false">Cancel</NxButton>
+                <NxButton Variant="NxButtonVariant.Primary" OnClick="Save">Save</NxButton>
+            </Footer>
+        </NxWindow>
+        """;
+}

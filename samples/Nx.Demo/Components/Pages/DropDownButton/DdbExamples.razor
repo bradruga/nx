@@ -1,0 +1,80 @@
+@page "/dropdownbutton/examples"
+
+<DocHeader Slug="dropdownbutton" Page="examples" />
+
+<div class="doc-section">
+    <h2>Variants &amp; Sizes</h2>
+    <p class="doc-note">Every NxButton variant and size, with the down arrow after the label.</p>
+    <div class="demo-stage">
+        <div class="demo-row">
+            @foreach (var variant in Enum.GetValues<NxButtonVariant>())
+            {
+                <NxDropDownButton Id="@($"variant-{variant.ToString().ToLowerInvariant()}")" Variant="variant" Items="items" OnItemClick="Picked">@variant</NxDropDownButton>
+            }
+        </div>
+        <div class="demo-row" style="margin-top:12px">
+            @foreach (var size in Enum.GetValues<NxButtonSize>())
+            {
+                <NxDropDownButton Id="@($"size-{size.ToString().ToLowerInvariant()}")" Size="size" Items="items" OnItemClick="Picked">@size</NxDropDownButton>
+            }
+        </div>
+        <div class="demo-row" style="margin-top:12px"><span class="demo-value" id="variants-picked">Picked: <strong>@picked</strong></span></div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Icon-Only &amp; Alignment</h2>
+    <p class="doc-note">
+        With only an <code>Icon</code> there is no arrow — the usual "more actions" button; give it an <code>AriaLabel</code>.
+        <code>AlignEnd</code> lines the menu up with the button's right edge, for buttons at the end of a row.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-row demo-row-spread">
+            <span>Pour P-1042</span>
+            <NxDropDownButton Id="kebab-button" Variant="NxButtonVariant.Ghost" Icon="@DemoMenus.Icon("settings")" AriaLabel="Pour actions"
+                              Items="editItems" OnItemClick="Picked" AlignEnd="true" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Submenus &amp; Check Items</h2>
+    <div class="demo-stage">
+        <NxDropDownButton Id="view-button" Items="ViewItems" OnItemClick="ViewPicked" Icon="@DemoMenus.Icon("settings")">View</NxDropDownButton>
+        <span class="demo-value" id="view-state">Density: <strong>@density</strong> · Totals: <strong>@(totals ? "on" : "off")</strong></span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Disabled &amp; Full Width</h2>
+    <div class="demo-stage demo-stage-column" style="max-width:360px">
+        <NxDropDownButton Id="disabled-button" Items="items" Disabled="true">Disabled</NxDropDownButton>
+        <NxDropDownButton Id="full-button" Items="items" OnItemClick="Picked" FullWidth="true" Variant="NxButtonVariant.Primary">Full width</NxDropDownButton>
+    </div>
+</div>
+
+<DocPager Slug="dropdownbutton" Page="examples" />
+
+@code {
+    readonly IReadOnlyList<NxMenuItem> items = DemoMenus.ExportItems();
+    readonly IReadOnlyList<NxMenuItem> editItems = DemoMenus.EditItems();
+    string picked = "—";
+    string density = "Comfortable";
+    bool totals = true;
+
+    void Picked(NxMenuItemClickEventArgs e) => picked = e.Item.Text;
+
+    IReadOnlyList<NxMenuItem> ViewItems =>
+    [
+        new("Density") { Items = [new("Comfortable") { Id = "d:Comfortable", Checked = density == "Comfortable" }, new("Compact") { Id = "d:Compact", Checked = density == "Compact" }] },
+        new("Show totals") { Id = "totals", Checked = totals },
+    ];
+
+    void ViewPicked(NxMenuItemClickEventArgs e)
+    {
+        if (e.Item.Id == "totals")
+            totals = !totals;
+        else if (e.Item.Id?.StartsWith("d:") == true)
+            density = e.Item.Id[2..];
+    }
+}

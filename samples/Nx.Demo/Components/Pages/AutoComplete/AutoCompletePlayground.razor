@@ -1,0 +1,97 @@
+@page "/autocomplete/playground"
+
+<DocHeader Slug="autocomplete" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live, over the town list.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                <NxAutoComplete Id="playground-autocomplete" Data="SampleData.Places" ItemText="p => p.City" ItemGroup="GroupBy"
+                                @bind-Value="pgValue" @bind-Value:after="Changed"
+                                Filter="pgFilter" MinLength="pgMinLength" Placeholder="@OrNull(pgPlaceholder)" Clearable="pgClearable"
+                                PopupWidth="@OrNull(pgPopupWidth)" PopupMaxHeight="pgMaxHeight" Virtualize="pgVirtualize"
+                                Loading="pgLoading" ReadOnly="pgReadOnly" Disabled="pgDisabled" aria-label="Town"
+                                Prefix="@(pgPrefix ? SearchIcon : null)" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-value">Value: <strong>@pgValue</strong></span>
+                <span class="demo-counter" id="playground-changes">ValueChanged × @pgChanges</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Matching</div>
+            <label class="demo-control">
+                <span>Filter</span>
+                <select id="pg-filter" @bind="pgFilter">
+                    @foreach (var f in Enum.GetValues<NxComboBoxFilter>())
+                    {
+                        <option value="@f">@f</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control"><span>MinLength</span><input type="number" id="pg-min-length" min="1" @bind="pgMinLength" /></label>
+
+            <div class="demo-controls-title">Presentation</div>
+            <label class="demo-control"><span>Placeholder</span><input type="text" @bind="pgPlaceholder" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>Prefix icon</span><input type="checkbox" id="pg-prefix" @bind="pgPrefix" /></label>
+            <label class="demo-control"><span>Group by state</span><input type="checkbox" id="pg-group" @bind="pgGroup" /></label>
+            <label class="demo-control"><span>PopupWidth</span><input type="text" id="pg-popup-width" placeholder="field width" @bind="pgPopupWidth" /></label>
+            <label class="demo-control"><span>PopupMaxHeight</span><input type="number" id="pg-max-height" @bind="pgMaxHeight" /></label>
+            <label class="demo-control"><span>Virtualize</span><input type="checkbox" id="pg-virtualize" @bind="pgVirtualize" /></label>
+
+            <div class="demo-controls-title">State</div>
+            <label class="demo-control"><span>Clearable</span><input type="checkbox" id="pg-clearable" @bind="pgClearable" /></label>
+            <label class="demo-control"><span>Loading</span><input type="checkbox" id="pg-loading" @bind="pgLoading" /></label>
+            <label class="demo-control"><span>ReadOnly</span><input type="checkbox" id="pg-readonly" @bind="pgReadOnly" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="autocomplete" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+    static readonly RenderFragment SearchIcon = @<NxIcon Icon="NxIcons.Search" />;
+
+    Func<Place, string?>? GroupBy => pgGroup ? p => p.State : null;
+
+    string? pgValue;
+    string pgPlaceholder = "Town", pgPopupWidth = "";
+    NxComboBoxFilter pgFilter = NxComboBoxFilter.Contains;
+    int pgMinLength = 1, pgMaxHeight = 300, pgChanges;
+    bool pgPrefix, pgGroup, pgVirtualize, pgClearable = true, pgLoading, pgReadOnly, pgDisabled;
+
+    void Changed() => pgChanges++;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "Data=\"places\"", "ItemText=\"p => p.City\"", "@bind-Value=\"site.City\"" };
+            if (pgGroup) attrs.Add("ItemGroup=\"p => p.State\"");
+            if (pgFilter != NxComboBoxFilter.Contains) attrs.Add($"Filter=\"NxComboBoxFilter.{pgFilter}\"");
+            if (pgMinLength != 1) attrs.Add($"MinLength=\"{pgMinLength}\"");
+            if (OrNull(pgPlaceholder) is { } p) attrs.Add($"Placeholder=\"{p}\"");
+            if (OrNull(pgPopupWidth) is { } w) attrs.Add($"PopupWidth=\"{w}\"");
+            if (pgMaxHeight != 300) attrs.Add($"PopupMaxHeight=\"{pgMaxHeight}\"");
+            if (pgVirtualize) attrs.Add("Virtualize=\"true\"");
+            if (pgClearable) attrs.Add("Clearable=\"true\"");
+            if (pgLoading) attrs.Add("Loading=\"true\"");
+            if (pgReadOnly) attrs.Add("ReadOnly=\"true\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            var open = "<NxAutoComplete " + string.Join("\n                ", attrs);
+            return pgPrefix
+                ? open + ">\n    <Prefix><NxIcon Icon=\"NxIcons.Search\" /></Prefix>\n</NxAutoComplete>"
+                : open + " />";
+        }
+    }
+}

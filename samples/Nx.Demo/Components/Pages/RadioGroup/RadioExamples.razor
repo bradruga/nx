@@ -1,0 +1,133 @@
+@page "/radio/examples"
+@using System.ComponentModel.DataAnnotations
+
+<DocHeader Slug="radio" Page="examples" />
+
+<div class="doc-section">
+    <h2>From Data</h2>
+    <p class="doc-note"><code>Data</code> lists the values; <code>ItemText</code> turns each into its label.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxRadioGroup Id="data-radio" Data="Enum.GetValues<Delivery>()" ItemText="DeliveryText" @bind-Value="delivery" Label="Delivery" />
+        <span class="demo-value" id="data-value">Value: <strong>@delivery</strong></span>
+    </div>
+    <pre class="doc-code">@dataCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Declared Buttons</h2>
+    <p class="doc-note">
+        <code>NxRadioButton</code> children bind any value and take markup labels. Here each one binds a customer id from
+        a record list.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxRadioGroup Id="declared-radio" @bind-Value="billTo" Label="Bill to">
+            @foreach (var customer in SampleData.Customers.Take(3))
+            {
+                <NxRadioButton Value="customer.Id">
+                    <strong>@customer.Name</strong> <span class="demo-item-meta">@customer.City</span>
+                </NxRadioButton>
+            }
+        </NxRadioGroup>
+        <span class="demo-value" id="declared-value">Value: <strong>@billTo</strong></span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Horizontal</h2>
+    <p class="doc-note"><code>Orientation="Horizontal"</code> lays the buttons in a row that wraps on narrow screens.</p>
+    <div class="demo-stage">
+        <NxRadioGroup Id="horizontal-radio" Data="sizes" @bind-Value="size" Orientation="NxOrientation.Horizontal" Label="Pipe diameter" />
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Disabled Items</h2>
+    <p class="doc-note">
+        <code>ItemDisabled</code> (or <code>Disabled</code> on a declared button) makes one option unavailable; the arrow keys skip it.
+        <code>Disabled</code> on the group turns them all off.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxRadioGroup Id="disabled-radio" Data="Enum.GetValues<Delivery>()" ItemText="DeliveryText" ItemDisabled="d => d == Delivery.Rail"
+                      @bind-Value="disabledPick" Label="Rail is not available for this job" />
+        <NxRadioGroup Id="group-disabled" Data="Enum.GetValues<Delivery>()" ItemText="DeliveryText" Value="Delivery.OurTruck" Disabled="true" Label="Group disabled" />
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Item Template</h2>
+    <p class="doc-note"><code>ItemTemplate</code> renders the label for <code>Data</code> items.</p>
+    <div class="demo-stage">
+        <NxRadioGroup Id="template-radio" Data="Enum.GetValues<Priority>()" @bind-Value="priority" Label="Priority">
+            <ItemTemplate Context="p">
+                <span class="demo-priority demo-priority-@p.ToString().ToLowerInvariant()">@p</span>
+                <span class="demo-item-meta">@PriorityHint(p)</span>
+            </ItemTemplate>
+        </NxRadioGroup>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Form Validation</h2>
+    <div class="demo-stage demo-stage-column">
+        <EditForm id="radio-form" Model="form" OnValidSubmit="Submit" FormName="radio-form">
+            <DataAnnotationsValidator />
+            <NxRadioGroup Id="form-radio" Data="NullableDeliveries" ItemText="d => DeliveryText(d!.Value)" @bind-Value="form.Delivery"
+                          Orientation="NxOrientation.Horizontal" Label="How should it ship?" />
+            <ValidationMessage For="() => form.Delivery" />
+            <div class="demo-row" style="margin-top:12px">
+                <NxButton id="form-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Confirm</NxButton>
+                <span class="demo-value" id="form-result">@result</span>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<DocPager Slug="radio" Page="examples" />
+
+@code {
+    public enum Delivery { OurTruck, Flatbed, Rail, Pickup }
+    public enum Priority { Low, Normal, High }
+
+    static string DeliveryText(Delivery d) => d switch
+    {
+        Delivery.OurTruck => "Our truck",
+        Delivery.Flatbed => "Hired flatbed",
+        Delivery.Rail => "Rail",
+        _ => "Customer pickup"
+    };
+
+    static string PriorityHint(Priority p) => p switch
+    {
+        Priority.Low => "next open slot",
+        Priority.Normal => "within 2 weeks",
+        _ => "this week, overtime approved"
+    };
+
+    // The form binds a Delivery? (empty until chosen), so its list is Delivery? too.
+    static readonly Delivery?[] NullableDeliveries = Enum.GetValues<Delivery>().Select(d => (Delivery?)d).ToArray();
+
+    static readonly string[] sizes = ["24\"", "36\"", "48\"", "60\"", "72\""];
+
+    Delivery delivery = Delivery.OurTruck;
+    Delivery disabledPick = Delivery.Flatbed;
+    int billTo = 1;
+    string size = "36\"";
+    Priority priority = Priority.Normal;
+
+    readonly ShipForm form = new();
+    string result = "Not confirmed";
+
+    void Submit() => result = $"Ships by {DeliveryText(form.Delivery!.Value)}";
+
+    class ShipForm
+    {
+        [Required(ErrorMessage = "Choose how it ships.")]
+        public Delivery? Delivery { get; set; }
+    }
+
+    const string dataCode =
+        """
+        <NxRadioGroup Data="Enum.GetValues<Delivery>()" ItemText="DeliveryText"
+                      @bind-Value="order.Delivery" Label="Delivery" />
+        """;
+}

@@ -1,0 +1,26 @@
+/* The body is a size container: the items fold to one column when the form, not the window, is narrow. */
+.nx-form-body {
+    container: nx-form / inline-size;
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+    color: var(--nx-fg);
+}
+
+.nx-form-items {
+    display: grid;
+    grid-template-columns: repeat(var(--nx-form-columns, 1), minmax(0, 1fr));
+    gap: var(--nx-form-row-gap) var(--nx-form-column-gap);
+    align-items: start;
+}
+
+.nx-form-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+}
+
+@container nx-form (max-width: 540px) {
+    .nx-form-items { grid-template-columns: minmax(0, 1fr); }
+}

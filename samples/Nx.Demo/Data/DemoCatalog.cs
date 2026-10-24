@@ -1,0 +1,112 @@
+namespace Nx.Demo.Data;
+
+/// <summary>One documented component: its nav entry, home card and page header.</summary>
+public sealed record DemoComponent(string Name, string Slug, string Category, string Summary, IReadOnlyList<string> Features);
+
+/// <summary>One of the four pages every component has.</summary>
+public sealed record DemoPage(string Slug, string Title);
+
+/// <summary>The site map. The nav tree, the home page, page headers and prev/next links all read it.</summary>
+public static class DemoCatalog
+{
+    public static readonly IReadOnlyList<string> Categories = ["Buttons", "Inputs", "Dates", "Selection", "Forms", "Layout", "Menus & Overlays", "Display"];
+
+    public static readonly IReadOnlyList<DemoPage> Pages =
+    [
+        new("overview",   "Overview"),
+        new("examples",   "Examples"),
+        new("playground", "Playground"),
+        new("api",        "API"),
+    ];
+
+    public static readonly IReadOnlyList<DemoComponent> Components =
+    [
+        new("NxButton", "button", "Buttons",
+            "A native button with variants, sizes, icons, a loading state, and a guard against double-posting.",
+            ["5 variants", "3 sizes", "Icon-only", "Loading", "Busy-click guard", "Submit / reset"]),
+        new("NxDropDownButton", "dropdownbutton", "Buttons",
+            "A button that opens a menu below it: every NxButton variant and size, submenus, icons and a phone bottom sheet.",
+            ["NxButton variants", "Menu items", "Icon-only", "Align end", "Keyboard", "Bottom sheet"]),
+        new("NxSplitButton", "splitbutton", "Buttons",
+            "A primary action joined to an arrow that opens a menu of related actions.",
+            ["Primary action", "Menu of more", "NxButton variants", "Loading", "Keyboard", "Bottom sheet"]),
+        new("NxTextBox", "textbox", "Inputs",
+            "Text input with labels, slots and built-in buttons, bound on change, as you type, or debounced.",
+            ["@bind-Value", "Debounce", "Floating label", "Prefix / suffix", "Clear", "Password toggle", "Counter", "Validation"]),
+        new("NxNumericTextBox", "numeric", "Inputs",
+            "Number input for int, decimal and double with min, max, step, spin buttons, culture-aware formats and select-on-focus.",
+            ["int / decimal / double", "Nullable", "Min / max / step", "Press-and-hold spin", "Format & culture", "Currency / %", "Select on focus", "Validation"]),
+        new("NxComboBox", "combobox", "Inputs",
+            "Filterable dropdown over a list or an async provider, with grouping, columns, multi-select and a phone overlay.",
+            ["Filtering", "DataProvider", "Virtualize", "Grouping", "Columns", "Multi-select", "Mobile overlay", "Templates"]),
+        new("NxDropDown", "dropdown", "Inputs",
+            "A pick-only list with type-ahead, on the combo box engine: groups, columns, virtualization, a 'none' item, phone sheet.",
+            ["No typing", "Type-ahead", "Default item", "Grouping", "Columns", "Virtualize", "Phone sheet", "Validation"]),
+        new("NxMultiSelect", "multiselect", "Inputs",
+            "Pick any number of items as chips or a summary, with a filter box, select-all, a limit, and a phone sheet with Done.",
+            ["Chips / summary", "Filter box", "Select all", "Max selections", "Grouping", "Columns", "Phone sheet", "Validation"]),
+        new("NxAutoComplete", "autocomplete", "Inputs",
+            "A text box that suggests: free text, with matching items listed as you type, on the combo box engine.",
+            ["Free text", "Suggestions", "Min length", "Item template", "DataProvider", "Virtualize", "Prefix icon", "Validation"]),
+        new("NxTextArea", "textarea", "Inputs",
+            "Multi-line text with the text box's label, floating label, counter, clear and validation, and rows that grow with the text.",
+            ["Rows / min / max", "Auto-resize", "Resize handle", "Counter", "Floating label", "Debounce", "Validation"]),
+        new("NxDatePicker", "datepicker", "Dates",
+            "Date input with masked typing in the culture's order and a calendar popup that becomes a full-screen sheet on phones.",
+            ["DateOnly / DateTime", "Masked typing", "Format & culture", "Month / year / decade", "Min / max / disabled", "Week numbers", "Phone sheet", "Validation"]),
+        new("NxDateRangePicker", "daterange", "Dates",
+            "Start and end dates picked on one calendar, two months side by side on a desktop.",
+            ["Start / end binding", "Two-month view", "Swap on reversed", "Min / max / disabled", "Phone sheet", "Validation"]),
+        new("NxTimePicker", "timepicker", "Dates",
+            "Time input for 12- or 24-hour entry with a list of times at a step, min and max.",
+            ["TimeOnly / TimeSpan / DateTime", "12 / 24 hour", "Step", "Min / max", "Loose typing", "Phone sheet", "Validation"]),
+        new("NxDateTimePicker", "datetimepicker", "Dates",
+            "Date and time in one field: typed in any format, or picked from a calendar beside a list of times.",
+            ["DateTime / DateTime?", "Any format", "Calendar + times", "Time step", "Min / max date-time", "Phone sheet", "Validation"]),
+        new("NxCheckBox", "checkbox", "Selection",
+            "A check box bound to bool, or bool? with an indeterminate state, labelled on either side.",
+            ["bool / bool?", "Indeterminate", "Three-state", "Label position", "Read-only", "Validation"]),
+        new("NxToggleSwitch", "switch", "Selection",
+            "An on/off switch for settings that apply at once, with state text, sizes and a loading state.",
+            ["role=switch", "On / off text", "Inside or beside", "3 sizes", "Loading", "Validation"]),
+        new("NxRadioGroup", "radio", "Selection",
+            "One choice from a few, from a list or declared buttons, stacked or in a row, on native radios.",
+            ["Data or declared", "Horizontal / vertical", "Disabled items", "Item template", "Roving tab stop", "Validation"]),
+        new("NxToggleGroup", "togglegroup", "Selection",
+            "Joined buttons that pick one value, or several with Multiple — view switchers, filters, toolbars.",
+            ["Single / multiple", "Icons", "Icon-only", "3 sizes", "Full width", "Roving tabindex", "Validation"]),
+        new("NxForm", "form", "Forms",
+            "An EditForm laid out in a grid: items that generate the right editor for each field, groups, labels above or beside, messages.",
+            ["Generated editors", "Columns / ColSpan", "Groups", "Horizontal labels", "Custom editors", "DataAnnotations / any validator", "IsValid()", "One column on phones"]),
+        new("NxWindow", "window", "Layout",
+            "A dialog window, modal or not, that drags, resizes, minimizes and maximizes, stacks, and fills the screen on phones.",
+            ["@bind-Visible", "Modal / non-modal", "Drag & resize", "Min / max / restore", "Size presets", "Focus trap", "Nested stacking", "Closing guard"]),
+        new("NxTabStrip", "tabstrip", "Layout",
+            "Tabs over panels: icons, templates, disabled and closable tabs, lazy or kept-alive panels, tabs on any side.",
+            ["@bind-ActiveTab", "Icons & templates", "Closable", "Lazy / KeepAlive", "Top / bottom / left / right", "Overflow arrows", "ARIA tablist"]),
+        new("NxSplitter", "splitter", "Layout",
+            "Resizable panes side by side or stacked: px or % sizes, min and max, collapsible panes, keyboard resizing, nesting.",
+            ["Horizontal / vertical", "@bind-Size", "Min / max", "Collapsible", "Keyboard resize", "Nested", "Stacks on phones"]),
+        new("NxTooltip", "tooltip", "Menus & Overlays",
+            "A tooltip on hover, keyboard focus, click or long press, placed with flipping and an arrow, that never blocks the pointer.",
+            ["Wrap or target", "Hover / focus / click", "Long press", "Delays", "Placement & flip", "Rich content", "aria-describedby"]),
+        new("NxContextMenu", "contextmenu", "Menus & Overlays",
+            "A right-click and long-press menu with submenus, icons, shortcuts, separators, check items and a phone bottom sheet.",
+            ["Right click / long press", "Open from code", "Submenus", "Check items", "Shortcut text", "Row context", "Bottom sheet"]),
+        new("NxIcon", "icon", "Display",
+            "Inline SVG icons: the set ERP uses, named after the Telerik icons they replace, in seven sizes and theme colors.",
+            ["ERP's icon set", "Telerik names", "7 sizes", "Theme colors", "Custom icons", "Decorative or labelled"]),
+        new("NxLoader", "loader", "Display",
+            "A busy indicator in three styles and sizes, and a container that overlays an area while it loads.",
+            ["Spinner / converging / pulsing", "3 sizes", "Overlay container", "Text or custom content", "Overlay color", "Blocks clicks"]),
+    ];
+
+    public static DemoComponent? Find(string slug) => Components.FirstOrDefault(c => c.Slug == slug);
+
+    /// <summary>Every (component, page) pair in nav order, for prev/next links.</summary>
+    public static IEnumerable<(DemoComponent Component, DemoPage Page)> Sequence =>
+        from category in Categories
+        from component in Components.Where(c => c.Category == category)
+        from page in Pages
+        select (component, page);
+}

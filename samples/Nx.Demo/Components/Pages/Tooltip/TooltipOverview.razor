@@ -1,0 +1,59 @@
+@page "/tooltip"
+@page "/tooltip/overview"
+
+<DocHeader Slug="tooltip" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxTooltip</code> shows a short description of an element. Wrap the element, or point <code>Target</code> at it with a
+        CSS selector. It appears when the pointer rests on it, when it gets keyboard focus, or on a click — and on touch screens
+        after a long press. It sits on the side you prefer and flips when there is no room, with an arrow at the element. It never
+        takes pointer events, so it cannot block a click; Escape hides it; and the element is <code>aria-describedby</code> it, so
+        screen readers announce it.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage">
+        <div class="demo-row">
+            <NxTooltip Id="overview-tip-save" Text="Save the pour and keep editing">
+                <NxButton id="overview-save" Variant="NxButtonVariant.Primary" Icon="@Icon("save")">Save</NxButton>
+            </NxTooltip>
+            <NxTooltip Id="overview-tip-delete" Text="Delete this pour">
+                <NxButton id="overview-delete" Variant="NxButtonVariant.Ghost" Icon="@Icon("trash")" AriaLabel="Delete" />
+            </NxTooltip>
+        </div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Tab to the element</td><td>Shows the tooltip at once (keyboard focus only — a mouse click does not).</td></tr>
+                <tr><td>Esc</td><td>Hides any open tooltip.</td></tr>
+                <tr><td>role="tooltip"</td><td>On the tooltip; the element (or the first focusable thing inside it) gets <code>aria-describedby</code> pointing at it, even while hidden.</td></tr>
+                <tr><td>Pointer</td><td>The tooltip has <code>pointer-events: none</code>: it never covers something you can click.</td></tr>
+                <tr><td>Touch</td><td>A long press (half a second) shows it; it fades a moment after the finger lifts. A tap stays a tap.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="tooltip" Page="overview" />
+
+@code {
+    static RenderFragment Icon(string name) => @<DemoIcon Name="@name" />;
+
+    const string basicCode =
+        """
+        <NxTooltip Text="Save the pour and keep editing">
+            <NxButton Variant="NxButtonVariant.Primary">Save</NxButton>
+        </NxTooltip>
+        """;
+}

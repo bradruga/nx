@@ -1,0 +1,76 @@
+@page "/numeric/api"
+
+<DocHeader Slug="numeric" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Value</td><td>TValue?</td><td>—</td><td>Use <code>@@bind-Value</code>. int, long, short, decimal, double, float, or nullable.</td></tr>
+                <tr><td>Min / Max</td><td>TValue?</td><td>none</td><td>Committed and stepped values are clamped to them.</td></tr>
+                <tr><td>Step</td><td>TValue?</td><td>1</td><td>Arrow and spin increment; page keys use ten steps.</td></tr>
+                <tr><td>Decimals</td><td>int?</td><td>—</td><td>Round committed values; default display <code>F{n}</code>.</td></tr>
+                <tr><td>Format</td><td>string?</td><td>—</td><td>.NET numeric format while not focused: N2, C, #,##0.0…</td></tr>
+                <tr><td>Culture</td><td>CultureInfo?</td><td>current</td><td>Separators and currency for display and parsing.</td></tr>
+                <tr><td>Label / FloatingLabel</td><td>string? / bool</td><td>— / false</td><td>As in NxTextBox.</td></tr>
+                <tr><td>Placeholder</td><td>string?</td><td>—</td><td>Placeholder text.</td></tr>
+                <tr><td>Prefix / Suffix</td><td>RenderFragment?</td><td>—</td><td>Content inside the field: $, %, units.</td></tr>
+                <tr><td>ShowSpinButtons</td><td>bool</td><td>true</td><td>Up/down buttons; hold to repeat.</td></tr>
+                <tr><td>SelectOnFocus</td><td>bool</td><td>false</td><td>Select the number on focus.</td></tr>
+                <tr><td>Clearable</td><td>bool</td><td>false</td><td>Clear button and Esc: null, or Min / 0.</td></tr>
+                <tr><td>ReadOnly / Disabled</td><td>bool</td><td>false</td><td>Native readonly / disabled.</td></tr>
+                <tr><td>AutoFocus</td><td>bool</td><td>false</td><td>Focus after first render.</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>Input id; outer class and style. Other attributes go to the input.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Event</th><th>Args</th><th>Raised when</th></tr></thead>
+            <tbody>
+                <tr><td>ValueChanged</td><td>TValue?</td><td>A different value commits: Enter, leaving the field, each step of a key or spin button, clear.</td></tr>
+                <tr><td>OnFocus / OnBlur</td><td>FocusEventArgs</td><td>The input gains / loses focus (after the commit).</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>FocusAsync()</td><td>ValueTask</td><td>Moves keyboard focus to the input.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <p class="doc-note">The field is <code>NxFieldFrame</code>, shared with NxTextBox, so it reads the same variables.</p>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-surface / --nx-surface-disabled</td><td>#fff / #f5f5f7</td><td>Field background; read-only and disabled.</td></tr>
+                <tr><td>--nx-border / -hover</td><td>#d4d4da</td><td>Field border.</td></tr>
+                <tr><td>--nx-accent / --nx-focus-ring-inset</td><td>#0078d4</td><td>Focus border and floating label.</td></tr>
+                <tr><td>--nx-invalid</td><td>= --nx-danger</td><td>Border while invalid.</td></tr>
+                <tr><td>--nx-fg-muted</td><td>#6b6b78</td><td>Spin buttons, prefix and suffix.</td></tr>
+                <tr><td>--nx-surface-hover</td><td>#f3f3f5</td><td>Spin button hover.</td></tr>
+                <tr><td>--nx-control-height-md</td><td>34px</td><td>Field height.</td></tr>
+                <tr><td>--nx-radius / -sm</td><td>6 / 4px</td><td>Field and button corners.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="numeric" Page="api" />

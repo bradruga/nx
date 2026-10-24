@@ -1,0 +1,32 @@
+@* Rolling list of component events, newest first. Call Add from a handler. *@
+<div class="demo-log" role="log" aria-label="@Label" aria-live="polite">
+    @if (entries.Count == 0)
+    {
+        <span class="demo-log-empty">@EmptyText</span>
+    }
+    @foreach (var entry in entries)
+    {
+        <div class="demo-log-entry"><span class="demo-log-time">@entry.Time.ToString("HH:mm:ss.f")</span>@entry.Text</div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; } = "Event log";
+    [Parameter] public string EmptyText { get; set; } = "Events appear here.";
+
+    readonly List<(DateTime Time, string Text)> entries = [];
+
+    public void Add(string text)
+    {
+        entries.Insert(0, (DateTime.Now, text));
+        if (entries.Count > 50)
+            entries.RemoveAt(entries.Count - 1);
+        StateHasChanged();
+    }
+
+    public void Clear()
+    {
+        entries.Clear();
+        StateHasChanged();
+    }
+}

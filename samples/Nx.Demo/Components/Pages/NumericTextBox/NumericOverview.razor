@@ -1,0 +1,74 @@
+@page "/numeric"
+@page "/numeric/overview"
+@using System.Globalization
+
+<DocHeader Slug="numeric" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxNumericTextBox&lt;TValue&gt;</code> edits a number — <code>int</code>, <code>long</code>, <code>short</code>,
+        <code>decimal</code>, <code>double</code> or <code>float</code>, nullable or not. It clamps to <code>Min</code> and
+        <code>Max</code>, steps with the arrow and page keys and with spin buttons you can hold down, shows the value in any .NET
+        format and culture while you are not editing, and parses what you type back with the same culture — currency symbols,
+        group separators and <code>%</code> included. Label, floating label, prefix and suffix, clear and validation work exactly as
+        in <code>NxTextBox</code>; both are built on the same field frame.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <NxNumericTextBox Id="overview-qty" Label="Quantity" @bind-Value="quantity" Min="0" Max="999" Culture="EnUs" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="overview-qty-value">Value: <strong>@quantity</strong></span></div>
+            </div>
+            <div>
+                <NxNumericTextBox Id="overview-price" Label="Unit price" @bind-Value="price" Min="0m" Step="0.25m" Format="N2" Culture="EnUs"
+                                  Prefix="@Text("$")" Clearable="true" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="overview-price-value">Value: <strong>@(price?.ToString(CultureInfo.InvariantCulture) ?? "null")</strong></span></div>
+            </div>
+        </div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>↑ / ↓</td><td>Adds or subtracts <code>Step</code>, from the typed text if it parses, and commits.</td></tr>
+                <tr><td>PgUp / PgDn</td><td>Ten steps at a time.</td></tr>
+                <tr><td>Enter / leaving the field</td><td>Parses the text, rounds to <code>Decimals</code>, clamps to Min/Max, commits. Text that does not parse reverts.</td></tr>
+                <tr><td>Esc</td><td>Clears when <code>Clearable</code>: <code>null</code> for nullable types, else Min or 0.</td></tr>
+                <tr><td>Spin buttons</td><td>Click steps once; hold to repeat. Out of the tab order — the keys do the same.</td></tr>
+                <tr><td>role="spinbutton"</td><td>With <code>aria-valuenow</code>, <code>aria-valuemin</code>, <code>aria-valuemax</code> and the formatted <code>aria-valuetext</code>.</td></tr>
+                <tr><td>inputmode</td><td><code>numeric</code> or <code>decimal</code> when Min ≥ 0, so phones show a number pad; otherwise the full keyboard, which has a minus sign.</td></tr>
+                <tr><td>aria-invalid</td><td><code>true</code> while the bound field has validation messages.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="numeric" Page="overview" />
+
+@code {
+    static readonly CultureInfo EnUs = CultureInfo.GetCultureInfo("en-US");
+    static RenderFragment Text(string text) => @<span>@text</span>;
+
+    int quantity = 12;
+    decimal? price = 1240m;
+
+    const string basicCode =
+        """
+        <NxNumericTextBox Label="Quantity" @bind-Value="line.Quantity" Min="0" Max="999" />
+
+        <NxNumericTextBox Label="Unit price" @bind-Value="line.Price" Min="0m" Step="0.25m"
+                          Format="N2" Clearable="true">
+            <Prefix>$</Prefix>
+        </NxNumericTextBox>
+        """;
+}

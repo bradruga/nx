@@ -1,0 +1,137 @@
+@page "/textbox/playground"
+
+<DocHeader Slug="textbox" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live. Type in the field to see when <code>ValueChanged</code> fires.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                <NxTextBox @key="pgKey"
+                           Id="playground-textbox"
+                           @bind-Value="pgValue"
+                           @bind-Value:after="PlaygroundChanged"
+                           Label="@(string.IsNullOrWhiteSpace(pgLabel) ? null : pgLabel)"
+                           FloatingLabel="pgFloating"
+                           Placeholder="@(string.IsNullOrWhiteSpace(pgPlaceholder) ? null : pgPlaceholder)"
+                           Type="pgType"
+                           InputMode="pgInputMode"
+                           Immediate="pgImmediate"
+                           DebounceDelay="pgDebounce"
+                           Clearable="pgClearable"
+                           ShowPasswordToggle="pgPasswordToggle"
+                           MaxLength="@(pgMaxLength > 0 ? pgMaxLength : null)"
+                           ShowCounter="pgShowCounter"
+                           ReadOnly="pgReadOnly"
+                           Disabled="pgDisabled"
+                           AutoFocus="pgAutoFocus"
+                           Prefix="@(pgPrefix ? Icon("search") : null)"
+                           Suffix="@(pgSuffix ? Text("⌘K") : null)" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-value">Value: <strong>@(pgValue is null ? "null" : $"\"{pgValue}\"")</strong></span>
+                <span class="demo-counter" id="playground-changes">ValueChanged × @pgChanges</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Label &amp; text</div>
+            <label class="demo-control"><span>Label</span><input type="text" @bind="pgLabel" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>FloatingLabel</span><input type="checkbox" id="pg-floating" @bind="pgFloating" /></label>
+            <label class="demo-control"><span>Placeholder</span><input type="text" @bind="pgPlaceholder" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>Prefix (icon)</span><input type="checkbox" id="pg-prefix" @bind="pgPrefix" /></label>
+            <label class="demo-control"><span>Suffix (text)</span><input type="checkbox" id="pg-suffix" @bind="pgSuffix" /></label>
+
+            <div class="demo-controls-title">Binding</div>
+            <label class="demo-control"><span>Immediate</span><input type="checkbox" id="pg-immediate" @bind="pgImmediate" /></label>
+            <label class="demo-control"><span>DebounceDelay (ms)</span><input type="number" id="pg-debounce" min="0" step="100" @bind="pgDebounce" disabled="@(!pgImmediate)" /></label>
+
+            <div class="demo-controls-title">Input</div>
+            <label class="demo-control">
+                <span>Type</span>
+                <select id="pg-type" @bind="pgType">
+                    @foreach (var t in Enum.GetValues<NxTextBoxType>())
+                    {
+                        <option value="@t">@t</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control">
+                <span>InputMode</span>
+                <select id="pg-inputmode" @bind="pgInputModeText" @bind:after="InputModeChanged">
+                    <option value="">(none)</option>
+                    @foreach (var m in Enum.GetValues<NxInputMode>())
+                    {
+                        <option value="@m">@m</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control"><span>MaxLength</span><input type="number" id="pg-maxlength" min="0" @bind="pgMaxLength" /></label>
+            <label class="demo-control"><span>ShowCounter</span><input type="checkbox" id="pg-counter" @bind="pgShowCounter" /></label>
+
+            <div class="demo-controls-title">Buttons</div>
+            <label class="demo-control"><span>Clearable</span><input type="checkbox" id="pg-clearable" @bind="pgClearable" /></label>
+            <label class="demo-control"><span>ShowPasswordToggle</span><input type="checkbox" @bind="pgPasswordToggle" /></label>
+
+            <div class="demo-controls-title">State</div>
+            <label class="demo-control"><span>ReadOnly</span><input type="checkbox" id="pg-readonly" @bind="pgReadOnly" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+            <label class="demo-control"><span>AutoFocus (remounts)</span><input type="checkbox" @bind="pgAutoFocus" @bind:after="() => pgKey++" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="textbox" Page="playground" />
+
+@code {
+    static RenderFragment Icon(string name) => @<DemoIcon Name="@name" />;
+    static RenderFragment Text(string text) => @<span>@text</span>;
+
+    // ── Playground ─────────────────────────────────────────────────────────────
+    string? pgValue;
+    string pgLabel = "Customer";
+    string pgPlaceholder = "Start typing…";
+    bool pgFloating, pgPrefix, pgSuffix, pgImmediate, pgClearable = true, pgPasswordToggle = true;
+    bool pgShowCounter, pgReadOnly, pgDisabled, pgAutoFocus;
+    int pgDebounce, pgMaxLength, pgChanges, pgKey;
+    NxTextBoxType pgType = NxTextBoxType.Text;
+    NxInputMode? pgInputMode;
+    string pgInputModeText = "";
+
+    void PlaygroundChanged() => pgChanges++;
+
+    void InputModeChanged() =>
+        pgInputMode = pgInputModeText == "" ? null : Enum.Parse<NxInputMode>(pgInputModeText);
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string>();
+            if (!string.IsNullOrWhiteSpace(pgLabel)) attrs.Add($"Label=\"{pgLabel}\"");
+            if (pgFloating) attrs.Add("FloatingLabel=\"true\"");
+            if (!string.IsNullOrWhiteSpace(pgPlaceholder)) attrs.Add($"Placeholder=\"{pgPlaceholder}\"");
+            if (pgType != NxTextBoxType.Text) attrs.Add($"Type=\"NxTextBoxType.{pgType}\"");
+            if (pgInputMode is { } mode) attrs.Add($"InputMode=\"NxInputMode.{mode}\"");
+            if (pgImmediate) attrs.Add("Immediate=\"true\"");
+            if (pgImmediate && pgDebounce > 0) attrs.Add($"DebounceDelay=\"{pgDebounce}\"");
+            if (pgClearable) attrs.Add("Clearable=\"true\"");
+            if (!pgPasswordToggle) attrs.Add("ShowPasswordToggle=\"false\"");
+            if (pgMaxLength > 0) attrs.Add($"MaxLength=\"{pgMaxLength}\"");
+            if (pgShowCounter) attrs.Add("ShowCounter=\"true\"");
+            if (pgReadOnly) attrs.Add("ReadOnly=\"true\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            if (pgAutoFocus) attrs.Add("AutoFocus=\"true\"");
+            if (pgPrefix) attrs.Add("Prefix=\"@searchIcon\"");
+            if (pgSuffix) attrs.Add("Suffix=\"@shortcutHint\"");
+            attrs.Add("@bind-Value=\"customer\"");
+            return "<NxTextBox " + string.Join("\n           ", attrs) + " />";
+        }
+    }
+}

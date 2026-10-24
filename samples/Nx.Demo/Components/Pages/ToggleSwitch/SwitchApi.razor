@@ -1,0 +1,57 @@
+@page "/switch/api"
+
+<DocHeader Slug="switch" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Value</td><td>bool</td><td>false</td><td>Use <code>@@bind-Value</code>.</td></tr>
+                <tr><td>Label</td><td>string?</td><td>—</td><td>Label text.</td></tr>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>Rich label content.</td></tr>
+                <tr><td>LabelPosition</td><td>NxLabelPosition</td><td>End</td><td>End or Start.</td></tr>
+                <tr><td>OnText / OffText</td><td>string?</td><td>—</td><td>State text.</td></tr>
+                <tr><td>StateTextPosition</td><td>NxToggleTextPosition</td><td>Inside</td><td>Inside the track or Beside it.</td></tr>
+                <tr><td>Size</td><td>NxSize</td><td>Medium</td><td>Small, Medium, Large.</td></tr>
+                <tr><td>Loading</td><td>bool</td><td>false</td><td>Spinner in the thumb; clicks ignored; stays focusable.</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>false</td><td>Native disabled.</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>Switch id; outer class and style. Other attributes go to the switch.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events &amp; Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ValueChanged</td><td>EventCallback&lt;bool&gt;</td><td>The user flipped the switch (not while Loading or Disabled).</td></tr>
+                <tr><td>FocusAsync()</td><td>ValueTask</td><td>Moves keyboard focus to the switch.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-switch-off-bg</td><td>#c4c4cc</td><td>Track while off.</td></tr>
+                <tr><td>--nx-switch-off-fg</td><td>#fff</td><td>Inside text while off.</td></tr>
+                <tr><td>--nx-switch-thumb-bg</td><td>#fff</td><td>Thumb.</td></tr>
+                <tr><td>--nx-accent / --nx-accent-fg</td><td>#0078d4 / #fff</td><td>Track and inside text while on.</td></tr>
+                <tr><td>--nx-invalid</td><td>= --nx-danger</td><td>Outline and label while invalid.</td></tr>
+                <tr><td>--nx-focus-ring-color / -width / -offset</td><td>accent / 2px / 2px</td><td>Keyboard focus ring, shaped like the control; none on mouse or touch focus.</td></tr>
+                <tr><td>--nx-transition</td><td>120ms ease</td><td>Thumb slide; off with prefers-reduced-motion.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="switch" Page="api" />

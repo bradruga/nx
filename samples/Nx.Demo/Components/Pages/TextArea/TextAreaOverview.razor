@@ -1,0 +1,51 @@
+@page "/textarea"
+@page "/textarea/overview"
+
+<DocHeader Slug="textarea" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxTextArea</code> is multi-line text in the same field as <code>NxTextBox</code> — label or floating label, clear
+        button, character counter, <code>EditForm</code> validation, and binding on leaving the field or as you type with a
+        debounce. <code>Rows</code> sets its height; <code>AutoResize</code> makes it grow with the text between
+        <code>MinRows</code> and <code>MaxRows</code>; <code>Resize</code> sets the corner handle.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <NxTextArea Id="overview-notes" Label="Pour notes" @bind-Value="notes" AutoResize="true" MaxRows="8" MaxLength="500" ShowCounter="true" />
+        <div class="demo-row"><span class="demo-value" id="overview-length">Length: <strong>@(notes?.Length ?? 0)</strong></span></div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Enter</td><td>A new line, as in any textarea.</td></tr>
+                <tr><td>Leaving the field</td><td>Commits the text (as you type with <code>Immediate</code>).</td></tr>
+                <tr><td>Esc</td><td>Clears when <code>Clearable</code>.</td></tr>
+                <tr><td>Label</td><td>A <code>&lt;label for&gt;</code>; the counter is <code>aria-describedby</code>.</td></tr>
+                <tr><td>aria-invalid</td><td><code>true</code> while the bound field has validation messages.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="textarea" Page="overview" />
+
+@code {
+    string? notes = "Slump 4 in. at 6:40.\nAir 6.2%.";
+
+    const string basicCode =
+        """
+        <NxTextArea Label="Pour notes" @bind-Value="pour.Notes"
+                    AutoResize="true" MaxRows="8" MaxLength="500" ShowCounter="true" />
+        """;
+}

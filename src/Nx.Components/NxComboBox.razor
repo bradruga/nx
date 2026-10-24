@@ -1,0 +1,324 @@
+@namespace Nx.Components
+@typeparam TItem
+@typeparam TValue
+
+@* Column children register themselves; they render nothing. *@
+<CascadingValue Value="(IComboBoxColumnHost<TItem>)this" IsFixed="true">@Columns</CascadingValue>
+
+<div class="@CssClass" style="@Style">
+    <div class="nx-combobox-field" @ref="field" @onclick="HandleFieldClick">
+        @if (Mode?.Prefix is { } prefix)
+        {
+            <span class="nx-combobox-prefix">@prefix</span>
+        }
+        <div class="nx-combobox-control">
+            @if (ShowSummary)
+            {
+                <span class="nx-combobox-chip nx-combobox-summary">@SummaryText</span>
+            }
+            else if (Multiple)
+            {
+                @foreach (var (chip, index) in VisibleChips.Select((c, i) => (c, i)))
+                {
+                    <span class="nx-combobox-chip" @onmousedown:preventDefault="true" @onclick:stopPropagation="true">
+                        <span class="nx-combobox-chip-text">
+                            @if (ChipTemplate is not null && chip.HasItem)
+                            {
+                                @ChipTemplate(chip.Item!)
+                            }
+                            else
+                            {
+                                @ChipText(chip)
+                            }
+                        </span>
+                        @if (Editable)
+                        {
+                            <button type="button" class="nx-combobox-chip-remove" tabindex="-1"
+                                    aria-label="@($"Remove {ChipText(chip)}")"
+                                    @onclick="() => RemoveChipAsync(index)">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true">
+                                    <line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" />
+                                </svg>
+                            </button>
+                        }
+                    </span>
+                }
+                @if (HiddenChipCount > 0)
+                {
+                    <span class="nx-combobox-chip nx-combobox-chip-more">+@HiddenChipCount more</span>
+                }
+            }
+            <input @ref="input"
+                   @attributes="AdditionalAttributes"
+                   id="@InputId"
+                   class="@InputCssClass"
+                   type="text"
+                   role="combobox"
+                   autocomplete="off"
+                   placeholder="@PlaceholderText"
+                   disabled="@Disabled"
+                   readonly="@(ReadOnly || UseOverlay || PickOnly)"
+                   inputmode="@(UseOverlay || PickOnly ? "none" : null)"
+                   aria-autocomplete="@(PickOnly ? null : "list")"
+                   aria-haspopup="@(UseOverlay ? "dialog" : "listbox")"
+                   aria-expanded="@(isOpen ? "true" : "false")"
+                   aria-controls="@(isOpen ? ListId : null)"
+                   aria-activedescendant="@ActiveDescendant"
+                   aria-invalid="@(validation.IsInvalid ? "true" : null)"
+                   aria-busy="@(ShowLoading ? "true" : null)"
+                   data-nx-multiple="@(Multiple ? "true" : null)"
+                   @bind="inputText"
+                   @bind:event="oninput"
+                   @bind:after="HandleInputAfter"
+                   @onkeydown="HandleKeyDown"
+                   @onfocus="HandleFocus"
+                   @onblur="HandleBlur" />
+            @if (ShowSelectedTemplate)
+            {
+                <div class="nx-combobox-selected" aria-hidden="true">@SelectedItemTemplate!(selectedItem!)</div>
+            }
+        </div>
+        @if (ShowLoading)
+        {
+            <span class="nx-spinner nx-combobox-spinner" aria-hidden="true"></span>
+        }
+        @if (ShowClear)
+        {
+            <button type="button" class="nx-combobox-button nx-combobox-clear" tabindex="-1"
+                    aria-label="@(Multiple ? "Clear all" : "Clear")" title="@(Multiple ? "Clear all" : "Clear")" aria-controls="@InputId"
+                    @onmousedown:preventDefault="true" @onclick="HandleClearClick" @onclick:stopPropagation="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true">
+                    <line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" />
+                </svg>
+            </button>
+        }
+        @if (!Suggest)
+        {
+            <button type="button" class="nx-combobox-button nx-combobox-toggle" tabindex="-1"
+                    aria-label="@(isOpen ? "Hide options" : "Show options")"
+                    aria-controls="@InputId" disabled="@(!Editable)"
+                    @onmousedown:preventDefault="true" @onclick="HandleToggleClick" @onclick:stopPropagation="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9" />
+                </svg>
+            </button>
+        }
+    </div>
+
+    @if (isOpen && !overlayOpen)
+    {
+        @* No style attribute: nx-combobox.js owns the popup's position. *@
+        <div class="nx-combobox-popup" @ref="popup" @onmousedown:preventDefault="true">
+            <div class="nx-combobox-popup-body" style="@(PopupWidth is null ? null : $"width: {PopupWidth}")">
+                <div class="@ListClass" @ref="list" id="@ListId" role="listbox" aria-multiselectable="@(Multiple ? "true" : null)">
+                    @RenderList()
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (overlayOpen)
+    {
+        <div class="nx-combobox-overlay" role="dialog" aria-modal="true" aria-label="@OverlayTitle">
+            <div class="nx-combobox-overlay-header">
+                <button type="button" class="nx-combobox-overlay-back" aria-label="Close" @onclick="HandleOverlayBack">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+                    </svg>
+                </button>
+                @if (PickOnly)
+                {
+                    <span class="nx-combobox-overlay-title">@OverlayTitle</span>
+                }
+                else
+                {
+                <input @ref="overlayInput"
+                       class="nx-combobox-overlay-search"
+                       type="search"
+                       role="combobox"
+                       autocomplete="off"
+                       placeholder="@OverlayTitle"
+                       aria-label="@OverlayTitle"
+                       aria-autocomplete="list"
+                       aria-expanded="true"
+                       aria-controls="@ListId"
+                       aria-activedescendant="@(activeRow >= 0 && activeRow < rows.Count ? OptionId(activeRow) : null)"
+                       aria-busy="@(ShowLoading ? "true" : null)"
+                       data-nx-multiple="@(Multiple ? "true" : null)"
+                       @bind="overlayText"
+                       @bind:event="oninput"
+                       @bind:after="HandleOverlayInputAfter"
+                       @onkeydown="HandleOverlayKeyDown" />
+                }
+                @if (Multiple)
+                {
+                    <button type="button" class="nx-combobox-overlay-done" @onclick="HandleOverlayDone">Done</button>
+                }
+            </div>
+            <div class="@ListClass nx-combobox-overlay-list" @ref="overlayList" id="@ListId" role="listbox" aria-multiselectable="@(Multiple ? "true" : null)"
+                 aria-label="@(PickOnly ? OverlayTitle : null)" tabindex="@(PickOnly ? "-1" : null)"
+                 aria-activedescendant="@(PickOnly && activeRow >= 0 && activeRow < rows.Count ? OptionId(activeRow) : null)"
+                 @onkeydown="HandleOverlayListKeyDown">
+                @RenderList()
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private string ListClass => string.Join(' ', new[]
+    {
+        "nx-combobox-list",
+        Virtualize ? "nx-combobox-list-virtual" : null,
+        HasColumns ? "nx-combobox-list-columns" : null
+    }.Where(c => c is not null));
+
+    private RenderFragment RenderList() => __builder =>
+    {
+        if (HasColumns)
+        {
+            <div class="nx-combobox-columns-header" style="@GridStyle" aria-hidden="true">
+                @foreach (var column in EffectiveColumns)
+                {
+                    <span class="@AlignClass(column.Alignment)">@column.Header</span>
+                }
+                <span></span>
+            </div>
+        }
+        if (rows.Count == 0)
+        {
+            <div class="nx-combobox-empty" role="presentation">
+                @if (ShowLoading)
+                {
+                    <span class="nx-spinner" aria-hidden="true"></span>
+                    <span>Loading…</span>
+                }
+                else
+                {
+                    @NoDataText
+                }
+            </div>
+        }
+        else if (Virtualize)
+        {
+            <Virtualize Items="rows" ItemSize="ItemHeight" OverscanCount="8" Context="row">
+                @RenderRow(row)
+            </Virtualize>
+        }
+        else
+        {
+            foreach (var row in rows)
+            {
+                @RenderRow(row)
+            }
+        }
+    };
+
+    private RenderFragment RenderRow(Row row) => __builder =>
+    {
+        if (row.IsHeader)
+        {
+            <div class="nx-combobox-group" role="presentation" data-row="@row.RowIndex" style="@ItemStyle">
+                @if (GroupHeaderTemplate is not null)
+                {
+                    @GroupHeaderTemplate(row.Group ?? "")
+                }
+                else
+                {
+                    @row.Group
+                }
+            </div>
+        }
+        else if (row.Special != SpecialRow.None)
+        {
+            var selected = row.Special == SpecialRow.Default ? !hasSelection : AllListedSelected;
+            <div id="@OptionId(row.RowIndex)"
+                 class="nx-combobox-item nx-combobox-item-special @(row.RowIndex == activeRow ? "nx-combobox-item-active" : "") @(selected ? "nx-combobox-item-selected" : "")"
+                 role="option"
+                 aria-selected="@(selected ? "true" : "false")"
+                 data-row="@row.RowIndex"
+                 style="@ItemStyle"
+                 @onclick="() => ActivateRowAsync(row)">
+                <span class="nx-combobox-item-content">@(row.Special == SpecialRow.Default ? DefaultText : "Select all")</span>
+                @if (selected)
+                {
+                    <svg class="nx-combobox-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                }
+            </div>
+        }
+        else
+        {
+            var selected = IsSelected(row.Item);
+            var blocked = Multiple && BlockedByMax(row.Item);
+            var style = HasColumns ? $"{GridStyle}; {ItemStyle}" : ItemStyle;
+            <div id="@OptionId(row.RowIndex)"
+                 class="nx-combobox-item @(HasColumns ? "nx-combobox-item-grid" : "") @(row.RowIndex == activeRow ? "nx-combobox-item-active" : "") @(selected ? "nx-combobox-item-selected" : "") @(blocked ? "nx-combobox-item-disabled" : "")"
+                 role="option"
+                 aria-selected="@(selected ? "true" : "false")"
+                 aria-disabled="@(blocked ? "true" : null)"
+                 aria-setsize="@itemCount"
+                 aria-posinset="@(row.ItemIndex + 1)"
+                 data-row="@row.RowIndex"
+                 style="@style"
+                 @onclick="() => ActivateRowAsync(row)">
+                @if (HasColumns)
+                {
+                    foreach (var column in EffectiveColumns)
+                    {
+                        <span class="@AlignClass(column.Alignment)">
+                            @if (column.Template is not null)
+                            {
+                                @column.Template(row.Item)
+                            }
+                            else
+                            {
+                                @Highlight(column.TextOf(row.Item))
+                            }
+                        </span>
+                    }
+                    <span class="nx-combobox-check-cell">
+                        @if (selected)
+                        {
+                            <svg class="nx-combobox-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                        }
+                    </span>
+                }
+                else
+                {
+                    if (ItemTemplate is not null)
+                    {
+                        <span class="nx-combobox-item-content nx-combobox-item-template">@ItemTemplate(row.Item)</span>
+                    }
+                    else
+                    {
+                        <span class="nx-combobox-item-content">@Highlight(TextOf(row.Item))</span>
+                    }
+                    @if (selected)
+                    {
+                        <svg class="nx-combobox-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                    }
+                }
+            </div>
+        }
+    };
+
+    private RenderFragment Highlight(string text) => __builder =>
+    {
+        var match = HighlightText;
+        var at = match.Length == 0 ? -1 : text.IndexOf(match, StringComparison.OrdinalIgnoreCase);
+        if (at < 0)
+        {
+            @text
+        }
+        else
+        {
+            @text[..at]<mark class="nx-combobox-match">@text.Substring(at, match.Length)</mark>@text[(at + match.Length)..]
+        }
+    };
+}

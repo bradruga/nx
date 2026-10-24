@@ -1,0 +1,30 @@
+.nx-splitter {
+    display: flex;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius);
+    background: var(--nx-surface);
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+    color: var(--nx-fg);
+}
+
+.nx-splitter-horizontal { flex-direction: row; }
+.nx-splitter-vertical   { flex-direction: column; }
+
+/* A splitter nested in a pane fills it, without a second border. */
+.nx-splitter ::deep .nx-splitter { height: 100%; border: none; border-radius: 0; }
+
+.nx-splitter-dragging { user-select: none; }
+.nx-splitter-horizontal.nx-splitter-dragging { cursor: col-resize; }
+.nx-splitter-vertical.nx-splitter-dragging   { cursor: row-resize; }
+.nx-splitter-dragging ::deep .nx-splitter-pane-content { pointer-events: none; }
+
+/* Phones: panes stack whatever the orientation, and the splitter grows with them. */
+@media (max-width: 600px) {
+    .nx-splitter { flex-direction: column; height: auto !important; }
+}

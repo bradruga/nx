@@ -1,0 +1,42 @@
+@namespace Nx.Components
+
+<button @ref="element"
+        @attributes="AdditionalAttributes"
+        type="@TypeAttribute"
+        class="@CssClass"
+        style="@Style"
+        disabled="@Disabled"
+        aria-disabled="@(Blocked ? "true" : null)"
+        aria-busy="@(ShowLoading ? "true" : null)"
+        aria-label="@AriaLabel"
+        title="@Title"
+        @onclick="HandleClick"
+        @onclick:preventDefault="Blocked">
+    @if (ShowLoading && (IconPosition == NxIconPosition.Start || IsIconOnly))
+    {
+        <span class="nx-spinner nx-button-spinner" aria-hidden="true"></span>
+    }
+    else if (Icon is not null && IconPosition == NxIconPosition.Start)
+    {
+        <span class="nx-button-icon" aria-hidden="true">@Icon</span>
+    }
+    @if (ShowLoading && LoadingText is not null)
+    {
+        <span class="nx-button-label">@LoadingText</span>
+    }
+    else if (ChildContent is not null)
+    {
+        <span class="nx-button-label">@ChildContent</span>
+    }
+    @if (!IsIconOnly && IconPosition == NxIconPosition.End)
+    {
+        if (ShowLoading)
+        {
+            <span class="nx-spinner nx-button-spinner" aria-hidden="true"></span>
+        }
+        else if (Icon is not null)
+        {
+            <span class="nx-button-icon" aria-hidden="true">@Icon</span>
+        }
+    }
+</button>

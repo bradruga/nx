@@ -1,0 +1,97 @@
+@page "/switch/playground"
+
+<DocHeader Slug="switch" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner">
+                <NxToggleSwitch Id="playground-switch" @bind-Value="pgValue" @bind-Value:after="() => pgChanges++"
+                                Label="@(string.IsNullOrWhiteSpace(pgLabel) ? null : pgLabel)" LabelPosition="pgPosition"
+                                OnText="@(pgText ? pgOnText : null)" OffText="@(pgText ? pgOffText : null)" StateTextPosition="pgTextPosition"
+                                Size="pgSize" Disabled="pgDisabled" Loading="pgLoading" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-value">Value: <strong>@pgValue</strong></span>
+                <span class="demo-counter" id="playground-changes">ValueChanged × @pgChanges</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Label</div>
+            <label class="demo-control"><span>Label</span><input type="text" @bind="pgLabel" @bind:event="oninput" /></label>
+            <div class="demo-control">
+                <span>LabelPosition</span>
+                <div class="demo-segmented" role="group" aria-label="Label position">
+                    @foreach (var p in Enum.GetValues<NxLabelPosition>())
+                    {
+                        <button type="button" aria-pressed="@(pgPosition == p ? "true" : "false")" @onclick="() => pgPosition = p">@p</button>
+                    }
+                </div>
+            </div>
+
+            <div class="demo-controls-title">State text</div>
+            <label class="demo-control"><span>OnText / OffText</span><input type="checkbox" id="pg-text" @bind="pgText" /></label>
+            <label class="demo-control"><span>OnText</span><input type="text" @bind="pgOnText" @bind:event="oninput" disabled="@(!pgText)" /></label>
+            <label class="demo-control"><span>OffText</span><input type="text" @bind="pgOffText" @bind:event="oninput" disabled="@(!pgText)" /></label>
+            <div class="demo-control">
+                <span>StateTextPosition</span>
+                <div class="demo-segmented" role="group" aria-label="State text position">
+                    @foreach (var p in Enum.GetValues<NxToggleTextPosition>())
+                    {
+                        <button type="button" id="@($"pg-text-{p}")" aria-pressed="@(pgTextPosition == p ? "true" : "false")" @onclick="() => pgTextPosition = p">@p</button>
+                    }
+                </div>
+            </div>
+
+            <div class="demo-controls-title">Appearance &amp; state</div>
+            <div class="demo-control">
+                <span>Size</span>
+                <div class="demo-segmented" role="group" aria-label="Size">
+                    @foreach (var s in Enum.GetValues<NxSize>())
+                    {
+                        <button type="button" id="@($"pg-size-{s}")" aria-pressed="@(pgSize == s ? "true" : "false")" @onclick="() => pgSize = s">@s</button>
+                    }
+                </div>
+            </div>
+            <label class="demo-control"><span>Loading</span><input type="checkbox" id="pg-loading" @bind="pgLoading" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="switch" Page="playground" />
+
+@code {
+    bool pgValue = true;
+    string pgLabel = "Show archived jobs";
+    string pgOnText = "On", pgOffText = "Off";
+    bool pgText, pgDisabled, pgLoading;
+    NxLabelPosition pgPosition = NxLabelPosition.End;
+    NxToggleTextPosition pgTextPosition = NxToggleTextPosition.Inside;
+    NxSize pgSize = NxSize.Medium;
+    int pgChanges;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "@bind-Value=\"showArchived\"" };
+            if (!string.IsNullOrWhiteSpace(pgLabel)) attrs.Add($"Label=\"{pgLabel}\"");
+            if (pgPosition != NxLabelPosition.End) attrs.Add("LabelPosition=\"NxLabelPosition.Start\"");
+            if (pgText) attrs.Add($"OnText=\"{pgOnText}\" OffText=\"{pgOffText}\"");
+            if (pgText && pgTextPosition != NxToggleTextPosition.Inside) attrs.Add("StateTextPosition=\"NxToggleTextPosition.Beside\"");
+            if (pgSize != NxSize.Medium) attrs.Add($"Size=\"NxSize.{pgSize}\"");
+            if (pgLoading) attrs.Add("Loading=\"@saving\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            return "<NxToggleSwitch " + string.Join("\n                ", attrs) + " />";
+        }
+    }
+}

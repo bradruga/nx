@@ -1,0 +1,24 @@
+.nx-validation {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.nx-validation-invalid { margin-top: 4px; }
+
+.nx-validation-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    color: var(--nx-validation-color);
+    font-size: var(--nx-validation-font-size);
+    line-height: 1.35;
+}
+
+/* Centered on the first line of text. */
+.nx-validation-message-icon {
+    flex-shrink: 0;
+    width: 1.1em;
+    height: 1.1em;
+    margin-top: 0.06em;
+}

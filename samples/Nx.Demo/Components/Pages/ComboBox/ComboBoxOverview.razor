@@ -1,0 +1,64 @@
+@page "/combobox"
+@page "/combobox/overview"
+
+<DocHeader Slug="combobox" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxComboBox&lt;TItem, TValue&gt;</code> is a text input with a filterable dropdown. Give it a list with
+        <code>Data</code> or load matches from the server with <code>DataProvider</code>; bind the stored value with
+        <code>@@bind-Value</code> and the whole item with <code>@@bind-SelectedItem</code>. It filters as you type, groups,
+        virtualizes long lists, renders multi-column grids, selects many items as chips, validates inside an
+        <code>EditForm</code>, keeps its popup on screen, and on a phone opens a full-screen search instead.
+        Multi-select and columns are opt-in; without them it is a plain single-select combo box.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <div>
+            <label class="demo-field-label" for="overview-combo">Customer</label>
+            <NxComboBox Id="overview-combo" Data="SampleData.Customers" ItemText="c => c.Name" ItemValue="c => c.Id"
+                        @bind-Value="customerId" Placeholder="Search customers" Clearable="true" />
+        </div>
+        <span class="demo-value" id="overview-value">Value: <strong>@(customerId?.ToString() ?? "null")</strong></span>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Typing</td><td>Opens the list filtered to the text and highlights the first match.</td></tr>
+                <tr><td>↓ / Alt+↓</td><td>Opens the list; with it open, moves the highlight down.</td></tr>
+                <tr><td>↑ / Alt+↑</td><td>Moves the highlight up; Alt+↑ closes, keeping the typed text's match.</td></tr>
+                <tr><td>PgDn / PgUp</td><td>Moves the highlight ten items.</td></tr>
+                <tr><td>Enter</td><td>Selects the highlighted item (toggles it with Multiple). With the list closed, commits the text and submits a form.</td></tr>
+                <tr><td>Space</td><td>With Multiple, toggles the highlighted item once you have arrowed to it; otherwise types a space.</td></tr>
+                <tr><td>Backspace</td><td>With Multiple, in the empty field, removes the last chip.</td></tr>
+                <tr><td>Esc</td><td>Closes the list (or overlay) without a change; with it closed and <code>Clearable</code>, clears.</td></tr>
+                <tr><td>Tab / click outside</td><td>Closes. Text that exactly names an item selects it; else the highlighted match, a custom value, or the previous selection.</td></tr>
+                <tr><td>role</td><td><code>combobox</code> on the input, <code>listbox</code> on the list (<code>aria-multiselectable</code> with Multiple), <code>option</code> on each item, <code>dialog</code> on the mobile overlay.</td></tr>
+                <tr><td>aria-activedescendant</td><td>The highlighted option. Focus stays in the input — or the overlay's search box — throughout.</td></tr>
+                <tr><td>aria-selected</td><td><code>true</code> on selected options. <code>aria-setsize</code> and <code>aria-posinset</code> count items, so virtualized lists announce correctly.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="combobox" Page="overview" />
+
+@code {
+    int? customerId;
+
+    const string basicCode =
+        """
+        <NxComboBox Data="customers" ItemText="c => c.Name" ItemValue="c => c.Id"
+                    @bind-Value="order.CustomerId" Placeholder="Search customers" Clearable="true" />
+        """;
+}

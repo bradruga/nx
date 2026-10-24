@@ -1,0 +1,85 @@
+@page "/splitbutton/playground"
+
+<DocHeader Slug="splitbutton" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner">
+                <NxSplitButton Id="playground-split" Variant="pgVariant" Size="pgSize" Disabled="pgDisabled" MenuDisabled="pgMenuDisabled"
+                               Loading="pgLoading" Icon="@(pgIcon ? DemoMenus.Icon("save") : null)" OnClick="() => clicks++"
+                               Items="items" OnItemClick="Picked" MenuAriaLabel="@OrNull(pgMenuLabel)">Save</NxSplitButton>
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-value">Picked: <strong>@picked</strong></span>
+                <span class="demo-counter" id="playground-changes">OnClick × @clicks</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Buttons</div>
+            <label class="demo-control">
+                <span>Variant</span>
+                <select id="pg-variant" @bind="pgVariant">
+                    @foreach (var v in Enum.GetValues<NxButtonVariant>())
+                    {
+                        <option value="@v">@v</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control">
+                <span>Size</span>
+                <select id="pg-size" @bind="pgSize">
+                    @foreach (var s in Enum.GetValues<NxButtonSize>())
+                    {
+                        <option value="@s">@s</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control"><span>Icon</span><input type="checkbox" id="pg-icon" @bind="pgIcon" /></label>
+            <label class="demo-control"><span>Loading</span><input type="checkbox" id="pg-loading" @bind="pgLoading" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+            <label class="demo-control"><span>MenuDisabled</span><input type="checkbox" id="pg-menu-disabled" @bind="pgMenuDisabled" /></label>
+            <label class="demo-control"><span>MenuAriaLabel</span><input type="text" id="pg-menu-label" @bind="pgMenuLabel" @bind:event="oninput" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="splitbutton" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+
+    readonly IReadOnlyList<NxMenuItem> items = [new("Save as draft") { Id = "draft" }, new("Save and release") { Id = "release" }];
+    NxButtonVariant pgVariant = NxButtonVariant.Primary;
+    NxButtonSize pgSize = NxButtonSize.Medium;
+    bool pgIcon = true, pgLoading, pgDisabled, pgMenuDisabled;
+    string pgMenuLabel = "";
+    string picked = "—";
+    int clicks;
+
+    void Picked(NxMenuItemClickEventArgs e) => picked = e.Item.Text;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "OnClick=\"SaveAsync\"", "Items=\"items\"", "OnItemClick=\"RunAsync\"" };
+            if (pgVariant != NxButtonVariant.Secondary) attrs.Insert(0, $"Variant=\"NxButtonVariant.{pgVariant}\"");
+            if (pgSize != NxButtonSize.Medium) attrs.Add($"Size=\"NxButtonSize.{pgSize}\"");
+            if (pgIcon) attrs.Add("Icon=\"@saveIcon\"");
+            if (pgLoading) attrs.Add("Loading=\"true\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            if (pgMenuDisabled) attrs.Add("MenuDisabled=\"true\"");
+            if (OrNull(pgMenuLabel) is { } m) attrs.Add($"MenuAriaLabel=\"{m}\"");
+            return "<NxSplitButton " + string.Join("\n               ", attrs) + ">Save</NxSplitButton>";
+        }
+    }
+}

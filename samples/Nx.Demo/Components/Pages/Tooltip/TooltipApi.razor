@@ -1,0 +1,51 @@
+@page "/tooltip/api"
+
+<DocHeader Slug="tooltip" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>The element to describe; its first element is the anchor.</td></tr>
+                <tr><td>Target</td><td>string?</td><td>—</td><td>A CSS selector for the anchor, instead of wrapping it.</td></tr>
+                <tr><td>Text</td><td>string?</td><td>—</td><td>Tooltip text.</td></tr>
+                <tr><td>Content</td><td>RenderFragment?</td><td>—</td><td>Rich content, in place of Text. Non-interactive.</td></tr>
+                <tr><td>Placement</td><td>NxTooltipPlacement</td><td>Top</td><td>Preferred side; flips when there is no room.</td></tr>
+                <tr><td>Trigger</td><td>NxTooltipTrigger</td><td>Hover | Focus</td><td>Hover, Focus (keyboard), Click, combined; None for code only. Long press always works on touch.</td></tr>
+                <tr><td>ShowDelay / HideDelay</td><td>int</td><td>400 / 100</td><td>Milliseconds for hover; focus and click are immediate.</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>false</td><td>Neither shows nor describes the anchor.</td></tr>
+                <tr><td>Id / Class</td><td>string?</td><td>—</td><td>The tooltip element (aria-describedby names the id).</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ShowAsync() / HideAsync()</td><td>Task</td><td>Shows or hides the tooltip now.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-tooltip-bg / -fg</td><td>#2b2b31 / #fff</td><td>Body and arrow; text. Inverted in the dark theme.</td></tr>
+                <tr><td>--nx-tooltip-max-width</td><td>280px</td><td>Longest line before wrapping.</td></tr>
+                <tr><td>--nx-z-tooltip</td><td>1200</td><td>Above windows, popups and phone sheets.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="tooltip" Page="api" />

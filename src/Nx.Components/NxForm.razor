@@ -1,0 +1,36 @@
+@namespace Nx.Components
+
+<EditForm @attributes="AdditionalAttributes"
+          EditContext="editContext"
+          OnSubmit="OnSubmit"
+          OnValidSubmit="OnValidSubmit"
+          OnInvalidSubmit="OnInvalidSubmit"
+          id="@Id"
+          class="@CssClass"
+          style="@Style">
+    <CascadingValue Value="this">
+        @if (Validation is not null)
+        {
+            @Validation
+        }
+        else
+        {
+            <DataAnnotationsValidator />
+        }
+        @if (!SubmitOnEnter)
+        {
+            @* The form's first submit button is its default one; a disabled default button turns off implicit submission. *@
+            <button type="submit" class="nx-form-enter-guard" disabled hidden aria-hidden="true" tabindex="-1"></button>
+        }
+        @* The <form> is EditForm's element, out of reach of this component's scoped CSS; the body carries the layout. *@
+        <div class="nx-form-body">
+            <div class="nx-form-items" style="@FormLayout.GridStyle(Columns, ColumnSpacing)">
+                @ChildContent
+            </div>
+            @if (Buttons is not null)
+            {
+                <div class="nx-form-buttons">@Buttons</div>
+            }
+        </div>
+    </CascadingValue>
+</EditForm>

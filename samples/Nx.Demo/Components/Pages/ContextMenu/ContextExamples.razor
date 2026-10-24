@@ -1,0 +1,150 @@
+@page "/contextmenu/examples"
+
+<DocHeader Slug="contextmenu" Page="examples" />
+
+<div class="doc-section">
+    <h2>Rows: Which One Was Pressed</h2>
+    <p class="doc-note">
+        Mark each row with <code>data-nx-context</code>; the value comes back in <code>OnOpening</code> and <code>OnItemClick</code>
+        as <code>Context</code>. <code>OnOpening</code> can also change the items for that row, or cancel — here a locked pour
+        only offers <em>View</em>.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxContextMenu Id="rows-menu" Items="rowItems" OnOpening="RowOpening" OnItemClick="RowPicked" AriaLabel="Pour actions">
+            <div class="doc-table-wrap">
+                <table class="doc-table demo-context-table" id="rows-table">
+                    <thead><tr><th>Pour</th><th>Element</th><th>Status</th></tr></thead>
+                    <tbody>
+                        @foreach (var pour in Pours)
+                        {
+                            <tr data-nx-context="@pour.Id" id="@($"row-{pour.Id}")">
+                                <td>@pour.Id</td><td>@pour.Element</td><td>@pour.Status</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </NxContextMenu>
+        <div class="demo-row"><span class="demo-value" id="rows-picked">@rowResult</span></div>
+    </div>
+    <pre class="doc-code">@rowsCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Submenus &amp; Check Items</h2>
+    <p class="doc-note">
+        An item with <code>Items</code> opens a submenu — on hover, → or Enter. <code>Checked</code> makes a check item; flip it in
+        <code>OnItemClick</code> and hand the menu new items.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxContextMenu Id="view-menu" Items="ViewItems" OnItemClick="ViewPicked" AriaLabel="View options">
+            <div class="demo-context-card" id="view-card">
+                <strong>Schedule view</strong>
+                <span>Columns: @string.Join(", ", columns.Where(c => c.Value).Select(c => c.Key)) · Sort: @sort</span>
+            </div>
+        </NxContextMenu>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Opening From Code</h2>
+    <p class="doc-note"><code>OpenAtAsync(x, y)</code> opens the menu at any point — here where you click the button.</p>
+    <div class="demo-stage">
+        <NxContextMenu @ref="coded" Id="coded-menu" Items="codedItems" OnItemClick="e => codedPicked = e.Item.Text" AriaLabel="Quick actions" />
+        <NxButton id="open-coded" OnClick="OpenCoded">Open a menu here</NxButton>
+        <span class="demo-value" id="coded-picked">Picked: <strong>@codedPicked</strong></span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Target by Selector</h2>
+    <p class="doc-note"><code>Target</code> attaches the menu to any element by CSS selector, without wrapping it.</p>
+    <div class="demo-stage">
+        <span class="demo-status-badge" id="target-chip">Truck 14 · Loading</span>
+        <NxContextMenu Id="target-menu" Target="#target-chip" Items="truckItems" OnItemClick="e => truckPicked = e.Item.Text" AriaLabel="Truck actions" />
+        <span class="demo-value" id="target-picked">Picked: <strong>@truckPicked</strong></span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Phone Bottom Sheet</h2>
+    <p class="doc-note">
+        At 600px and below the menu slides up from the bottom with 48px rows and dims the page; a submenu replaces it, with a back
+        row at the top. Long-press any example above on a phone.
+    </p>
+</div>
+
+<DocPager Slug="contextmenu" Page="examples" />
+
+@code {
+    sealed record Pour(string Id, string Element, string Status);
+
+    static readonly Pour[] Pours =
+    [
+        new("P-1042", "North wall", "Scheduled"),
+        new("P-1043", "South wall", "Poured"),
+        new("P-1044", "Slab A", "Locked"),
+    ];
+
+    static readonly IReadOnlyList<NxMenuItem> FullRowItems = DemoMenus.EditItems();
+    static readonly IReadOnlyList<NxMenuItem> LockedRowItems = [new("View") { Id = "view", Icon = DemoMenus.Icon("search") }];
+
+    IReadOnlyList<NxMenuItem> rowItems = FullRowItems;
+    string rowResult = "Right-click a row";
+
+    void RowOpening(NxContextMenuOpeningEventArgs e) =>
+        rowItems = Pours.FirstOrDefault(p => p.Id == e.Context)?.Status == "Locked" ? LockedRowItems : FullRowItems;
+
+    void RowPicked(NxMenuItemClickEventArgs e) => rowResult = $"{e.Item.Text} {e.Context}";
+
+    readonly Dictionary<string, bool> columns = new() { ["Element"] = true, ["Status"] = true, ["Crew"] = false };
+    string sort = "Date";
+
+    IReadOnlyList<NxMenuItem> ViewItems =>
+    [
+        new("Columns") { Id = "columns", Items = columns.Select(c => new NxMenuItem(c.Key) { Id = $"col:{c.Key}", Checked = c.Value }).ToList() },
+        new("Sort by")
+        {
+            Id = "sort",
+            Items =
+            [
+                new("Date") { Id = "sort:Date", Checked = sort == "Date" },
+                new("Element") { Id = "sort:Element", Checked = sort == "Element" },
+                new("More") { Id = "more", Items = [new("Status") { Id = "sort:Status", Checked = sort == "Status" }, new("Crew") { Id = "sort:Crew", Checked = sort == "Crew" }] },
+            ]
+        },
+        NxMenuItem.Separator(),
+        new("Reset view") { Id = "reset" },
+    ];
+
+    void ViewPicked(NxMenuItemClickEventArgs e)
+    {
+        if (e.Item.Id is { } id && id.StartsWith("col:"))
+            columns[id[4..]] = !columns[id[4..]];
+        else if (e.Item.Id is { } s && s.StartsWith("sort:"))
+            sort = s[5..];
+        else if (e.Item.Id == "reset")
+        {
+            columns["Element"] = true; columns["Status"] = true; columns["Crew"] = false;
+            sort = "Date";
+        }
+    }
+
+    NxContextMenu? coded;
+    readonly IReadOnlyList<NxMenuItem> codedItems = [new("Refresh") { Icon = DemoMenus.Icon("refresh") }, new("Settings") { Icon = DemoMenus.Icon("settings") }];
+    string codedPicked = "—";
+    Task OpenCoded(MouseEventArgs e) => coded!.OpenAtAsync(e.ClientX, e.ClientY);
+
+    readonly IReadOnlyList<NxMenuItem> truckItems = [new("Track") { Icon = DemoMenus.Icon("truck") }, new("Call driver") { Icon = DemoMenus.Icon("phone") }];
+    string truckPicked = "—";
+
+    const string rowsCode =
+        """
+        <NxContextMenu Items="items" OnOpening="Opening" OnItemClick="e => Run(e.Item.Id, e.Context)">
+            <table> … <tr data-nx-context="@pour.Id"> … </table>
+        </NxContextMenu>
+
+        void Opening(NxContextMenuOpeningEventArgs e) =>
+            items = IsLocked(e.Context) ? viewOnly : allActions;
+        """;
+}

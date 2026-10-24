@@ -1,0 +1,151 @@
+@page "/tabstrip/examples"
+
+<DocHeader Slug="tabstrip" Page="examples" />
+
+<div class="doc-section">
+    <h2>Icons, Templates &amp; Disabled Tabs</h2>
+    <p class="doc-note">
+        <code>Icon</code> sits before the title; <code>HeaderTemplate</code> replaces both, here with a count badge.
+        A <code>Disabled</code> tab is skipped by the arrow keys and cannot be clicked.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxTabStrip Id="icon-tabs" @bind-ActiveTab="iconTab" AriaLabel="Order">
+            <NxTab Id="lines" Title="Lines" Icon="@Icon("box")"><p>14 order lines.</p></NxTab>
+            <NxTab Id="shipping" Title="Shipping" Icon="@Icon("truck")"><p>Ships on the 6:00 truck.</p></NxTab>
+            <NxTab Id="issues">
+                <HeaderTemplate>Issues <span class="demo-badge" id="issues-badge">3</span></HeaderTemplate>
+                <ChildContent><p>Three open issues.</p></ChildContent>
+            </NxTab>
+            <NxTab Id="billing" Title="Billing" Icon="@Icon("dollar")" Disabled="true"><p>Not billed yet.</p></NxTab>
+        </NxTabStrip>
+        <div class="demo-row"><span class="demo-value" id="icon-tab-value">ActiveTab: <strong>@iconTab</strong></span></div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Closable Tabs</h2>
+    <p class="doc-note">
+        <code>Closable</code> adds a close button (and <kbd class="doc-kbd">Delete</kbd>). The strip raises
+        <code>OnTabClose</code> with the tab's key; remove the tab from your list. Closing the active tab moves to its neighbour.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <NxButton id="add-tab" Icon="@Icon("plus")" OnClick="AddDocument">Open drawing</NxButton>
+            <span class="demo-value" id="closable-log">@closeLog</span>
+        </div>
+        <NxTabStrip Id="closable-tabs" @bind-ActiveTab="documentTab" OnTabClose="CloseDocument" AriaLabel="Open drawings">
+            @foreach (var doc in documents)
+            {
+                <NxTab @key="doc" Id="@doc" Title="@doc" Closable="true"><p>Drawing <strong>@doc</strong>.</p></NxTab>
+            }
+        </NxTabStrip>
+        <div class="demo-row"><span class="demo-value" id="closable-value">ActiveTab: <strong>@(documentTab ?? "none")</strong> · @documents.Count open</span></div>
+    </div>
+    <pre class="doc-code">@closableCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Overflow</h2>
+    <p class="doc-note">
+        When the tabs do not fit, arrows appear at the ends and the list scrolls — by the arrows, a swipe, the wheel, or the
+        keyboard, which keeps the active tab in view.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <div style="max-width: 420px; width: 100%">
+            <NxTabStrip Id="overflow-tabs" @bind-ActiveTab="monthTab" AriaLabel="Month">
+                @foreach (var month in Months)
+                {
+                    <NxTab @key="month" Id="@month" Title="@month"><p>Pours in @month.</p></NxTab>
+                }
+            </NxTabStrip>
+        </div>
+        <div class="demo-row"><span class="demo-value" id="overflow-value">ActiveTab: <strong>@monthTab</strong></span></div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Position</h2>
+    <p class="doc-note">
+        <code>Position</code> puts the tabs on any side. Left and right make a column of tabs, navigated with ↑ and ↓; on a phone
+        they move to the top.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxToggleGroup Id="position-picker" Data="Positions" @bind-Value="position" AriaLabel="Position" />
+        <NxTabStrip Id="position-tabs" Position="position" Style="min-height: 180px" AriaLabel="Plant">
+            <NxTab Id="casting" Title="Casting"><p>Casting beds 1–6.</p></NxTab>
+            <NxTab Id="yard" Title="Yard"><p>Yard rows A–F.</p></NxTab>
+            <NxTab Id="shipping" Title="Shipping"><p>Two trucks loading.</p></NxTab>
+        </NxTabStrip>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Lazy &amp; KeepAlive</h2>
+    <p class="doc-note">
+        By default only the active panel exists: switching away and back builds it again. With <code>KeepAlive</code>, a panel
+        stays rendered — hidden — once it has been shown, so unbound state such as typed text or scroll position survives.
+        Type in both, switch tabs and come back.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid demo-form-grid-2">
+            <NxTabStrip Id="lazy-tabs" AriaLabel="Lazy">
+                <NxTab Id="one" Title="Lazy"><input id="lazy-input" class="demo-plain-input" placeholder="Type here" aria-label="Lazy" /></NxTab>
+                <NxTab Id="two" Title="Other"><p>Other panel.</p></NxTab>
+            </NxTabStrip>
+            <NxTabStrip Id="alive-tabs" KeepAlive="true" AriaLabel="Kept alive">
+                <NxTab Id="one" Title="KeepAlive"><input id="alive-input" class="demo-plain-input" placeholder="Type here" aria-label="Kept alive" /></NxTab>
+                <NxTab Id="two" Title="Other"><p>Other panel.</p></NxTab>
+            </NxTabStrip>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Full Width</h2>
+    <div class="demo-stage demo-stage-column">
+        <NxTabStrip Id="full-tabs" FullWidth="true" AriaLabel="View">
+            <NxTab Title="Day"><p>Today's pours.</p></NxTab>
+            <NxTab Title="Week"><p>This week's pours.</p></NxTab>
+            <NxTab Title="Month"><p>This month's pours.</p></NxTab>
+        </NxTabStrip>
+    </div>
+</div>
+
+<DocPager Slug="tabstrip" Page="examples" />
+
+@code {
+    static RenderFragment Icon(string name) => @<DemoIcon Name="@name" />;
+    static readonly string[] Months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    static readonly NxTabPosition[] Positions = Enum.GetValues<NxTabPosition>();
+
+    string? iconTab = "lines";
+    string? monthTab = "January";
+    string? documentTab = "P-1042";
+    NxTabPosition position = NxTabPosition.Top;
+    readonly List<string> documents = ["P-1042", "P-1043", "P-1044"];
+    int nextDocument = 1045;
+    string closeLog = "—";
+
+    void AddDocument()
+    {
+        var doc = $"P-{nextDocument++}";
+        documents.Add(doc);
+        documentTab = doc;
+    }
+
+    void CloseDocument(NxTabCloseEventArgs e)
+    {
+        documents.Remove(e.TabId);
+        closeLog = $"Closed {e.TabId}";
+    }
+
+    const string closableCode =
+        """
+        <NxTabStrip @bind-ActiveTab="active" OnTabClose="e => documents.Remove(e.TabId)">
+            @foreach (var doc in documents)
+            {
+                <NxTab @key="doc" Id="@doc" Title="@doc" Closable="true">…</NxTab>
+            }
+        </NxTabStrip>
+        """;
+}

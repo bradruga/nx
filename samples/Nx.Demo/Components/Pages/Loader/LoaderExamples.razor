@@ -1,0 +1,117 @@
+@page "/loader/examples"
+
+<DocHeader Slug="loader" Page="examples" />
+
+<div class="doc-section">
+    <h2>Types &amp; Sizes</h2>
+    <p class="doc-note"><code>Type</code> picks the animation; <code>Size</code> is 16, 28 or 44 px (<code>--nx-loader-size-*</code>).</p>
+    <div class="demo-stage">
+        <div class="demo-loader-matrix" id="loader-matrix">
+            <span></span><span class="demo-row-label">Small</span><span class="demo-row-label">Medium</span><span class="demo-row-label">Large</span>
+            @foreach (var type in Enum.GetValues<NxLoaderType>())
+            {
+                <span class="demo-row-label">@type</span>
+                @foreach (var size in Sizes)
+                {
+                    <span><NxLoader Type="type" Size="size" data-type="@type" data-size="@size" /></span>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Color</h2>
+    <p class="doc-note">The accent by default; set <code>--nx-loader-color</code> on the loader or any container.</p>
+    <div class="demo-stage">
+        <div class="demo-row" id="loader-colors">
+            <NxLoader Style="--nx-loader-color: var(--nx-success)" />
+            <NxLoader Type="NxLoaderType.Converging" Style="--nx-loader-color: var(--nx-warning)" />
+            <NxLoader Type="NxLoaderType.Pulsing" Style="--nx-loader-color: var(--nx-fg-muted)" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Covering an Area</h2>
+    <p class="doc-note">
+        The container covers its nearest positioned ancestor and blocks clicks on it. Here a card loads for two seconds; try
+        clicking its button while it does.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <NxButton id="card-load" Variant="NxButtonVariant.Primary" OnClick="LoadCardAsync" Disabled="cardLoading">Load</NxButton>
+            <span class="demo-counter" id="card-clicks">Card button clicks: @cardClicks</span>
+        </div>
+        <div class="demo-loader-area" id="card-area">
+            <NxLoaderContainer Visible="cardLoading" id="card-loader" />
+            <div class="demo-loader-card">
+                <strong>Job 55120 — Riverside Garage</strong>
+                <span>4 pours scheduled this week</span>
+                <NxButton id="card-button" Size="NxButtonSize.Small" OnClick="() => cardClicks++">Open job</NxButton>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Text, Types and Your Own Content</h2>
+    <p class="doc-note">
+        <code>Text</code> goes under the loader; <code>LoaderType</code> and <code>LoaderSize</code> change it. Child content
+        replaces both — a progress message, say.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div class="demo-loader-area demo-loader-short">
+                <NxLoaderContainer Text="Saving…" LoaderType="NxLoaderType.Pulsing" LoaderSize="NxSize.Medium" />
+                <ul class="demo-loader-list"><li><strong>P-1042</strong><span>North wall</span></li><li><strong>P-1043</strong><span>Footings</span></li><li><strong>P-1044</strong><span>Deck</span></li></ul>
+            </div>
+            <div class="demo-loader-area demo-loader-short" id="custom-area">
+                <NxLoaderContainer>
+                    <NxLoader Type="NxLoaderType.Converging" />
+                    <strong>Scanning documents</strong>
+                    <span class="demo-value">Page 3 of 12</span>
+                </NxLoaderContainer>
+                <ul class="demo-loader-list"><li><strong>P-1042</strong><span>North wall</span></li><li><strong>P-1043</strong><span>Footings</span></li><li><strong>P-1044</strong><span>Deck</span></li></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Overlay Color</h2>
+    <p class="doc-note">
+        <code>--nx-loader-overlay-bg</code> sets the overlay, e.g. an opaque dark one that hides a page while its first data
+        loads (ERP's <code>dark-overlay</code>).
+    </p>
+    <div class="demo-stage">
+        <div class="demo-loader-area demo-loader-short" id="dark-area">
+            <NxLoaderContainer Text="Loading the tracker…" Style="--nx-loader-overlay-bg: #25282e; --nx-loader-text-color: #d6d6dc; --nx-loader-color: #8cc4ff" />
+            <ul class="demo-loader-list"><li><strong>P-1042</strong><span>North wall</span></li><li><strong>P-1043</strong><span>Footings</span></li><li><strong>P-1044</strong><span>Deck</span></li></ul>
+        </div>
+    </div>
+    <pre class="doc-code">@darkCode</pre>
+</div>
+
+<DocPager Slug="loader" Page="examples" />
+
+@code {
+    static readonly NxSize[] Sizes = [NxSize.Small, NxSize.Medium, NxSize.Large];
+
+    bool cardLoading;
+    int cardClicks;
+
+    async Task LoadCardAsync()
+    {
+        cardLoading = true;
+        await Task.Delay(2000);
+        cardLoading = false;
+    }
+
+    const string darkCode =
+        """
+        .dark-overlay { --nx-loader-overlay-bg: #25282e; }
+
+        <NxLoaderContainer Visible="loading" Class="dark-overlay" />
+        """;
+}

@@ -1,0 +1,101 @@
+@page "/textarea/examples"
+@using System.ComponentModel.DataAnnotations
+
+<DocHeader Slug="textarea" Page="examples" />
+
+<div class="doc-section">
+    <h2>Rows &amp; Resize Handle</h2>
+    <p class="doc-note"><code>Rows</code> is the height in lines. <code>Resize</code> sets the corner handle: vertical (default), both or none.</p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <NxTextArea Id="rows-two" Label="2 rows, vertical handle" Rows="2" @bind-Value="a" />
+            <NxTextArea Id="rows-both" Label="4 rows, both ways" Rows="4" Resize="NxTextAreaResize.Both" @bind-Value="b" />
+            <NxTextArea Id="rows-none" Label="3 rows, no handle" Resize="NxTextAreaResize.None" @bind-Value="c" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Auto-Resize</h2>
+    <p class="doc-note">
+        <code>AutoResize</code> grows the field with the text, from <code>MinRows</code> up to <code>MaxRows</code>; past that it
+        scrolls. Type or paste a few lines.
+    </p>
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <NxTextArea Id="auto-grow" Label="Grows from 2 to 6 lines" AutoResize="true" MinRows="2" MaxRows="6" @bind-Value="auto" Immediate="true" />
+        <div class="demo-row"><span class="demo-value" id="auto-lines">Lines: <strong>@((auto ?? "").Split('\n').Length)</strong></span></div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Counter, Clear &amp; Floating Label</h2>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <NxTextArea Id="counter-area" Label="Up to 140 characters" MaxLength="140" ShowCounter="true" @bind-Value="counter" Immediate="true" />
+            <NxTextArea Id="clear-area" Label="Clearable" Clearable="true" @bind-Value="clearable" />
+            <NxTextArea Id="floating-area" Label="Floating label" FloatingLabel="true" Placeholder="Shown on focus" @bind-Value="floating" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Binding &amp; Debounce</h2>
+    <p class="doc-note">
+        By default the value updates when the user leaves the field. <code>Immediate</code> updates as they type;
+        <code>DebounceDelay</code> waits for a pause first.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <NxTextArea Id="bind-change" Label="On change" @bind-Value="onChange" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="bind-change-value">Value: <strong>@onChange</strong></span></div>
+            </div>
+            <div>
+                <NxTextArea Id="bind-debounce" Label="Immediate, 400 ms debounce" Immediate="true" DebounceDelay="400" @bind-Value="debounced" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="bind-debounce-value">Value: <strong>@debounced</strong></span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>State</h2>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <NxTextArea Id="state-readonly" Label="Read-only" Value="@("Released by D. Ortiz at 9:12.")" ReadOnly="true" />
+            <NxTextArea Id="state-disabled" Label="Disabled" Value="@("Locked")" Disabled="true" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Form Validation</h2>
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <EditForm id="textarea-form" Model="report" OnValidSubmit="Submit" FormName="textarea-form">
+            <DataAnnotationsValidator />
+            <NxTextArea Id="report-reason" Label="Reason for the hold" @bind-Value="report.Reason" AutoResize="true" MaxRows="5" />
+            <ValidationMessage For="() => report.Reason" />
+            <div class="demo-row" style="margin-top:16px">
+                <NxButton id="textarea-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Place hold</NxButton>
+                <span class="demo-value" id="textarea-result">@result</span>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<DocPager Slug="textarea" Page="examples" />
+
+@code {
+    string? a, b, c, auto, counter, clearable = "Some notes", floating, onChange = "", debounced = "";
+    string result = "No hold";
+    readonly HoldForm report = new();
+
+    void Submit() => result = "Hold placed";
+
+    class HoldForm
+    {
+        [Required(ErrorMessage = "Give a reason.")]
+        [MinLength(10, ErrorMessage = "At least 10 characters.")]
+        public string? Reason { get; set; }
+    }
+}

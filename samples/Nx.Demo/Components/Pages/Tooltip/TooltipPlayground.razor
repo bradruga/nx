@@ -1,0 +1,75 @@
+@page "/tooltip/playground"
+
+<DocHeader Slug="tooltip" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner">
+                <NxTooltip Id="playground-tooltip" Text="@pgText" Placement="pgPlacement" Trigger="Triggers"
+                           ShowDelay="pgShowDelay" HideDelay="pgHideDelay" Disabled="pgDisabled">
+                    <NxButton id="playground-anchor">Point at me</NxButton>
+                </NxTooltip>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Content</div>
+            <label class="demo-control"><span>Text</span><input type="text" id="pg-text" @bind="pgText" @bind:event="oninput" /></label>
+            <label class="demo-control">
+                <span>Placement</span>
+                <select id="pg-placement" @bind="pgPlacement">
+                    @foreach (var p in Enum.GetValues<NxTooltipPlacement>())
+                    {
+                        <option value="@p">@p</option>
+                    }
+                </select>
+            </label>
+
+            <div class="demo-controls-title">Trigger</div>
+            <label class="demo-control"><span>Hover</span><input type="checkbox" id="pg-hover" @bind="pgHover" /></label>
+            <label class="demo-control"><span>Focus</span><input type="checkbox" id="pg-focus" @bind="pgFocus" /></label>
+            <label class="demo-control"><span>Click</span><input type="checkbox" id="pg-click" @bind="pgClick" /></label>
+            <label class="demo-control"><span>ShowDelay (ms)</span><input type="number" id="pg-show-delay" @bind="pgShowDelay" /></label>
+            <label class="demo-control"><span>HideDelay (ms)</span><input type="number" id="pg-hide-delay" @bind="pgHideDelay" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="tooltip" Page="playground" />
+
+@code {
+    string pgText = "Saves and sends to the plant";
+    NxTooltipPlacement pgPlacement = NxTooltipPlacement.Top;
+    bool pgHover = true, pgFocus = true, pgClick, pgDisabled;
+    int pgShowDelay = 400, pgHideDelay = 100;
+
+    NxTooltipTrigger Triggers =>
+        (pgHover ? NxTooltipTrigger.Hover : 0) | (pgFocus ? NxTooltipTrigger.Focus : 0) | (pgClick ? NxTooltipTrigger.Click : 0);
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { $"Text=\"{pgText}\"" };
+            if (pgPlacement != NxTooltipPlacement.Top) attrs.Add($"Placement=\"NxTooltipPlacement.{pgPlacement}\"");
+            if (Triggers != (NxTooltipTrigger.Hover | NxTooltipTrigger.Focus))
+            {
+                var parts = new[] { pgHover ? "NxTooltipTrigger.Hover" : null, pgFocus ? "NxTooltipTrigger.Focus" : null, pgClick ? "NxTooltipTrigger.Click" : null }.OfType<string>().ToArray();
+                attrs.Add($"Trigger=\"{(parts.Length == 0 ? "NxTooltipTrigger.None" : string.Join(" | ", parts))}\"");
+            }
+            if (pgShowDelay != 400) attrs.Add($"ShowDelay=\"{pgShowDelay}\"");
+            if (pgHideDelay != 100) attrs.Add($"HideDelay=\"{pgHideDelay}\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            return "<NxTooltip " + string.Join("\n           ", attrs) + ">\n    <NxButton>Point at me</NxButton>\n</NxTooltip>";
+        }
+    }
+}

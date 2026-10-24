@@ -1,0 +1,72 @@
+@inject NavigationManager Nav
+@implements IDisposable
+
+<nav class="nav-tree">
+    <div class="nav-group-label">Guide</div>
+    <NavLink href="" Match="NavLinkMatch.All" class="nav-leaf">Overview</NavLink>
+
+    @foreach (var category in DemoCatalog.Categories.Where(c => DemoCatalog.Components.Any(x => x.Category == c)))
+    {
+        <div class="nav-group-label">@category</div>
+        @foreach (var component in DemoCatalog.Components.Where(c => c.Category == category))
+        {
+            var open = expanded.Contains(component.Slug);
+            var current = component.Slug == activeSlug;
+            <button type="button"
+                    class="nav-tree-toggle @(current ? "nav-tree-current" : "")"
+                    id="nav-@component.Slug"
+                    aria-expanded="@(open ? "true" : "false")"
+                    aria-controls="nav-@(component.Slug)-pages"
+                    @onclick="() => Toggle(component.Slug)">
+                <span>@component.Name</span>
+                <svg class="nav-chevron @(open ? "open" : "")" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="9 6 15 12 9 18" />
+                </svg>
+            </button>
+            @if (open)
+            {
+                <div class="nav-tree-children" id="nav-@(component.Slug)-pages" role="group" aria-label="@component.Name pages">
+                    @foreach (var tab in DemoCatalog.Pages)
+                    {
+                        <NavLink href="@($"{component.Slug}/{tab.Slug}")" Match="NavLinkMatch.All" class="nav-leaf nav-tree-leaf">@tab.Title</NavLink>
+                    }
+                </div>
+            }
+        }
+    }
+</nav>
+
+@code {
+    readonly HashSet<string> expanded = [];
+    string? activeSlug;
+
+    protected override void OnInitialized()
+    {
+        SyncWithLocation();
+        Nav.LocationChanged += OnLocationChanged;
+    }
+
+    // The group for the current page always opens; groups the user opened stay open.
+    void SyncWithLocation()
+    {
+        var path = Nav.ToBaseRelativePath(Nav.Uri).Split('?', '#')[0];
+        var slug = path.Split('/')[0];
+        activeSlug = DemoCatalog.Find(slug)?.Slug;
+        if (activeSlug is not null)
+            expanded.Add(activeSlug);
+    }
+
+    void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        SyncWithLocation();
+        InvokeAsync(StateHasChanged);
+    }
+
+    void Toggle(string slug)
+    {
+        if (!expanded.Remove(slug))
+            expanded.Add(slug);
+    }
+
+    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+}

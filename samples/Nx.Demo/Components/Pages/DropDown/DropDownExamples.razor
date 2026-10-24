@@ -1,0 +1,176 @@
+@page "/dropdown/examples"
+@using System.ComponentModel.DataAnnotations
+
+<DocHeader Slug="dropdown" Page="examples" />
+
+<div class="doc-section">
+    <h2>Type-Ahead</h2>
+    <p class="doc-note">
+        Focus the field and type: with the list closed, <em>n</em> selects New Hampshire, <em>n</em> again New Jersey, then New York.
+        Open, letters move the highlight, and letters typed quickly build a prefix — <em>ma</em> goes to Maine, <em>mas</em> to
+        Massachusetts.
+    </p>
+    <div class="demo-stage demo-stage-narrow">
+        <div style="width:100%">
+            <label class="demo-field-label" for="typeahead-dropdown">State</label>
+            <NxDropDown Id="typeahead-dropdown" TItem="string" TValue="string" Data="SampleData.States" @bind-Value="state" Placeholder="Pick a state" />
+            <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="typeahead-value">Value: <strong>@(state ?? "null")</strong></span></div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Default Item</h2>
+    <p class="doc-note">
+        <code>DefaultText</code> shows while nothing is selected and adds a first item that sets the value back to
+        <code>default</code> — "any", "none", "all".
+    </p>
+    <div class="demo-stage demo-stage-narrow">
+        <div style="width:100%">
+            <label class="demo-field-label" for="default-dropdown">Department</label>
+            <NxDropDown Id="default-dropdown" TItem="string" TValue="string" Data="Departments" @bind-Value="department" DefaultText="All departments" />
+            <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="default-value">Value: <strong>@(department ?? "null")</strong></span></div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Grouping &amp; Templates</h2>
+    <p class="doc-note"><code>ItemGroup</code> puts items under headers; <code>ItemTemplate</code> and <code>SelectedItemTemplate</code> render them.</p>
+    <div class="demo-stage demo-stage-narrow">
+        <div style="width:100%">
+            <label class="demo-field-label" for="group-dropdown">Assigned to</label>
+            <NxDropDown Id="group-dropdown" Data="SampleData.Employees" ItemText="e => e.Name" ItemValue="e => (int?)e.Id"
+                        ItemGroup="e => e.Department" @bind-Value="employeeId" Placeholder="Pick someone">
+                <ItemTemplate Context="e">
+                    <span class="demo-person"><strong>@e.Name</strong><span>@e.Title</span></span>
+                </ItemTemplate>
+                <SelectedItemTemplate Context="e">
+                    <span class="demo-person-inline"><DemoIcon Name="user" /> @e.Name</span>
+                </SelectedItemTemplate>
+            </NxDropDown>
+            <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="group-value">Value: <strong>@(employeeId?.ToString() ?? "null")</strong></span></div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Columns</h2>
+    <p class="doc-note">The combo box's columns work here too: an aligned grid under a header row.</p>
+    <div class="demo-stage demo-stage-narrow">
+        <div style="width:100%">
+            <label class="demo-field-label" for="columns-dropdown">Customer</label>
+            <NxDropDown Id="columns-dropdown" Data="SampleData.Customers" ItemText="c => c.Name" ItemValue="c => (int?)c.Id"
+                        @bind-Value="columnsCustomer" Placeholder="Pick a customer" PopupWidth="480px">
+                <Columns>
+                    <NxComboBoxColumn Field="c => c.Code" Header="Code" Width="70px" />
+                    <NxComboBoxColumn Field="c => c.Name" Header="Name" />
+                    <NxComboBoxColumn Field="c => c.City" Header="City" Width="120px" />
+                </Columns>
+            </NxDropDown>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Long Lists</h2>
+    <p class="doc-note"><code>Virtualize</code> renders only the visible rows: 50,000 parts, and type-ahead still finds them.</p>
+    <div class="demo-stage demo-stage-narrow">
+        <div style="width:100%">
+            <label class="demo-field-label" for="virtual-dropdown">Part</label>
+            <NxDropDown Id="virtual-dropdown" Data="SampleData.Parts" ItemText="p => p.Number + ' ' + p.Description" ItemValue="p => (int?)p.Id"
+                        @bind-Value="partId" Virtualize="true" Placeholder="Pick a part" />
+            <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="virtual-value">Value: <strong>@(partId?.ToString() ?? "null")</strong></span></div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Data Provider</h2>
+    <p class="doc-note">A <code>DataProvider</code> loads the items when the list opens, with the loading state while it runs.</p>
+    <div class="demo-stage demo-stage-narrow">
+        <div style="width:100%">
+            <label class="demo-field-label" for="provider-dropdown">Customer (remote)</label>
+            <NxDropDown Id="provider-dropdown" TItem="Customer" TValue="int?" DataProvider="LoadCustomers" ItemText="c => c.Name" ItemValue="c => c.Id"
+                        @bind-Value="remoteCustomer" Placeholder="Pick a customer" />
+            <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="provider-value">Value: <strong>@(remoteCustomer?.ToString() ?? "null")</strong></span></div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Clear &amp; State</h2>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <label class="demo-field-label" for="state-clear">Clearable</label>
+                <NxDropDown Id="state-clear" TItem="string" TValue="string" Data="SampleData.ShipVia" @bind-Value="clearable" Clearable="true" Placeholder="Ship via" />
+            </div>
+            <div>
+                <label class="demo-field-label" for="state-readonly">Read-only</label>
+                <NxDropDown Id="state-readonly" TItem="string" TValue="string" Data="SampleData.ShipVia" Value="@("Flatbed")" ReadOnly="true" />
+            </div>
+            <div>
+                <label class="demo-field-label" for="state-disabled">Disabled</label>
+                <NxDropDown Id="state-disabled" TItem="string" TValue="string" Data="SampleData.ShipVia" Value="@("Rail")" Disabled="true" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Phone Sheet</h2>
+    <p class="doc-note">
+        At 600px and below the list opens as a full-screen sheet with large rows and no search box. <code>MobileMode="Always"</code>
+        forces it here.
+    </p>
+    <div class="demo-stage demo-stage-narrow">
+        <div style="width:100%">
+            <label class="demo-field-label" for="sheet-dropdown">Plant</label>
+            <NxDropDown Id="sheet-dropdown" TItem="string" TValue="string" Data="Plants" @bind-Value="plant" MobileMode="NxComboBoxMobileMode.Always"
+                        MobileTitle="Plant" DefaultText="No plant" />
+            <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="sheet-value">Value: <strong>@(plant ?? "null")</strong></span></div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Form Validation</h2>
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <EditForm id="dropdown-form" Model="ticket" OnValidSubmit="Submit" FormName="dropdown-form">
+            <DataAnnotationsValidator />
+            <label class="demo-field-label" for="ticket-carrier">Carrier</label>
+            <NxDropDown Id="ticket-carrier" TItem="string" TValue="string" Data="SampleData.ShipVia" @bind-Value="ticket.Carrier" DefaultText="(none)" />
+            <ValidationMessage For="() => ticket.Carrier" />
+            <div class="demo-row" style="margin-top:16px">
+                <NxButton id="dropdown-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Book</NxButton>
+                <span class="demo-value" id="dropdown-result">@result</span>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<DocPager Slug="dropdown" Page="examples" />
+
+@code {
+    static readonly string[] Departments = ["Engineering", "Production", "Quality", "Sales", "Shipping"];
+    static readonly string[] Plants = ["Albany", "Bethlehem", "Hartford", "Newburgh", "Syracuse", "Worcester"];
+
+    string? state, department, plant, clearable = "Lowboy";
+    int? employeeId, columnsCustomer, partId, remoteCustomer;
+    string result = "Not booked";
+    readonly Ticket ticket = new();
+
+    void Submit() => result = $"Booked with {ticket.Carrier}";
+
+    static async Task<IEnumerable<Customer>> LoadCustomers(NxComboBoxRequest request)
+    {
+        return await SampleData.SearchCustomersAsync("", 500, request.CancellationToken);
+    }
+
+    class Ticket
+    {
+        [Required(ErrorMessage = "Pick a carrier.")]
+        public string? Carrier { get; set; }
+    }
+}

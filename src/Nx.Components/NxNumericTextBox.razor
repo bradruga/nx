@@ -1,0 +1,71 @@
+@namespace Nx.Components
+@typeparam TValue
+
+<NxFieldFrame ClassPrefix="nx-numeric"
+              InputId="@InputId"
+              Label="@Label"
+              FloatingLabel="FloatingLabel"
+              HasValue="@(currentText.Length > 0)"
+              PrefixContent="Prefix"
+              SuffixContent="Suffix"
+              ShowClear="ShowClear"
+              OnClear="HandleClearClick"
+              Disabled="Disabled"
+              ReadOnly="ReadOnly"
+              Invalid="validation.IsInvalid"
+              Class="@Class"
+              Style="@Style">
+    <ChildContent>
+        <input @ref="input"
+               @attributes="AdditionalAttributes"
+               id="@InputId"
+               class="@InputCssClass"
+               type="text"
+               role="spinbutton"
+               autocomplete="off"
+               inputmode="@InputModeAttribute"
+               placeholder="@Placeholder"
+               disabled="@Disabled"
+               readonly="@ReadOnly"
+               aria-valuenow="@AriaValueNow"
+               aria-valuemin="@AriaValueMin"
+               aria-valuemax="@AriaValueMax"
+               aria-valuetext="@AriaValueText"
+               data-nx-edit="@(Editable ? FormatEdit(current) : null)"
+               aria-invalid="@(validation.IsInvalid ? "true" : null)"
+               @bind="currentText"
+               @bind:event="oninput"
+               @bind:after="HandleInputAfter"
+               @onchange="HandleChange"
+               @onkeydown="HandleKeyDown"
+               @onfocus="HandleFocus"
+               @onblur="HandleBlur" />
+    </ChildContent>
+    <Buttons>
+        @if (ShowSpinButtons)
+        {
+            <span class="nx-numeric-spin">
+                <button type="button" class="nx-field-button nx-numeric-spin-button nx-numeric-increase" tabindex="-1"
+                        aria-label="Increase" title="Increase" aria-controls="@InputId"
+                        disabled="@(!Editable || AtMax)"
+                        @onmousedown:preventDefault="true"
+                        @onpointerdown="() => StartSpinAsync(+1)"
+                        @onpointerup="StopSpin" @onpointerleave="StopSpin" @onpointercancel="StopSpin">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="6 15 12 9 18 15" />
+                    </svg>
+                </button>
+                <button type="button" class="nx-field-button nx-numeric-spin-button nx-numeric-decrease" tabindex="-1"
+                        aria-label="Decrease" title="Decrease" aria-controls="@InputId"
+                        disabled="@(!Editable || AtMin)"
+                        @onmousedown:preventDefault="true"
+                        @onpointerdown="() => StartSpinAsync(-1)"
+                        @onpointerup="StopSpin" @onpointerleave="StopSpin" @onpointercancel="StopSpin">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                </button>
+            </span>
+        }
+    </Buttons>
+</NxFieldFrame>

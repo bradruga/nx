@@ -1,0 +1,62 @@
+@page "/splitbutton"
+@page "/splitbutton/overview"
+
+<DocHeader Slug="splitbutton" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxSplitButton</code> joins a primary action to an arrow that opens a menu of related actions — <em>Save</em>, with
+        <em>Save as draft</em> and <em>Save and release</em> one click further. Both halves are <code>NxButton</code>s, so every
+        variant and size applies; the menu is the same <code>NxMenu</code> as NxContextMenu and NxDropDownButton.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage">
+        <div class="demo-row">
+            <NxSplitButton Id="overview-save" Variant="NxButtonVariant.Primary" Icon="@DemoMenus.Icon("save")" OnClick="Save"
+                           Items="saveItems" OnItemClick="Picked" MenuAriaLabel="More save options">Save</NxSplitButton>
+            <span class="demo-value" id="overview-result">@result</span>
+        </div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Tab</td><td>Two stops: the action, then the arrow.</td></tr>
+                <tr><td>Enter / Space on the action</td><td>Runs it.</td></tr>
+                <tr><td>Enter / Space / ↓ on the arrow</td><td>Opens the menu at its first item; ↓ on the action opens it too.</td></tr>
+                <tr><td>role="group"</td><td>Around both halves; the arrow has <code>aria-haspopup="menu"</code>, <code>aria-expanded</code>, and its own name (default "More options").</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="splitbutton" Page="overview" />
+
+@code {
+    readonly IReadOnlyList<NxMenuItem> saveItems =
+    [
+        new("Save as draft") { Id = "draft" },
+        new("Save and release") { Id = "release", Icon = DemoMenus.Icon("arrow-right") },
+        NxMenuItem.Separator(),
+        new("Save a copy…") { Id = "copy" },
+    ];
+    string result = "Not saved";
+
+    void Save() => result = "Saved";
+    void Picked(NxMenuItemClickEventArgs e) => result = e.Item.Text;
+
+    const string basicCode =
+        """
+        <NxSplitButton Variant="NxButtonVariant.Primary" OnClick="SaveAsync"
+                       Items="saveItems" OnItemClick="e => SaveAsync(e.Item.Id)">Save</NxSplitButton>
+        """;
+}

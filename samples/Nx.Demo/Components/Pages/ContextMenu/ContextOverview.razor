@@ -1,0 +1,76 @@
+@page "/contextmenu"
+@page "/contextmenu/overview"
+
+<DocHeader Slug="contextmenu" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxContextMenu</code> opens a menu where the user right-clicks — or long-presses on a touch screen — on the element it
+        wraps or the one <code>Target</code> names. It can also be opened from code at any point. Items are
+        <code>NxMenuItem</code>s: text with an icon and shortcut text, separators, disabled items, check items and nested
+        submenus. The menu flips at the viewport edges, takes the keyboard, and on a phone slides up as a bottom sheet in which
+        submenus drill in. The same menu, <code>NxMenu</code>, sits behind <code>NxDropDownButton</code> and
+        <code>NxSplitButton</code>.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <p class="doc-note">Right-click the card (long-press on a phone).</p>
+    <div class="demo-stage demo-stage-column">
+        <NxContextMenu Id="overview-menu" Items="items" OnItemClick="Picked" AriaLabel="Pour actions">
+            <div class="demo-context-card" id="overview-card">
+                <strong>Pour P-1042</strong>
+                <span>North wall · Thu Oct 23, 6:00 AM</span>
+            </div>
+        </NxContextMenu>
+        <div class="demo-row"><span class="demo-value" id="overview-picked">Picked: <strong>@picked</strong></span></div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Shift+F10 / Menu key</td><td>The browser fires the same <code>contextmenu</code> event, so the keyboard opens it too.</td></tr>
+                <tr><td>↓ / ↑, Home / End</td><td>Move between enabled items, wrapping; separators and disabled items are skipped.</td></tr>
+                <tr><td>Letters</td><td>The next item whose text starts with the letter.</td></tr>
+                <tr><td>→ / Enter on a parent</td><td>Opens its submenu at the first item.</td></tr>
+                <tr><td>← / Esc in a submenu</td><td>Closes it, back on its parent item. Esc at the top closes the menu.</td></tr>
+                <tr><td>Enter / Space</td><td>Picks the item. Focus returns to where it was.</td></tr>
+                <tr><td>Tab, an outside press, scrolling</td><td>Close the menu.</td></tr>
+                <tr><td>role="menu"</td><td>Items are <code>menuitem</code> or <code>menuitemcheckbox</code> with <code>aria-checked</code>; parents have <code>aria-haspopup</code> and <code>aria-expanded</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="contextmenu" Page="overview" />
+
+@code {
+    readonly IReadOnlyList<NxMenuItem> items = DemoMenus.EditItems();
+    string picked = "—";
+
+    void Picked(NxMenuItemClickEventArgs e) => picked = e.Item.Text;
+
+    const string basicCode =
+        """
+        <NxContextMenu Items="items" OnItemClick="e => Run(e.Item.Id)">
+            <div class="card">Pour P-1042</div>
+        </NxContextMenu>
+
+        @code {
+            IReadOnlyList<NxMenuItem> items =
+            [
+                new("Edit") { Id = "edit", Icon = editIcon, Shortcut = "F2" },
+                new("Duplicate") { Id = "duplicate", Shortcut = "Ctrl+D" },
+                NxMenuItem.Separator(),
+                new("Delete") { Id = "delete", Shortcut = "Del" },
+            ];
+        }
+        """;
+}

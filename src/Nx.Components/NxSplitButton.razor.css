@@ -1,0 +1,14 @@
+/* Two NxButtons joined into one control: square inner corners, one border between them. */
+.nx-splitbutton { display: inline-flex; vertical-align: middle; }
+.nx-splitbutton ::deep .nx-splitbutton-main { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.nx-splitbutton ::deep .nx-splitbutton-toggle {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    margin-left: -1px;
+    padding-left: 8px;
+    padding-right: 8px;
+    min-width: 0;
+    box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.25);
+}
+.nx-splitbutton ::deep .nx-splitbutton-main:focus-visible,
+.nx-splitbutton ::deep .nx-splitbutton-toggle:focus-visible { position: relative; z-index: 1; }

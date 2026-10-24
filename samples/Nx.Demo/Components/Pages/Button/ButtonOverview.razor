@@ -1,0 +1,81 @@
+@page "/button"
+@page "/button/overview"
+
+<DocHeader Slug="button" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxButton</code> renders a native <code>&lt;button&gt;</code>, so <kbd class="doc-kbd">Enter</kbd>,
+        <kbd class="doc-kbd">Space</kbd> and form submission behave exactly as the browser does. It adds the things every ERP
+        screen needs: a consistent look in five variants, an icon slot, a loading state, and a guard that ignores a second click
+        while the first save is still running. It defaults to <code>type="button"</code>, so a button inside a form never
+        submits by accident.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage">
+        <NxButton id="overview-save" Variant="NxButtonVariant.Primary" Icon="@Icon("save")" AutoLoading="true" OnClick="SaveAsync">Save</NxButton>
+        <NxButton>Cancel</NxButton>
+        <span class="demo-counter" id="overview-saves">Saved @saves×</span>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Choosing a Variant</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Variant</th><th>Use it for</th></tr></thead>
+            <tbody>
+                <tr><td>Primary</td><td>The one main action of a form or dialog: Save, Post, Submit.</td></tr>
+                <tr><td>Secondary</td><td>Everything else. The default.</td></tr>
+                <tr><td>Danger</td><td>Destructive actions: Delete, Void, Cancel order.</td></tr>
+                <tr><td>Ghost</td><td>Toolbars and dense rows, where a border would be noise.</td></tr>
+                <tr><td>Link</td><td>An action that sits inside a sentence.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Tab</td><td>Moves focus to the button. A focus ring shows on keyboard focus only (<code>:focus-visible</code>).</td></tr>
+                <tr><td>Enter / Space</td><td>Activates the button — it is a native <code>&lt;button&gt;</code>.</td></tr>
+                <tr><td>disabled</td><td>Set by <code>Disabled</code>. Removed from the tab order.</td></tr>
+                <tr><td>aria-disabled</td><td><code>true</code> while loading or busy; the button stays focusable.</td></tr>
+                <tr><td>aria-busy</td><td><code>true</code> while the spinner shows.</td></tr>
+                <tr><td>aria-label</td><td>Set by <code>AriaLabel</code>. Required for icon-only buttons.</td></tr>
+                <tr><td>aria-hidden</td><td>On the icon and spinner, so they are not read out.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="button" Page="overview" />
+
+@code {
+    int saves;
+
+    static RenderFragment Icon(string name) => @<DemoIcon Name="@name" />;
+
+    async Task SaveAsync()
+    {
+        await Task.Delay(800);
+        saves++;
+    }
+
+    const string basicCode =
+        """
+        <NxButton Variant="NxButtonVariant.Primary" Icon="@saveIcon" AutoLoading="true" OnClick="SaveAsync">
+            Save
+        </NxButton>
+        <NxButton OnClick="Cancel">Cancel</NxButton>
+        """;
+}

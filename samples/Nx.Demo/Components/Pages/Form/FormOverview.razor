@@ -1,0 +1,96 @@
+@page "/form"
+@page "/form/overview"
+
+<DocHeader Slug="form" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxForm</code> is an <code>EditForm</code> that lays its items out in a grid. An <code>NxFormItem</code> names a
+        property of the model and renders the right Nx editor for its type, with a label and the field's validation messages;
+        put your own editor inside an item for anything else. <code>NxFormGroup</code> titles a set of items, and
+        <code>NxValidationMessage</code> shows one field's messages anywhere. Validation is DataAnnotations unless you pass
+        other validators (FluentValidation, say). On a narrow screen every grid folds to one column.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column">
+        <NxForm Id="overview-form" Model="pour" Columns="2" OnValidSubmit="Save">
+            <ChildContent>
+                <NxFormItem Field="@nameof(PourForm.Name)" ColSpan="2" />
+                <NxFormItem Field="@nameof(PourForm.PourDate)" />
+                <NxFormItem Field="@nameof(PourForm.StartTime)" />
+                <NxFormItem Field="@nameof(PourForm.Volume)" />
+                <NxFormItem Field="@nameof(PourForm.Status)" />
+                <NxFormItem Field="@nameof(PourForm.PumpTruck)" ColSpan="2" />
+            </ChildContent>
+            <Buttons>
+                <NxButton id="overview-save" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Save pour</NxButton>
+                <span class="demo-value" id="overview-result">@result</span>
+            </Buttons>
+        </NxForm>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Generated Editors</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Property type</th><th>Editor</th></tr></thead>
+            <tbody>
+                <tr><td>string</td><td>NxTextBox</td></tr>
+                <tr><td>int, long, short, decimal, double, float</td><td>NxNumericTextBox</td></tr>
+                <tr><td>bool, bool?</td><td>NxCheckBox, labelled after the box</td></tr>
+                <tr><td>DateTime, DateOnly</td><td>NxDatePicker</td></tr>
+                <tr><td>TimeOnly, TimeSpan</td><td>NxTimePicker</td></tr>
+                <tr><td>enum</td><td>NxDropDown of its values, in words (<code>OnHold</code> → "On hold")</td></tr>
+                <tr><td>anything else</td><td>Put an editor inside the item.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="doc-note">Each takes nullable types too. The label is <code>Label</code>, else <code>[Display(Name)]</code>, else the property name in words.</p>
+</div>
+
+<div class="doc-section">
+    <h2>Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Part</th><th>Rendered as</th></tr></thead>
+            <tbody>
+                <tr><td>Item label</td><td>A <code>&lt;label for&gt;</code> pointing at the editor's id (<code>{form id}-{Field}</code>).</td></tr>
+                <tr><td>Group</td><td>A <code>&lt;fieldset&gt;</code> with a <code>&lt;legend&gt;</code>.</td></tr>
+                <tr><td>Messages</td><td>A polite live region per field; editors set <code>aria-invalid</code>.</td></tr>
+                <tr><td>Enter</td><td>Submits, as in any form; <code>SubmitOnEnter="false"</code> turns that off.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="form" Page="overview" />
+
+@code {
+    readonly PourForm pour = new();
+    string result = "Not saved";
+
+    void Save() => result = $"Saved “{pour.Name}”";
+
+    const string basicCode =
+        """
+        <NxForm Model="pour" Columns="2" OnValidSubmit="SaveAsync">
+            <ChildContent>
+                <NxFormItem Field="@nameof(PourForm.Name)" ColSpan="2" />
+                <NxFormItem Field="@nameof(PourForm.PourDate)" />
+                <NxFormItem Field="@nameof(PourForm.StartTime)" />
+                <NxFormItem Field="@nameof(PourForm.Volume)" />
+                <NxFormItem Field="@nameof(PourForm.Status)" />
+                <NxFormItem Field="@nameof(PourForm.PumpTruck)" ColSpan="2" />
+            </ChildContent>
+            <Buttons>
+                <NxButton Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Save pour</NxButton>
+            </Buttons>
+        </NxForm>
+        """;
+}

@@ -1,0 +1,60 @@
+@page "/daterange"
+@page "/daterange/overview"
+@using System.Globalization
+
+<DocHeader Slug="daterange" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxDateRangePicker&lt;TValue&gt;</code> edits a start and an end date, each bound on its own
+        (<code>@@bind-StartValue</code>, <code>@@bind-EndValue</code>). Both fields share one calendar, two months wide on a
+        desktop: the first pick sets the start, the second the end, and the band between them fills in. Each field also takes typed
+        dates with the same mask, format and culture as <code>NxDatePicker</code>; a start typed after the end swaps the two. On a
+        phone the calendar opens as a full-screen sheet that walks through start and end.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <NxDateRangePicker Id="overview-range" Label="Pour window" @bind-StartValue="from" @bind-EndValue="to" Culture="EnUs" Clearable="true" />
+        <div class="demo-row"><span class="demo-value" id="overview-range-value">Range: <strong>@Show(from) → @Show(to)</strong></span></div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>↓ or Alt+↓</td><td>Opens the calendar from either field; from End it picks the end.</td></tr>
+                <tr><td>Arrows, PgUp / PgDn, Ctrl+↑ / ↓</td><td>Move the highlighted day, month or year, as in NxDatePicker.</td></tr>
+                <tr><td>Enter</td><td>Picks the highlighted day: the start first, then the end, which closes the calendar.</td></tr>
+                <tr><td>Tab / Shift+Tab</td><td>Moves between Start and End with the calendar open; out of the pair closes it.</td></tr>
+                <tr><td>Esc</td><td>Closes the calendar. Closed, clears the field when <code>Clearable</code>.</td></tr>
+                <tr><td>role="group"</td><td>Labelled by <code>Label</code>; each field is a <code>combobox</code> with its own label.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="daterange" Page="overview" />
+
+@code {
+    static readonly CultureInfo EnUs = CultureInfo.GetCultureInfo("en-US");
+    static string Show(DateOnly? d) => d?.ToString("yyyy-MM-dd") ?? "null";
+
+    DateOnly? from = new(2026, 10, 19);
+    DateOnly? to = new(2026, 10, 23);
+
+    const string basicCode =
+        """
+        <NxDateRangePicker Label="Pour window"
+                           @bind-StartValue="job.PourFrom"
+                           @bind-EndValue="job.PourTo"
+                           Clearable="true" />
+        """;
+}

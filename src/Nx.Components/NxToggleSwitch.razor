@@ -1,0 +1,35 @@
+@namespace Nx.Components
+
+<span class="@CssClass" style="@Style">
+    <button @ref="button"
+            @attributes="AdditionalAttributes"
+            id="@SwitchId"
+            type="button"
+            role="switch"
+            class="nx-switch-track"
+            aria-checked="@(Value ? "true" : "false")"
+            aria-busy="@(Loading ? "true" : null)"
+            aria-disabled="@(Loading ? "true" : null)"
+            aria-invalid="@(validation.IsInvalid ? "true" : null)"
+            disabled="@Disabled"
+            @onclick="HandleClick">
+        @if (HasStateText && StateTextPosition == NxToggleTextPosition.Inside)
+        {
+            <span class="nx-switch-state nx-switch-state-inside" aria-hidden="true">@StateText</span>
+        }
+        <span class="nx-switch-thumb" aria-hidden="true">
+            @if (Loading)
+            {
+                <span class="nx-spinner nx-switch-spinner"></span>
+            }
+        </span>
+    </button>
+    @if (HasStateText && StateTextPosition == NxToggleTextPosition.Beside)
+    {
+        <span class="nx-switch-state nx-switch-state-beside" aria-hidden="true">@StateText</span>
+    }
+    @if (HasLabel)
+    {
+        <label class="nx-switch-label" for="@SwitchId">@Label@ChildContent</label>
+    }
+</span>

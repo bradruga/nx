@@ -1,0 +1,8 @@
+@namespace Nx.Components
+
+@* Panes render in place and each draws the split bar before it; the splitter holds them in order. *@
+<CascadingValue Value="this" IsFixed="true">
+    <div @ref="root" id="@Id" class="@CssClass" style="@Style" data-orientation="@OrientationName">
+        @ChildContent
+    </div>
+</CascadingValue>

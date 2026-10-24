@@ -1,0 +1,227 @@
+@page "/datepicker/examples"
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+
+<DocHeader Slug="datepicker" Page="examples" />
+
+<div class="doc-section">
+    <h2>Date Types</h2>
+    <p class="doc-note">
+        Bind a <code>DateOnly</code> or a <code>DateTime</code>, nullable or not. A <code>DateTime</code> keeps its time of day when
+        the date changes. Emptying a non-nullable field puts the last date back.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <NxDatePicker Id="type-dateonly" Label="DateOnly?" @bind-Value="typeDateOnly" Culture="EnUs" Placeholder="Empty is null" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="type-dateonly-value">Value: <strong>@(typeDateOnly?.ToString("yyyy-MM-dd") ?? "null")</strong></span></div>
+            </div>
+            <div>
+                <NxDatePicker Id="type-datetime" Label="DateTime (keeps 14:30)" @bind-Value="typeDateTime" Culture="EnUs" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="type-datetime-value">Value: <strong>@typeDateTime.ToString("yyyy-MM-dd HH:mm")</strong></span></div>
+            </div>
+            <div>
+                <NxDatePicker Id="type-required" Label="DateOnly (not nullable)" @bind-Value="typeRequired" Culture="EnUs" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="type-required-value">Value: <strong>@typeRequired.ToString("yyyy-MM-dd")</strong></span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Masked Typing &amp; Culture</h2>
+    <p class="doc-note">
+        Type digits only and the separators appear; type a separator early and the part before it gets its leading zero, so
+        <em>1/5/2026</em> works too. The order and separator come from <code>Culture</code>. Pasted text such as
+        <em>2026-10-23</em> or <em>Oct 23 2026</em> is read as it is. The same date in four cultures:
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            @foreach (var (name, culture) in Cultures)
+            {
+                <NxDatePicker Id="@($"mask-{name}")" Label="@name" Value="maskDate" ValueChanged="(DateOnly? d) => maskDate = d" Culture="culture" />
+            }
+            <NxDatePicker Id="mask-iso" Label="ISO (Format=&quot;yyyy-MM-dd&quot;)" Value="maskDate" ValueChanged="(DateOnly? d) => maskDate = d" Format="yyyy-MM-dd" Culture="EnUs" />
+        </div>
+        <div class="demo-row"><span class="demo-value" id="mask-value">Value: <strong>@(maskDate?.ToString("yyyy-MM-dd") ?? "null")</strong></span></div>
+    </div>
+    <pre class="doc-code">@cultureCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Display Format</h2>
+    <p class="doc-note">
+        <code>Format</code> is any .NET date format and applies while the field is not focused. A format with month or day names
+        edits in the culture's short date; an all-number format edits in its own order.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <NxDatePicker Id="format-long" Label="Format=&quot;D&quot;" @bind-Value="formatDate" Format="D" Culture="EnUs" />
+            <NxDatePicker Id="format-short-name" Label="Format=&quot;ddd, MMM d&quot;" @bind-Value="formatDate" Format="ddd, MMM d" Culture="EnUs" />
+            <NxDatePicker Id="format-dmy" Label="Format=&quot;dd-MM-yyyy&quot;" @bind-Value="formatDate" Format="dd-MM-yyyy" Culture="EnUs" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Min, Max &amp; Disabled Dates</h2>
+    <p class="doc-note">
+        Days outside <code>Min</code>/<code>Max</code> and days for which <code>IsDateDisabled</code> returns <code>true</code>
+        are struck through and cannot be picked; the arrows stop at the limits. A typed date outside the range moves to the
+        nearest limit; a typed disabled date reverts. Below: October 5 to November 20, 2026, no weekends.
+    </p>
+    <div class="demo-stage demo-stage-narrow">
+        <div style="width:100%">
+            <NxDatePicker Id="limits" Label="Delivery (weekdays only)" @bind-Value="limitDate" Min="LimitMin" Max="LimitMax"
+                          IsDateDisabled="IsWeekend" Culture="EnUs" />
+            <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="limits-value">Value: <strong>@(limitDate?.ToString("yyyy-MM-dd") ?? "null")</strong></span></div>
+        </div>
+    </div>
+    <pre class="doc-code">@limitsCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Week Numbers &amp; First Day</h2>
+    <p class="doc-note">
+        <code>ShowWeekNumbers</code> adds a week column, numbered as the culture counts weeks — ISO 8601 where weeks start on
+        Monday with the first four-day week, as in de-DE. <code>FirstDayOfWeek</code> overrides the culture's first column.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <NxDatePicker Id="weeks-de" Label="de-DE, week numbers" @bind-Value="weekDate" ShowWeekNumbers="true" Culture="DeDe" />
+            <NxDatePicker Id="weeks-monday" Label="en-US, Monday first" @bind-Value="weekDate" FirstDayOfWeek="DayOfWeek.Monday" ShowWeekNumbers="true" Culture="EnUs" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Inline Calendar</h2>
+    <p class="doc-note">
+        The calendar is <code>NxCalendar</code>, a component of its own. On a page it takes focus and handles the same keys
+        itself; click the title to zoom out to months and years.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxCalendar Id="inline-calendar" @bind-Value="inlineDate" ShowWeekNumbers="true" Culture="EnUs" />
+        <div class="demo-row"><span class="demo-value" id="inline-value">Value: <strong>@(inlineDate?.ToString("yyyy-MM-dd") ?? "null")</strong></span></div>
+    </div>
+    <pre class="doc-code">@inlineCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Labels, Clear &amp; State</h2>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <NxDatePicker Id="state-floating" Label="Floating label" FloatingLabel="true" @bind-Value="floating" Culture="EnUs" />
+            <NxDatePicker Id="state-clear" Label="Clearable" @bind-Value="clearable" Clearable="true" Culture="EnUs" />
+            <NxDatePicker Id="state-readonly" Label="Read-only" Value="readOnlyDate" ReadOnly="true" Culture="EnUs" />
+            <NxDatePicker Id="state-disabled" Label="Disabled" Value="readOnlyDate" Disabled="true" Culture="EnUs" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Phone Sheet</h2>
+    <p class="doc-note">
+        At 600px and below the calendar button opens a full-screen sheet with a larger calendar, and the page behind it stops
+        scrolling. <code>MobileMode="Always"</code> forces the sheet on any screen, as here; <code>Never</code> keeps the popup.
+    </p>
+    <div class="demo-stage demo-stage-narrow">
+        <div style="width:100%">
+            <NxDatePicker Id="sheet-always" Label="Inspection date" @bind-Value="sheetDate" MobileMode="NxMobileMode.Always" Clearable="true" Culture="EnUs" />
+            <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="sheet-value">Value: <strong>@(sheetDate?.ToString("yyyy-MM-dd") ?? "null")</strong></span></div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Form Validation</h2>
+    <p class="doc-note">
+        Inside an <code>EditForm</code> the picker reports changes and shows validation state; messages come from
+        <code>ValidationMessage</code>.
+    </p>
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <EditForm id="date-form" Model="order" OnValidSubmit="Submit" FormName="date-form">
+            <DataAnnotationsValidator />
+            <div class="demo-form-grid demo-form-grid-2">
+                <div>
+                    <NxDatePicker Id="order-date" Label="Order date" @bind-Value="order.OrderDate" Culture="EnUs" />
+                    <ValidationMessage For="() => order.OrderDate" />
+                </div>
+                <div>
+                    <NxDatePicker Id="order-needed" Label="Needed by" @bind-Value="order.NeededBy" Culture="EnUs" />
+                    <ValidationMessage For="() => order.NeededBy" />
+                </div>
+            </div>
+            <div class="demo-row" style="margin-top:16px">
+                <NxButton id="order-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Place order</NxButton>
+                <span class="demo-value" id="order-result">@orderResult</span>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<DocPager Slug="datepicker" Page="examples" />
+
+@code {
+    static readonly CultureInfo EnUs = CultureInfo.GetCultureInfo("en-US");
+    static readonly CultureInfo DeDe = CultureInfo.GetCultureInfo("de-DE");
+    static readonly DateOnly LimitMin = new(2026, 10, 5);
+    static readonly DateOnly LimitMax = new(2026, 11, 20);
+    static bool IsWeekend(DateOnly d) => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+
+    static readonly (string Name, CultureInfo Culture)[] Cultures =
+    [
+        ("en-US", CultureInfo.GetCultureInfo("en-US")),
+        ("en-GB", CultureInfo.GetCultureInfo("en-GB")),
+        ("de-DE", CultureInfo.GetCultureInfo("de-DE")),
+    ];
+
+    DateOnly? typeDateOnly;
+    DateTime typeDateTime = new(2026, 10, 23, 14, 30, 0);
+    DateOnly typeRequired = new(2026, 10, 23);
+    DateOnly? maskDate = new(2026, 10, 23);
+    DateOnly? formatDate = new(2026, 10, 23);
+    DateOnly? limitDate = new(2026, 10, 23);
+    DateOnly? weekDate = new(2026, 1, 1);
+    DateOnly? inlineDate = new(2026, 10, 23);
+    DateOnly? floating, clearable = new DateOnly(2026, 10, 23);
+    DateOnly readOnlyDate = new(2026, 10, 23);
+    DateOnly? sheetDate;
+
+    readonly OrderForm order = new();
+    string orderResult = "Not placed";
+
+    void Submit() => orderResult = $"Placed {order.OrderDate:yyyy-MM-dd}, needed by {order.NeededBy:yyyy-MM-dd}";
+
+    class OrderForm : IValidatableObject
+    {
+        [Required(ErrorMessage = "Enter the order date.")]
+        public DateOnly? OrderDate { get; set; }
+
+        [Required(ErrorMessage = "Enter the date it is needed by.")]
+        public DateOnly? NeededBy { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext context)
+        {
+            if (OrderDate is DateOnly o && NeededBy is DateOnly n && n < o)
+                yield return new ValidationResult("Needed by cannot be before the order date.", [nameof(NeededBy)]);
+        }
+    }
+
+    const string cultureCode =
+        """
+        <NxDatePicker @bind-Value="date" Culture="@CultureInfo.GetCultureInfo("de-DE")" />
+        <NxDatePicker @bind-Value="date" Format="yyyy-MM-dd" />
+        """;
+
+    const string limitsCode =
+        """
+        <NxDatePicker @bind-Value="delivery" Min="firstDay" Max="lastDay"
+                      IsDateDisabled="d => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday" />
+        """;
+
+    const string inlineCode =
+        """
+        <NxCalendar @bind-Value="date" ShowWeekNumbers="true" />
+        """;
+}

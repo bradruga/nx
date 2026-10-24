@@ -1,0 +1,17 @@
+@namespace Nx.Components
+
+<span class="@CssClass" style="@Style" @ref="anchor" @onkeydown="HandleKeyDown">
+    <NxButton Variant="Variant" Size="Size" Icon="Icon" Disabled="Disabled" AriaLabel="@AriaLabel" Title="@Title"
+              FullWidth="FullWidth" Class="nx-dropdownbutton-button" OnClick="ToggleAsync"
+              AdditionalAttributes="ButtonAttributes">
+        @if (ChildContent is not null)
+        {
+            @ChildContent
+            @if (ShowArrow)
+            {
+                <svg class="nx-dropdownbutton-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9" /></svg>
+            }
+        }
+    </NxButton>
+</span>
+<NxMenu @ref="menu" Items="Items" OnItemClick="OnItemClick" AriaLabel="@(MenuAriaLabel ?? AriaLabel)" Id="@MenuId" OpenChanged="HandleOpenChanged" />

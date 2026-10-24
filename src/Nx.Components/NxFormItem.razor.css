@@ -1,0 +1,46 @@
+.nx-form-item {
+    grid-column: span var(--nx-form-span, 1);
+    display: flex;
+    flex-direction: column;
+    gap: var(--nx-form-label-gap);
+    min-width: 0;
+}
+
+.nx-form-label {
+    font-size: var(--nx-font-size-sm);
+    font-weight: var(--nx-font-weight-medium);
+    color: var(--nx-fg);
+}
+
+.nx-form-editor {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* ── Labels beside the editors: a label column, centered on the first control line ── */
+
+.nx-form-item-horizontal {
+    display: grid;
+    grid-template-columns: var(--nx-form-label-width) minmax(0, 1fr);
+    column-gap: 12px;
+    align-items: start;
+}
+
+.nx-form-item-horizontal > .nx-form-label {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: var(--nx-control-height-md);
+    text-align: right;
+}
+
+/* A generated check box sits on the control line too. */
+.nx-form-item-checkbox > .nx-form-editor { justify-content: center; min-height: var(--nx-control-height-md); }
+
+@container nx-form (max-width: 540px) {
+    .nx-form-item { grid-column: 1 / -1; }
+    .nx-form-item-horizontal { display: flex; }
+    .nx-form-item-horizontal > .nx-form-label { justify-content: flex-start; min-height: 0; text-align: left; }
+    .nx-form-item-horizontal > .nx-form-label:empty { display: none; }
+}

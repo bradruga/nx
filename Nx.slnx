@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/Nx.Demo/Nx.Demo.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Nx.Components/Nx.Components.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Nx.Components.Tests/Nx.Components.Tests.csproj" />
+    <Project Path="tests/Nx.Playwright/Nx.Playwright.csproj" />
+  </Folder>
+</Solution>

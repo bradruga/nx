@@ -1,0 +1,17 @@
+@namespace Nx.Components
+
+<span class="@CssClass" style="@Style" @ref="anchor" role="group" aria-label="@AriaLabel" @onkeydown="HandleKeyDown">
+    <NxButton Variant="Variant" Size="Size" Icon="Icon" Disabled="Disabled" Loading="Loading" AriaLabel="@AriaLabel" Title="@Title"
+              Class="nx-splitbutton-main" OnClick="OnClick" AdditionalAttributes="MainAttributes">
+        @ChildContent
+    </NxButton>
+    <NxButton Variant="Variant" Size="Size" Disabled="@(Disabled || MenuDisabled)" AriaLabel="@(MenuAriaLabel ?? "More options")"
+              Class="nx-splitbutton-toggle" OnClick="ToggleAsync" AdditionalAttributes="ToggleAttributes"
+              Icon="Arrow" />
+</span>
+<NxMenu @ref="menu" Items="Items" OnItemClick="OnItemClick" AriaLabel="@(MenuAriaLabel ?? "More options")" Id="@MenuId" OpenChanged="HandleOpenChanged" />
+
+@code {
+    private static readonly RenderFragment Arrow =
+        @<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>;
+}

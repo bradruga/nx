@@ -1,0 +1,68 @@
+@page "/timepicker/api"
+
+<DocHeader Slug="timepicker" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Value</td><td>TValue?</td><td>—</td><td>Use <code>@@bind-Value</code>. TimeOnly, TimeSpan, DateTime, or nullable. A DateTime keeps its date.</td></tr>
+                <tr><td>Min / Max</td><td>TimeOnly?</td><td>none</td><td>Ends of the list; typed times are moved inside.</td></tr>
+                <tr><td>Step</td><td>int</td><td>30</td><td>Minutes between listed times.</td></tr>
+                <tr><td>Use24Hour</td><td>bool?</td><td>culture</td><td>24-hour (masked hh:mm) or 12-hour with AM/PM.</td></tr>
+                <tr><td>Culture</td><td>CultureInfo?</td><td>current</td><td>AM/PM designators, separator, default clock.</td></tr>
+                <tr><td>Label / FloatingLabel</td><td>string? / bool</td><td>— / false</td><td>As in NxTextBox.</td></tr>
+                <tr><td>Placeholder</td><td>string?</td><td>hh:mm</td><td>Placeholder text; "hh:mm AM/PM" for 12-hour.</td></tr>
+                <tr><td>Clearable</td><td>bool</td><td>false</td><td>Clear button and Esc. Nullable types only.</td></tr>
+                <tr><td>ReadOnly / Disabled</td><td>bool</td><td>false</td><td>Native readonly / disabled; the list does not open.</td></tr>
+                <tr><td>AutoFocus</td><td>bool</td><td>false</td><td>Focus after first render.</td></tr>
+                <tr><td>MobileMode / MobileBreakpoint / MobileTitle</td><td></td><td>Auto / 600 / Label</td><td>As in NxDatePicker; title default "Choose a time".</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>Input id; outer class and style. Other attributes go to the input.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Event</th><th>Args</th><th>Raised when</th></tr></thead>
+            <tbody>
+                <tr><td>ValueChanged</td><td>TValue?</td><td>A different time commits: a pick, Enter, leaving the field, clear.</td></tr>
+                <tr><td>OnFocus / OnBlur</td><td>FocusEventArgs</td><td>The input gains / loses focus (after the commit).</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>FocusAsync()</td><td>ValueTask</td><td>Moves keyboard focus to the input.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-popup-max-height</td><td>280px</td><td>Height of the time list.</td></tr>
+                <tr><td>--nx-item-hover-bg / --nx-item-active-bg</td><td></td><td>Hovered and highlighted times.</td></tr>
+                <tr><td>--nx-item-selected-fg</td><td>= --nx-accent</td><td>The bound time.</td></tr>
+                <tr><td>--nx-calendar-selected-bg / -fg</td><td>= --nx-accent</td><td>The bound time in the phone sheet.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="timepicker" Page="api" />

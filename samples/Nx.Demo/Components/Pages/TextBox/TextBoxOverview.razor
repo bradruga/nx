@@ -1,0 +1,53 @@
+@page "/textbox"
+@page "/textbox/overview"
+
+<DocHeader Slug="textbox" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxTextBox</code> is a single-line text input. Bind it with <code>@@bind-Value</code>; it updates on change by
+        default, or as you type with <code>Immediate</code>, optionally debounced. Around the input it adds a label (fixed or
+        floating), prefix and suffix slots, a clear button, a password toggle and a character counter, and inside an
+        <code>EditForm</code> it reports changes and shows validation state next to the built-in <code>ValidationMessage</code>.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxTextBox Id="overview-textbox" Label="Customer" Placeholder="Who is this order for?" Clearable="true" @bind-Value="customer" />
+        <span class="demo-value" id="overview-value">Value: <strong>@(customer ?? "null")</strong></span>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Enter</td><td>Commits the value (on-change mode) and submits an enclosing form.</td></tr>
+                <tr><td>Esc</td><td>Clears the field when <code>Clearable</code>.</td></tr>
+                <tr><td>Tab</td><td>Moves from the input to the password toggle, if any, then on. The clear button is skipped.</td></tr>
+                <tr><td>label for</td><td>The label targets the input's id, generated when <code>Id</code> is not set.</td></tr>
+                <tr><td>aria-invalid</td><td><code>true</code> while the bound field has validation messages.</td></tr>
+                <tr><td>aria-describedby</td><td>Points at the counter when <code>ShowCounter</code> is on.</td></tr>
+                <tr><td>aria-pressed</td><td>On the password toggle; its label switches between Show and Hide password.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="textbox" Page="overview" />
+
+@code {
+    string? customer;
+
+    const string basicCode =
+        """
+        <NxTextBox Label="Customer" Placeholder="Who is this order for?" Clearable="true"
+                   @bind-Value="order.Customer" />
+        """;
+}

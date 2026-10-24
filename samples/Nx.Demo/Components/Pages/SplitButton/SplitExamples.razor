@@ -1,0 +1,77 @@
+@page "/splitbutton/examples"
+
+<DocHeader Slug="splitbutton" Page="examples" />
+
+<div class="doc-section">
+    <h2>Variants &amp; Sizes</h2>
+    <div class="demo-stage">
+        <div class="demo-row">
+            @foreach (var variant in new[] { NxButtonVariant.Primary, NxButtonVariant.Secondary, NxButtonVariant.Danger })
+            {
+                <NxSplitButton Id="@($"variant-{variant.ToString().ToLowerInvariant()}")" Variant="variant" OnClick="() => result = variant.ToString()"
+                               Items="items" OnItemClick="Picked">@variant</NxSplitButton>
+            }
+        </div>
+        <div class="demo-row" style="margin-top:12px">
+            @foreach (var size in Enum.GetValues<NxButtonSize>())
+            {
+                <NxSplitButton Id="@($"size-{size.ToString().ToLowerInvariant()}")" Size="size" OnClick="() => result = size.ToString()"
+                               Items="items" OnItemClick="Picked">@size</NxSplitButton>
+            }
+        </div>
+        <div class="demo-row" style="margin-top:12px"><span class="demo-value" id="variants-result">@result</span></div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Loading &amp; Disabled</h2>
+    <p class="doc-note">
+        <code>Loading</code> shows the primary half's spinner; <code>Disabled</code> turns off both halves, <code>MenuDisabled</code>
+        only the arrow.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-row">
+            <NxSplitButton Id="loading-split" Variant="NxButtonVariant.Primary" Loading="saving" OnClick="SaveSlowly" Items="items" OnItemClick="Picked">Save</NxSplitButton>
+            <NxSplitButton Id="disabled-split" Disabled="true" Items="items">Disabled</NxSplitButton>
+            <NxSplitButton Id="menu-disabled-split" MenuDisabled="true" Items="items" OnClick="PrimaryOnly">No menu</NxSplitButton>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Submenus</h2>
+    <div class="demo-stage">
+        <NxSplitButton Id="sub-split" Icon="@DemoMenus.Icon("mail")" OnClick="SendToPlant" Items="sendItems" OnItemClick="Picked">Send to plant</NxSplitButton>
+    </div>
+</div>
+
+<DocPager Slug="splitbutton" Page="examples" />
+
+@code {
+    readonly IReadOnlyList<NxMenuItem> items =
+    [
+        new("Save as draft") { Id = "draft" },
+        new("Save and release") { Id = "release" },
+    ];
+
+    readonly IReadOnlyList<NxMenuItem> sendItems =
+    [
+        new("Send to office") { Id = "office" },
+        new("Send to customer") { Id = "customer", Items = [new("Email") { Id = "email", Icon = DemoMenus.Icon("mail") }, new("Portal") { Id = "portal" }] },
+    ];
+
+    string result = "—";
+    bool saving;
+
+    void Picked(NxMenuItemClickEventArgs e) => result = e.Item.Text;
+    void PrimaryOnly() => result = "Primary only";
+    void SendToPlant() => result = "Sent to plant";
+
+    async Task SaveSlowly()
+    {
+        saving = true;
+        await Task.Delay(1500);
+        saving = false;
+        result = "Saved";
+    }
+}

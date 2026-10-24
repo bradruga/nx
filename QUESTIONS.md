@@ -1,0 +1,292 @@
+# Open Questions
+
+Decisions I made without you. Each one says what I picked and why, so you can answer by number.
+1–23 are from the first pass (all accepted); 24 onward are new.
+
+## Blocking
+
+1. **Playwright tests can't run under Treeline.** While a watch is live, the Treeline hook blocks every
+   `dotnet test tests/Nx.Playwright`, including `--no-build` and the bare DLL: it classifies the project as one that
+   builds the watched app. It references nothing. With the watch stopped there's no site to test. I did not work
+   around the hook. All 76 Playwright tests compile, and I checked each scenario by hand in the Playwright browser
+   against the live demo, but **none has gone through `dotnet test`**. Options:
+   - (a) Treeline lists `Nx.Playwright` as a free test project (recommended).
+   - (b) You run `dotnet test tests/Nx.Playwright` with the demo up and paste the output.
+
+## Conventions
+
+2. **NUnit, not xUnit.** NxGrid's CLAUDE.md says "bUnit with xUnit", but its test projects reference NUnit. I followed
+   the projects.
+3. **.NET 10 only.** NxGrid's library also targets net8.0. You said .NET 10, and the ERP is on 10, so I dropped net8.
+4. **No SCSS.** NxGrid keeps SCSS plus a hand-synced CSS copy. Here it's one plain `nx-theme.css` plus scoped `.razor.css`
+   per component, as you asked.
+5. **Accent color.** The library default is NxGrid's blue (`#0078d4`). The demo overrides it with NxGrid's green
+   site brand. Should the ERP default be blue, green, or the portal's own color?
+6. **Demo HTTPS.** Off, as you said. NxGrid's sample has an https profile, but the dev certificate only covers
+   `localhost`, so other machines would get a certificate error on 44420.
+
+## NxButton
+
+7. **Loading uses `aria-disabled`, not `disabled`.** Focus stays on the button while it saves, and clicks and submits
+   are blocked by `preventDefault`. `Disabled` is the native attribute.
+8. **`PreventDoubleClick` is on by default.** Every async click is guarded. `AutoLoading` (spinner while the handler
+   runs) is off by default. Should it be on for the ERP?
+9. **Default `Type` is `Button`, not the HTML default `submit`.** It avoids accidental form posts.
+
+## NxTextBox
+
+10. **Validation is hand-rolled, not `InputBase<string>`.** `InputBase` forces string parsing on the combo box's
+    generic `TValue`. The plumbing is about 40 lines, shared in `FieldValidation`. Its CSS classes and
+    `NotifyFieldChanged` match `InputBase`.
+11. **Clearing sets `""`, not `null`.** That's the same value as deleting the text by hand. Say if the ERP models
+    treat null and empty differently.
+12. **`ShowCounter` is off by default**, even with `MaxLength` set. `MaxLength` alone is common for DB column
+    limits.
+13. **The clear button is out of the tab order; Esc clears.** The password toggle stays tabbable.
+14. **No size parameter.** Text boxes are 34px (`--nx-control-height-md`), the same as a Medium button. Floating-label
+    fields are taller (48px).
+
+## NxComboBox
+
+15. **Names: `ItemText`, `ItemValue`, `ItemGroup`.** Alternatives:
+    - (a) `TextField`/`ValueField`/`GroupField`, Telerik's names. Easier migration, but they sound like property-name strings.
+    - (b) `TextSelector`/`ValueSelector`. Precise, but long.
+    - (c) Current. Short, and reads as "the item's text".
+16. **`DataProvider` returns the full filtered list; there's no server paging.** Virtualization works on what comes
+    back. Do the ERP's large lookups (parts, jobs) need start/count paging?
+17. **With `DataProvider`, a `Value` alone can't show its text** until the list loads. Bind `@bind-SelectedItem` too,
+    or tell me if you want an `ItemByValue` lookup callback.
+18. **`AllowCustomValue` requires `TValue` = `string`.** Other types throw. A converter parameter could lift that.
+19. **Leaving the field with typed text:** an exact text match selects that item, else a custom value (when allowed),
+    else the highlighted match, else it reverts. With custom values on, Enter keeps the typed text unless you arrowed
+    to an item. That's my best guess at fast ERP data entry; the Telerik reference may differ.
+20. **Empty text on blur clears the value**, even without `Clearable`.
+21. **The popup prefers below.** It flips above only when there isn't room below and there's more above. It's
+    `position: fixed`, so it escapes `overflow: hidden` and dialogs, but a `transform` on an ancestor would break that.
+22. **Group headers are `role="presentation"`.** A screen reader doesn't announce the group name; nesting options in
+    `role="group"` would conflict with virtualization.
+23. **Setting `Value` from code also raises `SelectedItemChanged`** (and the reverse) when both are bound, so they
+    stay in step. A parent that binds one-way to both gets controlled behavior: the selection follows its parameters.
+
+## Pass 2 — demo site
+
+24. **Drawer below 900 px.** Tablet portrait (768) gets the drawer; landscape tablet and up get the fixed sidebar.
+    A narrow icon rail at 768 would need icons per component; I skipped it.
+25. **API tables scroll inside their box on a phone**, at a readable 620 px minimum, rather than reflowing to
+    label/value cards. Reflow would need a `data-label` on every cell of every table.
+26. **Routes are `/{slug}/{page}`**, with slugs `button`, `textbox`, `numeric`, `combobox`, `checkbox`, `switch`, `radio`,
+    `togglegroup`. The bare `/{slug}` still opens Overview.
+
+## Pass 2 — NxComboBox
+
+27. **Mobile overlay is on by default below 600 px** (`MobileMode="Auto"`), as specified. That does change existing
+    single-select combos on phones; `MobileMode="Never"` opts out. Multi-select and columns stay strictly opt-in.
+28. **`@bind-Values` needs an `IEnumerable<TValue>` field**, not a `List<T>`: Blazor's bind assigns the callback's type back.
+29. **Multi-select keys.** Enter toggles the highlighted item. Space toggles only after you have arrowed to an item,
+    so you can still type a space while filtering. The typed filter is kept after a toggle, so several matches can be
+    picked in a row.
+30. **The overlay's multi-select is staged.** Toggles apply on Done; back and Escape discard them. On a desktop popup,
+    toggles apply at once.
+31. **`AllowCustomValue` is not available with `Multiple`** (it throws). Custom chips would need a converter.
+32. **Columns filter on every column by default** (`FilterAllColumns="true"`), plus `ItemText`. The header is
+    `aria-hidden`, and options stay `role="option"` rather than becoming a `role="grid"`.
+
+## Pass 2 — new components
+
+33. **`NxFieldFrame` is public.** Razor cannot make a component internal; it is documented as a building block.
+    NxTextBox now renders through it, with every class name unchanged.
+34. **New `NxSize`** for the switch and toggle group; `NxButtonSize` stays. Merge them into one `NxSize`?
+35. **NxNumericTextBox formats only while unfocused.** Focus shows the plain number. Format `"P"` shows the value ×100
+    when not focused; use `Suffix="%"` with plain values instead.
+36. **Numeric parsing drops the culture's group separators**, so in de-DE `1.5` reads as 15 — what Excel does. It also
+    accepts currency symbols, `%` and accounting parentheses, and the no-break spaces .NET formats de-DE and fr-CA with.
+37. **Numeric: emptying a non-nullable field puts the last value back**; Clear sets Min, or 0. `SelectOnFocus` is off
+    by default — on for the ERP's quantity grids?
+38. **Numeric `inputmode`.** It is `numeric`/`decimal` only when Min ≥ 0, because the iOS number pad has no minus key.
+39. **double/float beyond ±7.9e28** (decimal's range) are not supported. Fine for the ERP, I think.
+40. **Check box and switch also toggle on Enter**, because they are native buttons. ARIA specifies Space only;
+    blocking Enter needs JS.
+41. **`NxRadioGroup<TValue>` takes `Data` of values** (enums, strings). For records, declare `NxRadioButton`s — or should
+    I add an `NxRadioGroup<TItem, TValue>` with `ItemValue`, like the combo box?
+42. **Radios are native inputs**, so there is no `ReadOnly` (browsers ignore it on radios). Add one with CSS and
+    blocked changes?
+43. **`NxToggleGroup.AllowDeselect`** was not in the brief; I added it because a single-select group otherwise cannot
+    return to empty. Its multi-select mode is `role="group"` with the same roving tabindex, the toolbar pattern.
+44. **NxToggleGroup sits under Selection** in the nav, not Buttons.
+
+## Pass 3 — date and time pickers
+
+45. **The calendar keeps focus in the field.** While the popup is open, ← → ↑ ↓ PgUp PgDn and Enter drive the calendar
+    and the caret stays put; Esc gives the arrows back. Home/End stay with the text. The ARIA dialog pattern moves focus
+    into the grid instead — that is what the phone sheet does.
+46. **Typed dates outside Min/Max move to the limit** (as the numeric box clamps); a typed disabled date reverts.
+    Showing it as invalid instead would need the picker to hold a value it will not raise.
+47. **Masking is digits-only.** All-number formats mask in their own order (`yyyy-MM-dd` gives `9999-99-99`); a
+    format with names (`D`, `MMM d`) edits in the culture's short date. Two-digit years are accepted when typed with
+    separators (`1/5/26`) and read with the culture's century rule.
+48. **Disabled days stay focusable** (struck through, `aria-disabled`), as the ARIA grid pattern recommends, so the
+    arrows do not jump over weekends.
+49. **New `NxMobileMode`** for the pickers. `NxComboBoxMobileMode` has the same three values — replace it with
+    `NxMobileMode`? That is a breaking rename of a pass-2 parameter type.
+50. **`DateTimeOffset` is not supported** by the pickers. Add it?
+51. **Range picking:** the first pick is the start, the second the end; a second pick before the start restarts there;
+    a new start after the end clears the end; a typed start after the end swaps them. No hover preview of the band
+    (it would cost a server round trip per mouse move).
+52. **Range validation is per end**: `StartValueExpression` and `EndValueExpression` are separate fields, so a rule
+    across both goes on the model (as in the demo).
+53. **NxTimePicker is a list at `Step`**, not hour and minute columns. Typed times need not be on a step. Seconds are
+    dropped. Should it offer a two-column spinner on phones?
+54. **Time picker `DateTime` with no previous value uses today's date.**
+55. **`NxCalendar` and `NxPickerSheet` are public** (Razor components cannot be internal). NxCalendar is documented on
+    the NxDatePicker pages rather than having its own nav entry.
+56. **New nav category "Dates"** between Inputs and Selection.
+
+## Pass 3 — NxWindow
+
+57. **`Modal` defaults to `true`.** Telerik's Window defaults to non-modal; ERP dialogs are mostly modal.
+58. **The window renders where it is declared**, position-fixed. An ancestor with a `transform` or `filter` would
+    make it relative to that ancestor. A portal (render at the layout root) needs a host component in the app layout —
+    worth it?
+59. **Escape closes the window unless a control used it first** (open combo list, open date picker). A clearable
+    NxTextBox clears *and* the window closes on the same Escape, because the text box does not mark the key used.
+    Mark it?
+60. **Size and position are not reported back.** Drag and resize stay in the browser; there is no `@bind-Width` or
+    position event. The ERP may want to remember a window's size — add `OnResized(width, height)`?
+61. **Minimized windows stay where they were** (title bar only, 280 px wide); on phones they dock to the bottom.
+    No taskbar of minimized windows.
+62. **Size presets are widths only** (Small 400, Medium 600, Large 900, Auto); height follows the content up to the
+    viewport unless `Height` is set.
+63. **New nav category "Layout"** for NxWindow, NxTabStrip and NxSplitter.
+
+## Pass 3 — NxTabStrip
+
+64. **`ActiveTab` is a string key**: the tab's `Id`, else its `Title`. No `ActiveIndex` — indexes shift when tabs close.
+    With no match the first enabled tab shows, without raising `ActiveTabChanged`.
+65. **Arrow keys activate** (ARIA "automatic activation"). With heavy panels, manual activation (arrows move focus,
+    Enter activates) is the alternative — add `ActivationMode`?
+66. **Closing is the parent's job**: `OnTabClose` reports the key and the markup removes the tab. Closing the active tab
+    first moves to the right neighbour, else the left. Not cancelable — add `Cancel`?
+67. **`KeepAlive` keeps panels that have been shown**, not all panels up front.
+68. **Left/right tabs move to the top below 600 px.** The strip fills its container's width.
+
+## Pass 3 — NxSplitter
+
+69. **`Size` is a CSS string** (`"30%"`, `"240px"`), not a number + unit. A resized pane reports in the unit it was
+    given; a pane with no size that gets dragged starts reporting px.
+70. **A bar resizes the pane before it** when that pane has a size (or neither has); otherwise the one after. Keep at
+    least one pane without a size, or the panes can overflow the splitter.
+71. **`NxOrientation` is shared** with NxRadioGroup; its doc comments now cover both. The splitter defaults to
+    Horizontal, the radio group to Vertical.
+72. **Panes register in render order.** Inserting a pane between existing ones at runtime may mis-number the bars until
+    the next render; adding at the end and removing work.
+73. **Phones stack every splitter** below 600 px, each pane capped at 60vh with its own scroll; panes with a `Title`
+    get a header that collapses them (if `Collapsible`).
+
+## Pass 4
+
+74. **NxDropDown and NxMultiSelect wrap NxComboBox** and switch on modes through an *internal* cascaded `ComboMode`,
+    so NxComboBox's public API is unchanged and a plain combo box behaves exactly as before. The wrappers forward each
+    parameter (≈40 lines each). The alternative, subclassing NxComboBox, would have shown every combo parameter
+    (AllowCustomValue, Filter…) on NxDropDown.
+75. **The mode cascades** to anything inside the wrapper's templates too; a combo box placed inside a dropdown's item
+    template would pick up the mode. Unlikely; say if it matters.
+76. **NxDropDown's DataProvider is NxComboBox's signature** (`NxComboBoxRequest`, filter always empty), per "same
+    DataProvider", and it is called each time the list opens.
+77. **NxDropDown type-ahead with the list closed selects** the next match (a native select does this). Type-ahead
+    prefixes reset after 0.7 s or on any non-letter key.
+78. **NxMultiSelect "filter box" is the field itself** (type to filter), as in NxComboBox `Multiple`; `Filterable="false"`
+    makes it pick-only with type-ahead. A separate search box inside the popup was not added.
+79. **Select all selects what is listed** (after filtering), not every item; with all listed selected it clears them.
+    Its text is fixed ("Select all") — add a parameter?
+80. **NxMultiSelect opens like the combo box**: typing, ↓ or the arrow button; a plain click on the field only focuses
+    it (pick-only mode opens on click).
+81. **NxFieldFrame got a `Multiline` parameter** (shared component) for NxTextArea — a modifier class and CSS only;
+    single-line inputs are unchanged. NxTextArea duplicates NxTextBox's commit/debounce logic rather than sharing a
+    base class with it.
+82. **Tooltips cannot be hovered** (`pointer-events: none`, as asked). WCAG 1.4.13 wants hover content to be hoverable;
+    ours is dismissible (Escape) and persistent while the pointer stays on the anchor.
+83. **Tooltip focus trigger is keyboard focus only** (`:focus-visible`); a mouse click does not show it. Hover is
+    mouse-only, so a tap on a phone does not show it — the long press does.
+84. **Menus open from .NET** (a server round trip after the right click) so `OnOpening` can change the items per row.
+    Arrow keys, submenus and hover are pure JS.
+85. **Context menu items do not auto-toggle `Checked`**: `OnItemClick` flips the app's state and the menu gets new items
+    (shown in the demo). `NxMenuItem` is immutable.
+86. **NxMenu is public** — the building block — and can be opened from code at a point or under an element.
+87. **Menu buttons swallow ↑/↓** (`preventKeys` on the wrapper) so opening by keyboard does not scroll the page. A
+    menu under a button follows it when the page scrolls; a menu at a point closes.
+88. **New nav category "Menus & Overlays"** (Tooltip, ContextMenu); NxDropDownButton and NxSplitButton sit under
+    Buttons, NxDropDown/NxMultiSelect/NxTextArea under Inputs.
+
+## Pass 5 — from ERP's usages (read only)
+
+89. **No item list + renderer.** ERP declares `FormItems` and then places them by index with `TelerikFormItemRenderer
+    Item="formObjects[++i]"` (489 renderers) to get custom layouts. NxFormItem renders where it is written, inside any
+    markup in the form, so the renderer and the index bookkeeping go away. Migration moves each item into the layout.
+90. **An item's messages come with it.** NxFormItem shows its Field's messages under the editor, also around your own
+    editor. ERP's templates carry their own `TelerikValidationMessage`; migration drops those (or the item would show two).
+91. **Generated editors** (ERP has 194 `<FormItem Field=… />` with no template): string → NxTextBox, numbers →
+    NxNumericTextBox, bool → NxCheckBox (labelled after the box), DateTime/DateOnly → NxDatePicker (a DateTime keeps its
+    time; ERP never used Telerik's DateTimePicker editor there), TimeOnly/TimeSpan → NxTimePicker, enum → NxDropDown with
+    the names in words. Other types throw and ask for an editor inside the item. `EditorType` (Switch ×5, TextArea ×3)
+    was not added: put an NxToggleSwitch or NxTextArea inside the item.
+92. **`Field` is a string, as ERP passes it** (`@nameof(…)`), resolved on the form's model. Fields of nested objects
+    need your own editor inside the item. A `For` lambda would allow those; say if you want it.
+93. **No default buttons.** Telerik renders a Submit button unless `<FormButtons>` is given; ERP gives an empty one in 50
+    forms to suppress it. NxForm renders buttons only from `Buttons`. ERP's hidden disabled submit button ("prevent
+    implicit submission", ~18 forms) is `SubmitOnEnter="false"`.
+94. **`Validation` replaces the default validator**: DataAnnotations unless `Validation` is set (ERP: FluentValidation in 105
+    forms). An empty `<Validation></Validation>` means none.
+95. **`form.EditContext` and `IsValid()` kept** (ERP reads `form1.EditContext` ×21 and calls `form1.IsValid()` ×79). The
+    `EditContext` parameter reads back the context made for `Model`, as EditForm's does (BL0007 suppressed for that).
+96. **Not carried over**: `Size` (×2), `Width` (×1, use `Style`), `ValidationMessageType` (×1), `ButtonsLayout` (×1),
+    FormItem `Hint`. `Enabled` (×24) is `Disabled`; `LabelText` is `Label`, as on every Nx input.
+97. **Grids fold to one column under 540 px of form width** (a container query), so a narrow window on a desktop folds
+    too. Spans are clamped to the form's or group's `Columns`.
+98. **One structural rule in nx-theme.css**: `form.nx-form { width: 100% }`. EditForm renders the `<form>`, so NxForm's
+    scoped CSS cannot style it, and without a definite width a flex-column parent sized the form at its folded height
+    (empty space under it). The alternative is a wrapper element around the form.
+99. **NxValidationMessage is not generic**: `For` is `Expression<Func<object?>>`, so ERP's
+    `For="@(() => x.Y)"` (515 uses) moves over unchanged. Messages sit in a polite live region.
+
+100. **Icons are Lucide, not Telerik's.** Telerik's SVG paths are Progress's; the set is Lucide 0.460.0 (ISC, notice in
+     `NxIcons.cs`), stroked rather than filled, under the exact Telerik names ERP uses: every `SvgIcon.*` name in
+     ERP's .razor and .cs files has a member (131 in all), e.g. `SvgIcon.Trash` → `NxIcons.Trash`. Some are near
+     matches: FilePdf/FileWord/FileTxt are generic file icons, Delicious (a brand logo) is a 2×2 grid, CaretAlt* are
+     chevrons, CheckboxNull and ListRomanLower reuse Checkbox and ListOrdered. ThemeColor (×11) is `Color` (Primary,
+     Success, Warning, Danger, Muted); `--nx-success` and `--nx-warning` are new tokens.
+101. **Icon sizes** are seven steps, 12–48 px, `NxIconSize.XSmall … XXXLarge`.
+
+102. **NxLoaderContainer defaults to ERP's usage**: a large spinner and no text (ERP passes a Template with exactly that
+     in ~150 of 156). It covers its nearest positioned ancestor (`position: absolute; inset: 0`), as Telerik's does.
+     ERP's `dark-overlay`/`medium-dark-overlay` classes become `--nx-loader-overlay-bg` values. The overlay blocks
+     clicks but not Tab into what is under it.
+103. **Loader types** keep Telerik's three (InfiniteSpinner → Spinner, ConvergingSpinner → Converging, Pulsing); sizes
+     reuse `NxSize`.
+
+104. **NxDateTimePicker supports DateTime and DateTime? only** (all ERP uses). Picking a day keeps the time of day and
+     moves to the time list; picking a time closes. Telerik's per-part `DateTimePickerSteps` (Minute=15 in ERP) is
+     `TimeStep` in minutes; seconds in a format are kept when typed, zero when picked.
+105. **Masks only for all-number 24-hour formats** (`MM/dd/yyyy HH:mm`). ERP's formats with `h … tt`, `'at'` or seconds
+     are typed freely and read leniently (`3/5 2pm`). DateText was not changed for seconds.
+106. **The time list's CSS is a copy of NxTimePicker's** (same class names, so nx-picker.js scrolls it). Extracting a
+     shared time-list component would touch NxTimePicker; not done.
+
+107. **NxAutoComplete commits like the other Nx inputs**: on a pick, Enter or leaving, not every keystroke (Telerik's
+     ValueChanged fires per keystroke). ERP's `OnChange` (×5) is `@bind-Value:after`; `OnBlur` (×3) was not added.
+108. **NxAutoComplete has no phone sheet**: the suggestions open under the field at every width, since the field is
+     already a text box (the combo's full-screen search would be a second one). `MobileMode` is fixed to Never.
+109. **Default filter is Contains** (Telerik's is StartsWith; ERP passes Contains 9×, StartsWith 4×). `HeaderTemplate`
+     (×1, "Similar customer names") was not added.
+
+110. **Fixed a combo-engine bug (shared code)** found by the form's enum editors: with value-type items (an enum list),
+     the unset `SelectedItem` parameter is the type's default, not null, and was selected over `Value`. NxComboBox,
+     NxDropDown and NxMultiSelect with enum or int items showed the first item. One line in
+     `NxComboBox.Selection.cs`, with a bUnit regression test.
+111. **New nav categories "Forms" (NxForm) and "Display" (NxIcon, NxLoader)**; NxAutoComplete sits after NxMultiSelect,
+     NxDateTimePicker after NxTimePicker.
+112. **NxNumericTextBox swaps display text for edit text in the browser on focus** (nx-input.js `editOnFocus`), not
+     from .NET a round trip later, which landed on text typed in between (the pass-5 Playwright flake). Side effect:
+     a focus that is not a click (Tab, `FocusAsync`) now selects the edit text, as a Tab into any text field does, so
+     typing replaces the number; a click still puts the caret. NxDatePicker and NxDateTimePicker swap the same way
+     from .NET and have the same race; not changed.
+

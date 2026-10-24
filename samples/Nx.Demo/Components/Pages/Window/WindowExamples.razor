@@ -1,0 +1,241 @@
+@page "/window/examples"
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+
+<DocHeader Slug="window" Page="examples" />
+
+<div class="doc-section">
+    <h2>Modal &amp; Non-Modal</h2>
+    <p class="doc-note">
+        A modal window blocks the page with a backdrop and traps focus. A non-modal window floats over a page that still works;
+        open both below, drag them apart and press one to bring it to the front.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-row">
+            <NxButton id="open-modal" Variant="NxButtonVariant.Primary" OnClick="() => modalOpen = true">Open modal</NxButton>
+            <NxButton id="open-a" OnClick="() => aOpen = true">Open window A</NxButton>
+            <NxButton id="open-b" OnClick="() => bOpen = true">Open window B</NxButton>
+        </div>
+    </div>
+    <NxWindow Id="modal-window" @bind-Visible="modalOpen" Title="Modal" Size="NxWindowSize.Small">
+        <p>The page behind is blocked. Tab cycles through these fields and the title bar.</p>
+        <div class="demo-form-grid">
+            <NxTextBox Id="modal-first" Label="First" @bind-Value="first" />
+            <NxTextBox Id="modal-second" Label="Second" @bind-Value="second" />
+        </div>
+    </NxWindow>
+    <NxWindow Id="window-a" @bind-Visible="aOpen" Title="Window A" Modal="false" Size="NxWindowSize.Small" Left="80px" Top="120px">
+        <p>Non-modal. The page behind still scrolls and takes clicks.</p>
+    </NxWindow>
+    <NxWindow Id="window-b" @bind-Visible="bOpen" Title="Window B" Modal="false" Size="NxWindowSize.Small" Left="200px" Top="200px">
+        <p>Press either window to bring it forward.</p>
+    </NxWindow>
+</div>
+
+<div class="doc-section">
+    <h2>Sizes &amp; Position</h2>
+    <p class="doc-note">
+        <code>Size</code> picks a width — Small 400, Medium 600 (default), Large 900, or Auto to fit the content — and the height
+        follows the content up to the viewport, with the body scrolling. <code>Width</code> and <code>Height</code> take any CSS
+        length instead. Windows open centered unless you give <code>Left</code> and <code>Top</code>.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-row">
+            @foreach (var size in Enum.GetValues<NxWindowSize>())
+            {
+                <NxButton id="@($"open-size-{size.ToString().ToLowerInvariant()}")" OnClick="() => OpenSize(size)">@size</NxButton>
+            }
+            <NxButton id="open-explicit" OnClick="() => explicitOpen = true">720 × 420 at 40, 80</NxButton>
+        </div>
+    </div>
+    <NxWindow Id="size-window" @bind-Visible="sizeOpen" Title="@($"Size = {size}")" Size="size">
+        <p>@Lorem</p>
+    </NxWindow>
+    <NxWindow Id="explicit-window" @bind-Visible="explicitOpen" Title="Explicit size and position" Width="720px" Height="420px" Left="40px" Top="80px">
+        @for (var i = 1; i <= 30; i++)
+        {
+            <p>Line @i. The body scrolls when the content is taller than the window.</p>
+        }
+    </NxWindow>
+    <pre class="doc-code">@sizeCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Title Bar: Icon, Minimize, Maximize &amp; Resize</h2>
+    <p class="doc-note">
+        <code>Icon</code> sits before the title and <code>HeaderActions</code> adds buttons of your own. <code>Minimizable</code>
+        shrinks the window to its title bar, keeping the content's state; <code>Maximizable</code> fills the viewport, as does a
+        double click on the title bar. <code>Resizable</code> adds handles on every edge and corner, down to
+        <code>MinWidth</code> × <code>MinHeight</code>. Bind <code>@@bind-Minimized</code> or <code>@@bind-Maximized</code> to
+        drive them from code.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-row">
+            <NxButton id="open-actions" OnClick="() => actionsOpen = true">Open delivery window</NxButton>
+            <span class="demo-value" id="actions-state">Minimized: <strong>@(actionsMinimized ? "yes" : "no")</strong> · Maximized: <strong>@(actionsMaximized ? "yes" : "no")</strong> · Refreshed × @refreshes</span>
+        </div>
+    </div>
+    <NxWindow Id="actions-window" @bind-Visible="actionsOpen" Title="Delivery 2026-10-23" Icon="@Icon("truck")"
+              Minimizable="true" Maximizable="true" Resizable="true" Modal="false"
+              @bind-Minimized="actionsMinimized" @bind-Maximized="actionsMaximized">
+        <HeaderActions>
+            <button type="button" class="nx-window-action" id="actions-refresh" aria-label="Refresh" title="Refresh" @onclick="() => refreshes++">
+                <DemoIcon Name="refresh" />
+            </button>
+        </HeaderActions>
+        <ChildContent>
+            <NxTextBox Id="actions-note" Label="Note (kept while minimized)" @bind-Value="note" />
+        </ChildContent>
+    </NxWindow>
+</div>
+
+<div class="doc-section">
+    <h2>Closing</h2>
+    <p class="doc-note">
+        Escape and the close button close by default; <code>CloseOnBackdropClick</code> adds the backdrop, <code>CloseOnEscape="false"</code>
+        and <code>Closable="false"</code> take them away. <code>OnClosing</code> runs first and can cancel — here, while there are
+        unsaved changes.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-row">
+            <NxButton id="open-backdrop" OnClick="() => backdropOpen = true">Close on backdrop</NxButton>
+            <NxButton id="open-guarded" OnClick="() => guardedOpen = true">Guard unsaved changes</NxButton>
+            <span class="demo-value" id="closing-log">@closingLog</span>
+        </div>
+    </div>
+    <NxWindow Id="backdrop-window" @bind-Visible="backdropOpen" Title="Click outside to close" CloseOnBackdropClick="true" Size="NxWindowSize.Small">
+        <p>Click the dimmed page behind, press Escape, or use ×.</p>
+    </NxWindow>
+    <NxWindow Id="guarded-window" @bind-Visible="guardedOpen" Title="Unsaved changes" Size="NxWindowSize.Small" OnClosing="GuardClosing">
+        <ChildContent>
+            <NxCheckBox Id="guarded-dirty" @bind-Value="dirty" Label="I have unsaved changes" />
+        </ChildContent>
+        <Footer>
+            <NxButton id="guarded-discard" Variant="NxButtonVariant.Danger" OnClick="Discard">Discard and close</NxButton>
+        </Footer>
+    </NxWindow>
+    <pre class="doc-code">@closingCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Nested Windows</h2>
+    <p class="doc-note">
+        A window opened from a window stacks above it, with its own backdrop. Escape closes the top one only, and focus goes back
+        to the button in the window below.
+    </p>
+    <div class="demo-stage">
+        <NxButton id="open-outer" OnClick="() => outerOpen = true">Open order</NxButton>
+    </div>
+    <NxWindow Id="outer-window" @bind-Visible="outerOpen" Title="Order 55120">
+        <ChildContent>
+            <p>Two pours scheduled.</p>
+            <NxButton id="open-inner" OnClick="() => innerOpen = true">Pick a crew…</NxButton>
+            <NxWindow Id="inner-window" @bind-Visible="innerOpen" Title="Crew" Size="NxWindowSize.Small">
+                <NxRadioGroup Data="Crews" @bind-Value="crew" Label="Crew" />
+            </NxWindow>
+        </ChildContent>
+        <Footer><span class="demo-value" id="outer-crew">Crew: <strong>@crew</strong></span></Footer>
+    </NxWindow>
+</div>
+
+<div class="doc-section">
+    <h2>A Form in a Window</h2>
+    <p class="doc-note">
+        Popups of the inputs inside — the combo box list, the date picker's calendar — open above the window. Validation works
+        as anywhere else; Save closes only when the form is valid.
+    </p>
+    <div class="demo-stage">
+        <NxButton id="open-form" Variant="NxButtonVariant.Primary" OnClick="() => formOpen = true">New delivery</NxButton>
+        <span class="demo-value" id="form-result">@formResult</span>
+    </div>
+    <NxWindow Id="form-window" @bind-Visible="formOpen" Title="New delivery" Icon="@Icon("truck")">
+        <ChildContent>
+            <EditForm id="window-form" Model="delivery" OnValidSubmit="SaveDelivery" FormName="window-form">
+                <DataAnnotationsValidator />
+                <div class="demo-form-grid">
+                    <div>
+                        <label class="demo-field-label" for="form-customer">Customer</label>
+                        <NxComboBox Id="form-customer" Data="SampleData.Customers" ItemText="c => c.Name" ItemValue="c => (int?)c.Id"
+                                    @bind-Value="delivery.CustomerId" Placeholder="Search customers" />
+                        <ValidationMessage For="() => delivery.CustomerId" />
+                    </div>
+                    <div>
+                        <NxDatePicker Id="form-date" Label="Date" @bind-Value="delivery.Date" Culture="EnUs" />
+                        <ValidationMessage For="() => delivery.Date" />
+                    </div>
+                    <NxTimePicker Id="form-time" Label="Arrives" @bind-Value="delivery.Arrives" Step="15" Culture="EnUs" />
+                </div>
+            </EditForm>
+        </ChildContent>
+        <Footer>
+            <NxButton id="form-cancel" OnClick="() => formOpen = false">Cancel</NxButton>
+            <NxButton id="form-save" Variant="NxButtonVariant.Primary" Type="NxButtonType.Submit" form="window-form">Save</NxButton>
+        </Footer>
+    </NxWindow>
+</div>
+
+<DocPager Slug="window" Page="examples" />
+
+@code {
+    static readonly CultureInfo EnUs = CultureInfo.GetCultureInfo("en-US");
+    static RenderFragment Icon(string name) => @<DemoIcon Name="@name" />;
+    static readonly string[] Crews = ["North crew", "South crew", "Night crew"];
+    const string Lorem = "Precast wall panel P-1042, 8 in. thick, 12 × 30 ft, two lifting inserts, form release applied. Ships on the 6:00 truck.";
+
+    bool modalOpen, aOpen, bOpen, sizeOpen, explicitOpen, actionsOpen, actionsMinimized, actionsMaximized;
+    bool backdropOpen, guardedOpen, dirty = true, outerOpen, innerOpen, formOpen;
+    string first = "", second = "", note = "", crew = "North crew";
+    NxWindowSize size = NxWindowSize.Medium;
+    int refreshes;
+    string closingLog = "—";
+    string formResult = "No delivery";
+
+    readonly DeliveryForm delivery = new();
+
+    void OpenSize(NxWindowSize s)
+    {
+        size = s;
+        sizeOpen = true;
+    }
+
+    void GuardClosing(NxWindowClosingEventArgs e)
+    {
+        e.Cancel = dirty;
+        closingLog = dirty ? "Close cancelled: unsaved changes" : "Closed";
+    }
+
+    void Discard()
+    {
+        dirty = false;
+        guardedOpen = false;
+        closingLog = "Discarded";
+    }
+
+    void SaveDelivery()
+    {
+        formResult = $"Delivery for {SampleData.Customers.First(c => c.Id == delivery.CustomerId).Name} on {delivery.Date:yyyy-MM-dd}";
+        formOpen = false;
+    }
+
+    class DeliveryForm
+    {
+        [Required(ErrorMessage = "Pick a customer.")]
+        public int? CustomerId { get; set; }
+
+        [Required(ErrorMessage = "Pick a date.")]
+        public DateOnly? Date { get; set; }
+
+        public TimeOnly? Arrives { get; set; }
+    }
+
+    const string sizeCode =
+        """
+        <NxWindow @bind-Visible="open" Title="Details" Size="NxWindowSize.Large">…</NxWindow>
+        <NxWindow @bind-Visible="open" Width="720px" Height="420px" Left="40px" Top="80px">…</NxWindow>
+        """;
+
+    const string closingCode =
+        """
+        <NxWindow @bind-Visible="open" OnClosing="e => e.Cancel = hasUnsavedChanges">…</NxWindow>
+        """;
+}

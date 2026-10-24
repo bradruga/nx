@@ -1,0 +1,83 @@
+@page "/button/api"
+
+<DocHeader Slug="button" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>The label.</td></tr>
+                <tr><td>Variant</td><td>NxButtonVariant</td><td>Secondary</td><td>Primary, Secondary, Danger, Ghost, Link.</td></tr>
+                <tr><td>Size</td><td>NxButtonSize</td><td>Medium</td><td>Small, Medium, Large.</td></tr>
+                <tr><td>Type</td><td>NxButtonType</td><td>Button</td><td>Button, Submit, Reset.</td></tr>
+                <tr><td>Icon</td><td>RenderFragment?</td><td>—</td><td>Icon markup. Icon-only when there is no label.</td></tr>
+                <tr><td>IconPosition</td><td>NxIconPosition</td><td>Start</td><td>Start or End.</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>false</td><td>Native disabled.</td></tr>
+                <tr><td>Loading</td><td>bool</td><td>false</td><td>Spinner; blocks clicks and submission; stays focusable.</td></tr>
+                <tr><td>LoadingText</td><td>string?</td><td>—</td><td>Replaces the label while loading.</td></tr>
+                <tr><td>PreventDoubleClick</td><td>bool</td><td>true</td><td>Ignore clicks while an async OnClick runs.</td></tr>
+                <tr><td>AutoLoading</td><td>bool</td><td>false</td><td>Show the loading state while OnClick runs.</td></tr>
+                <tr><td>FullWidth</td><td>bool</td><td>false</td><td>Stretch to the container.</td></tr>
+                <tr><td>AriaLabel</td><td>string?</td><td>—</td><td>Accessible name.</td></tr>
+                <tr><td>Title</td><td>string?</td><td>—</td><td>Tooltip.</td></tr>
+                <tr><td>Class / Style</td><td>string?</td><td>—</td><td>Extra class and inline style on the button.</td></tr>
+                <tr><td>(other attributes)</td><td>—</td><td>—</td><td><code>id</code>, <code>form</code>, <code>aria-*</code>, <code>data-*</code> pass through to the button.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Event</th><th>Args</th><th>Raised when</th></tr></thead>
+            <tbody>
+                <tr><td>OnClick</td><td>MouseEventArgs</td><td>The button is clicked or activated by keyboard — not while disabled, loading, or busy with a previous click.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Methods &amp; Properties</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>FocusAsync()</td><td>ValueTask</td><td>Moves keyboard focus to the button.</td></tr>
+                <tr><td>IsBusy</td><td>bool</td><td><code>true</code> while an async <code>OnClick</code> is running.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <p class="doc-note">Set on <code>:root</code> or any ancestor. Defaults live in <code>nx-theme.css</code>.</p>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-accent / -hover / -active</td><td>#0078d4</td><td>Primary fill; Link text.</td></tr>
+                <tr><td>--nx-accent-fg</td><td>#ffffff</td><td>Primary text.</td></tr>
+                <tr><td>--nx-danger / -hover / -active</td><td>#d13438</td><td>Danger fill.</td></tr>
+                <tr><td>--nx-danger-fg</td><td>#ffffff</td><td>Danger text.</td></tr>
+                <tr><td>--nx-surface / -hover / -active</td><td>#ffffff</td><td>Secondary and Ghost backgrounds.</td></tr>
+                <tr><td>--nx-border / -hover</td><td>#d4d4da</td><td>Secondary border.</td></tr>
+                <tr><td>--nx-fg</td><td>#1f1f23</td><td>Secondary and Ghost text.</td></tr>
+                <tr><td>--nx-control-height-sm / md / lg</td><td>28 / 34 / 42px</td><td>Height per size; width of icon-only buttons.</td></tr>
+                <tr><td>--nx-radius</td><td>6px</td><td>Corner radius.</td></tr>
+                <tr><td>--nx-font-family / -size / -size-sm / -size-lg</td><td>inherit / 14 / 13 / 15px</td><td>Label text.</td></tr>
+                <tr><td>--nx-font-weight-medium</td><td>500</td><td>Label weight.</td></tr>
+                <tr><td>--nx-focus-ring-color / -width / -offset</td><td>accent / 2px / 2px</td><td>Keyboard focus ring, shaped like the control; none on mouse or touch focus.</td></tr>
+                <tr><td>--nx-disabled-opacity</td><td>0.55</td><td>Disabled and loading fade.</td></tr>
+                <tr><td>--nx-transition</td><td>120ms ease</td><td>Hover and press transitions.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="button" Page="api" />

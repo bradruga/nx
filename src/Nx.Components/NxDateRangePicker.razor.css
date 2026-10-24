@@ -1,0 +1,88 @@
+.nx-daterangepicker {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+    color: var(--nx-fg);
+}
+
+.nx-daterange-label {
+    font-size: var(--nx-font-size-sm);
+    font-weight: 600;
+}
+
+.nx-daterange-fields {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    min-width: 0;
+}
+
+.nx-daterange-fields ::deep .nx-field { flex: 1 1 0; min-width: 0; }
+
+.nx-daterange-separator {
+    flex-shrink: 0;
+    height: var(--nx-control-height-md);
+    display: inline-flex;
+    align-items: center;
+    color: var(--nx-fg-muted);
+}
+
+.nx-daterange-fields ::deep .nx-daterange-input { font-variant-numeric: tabular-nums; }
+.nx-daterange-open ::deep .nx-daterange-toggle { color: var(--nx-accent); }
+
+
+/* ── Popup ────────────────────────────────────────────────────────────────── */
+
+.nx-daterange-popup {
+    position: fixed;
+    z-index: var(--nx-z-popup);
+    visibility: hidden;
+    box-sizing: border-box;
+    width: max-content;
+    max-width: calc(100vw - 16px);
+    background: var(--nx-popup-bg);
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius);
+    box-shadow: var(--nx-shadow-popup);
+    overflow: hidden;
+}
+
+.nx-daterange-popup-body {
+    display: flex;
+    justify-content: center;
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+/* ── Phone sheet ──────────────────────────────────────────────────────────── */
+
+.nx-daterange-sheet-summary {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-size: var(--nx-font-size-lg);
+    color: var(--nx-fg-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.nx-daterange-sheet-active { color: var(--nx-accent); font-weight: 600; }
+
+.nx-daterange-sheet-hint {
+    margin: 4px 0 8px;
+    font-size: var(--nx-font-size-sm);
+    color: var(--nx-fg-muted);
+}
+
+.nx-daterange-sheet-host ::deep .nx-calendar {
+    --nx-calendar-cell-size: min(48px, calc((100vw - 48px) / 8));
+    font-size: 16px;
+}
+.nx-daterange-sheet-host ::deep .nx-calendar-nav,
+.nx-daterange-sheet-host ::deep .nx-calendar-title { height: 44px; }
+.nx-daterange-sheet-host ::deep .nx-calendar-nav { width: 44px; }
+
+/* Opened by a tap, the sheet's grid has focus but needs no ring; the keyboard's day is still drawn. */
+.nx-daterange-sheet-host ::deep .nx-calendar-grids:focus-visible { outline: none; }

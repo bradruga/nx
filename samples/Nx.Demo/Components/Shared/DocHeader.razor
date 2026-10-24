@@ -1,0 +1,29 @@
+@* Title, summary and page tabs at the top of every component page. *@
+
+<PageTitle>@Component.Name · @PageTitleText — Nx Components</PageTitle>
+
+<nav class="doc-breadcrumb" aria-label="Breadcrumb">
+    <a href="">Components</a>
+    <span aria-hidden="true">/</span>
+    <span>@Component.Category</span>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">@Component.Name</span>
+</nav>
+
+<h1>@Component.Name</h1>
+<p class="doc-intro">@Component.Summary</p>
+
+<nav class="doc-tabs" aria-label="@Component.Name pages">
+    @foreach (var tab in DemoCatalog.Pages)
+    {
+        <NavLink href="@($"{Component.Slug}/{tab.Slug}")" Match="NavLinkMatch.All" class="doc-tab">@tab.Title</NavLink>
+    }
+</nav>
+
+@code {
+    [Parameter, EditorRequired] public string Slug { get; set; } = "";
+    [Parameter, EditorRequired] public string Page { get; set; } = "";
+
+    DemoComponent Component => DemoCatalog.Find(Slug) ?? throw new InvalidOperationException($"No component '{Slug}' in DemoCatalog.");
+    string PageTitleText => DemoCatalog.Pages.First(p => p.Slug == Page).Title;
+}

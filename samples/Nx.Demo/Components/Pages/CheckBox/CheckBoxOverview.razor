@@ -1,0 +1,52 @@
+@page "/checkbox"
+@page "/checkbox/overview"
+
+<DocHeader Slug="checkbox" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxCheckBox&lt;TValue&gt;</code> binds a <code>bool</code>, or a <code>bool?</code> whose <code>null</code> shows as
+        indeterminate — the usual "some of these are selected" state. It is a <code>&lt;button role="checkbox"&gt;</code> with
+        <code>aria-checked="mixed"</code> for that state, so it needs no JavaScript, and its label is a real
+        <code>&lt;label for&gt;</code> you can click.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column">
+        <NxCheckBox Id="overview-rush" @bind-Value="rush" Label="Rush order" />
+        <span class="demo-value" id="overview-value">Value: <strong>@rush</strong></span>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Tab</td><td>Moves focus to the box; a focus ring shows on keyboard focus.</td></tr>
+                <tr><td>Space</td><td>Toggles — it is a native button (Enter does too).</td></tr>
+                <tr><td>Click the label</td><td>Toggles; the label targets the box with <code>for</code>.</td></tr>
+                <tr><td>role="checkbox"</td><td>With <code>aria-checked</code> <code>true</code>, <code>false</code> or <code>mixed</code>.</td></tr>
+                <tr><td>aria-readonly</td><td><code>true</code> with <code>ReadOnly</code>: focusable, announced, not changeable.</td></tr>
+                <tr><td>aria-invalid</td><td><code>true</code> while the bound field has validation messages.</td></tr>
+                <tr><td>Touch</td><td>On touch screens the hit area grows to 44 px without changing the layout.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="checkbox" Page="overview" />
+
+@code {
+    bool rush;
+
+    const string basicCode =
+        """
+        <NxCheckBox @bind-Value="order.Rush" Label="Rush order" />
+        """;
+}

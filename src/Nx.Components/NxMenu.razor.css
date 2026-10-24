@@ -1,0 +1,113 @@
+/* Lists are fixed: nx-menu.js sets left/top on the root list and each open submenu, and reveals the root. */
+
+.nx-menu-backdrop { display: none; }
+
+.nx-menu-list {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: var(--nx-z-popup);
+    box-sizing: border-box;
+    min-width: 200px;
+    max-width: min(360px, calc(100vw - 16px));
+    max-height: calc(100vh - 16px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin: 0;
+    padding: 4px;
+    list-style: none;
+    background: var(--nx-popup-bg);
+    color: var(--nx-fg);
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius);
+    box-shadow: var(--nx-shadow-popup);
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+    visibility: hidden;
+}
+
+/* Submenus are only rendered inside an open root, and show when nx-menu.js removes [hidden]. */
+.nx-menu-list .nx-menu-list { visibility: visible; z-index: calc(var(--nx-z-popup) + 1); }
+.nx-menu-list[hidden] { display: none; }
+.nx-menu-list:focus { outline: none; }
+
+.nx-menu-row { position: static; }
+
+.nx-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    padding: 0 10px 0 6px;
+    border-radius: var(--nx-radius-sm);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.nx-menu-item:focus { outline: none; background: var(--nx-item-active-bg); }
+.nx-menu-item:focus-visible { box-shadow: inset 0 0 0 2px var(--nx-focus-ring-color); }
+.nx-menu-item[aria-expanded="true"] { background: var(--nx-item-hover-bg); }
+
+.nx-menu-item-disabled { color: var(--nx-fg-subtle); cursor: default; }
+.nx-menu-item-disabled:focus { background: transparent; }
+
+.nx-menu-check { display: inline-flex; width: 16px; flex-shrink: 0; justify-content: center; color: var(--nx-accent); }
+.nx-menu-icon { display: inline-flex; width: 16px; flex-shrink: 0; color: var(--nx-fg-muted); }
+.nx-menu-icon ::deep svg { width: 16px; height: 16px; }
+.nx-menu-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.nx-menu-shortcut { margin-left: 16px; color: var(--nx-fg-muted); font-size: 12px; }
+.nx-menu-arrow { flex-shrink: 0; color: var(--nx-fg-muted); margin-right: -4px; }
+
+.nx-menu-separator { height: 1px; margin: 4px 6px; background: var(--nx-border); }
+
+.nx-menu-back-row { display: none; }
+
+/* ── Phone: a bottom sheet; a submenu replaces its parent with a Back row ──── */
+
+.nx-menu-sheet .nx-menu-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: var(--nx-z-overlay);
+    background: var(--nx-window-backdrop);
+}
+
+.nx-menu-sheet .nx-menu-list {
+    left: 0 !important;
+    right: 0;
+    top: auto !important;
+    bottom: 0;
+    z-index: calc(var(--nx-z-overlay) + 1);
+    width: 100%;
+    max-width: none;
+    max-height: 70vh;
+    padding: 8px 8px max(8px, env(safe-area-inset-bottom));
+    border: none;
+    border-radius: 14px 14px 0 0;
+    font-size: 16px;
+    visibility: visible;
+}
+
+.nx-menu-sheet .nx-menu-list .nx-menu-list { z-index: calc(var(--nx-z-overlay) + 2); }
+.nx-menu-sheet .nx-menu-item { min-height: 48px; padding: 0 12px 0 8px; }
+.nx-menu-sheet .nx-menu-back-row { display: block; }
+
+.nx-menu-back {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 8px;
+    border: none;
+    border-bottom: 1px solid var(--nx-border);
+    margin-bottom: 4px;
+    background: transparent;
+    color: var(--nx-fg);
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}

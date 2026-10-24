@@ -1,0 +1,82 @@
+@namespace Nx.Components
+@typeparam TValue
+@implements IDisposable
+
+<button @ref="button"
+        @attributes="AdditionalAttributes"
+        type="button"
+        class="@CssClass"
+        role="@(Group!.Multiple ? null : "radio")"
+        aria-checked="@(Group.Multiple ? null : (Selected ? "true" : "false"))"
+        aria-pressed="@(Group.Multiple ? (Selected ? "true" : "false") : null)"
+        aria-label="@AriaLabel"
+        title="@Title"
+        tabindex="@(Group.IsTabStop(this) ? "0" : "-1")"
+        disabled="@IsDisabled"
+        @onclick="() => Group.ActivateAsync(this)"
+        @onfocus="() => Group.NoteFocus(this)">
+    @if (Icon is not null)
+    {
+        <span class="nx-toggle-icon" aria-hidden="true">@Icon</span>
+    }
+    @if (Label is not null || ChildContent is not null)
+    {
+        <span class="nx-toggle-label">@Label@ChildContent</span>
+    }
+</button>
+
+@code {
+    private ElementReference button;
+
+    [CascadingParameter] private NxToggleGroup<TValue>? Group { get; set; }
+
+    /// <summary>The value this item stands for.</summary>
+    [Parameter, EditorRequired] public TValue? Value { get; set; }
+
+    /// <summary>Text.</summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>Rich content, after <see cref="Label"/>.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Icon markup before the text. With no text the item is icon-only; give it an <see cref="AriaLabel"/>.</summary>
+    [Parameter] public RenderFragment? Icon { get; set; }
+
+    /// <summary>Makes this one item unavailable; the arrow keys skip it.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Accessible name. Required for icon-only items.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>Tooltip text.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Any other attributes are passed to the item's <c>&lt;button&gt;</c>.</summary>
+    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    internal bool IsDisabled => Disabled || Group!.Disabled;
+    private bool Selected => Group!.IsSelected(Value);
+
+    private string CssClass => string.Join(' ', new[]
+    {
+        "nx-toggle",
+        Selected                                     ? "nx-toggle-selected" : null,
+        Icon is not null && Label is null && ChildContent is null ? "nx-toggle-icon-only" : null
+    }.Where(c => c is not null));
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Group is null)
+            throw new InvalidOperationException("NxToggleGroupItem must be placed inside an NxToggleGroup.");
+        Group.Register(this);
+    }
+
+    /// <summary>Moves keyboard focus to this item.</summary>
+    public ValueTask FocusAsync() => button.FocusAsync();
+
+    internal void Refresh() => StateHasChanged();
+
+    /// <inheritdoc />
+    public void Dispose() => Group?.Unregister(this);
+}
