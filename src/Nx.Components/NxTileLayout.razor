@@ -1,0 +1,51 @@
+@namespace Nx.Components
+
+@* Tiles register themselves and render nothing; the layout draws them, in its own order. *@
+<CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+
+<div @attributes="AdditionalAttributes" id="@Id" class="@CssClass" style="@Style">
+    <div @ref="grid"
+         class="nx-tilelayout-grid"
+         style="@GridStyle"
+         role="list"
+         aria-label="@AriaLabel"
+         data-reorderable="@(Reorderable ? "true" : "false")"
+         data-resizable="@(Resizable ? "true" : "false")">
+        @foreach (var tile in Ordered.Where(t => t.Visible))
+        {
+            var item = tile.Item;
+            <div @key="tile"
+                 class="@TileClass(tile)"
+                 style="@TileStyle(tile)"
+                 role="listitem"
+                 data-nx-tile="@item.Key">
+                <div id="@HeaderId(tile)"
+                     class="nx-tile-header"
+                     tabindex="@(Editable ? "0" : null)"
+                     aria-describedby="@(Editable ? HelpId : null)"
+                     @onkeydown="e => HandleHeaderKeyDown(e, tile)">
+                    @if (item.HeaderTemplate is not null)
+                    {
+                        @item.HeaderTemplate
+                    }
+                    else
+                    {
+                        <span class="nx-tile-title">@item.HeaderText</span>
+                    }
+                </div>
+                <div class="nx-tile-body" role="group" aria-labelledby="@HeaderId(tile)">
+                    @item.ChildContent
+                </div>
+                @if (Resizable)
+                {
+                    <span class="nx-tile-resize" aria-hidden="true"></span>
+                }
+            </div>
+        }
+    </div>
+    @if (Editable)
+    {
+        <span id="@HelpId" class="nx-tilelayout-sr">@HelpText</span>
+        <span class="nx-tilelayout-sr" role="status">@announcement</span>
+    }
+</div>

@@ -1,0 +1,41 @@
+@namespace Nx.Components
+@typeparam TItem
+
+<ul @ref="list" @attributes="AdditionalAttributes" id="@Id" class="@CssClass" style="@Style" role="list" aria-label="@AriaLabel">
+    @if (items.Count == 0 && NoDataText is not null)
+    {
+        <li class="nx-chiplist-empty">@NoDataText</li>
+    }
+    @for (var i = 0; i < items.Count; i++)
+    {
+        var index = i;
+        var item = items[index];
+        <li @ref="chips[index]"
+            class="nx-chiplist-chip"
+            tabindex="@(index == focusIndex ? 0 : -1)"
+            aria-disabled="@(Disabled ? "true" : null)"
+            aria-keyshortcuts="@(CanRemove ? "Delete" : null)"
+            @onfocus="() => focusIndex = index"
+            @onkeydown="e => HandleKeyDown(e, index)">
+            <span class="nx-chiplist-content">
+                @if (ItemTemplate is not null)
+                {
+                    @ItemTemplate(item)
+                }
+                else
+                {
+                    <span class="nx-chiplist-text">@TextOf(item)</span>
+                }
+            </span>
+            @if (CanRemove)
+            {
+                <button type="button" class="nx-chiplist-remove" tabindex="-1" aria-label="@($"Remove {TextOf(item)}")" title="Remove"
+                        @onclick="() => RemoveAsync(index)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                        <line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" />
+                    </svg>
+                </button>
+            }
+        </li>
+    }
+</ul>

@@ -1,0 +1,83 @@
+@namespace Nx.Components
+@typeparam TItem
+
+<section @attributes="AdditionalAttributes"
+         id="@Id"
+         class="@CssClass"
+         style="@RootStyle"
+         aria-roledescription="carousel"
+         aria-label="@(AriaLabel ?? "Carousel")"
+         @onmouseenter="() => SetHover(true)"
+         @onmouseleave="() => SetHover(false)"
+         @onfocusin="() => SetFocus(true)"
+         @onfocusout="() => SetFocus(false)"
+         @onkeydown="HandleKeyDown">
+    <div class="nx-carousel-viewport"
+         @onpointerdown="HandlePointerDown"
+         @onpointerup="HandlePointerUp"
+         @onpointercancel="() => pointerStartX = null">
+        <div class="@TrackClass" aria-live="@(Running ? "off" : "polite")">
+            @for (var i = 0; i < items.Count; i++)
+            {
+                var index = i;
+                var active = index == pageIndex;
+                <div @key="index"
+                     class="@(active ? "nx-carousel-slide nx-carousel-slide-active" : "nx-carousel-slide")"
+                     role="group"
+                     aria-roledescription="slide"
+                     aria-label="@($"{index + 1} of {items.Count}")"
+                     aria-hidden="@(active ? null : "true")"
+                     inert="@(!active)">
+                    @if (Template is not null)
+                    {
+                        @Template(items[index])
+                    }
+                    else
+                    {
+                        @items[index]
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (Arrows && items.Count > 1)
+    {
+        <button type="button" class="nx-carousel-arrow nx-carousel-prev" aria-label="Previous slide" title="Previous" @onclick="() => GoAsync(pageIndex - 1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
+        </button>
+        <button type="button" class="nx-carousel-arrow nx-carousel-next" aria-label="Next slide" title="Next" @onclick="() => GoAsync(pageIndex + 1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+        </button>
+    }
+
+    @if ((Pageable || PauseShown) && items.Count > 1)
+    {
+        <div class="nx-carousel-pager">
+            @if (PauseShown)
+            {
+                <button type="button" class="nx-carousel-pause" aria-label="@(paused ? "Start slide rotation" : "Stop slide rotation")"
+                        title="@(paused ? "Play" : "Pause")" @onclick="TogglePause">
+                    @if (paused)
+                    {
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="7 4 20 12 7 20 7 4" /></svg>
+                    }
+                    else
+                    {
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></svg>
+                    }
+                </button>
+            }
+            @if (Pageable)
+            {
+                @for (var i = 0; i < items.Count; i++)
+                {
+                    var index = i;
+                    <button type="button" class="@(index == pageIndex ? "nx-carousel-dot nx-carousel-dot-active" : "nx-carousel-dot")"
+                            aria-label="@($"Slide {index + 1}")" aria-current="@(index == pageIndex ? "true" : null)"
+                            @onclick="() => GoAsync(index)"></button>
+                }
+            }
+        </div>
+    }
+</section>

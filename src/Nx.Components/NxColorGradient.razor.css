@@ -1,0 +1,212 @@
+.nx-colorgradient {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-sizing: border-box;
+    width: var(--nx-colorgradient-width);
+    max-width: 100%;
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+    color: var(--nx-fg);
+}
+
+/* The checkerboard under anything with opacity. */
+.nx-colorgradient-preview,
+.nx-colorgradient-alpha {
+    background-color: #ffffff;
+    background-image:
+        linear-gradient(45deg, var(--nx-colorgradient-check) 25%, transparent 25%, transparent 75%, var(--nx-colorgradient-check) 75%),
+        linear-gradient(45deg, var(--nx-colorgradient-check) 25%, transparent 25%, transparent 75%, var(--nx-colorgradient-check) 75%);
+    background-position: 0 0, 5px 5px;
+    background-size: 10px 10px;
+}
+
+/* ── Saturation (left to right) and brightness (top to bottom) for the hue ─── */
+
+.nx-colorgradient-area {
+    position: relative;
+    height: var(--nx-colorgradient-area-height);
+    border-radius: var(--nx-radius);
+    background:
+        linear-gradient(to top, #000000, transparent),
+        linear-gradient(to right, #ffffff, hsl(calc(var(--nx-colorgradient-hue) * 1deg) 100% 50%));
+    cursor: crosshair;
+    touch-action: none;
+}
+
+.nx-colorgradient-thumb {
+    position: absolute;
+    left: var(--nx-colorgradient-x);
+    top: var(--nx-colorgradient-y);
+    box-sizing: border-box;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    background: var(--nx-colorgradient-opaque);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 4px rgba(0, 0, 0, 0.35);
+    transform: translate(-50%, -50%);
+}
+.nx-colorgradient-thumb:focus { outline: none; }
+.nx-colorgradient-thumb:focus-visible {
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline-offset: 2px;
+}
+
+/* ── Hue and opacity sliders beside the preview ───────────────────────────── */
+
+.nx-colorgradient-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nx-colorgradient-sliders {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+}
+
+.nx-colorgradient-hue,
+.nx-colorgradient-alpha {
+    display: block;
+    width: 100%;
+    height: 12px;
+    margin: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+}
+.nx-colorgradient-hue {
+    background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+}
+.nx-colorgradient-alpha {
+    position: relative;
+    background-image:
+        linear-gradient(to right, transparent, var(--nx-colorgradient-opaque)),
+        linear-gradient(45deg, var(--nx-colorgradient-check) 25%, transparent 25%, transparent 75%, var(--nx-colorgradient-check) 75%),
+        linear-gradient(45deg, var(--nx-colorgradient-check) 25%, transparent 25%, transparent 75%, var(--nx-colorgradient-check) 75%);
+    background-position: 0 0, 0 0, 5px 5px;
+    background-size: 100% 100%, 10px 10px, 10px 10px;
+}
+.nx-colorgradient-hue:focus,
+.nx-colorgradient-alpha:focus { outline: none; }
+.nx-colorgradient-hue:focus-visible,
+.nx-colorgradient-alpha:focus-visible {
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline-offset: 3px;
+}
+
+.nx-colorgradient-hue::-webkit-slider-thumb,
+.nx-colorgradient-alpha::-webkit-slider-thumb {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    background: transparent;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 4px rgba(0, 0, 0, 0.35);
+    -webkit-appearance: none;
+}
+.nx-colorgradient-hue::-moz-range-thumb,
+.nx-colorgradient-alpha::-moz-range-thumb {
+    box-sizing: border-box;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    background: transparent;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.nx-colorgradient-preview {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    overflow: hidden;
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius);
+}
+.nx-colorgradient-preview-color {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--nx-colorgradient-color);
+}
+
+/* ── Text inputs: one HEX box or R G B (A) boxes, captions under them ─────── */
+
+.nx-colorgradient-inputs {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.nx-colorgradient-field {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    min-width: 0;
+}
+.nx-colorgradient-field-hex { flex: 1; }
+
+.nx-colorgradient-input {
+    box-sizing: border-box;
+    width: 100%;
+    height: 32px;
+    padding: 0 6px;
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius-sm);
+    background: var(--nx-surface);
+    color: var(--nx-fg);
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+}
+.nx-colorgradient-input:hover:not(:disabled) { border-color: var(--nx-border-hover); }
+.nx-colorgradient-input:focus {
+    border-color: var(--nx-accent);
+    outline: none;
+    box-shadow: var(--nx-focus-ring-inset);
+}
+
+.nx-colorgradient-caption {
+    color: var(--nx-fg-muted);
+    font-size: 11px;
+    font-weight: var(--nx-font-weight-medium);
+    letter-spacing: 0.04em;
+}
+
+.nx-colorgradient-view {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--nx-radius-sm);
+    background: transparent;
+    color: var(--nx-fg-muted);
+    cursor: pointer;
+}
+.nx-colorgradient-view:hover:not(:disabled) { background: var(--nx-surface-hover); color: var(--nx-fg); }
+.nx-colorgradient-view:focus { outline: none; }
+.nx-colorgradient-view:focus-visible { outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color); }
+
+.nx-colorgradient-invalid .nx-colorgradient-input { border-color: var(--nx-invalid); }
+
+.nx-colorgradient-disabled { opacity: var(--nx-disabled-opacity); }
+.nx-colorgradient-disabled .nx-colorgradient-area { cursor: not-allowed; }
+
+@media (pointer: coarse) {
+    .nx-colorgradient-thumb { width: 24px; height: 24px; }
+    .nx-colorgradient-hue, .nx-colorgradient-alpha { height: 20px; }
+    .nx-colorgradient-input, .nx-colorgradient-view { height: 44px; }
+    .nx-colorgradient-view { width: 44px; }
+}

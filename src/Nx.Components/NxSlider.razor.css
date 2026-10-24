@@ -1,0 +1,152 @@
+.nx-slider {
+    --nx-slider-percent: 0%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+    color: var(--nx-fg);
+}
+
+.nx-slider-label { font-weight: var(--nx-font-weight-medium); }
+
+.nx-slider-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.nx-slider-track {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+/* ── The native range input, restyled: a thin track filled up to the thumb ─── */
+
+.nx-slider-input {
+    display: block;
+    width: 100%;
+    height: 28px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+}
+.nx-slider-input:focus { outline: none; }
+.nx-slider-input:disabled { cursor: not-allowed; }
+
+.nx-slider-input::-webkit-slider-runnable-track {
+    height: var(--nx-slider-track-height);
+    border-radius: 999px;
+    background: linear-gradient(to right, var(--nx-slider-fill) var(--nx-slider-percent), var(--nx-slider-track) var(--nx-slider-percent));
+}
+.nx-slider-input::-moz-range-track {
+    height: var(--nx-slider-track-height);
+    border-radius: 999px;
+    background: var(--nx-slider-track);
+}
+.nx-slider-input::-moz-range-progress {
+    height: var(--nx-slider-track-height);
+    border-radius: 999px;
+    background: var(--nx-slider-fill);
+}
+
+.nx-slider-input::-webkit-slider-thumb {
+    width: var(--nx-slider-thumb-size);
+    height: var(--nx-slider-thumb-size);
+    margin-top: calc((var(--nx-slider-track-height) - var(--nx-slider-thumb-size)) / 2);
+    border: 2px solid var(--nx-slider-fill);
+    border-radius: 50%;
+    background: var(--nx-slider-thumb-bg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    -webkit-appearance: none;
+    transition: transform var(--nx-transition);
+}
+.nx-slider-input::-moz-range-thumb {
+    box-sizing: border-box;
+    width: var(--nx-slider-thumb-size);
+    height: var(--nx-slider-thumb-size);
+    border: 2px solid var(--nx-slider-fill);
+    border-radius: 50%;
+    background: var(--nx-slider-thumb-bg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.nx-slider-input:active::-webkit-slider-thumb { transform: scale(1.15); }
+.nx-slider-input:focus-visible::-webkit-slider-thumb {
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline-offset: var(--nx-focus-ring-offset);
+}
+.nx-slider-input:focus-visible::-moz-range-thumb {
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline-offset: var(--nx-focus-ring-offset);
+}
+
+.nx-slider-invalid { --nx-slider-fill: var(--nx-invalid); }
+.nx-slider-disabled { opacity: var(--nx-disabled-opacity); }
+
+/* ── Ticks: placed where the thumb's center would be at that value ─────────── */
+
+.nx-slider-ticks {
+    position: relative;
+    height: 18px;
+    margin: 0 calc(var(--nx-slider-thumb-size) / 2);
+    color: var(--nx-fg-muted);
+    font-size: var(--nx-font-size-sm);
+    font-variant-numeric: tabular-nums;
+}
+
+.nx-slider-tick {
+    position: absolute;
+    top: 0;
+    left: var(--nx-slider-at);
+    padding-top: 6px;
+    transform: translateX(-50%);
+    white-space: nowrap;
+}
+.nx-slider-tick::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 1px;
+    height: 4px;
+    background: var(--nx-border-hover);
+}
+
+/* ── Buttons and value ────────────────────────────────────────────────────── */
+
+.nx-slider-button {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid var(--nx-border);
+    border-radius: 50%;
+    background: var(--nx-surface);
+    color: var(--nx-fg);
+    cursor: pointer;
+}
+.nx-slider-button:hover:not(:disabled) { background: var(--nx-surface-hover); }
+.nx-slider-button:disabled { color: var(--nx-fg-subtle); cursor: not-allowed; }
+
+.nx-slider-value {
+    min-width: 3ch;
+    line-height: 28px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--nx-font-weight-medium);
+}
+
+@media (pointer: coarse) {
+    .nx-slider-input { height: 44px; }
+    .nx-slider-button { width: 44px; height: 44px; }
+    .nx-slider-value { line-height: 44px; }
+    .nx-slider { --nx-slider-thumb-size: 24px; }
+}

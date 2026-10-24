@@ -1,0 +1,26 @@
+@* One carousel demo slide: a drawn scene in the slide's colors with the project name along the bottom, as ERP's spotlight shows. *@
+<div class="demo-slide" style="--from: @Slide.From; --to: @Slide.To">
+    <svg class="demo-slide-art" viewBox="0 0 400 220" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <rect x="40" y="120" width="110" height="70" rx="3" fill="rgba(255,255,255,0.18)" />
+        <rect x="170" y="90" width="80" height="100" rx="3" fill="rgba(255,255,255,0.24)" />
+        <rect x="270" y="130" width="90" height="60" rx="3" fill="rgba(255,255,255,0.14)" />
+        <line x1="210" y1="20" x2="210" y2="90" stroke="rgba(255,255,255,0.5)" stroke-width="3" />
+        <line x1="150" y1="20" x2="330" y2="20" stroke="rgba(255,255,255,0.5)" stroke-width="3" />
+        <rect x="0" y="190" width="400" height="30" fill="rgba(0,0,0,0.15)" />
+    </svg>
+    <div class="demo-slide-caption">
+        <strong>@Slide.Project</strong>
+        @if (ShowCaption)
+        {
+            <span>@Slide.Caption</span>
+        }
+    </div>
+</div>
+
+@code {
+    /// <summary>The slide shown.</summary>
+    [Parameter, EditorRequired] public DemoSlide Slide { get; set; } = default!;
+
+    /// <summary>Shows the caption under the project name.</summary>
+    [Parameter] public bool ShowCaption { get; set; } = true;
+}

@@ -1,0 +1,115 @@
+@namespace Nx.Components
+@implements IDisposable
+
+@* An NxButton in an NxToolBar. It renders where it is declared; once the bar has no room it is laid out invisible
+   (so it can still be measured) and offered in the bar's More menu instead. *@
+@if (Visible)
+{
+    <NxButton @attributes="ButtonParameters" />
+}
+
+@code {
+    private readonly string generatedKey = $"tb-{Guid.NewGuid():N}"[..11];
+    private (string?, string?, bool, bool, bool, bool) shown;
+
+    [CascadingParameter] private NxToolBar? Bar { get; set; }
+
+    /// <summary>The button's text, and its entry in the More menu.</summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>Rich content in place of <see cref="Text"/> on the bar; the More menu still shows <see cref="Text"/>.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Icon before the text, also shown in the More menu.</summary>
+    [Parameter] public RenderFragment? Icon { get; set; }
+
+    /// <summary>Tooltip text.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Accessible name, for an icon-only button; also its More menu text when there is no <see cref="Text"/>.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>The button's look. Default: <see cref="NxButtonVariant.Secondary"/>.</summary>
+    [Parameter] public NxButtonVariant Variant { get; set; } = NxButtonVariant.Secondary;
+
+    /// <summary>The button's size. Default: the toolbar's <see cref="NxToolBar.Size"/>.</summary>
+    [Parameter] public NxButtonSize? Size { get; set; }
+
+    /// <summary>Greys the button out, on the bar and in the More menu.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Shows the button. Default: <c>true</c>.</summary>
+    [Parameter] public bool Visible { get; set; } = true;
+
+    /// <summary>Raised when the button is clicked, on the bar or in the More menu.</summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>The button's <c>id</c>; also its key in the More menu.</summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>Extra CSS class applied to the button.</summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>Any other attributes are passed to the button.</summary>
+    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    internal string Key => Id ?? generatedKey;
+    internal string MenuText => Text ?? AriaLabel ?? Title ?? "";
+    internal Task ClickAsync(MouseEventArgs e) => Disabled ? Task.CompletedTask : OnClick.InvokeAsync(e);
+    internal void Refresh() => StateHasChanged();
+
+    private IReadOnlyDictionary<string, object> ButtonParameters
+    {
+        get
+        {
+            var overflowed = Bar?.IsOverflowed(Key) == true;
+            var parameters = new Dictionary<string, object>();
+            if (AdditionalAttributes is not null)
+            {
+                foreach (var (name, value) in AdditionalAttributes)
+                    parameters[name] = value;
+            }
+            if (ChildContent is not null)
+                parameters[nameof(NxButton.ChildContent)] = ChildContent;
+            else if (Text is not null)
+                parameters[nameof(NxButton.ChildContent)] = (RenderFragment)(b => b.AddContent(0, Text));
+            if (Icon is not null) parameters[nameof(NxButton.Icon)] = Icon;
+            if (AriaLabel is not null) parameters[nameof(NxButton.AriaLabel)] = AriaLabel;
+            if (Title is not null) parameters[nameof(NxButton.Title)] = Title;
+            if (Id is not null) parameters["id"] = Id;
+            parameters[nameof(NxButton.Variant)] = Variant;
+            parameters[nameof(NxButton.Size)] = Size ?? Bar?.Size ?? NxButtonSize.Medium;
+            parameters[nameof(NxButton.Disabled)] = Disabled;
+            parameters[nameof(NxButton.OnClick)] = EventCallback.Factory.Create<MouseEventArgs>(this, ClickAsync);
+            parameters[nameof(NxButton.Class)] = overflowed ? $"nx-toolbar-item nx-toolbar-item-overflow {Class}".TrimEnd() : $"nx-toolbar-item {Class}".TrimEnd();
+            parameters["data-nx-toolbar-item"] = Key;
+            if (overflowed)
+                parameters["aria-hidden"] = "true";
+            return parameters;
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Bar is null)
+            throw new InvalidOperationException("NxToolBarButton must be placed inside an NxToolBar.");
+        Bar.Register(Key, this);
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // The bar measures widths and builds its More menu from these; tell it only when one of them changed
+        // (fragments are new objects on every render, so they cannot be compared).
+        var now = (Text, AriaLabel, Disabled, Visible, Icon is null, ChildContent is null);
+        if (now != shown)
+        {
+            shown = now;
+            Bar?.ItemChanged();
+        }
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => Bar?.Unregister(Key);
+}

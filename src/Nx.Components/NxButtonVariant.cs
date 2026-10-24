@@ -16,5 +16,14 @@ public enum NxButtonVariant
     Ghost,
 
     /// <summary>Looks like a hyperlink; still a button. Inline actions in text.</summary>
-    Link
+    Link,
+
+    /// <summary>Filled with the success color. Completing actions such as Finalize or Approve.</summary>
+    Success,
+
+    /// <summary>Filled amber with dark text. Actions that need care, such as Reopen or Override.</summary>
+    Warning,
+
+    /// <summary>Filled with the info color. Secondary actions that inform, such as Export or Details.</summary>
+    Info
 }

@@ -134,6 +134,9 @@ public partial class NxButton
             {
                 NxButtonVariant.Primary => "nx-button-primary",
                 NxButtonVariant.Danger  => "nx-button-danger",
+                NxButtonVariant.Success => "nx-button-success",
+                NxButtonVariant.Warning => "nx-button-warning",
+                NxButtonVariant.Info    => "nx-button-info",
                 NxButtonVariant.Ghost   => "nx-button-ghost",
                 NxButtonVariant.Link    => "nx-button-link",
                 _                       => "nx-button-secondary"

@@ -1,0 +1,115 @@
+@page "/toolbar/playground"
+
+<DocHeader Slug="toolbar" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live. Narrow the preview with Width to watch the overflow.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch" style="max-width: @(pgWidth)px">
+                <NxToolBar Id="playground-toolbar" Overflow="pgOverflow" Size="pgSize" AriaLabel="Playground">
+                    <NxToolBarButton Id="pg-b-new" Text="New" Icon="@(pgIcons ? Icon(NxIcons.Plus) : null)" OnClick='() => Press("New")' />
+                    <NxToolBarButton Id="pg-b-copy" Text="Copy" Icon="@(pgIcons ? Icon(NxIcons.Copy) : null)" Disabled="pgDisableCopy" OnClick='() => Press("Copy")' />
+                    @if (pgSeparator)
+                    {
+                        <NxToolBarSeparator />
+                    }
+                    <NxToolBarButton Id="pg-b-print" Text="Print" Icon="@(pgIcons ? Icon(NxIcons.Print) : null)" Visible="pgShowPrint" OnClick='() => Press("Print")' />
+                    <NxToolBarButton Id="pg-b-export" Text="Export" Icon="@(pgIcons ? Icon(NxIcons.Download) : null)" OnClick='() => Press("Export")' />
+                    @if (pgSpacer)
+                    {
+                        <NxToolBarSpacer />
+                    }
+                    <NxToolBarButton Id="pg-b-save" Text="Save" Icon="@(pgIcons ? Icon(NxIcons.Save) : null)" Variant="pgVariant" OnClick='() => Press("Save")' />
+                </NxToolBar>
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-last">Last: <strong>@pgLast</strong></span>
+                <span class="demo-counter" id="playground-clicks">OnClick × @pgClicks</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Toolbar</div>
+            <label class="demo-control">
+                <span>Overflow</span>
+                <select id="pg-overflow" @bind="pgOverflow">
+                    @foreach (var o in Enum.GetValues<NxToolBarOverflow>())
+                    {
+                        <option value="@o">@o</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control">
+                <span>Size</span>
+                <select id="pg-size" @bind="pgSize">
+                    @foreach (var s in Enum.GetValues<NxButtonSize>())
+                    {
+                        <option value="@s">@s</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control"><span>Width (px)</span><input type="number" id="pg-width" min="160" max="900" step="20" @bind="pgWidth" /></label>
+
+            <div class="demo-controls-title">Items</div>
+            <label class="demo-control"><span>Icons</span><input type="checkbox" id="pg-icons" @bind="pgIcons" /></label>
+            <label class="demo-control"><span>Separator</span><input type="checkbox" id="pg-separator" @bind="pgSeparator" /></label>
+            <label class="demo-control"><span>Spacer</span><input type="checkbox" id="pg-spacer" @bind="pgSpacer" /></label>
+            <label class="demo-control"><span>Print Visible</span><input type="checkbox" id="pg-show-print" @bind="pgShowPrint" /></label>
+            <label class="demo-control"><span>Copy Disabled</span><input type="checkbox" id="pg-disable-copy" @bind="pgDisableCopy" /></label>
+            <label class="demo-control">
+                <span>Save Variant</span>
+                <select id="pg-variant" @bind="pgVariant">
+                    @foreach (var v in Enum.GetValues<NxButtonVariant>())
+                    {
+                        <option value="@v">@v</option>
+                    }
+                </select>
+            </label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="toolbar" Page="playground" />
+
+@code {
+    static RenderFragment Icon(NxIconData icon) => @<NxIcon Icon="icon" />;
+
+    NxToolBarOverflow pgOverflow = NxToolBarOverflow.Menu;
+    NxButtonSize pgSize = NxButtonSize.Medium;
+    NxButtonVariant pgVariant = NxButtonVariant.Primary;
+    int pgWidth = 600, pgClicks;
+    bool pgIcons = true, pgSeparator = true, pgSpacer = true, pgShowPrint = true, pgDisableCopy;
+    string pgLast = "—";
+
+    void Press(string what)
+    {
+        pgLast = what;
+        pgClicks++;
+    }
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "AriaLabel=\"Document\"" };
+            if (pgOverflow != NxToolBarOverflow.Menu) attrs.Add($"Overflow=\"NxToolBarOverflow.{pgOverflow}\"");
+            if (pgSize != NxButtonSize.Medium) attrs.Add($"Size=\"NxButtonSize.{pgSize}\"");
+            string Button(string text, string extra = "") => $"    <NxToolBarButton Text=\"{text}\"{(pgIcons ? " Icon=\"@icon\"" : "")}{extra} OnClick=\"…\" />";
+            var lines = new List<string> { "<NxToolBar " + string.Join(" ", attrs) + ">", Button("New"), Button("Copy", pgDisableCopy ? " Disabled=\"true\"" : "") };
+            if (pgSeparator) lines.Add("    <NxToolBarSeparator />");
+            lines.Add(Button("Print", pgShowPrint ? "" : " Visible=\"false\""));
+            lines.Add(Button("Export"));
+            if (pgSpacer) lines.Add("    <NxToolBarSpacer />");
+            lines.Add(Button("Save", pgVariant != NxButtonVariant.Secondary ? $" Variant=\"NxButtonVariant.{pgVariant}\"" : ""));
+            lines.Add("</NxToolBar>");
+            return string.Join("\n", lines);
+        }
+    }
+}

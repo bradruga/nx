@@ -1,0 +1,77 @@
+@page "/tilelayout/playground"
+
+<DocHeader Slug="tilelayout" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch demo-preview-inner-full">
+                <NxTileLayout Id="playground-tiles" Columns="pgColumns" ColumnWidth="@OrNull(pgColumnWidth)" RowHeight="@OrNull(pgRowHeight)"
+                              Gap="@OrNull(pgGap)" Reorderable="pgReorderable" Resizable="pgResizable"
+                              OnReorder="() => pgReorders++" OnResize="() => pgResizes++" AriaLabel="Playground tiles">
+                    <NxTileLayoutItem Id="a" HeaderText="Sets" ColSpan="pgSpanA" RowSpan="2"><DemoTileList Rows='["18 pieces today"]' /></NxTileLayoutItem>
+                    <NxTileLayoutItem Id="b" HeaderText="Loads"><DemoTileList Rows='["7 loads out"]' /></NxTileLayoutItem>
+                    <NxTileLayoutItem Id="c" HeaderText="Crews" Visible="pgShowC"><DemoTileList Rows='["4 crews on site"]' /></NxTileLayoutItem>
+                    <NxTileLayoutItem Id="d" HeaderText="Weather" ColSpan="2"><DemoTileList Rows='["Clear, 54°F"]' /></NxTileLayoutItem>
+                </NxTileLayout>
+            </div>
+            <div class="demo-row">
+                <span class="demo-counter" id="playground-reorders">OnReorder × @pgReorders</span>
+                <span class="demo-counter" id="playground-resizes">OnResize × @pgResizes</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Grid</div>
+            <label class="demo-control"><span>Columns</span><input type="number" id="pg-columns" min="1" max="6" @bind="pgColumns" /></label>
+            <label class="demo-control"><span>ColumnWidth</span><input type="text" id="pg-column-width" @bind="pgColumnWidth" @bind:event="oninput" placeholder="e.g. 200px" /></label>
+            <label class="demo-control"><span>RowHeight</span><input type="text" id="pg-row-height" @bind="pgRowHeight" @bind:event="oninput" placeholder="auto" /></label>
+            <label class="demo-control"><span>Gap</span><input type="text" id="pg-gap" @bind="pgGap" @bind:event="oninput" placeholder="16px" /></label>
+
+            <div class="demo-controls-title">Editing</div>
+            <label class="demo-control"><span>Reorderable</span><input type="checkbox" id="pg-reorderable" @bind="pgReorderable" /></label>
+            <label class="demo-control"><span>Resizable</span><input type="checkbox" id="pg-resizable" @bind="pgResizable" /></label>
+
+            <div class="demo-controls-title">Tiles</div>
+            <label class="demo-control"><span>Sets ColSpan</span><input type="number" id="pg-span-a" min="1" max="6" @bind="pgSpanA" /></label>
+            <label class="demo-control"><span>Crews Visible</span><input type="checkbox" id="pg-show-c" @bind="pgShowC" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="tilelayout" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+
+    int pgColumns = 3, pgSpanA = 1, pgReorders, pgResizes;
+    string pgColumnWidth = "", pgRowHeight = "90px", pgGap = "";
+    bool pgReorderable = true, pgResizable = true, pgShowC = true;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string>();
+            if (pgColumns != 3) attrs.Add($"Columns=\"{pgColumns}\"");
+            if (OrNull(pgColumnWidth) is { } w) attrs.Add($"ColumnWidth=\"{w}\"");
+            if (OrNull(pgRowHeight) is { } h) attrs.Add($"RowHeight=\"{h}\"");
+            if (OrNull(pgGap) is { } g) attrs.Add($"Gap=\"{g}\"");
+            if (pgReorderable) attrs.Add("Reorderable=\"true\" OnReorder=\"SaveAsync\"");
+            if (pgResizable) attrs.Add("Resizable=\"true\" OnResize=\"SaveAsync\"");
+            return $"<NxTileLayout {string.Join(" ", attrs)}>\n" +
+                   $"    <NxTileLayoutItem HeaderText=\"Sets\"{(pgSpanA != 1 ? $" ColSpan=\"{pgSpanA}\"" : "")} RowSpan=\"2\">…</NxTileLayoutItem>\n" +
+                   "    <NxTileLayoutItem HeaderText=\"Loads\">…</NxTileLayoutItem>\n" +
+                   $"    <NxTileLayoutItem HeaderText=\"Crews\"{(pgShowC ? "" : " Visible=\"false\"")}>…</NxTileLayoutItem>\n" +
+                   "    <NxTileLayoutItem HeaderText=\"Weather\" ColSpan=\"2\">…</NxTileLayoutItem>\n" +
+                   "</NxTileLayout>";
+        }
+    }
+}

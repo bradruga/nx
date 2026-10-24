@@ -1,0 +1,57 @@
+@page "/slider/api"
+
+<DocHeader Slug="slider" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Value</td><td>TValue</td><td>0</td><td>The number. Use <code>@@bind-Value</code>; <code>TValue</code> is any number type.</td></tr>
+                <tr><td>Min / Max</td><td>TValue</td><td>0 / 10</td><td>The range; the value is kept inside it.</td></tr>
+                <tr><td>SmallStep</td><td>TValue</td><td>1</td><td>One step of the thumb, the keys and the buttons.</td></tr>
+                <tr><td>LargeStep</td><td>TValue</td><td>0</td><td>A labelled tick every this many; 0 for none.</td></tr>
+                <tr><td>Format</td><td>string?</td><td>—</td><td>.NET format for tick labels and the shown value (<code>P0</code>, <code>N1</code>).</td></tr>
+                <tr><td>Immediate</td><td>bool</td><td>true</td><td>Raise <code>ValueChanged</code> while dragging; false raises it on release.</td></tr>
+                <tr><td>ShowButtons</td><td>bool</td><td>false</td><td>− and + buttons at the ends.</td></tr>
+                <tr><td>ShowValue</td><td>bool</td><td>false</td><td>The value after the slider.</td></tr>
+                <tr><td>Label</td><td>string?</td><td>—</td><td>A label tied to the range input.</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>false</td><td>The native <code>disabled</code> attribute.</td></tr>
+                <tr><td>Id</td><td>string?</td><td>generated</td><td>The range input's id.</td></tr>
+                <tr><td>Class / Style</td><td>string?</td><td>—</td><td>On the outer element; other attributes go to the range input.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Event</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ValueChanged</td><td>EventCallback&lt;TValue&gt;</td><td>As the thumb moves (or on release), and on the buttons.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="doc-note"><code>ValueExpression</code> connects it to an <code>EditForm</code>; <code>@@bind-Value</code> sets it.</p>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-slider-track-height</td><td>4px</td><td>The track's thickness.</td></tr>
+                <tr><td>--nx-slider-thumb-size</td><td>18px (24px on touch)</td><td>The thumb.</td></tr>
+                <tr><td>--nx-slider-track</td><td>--nx-surface-active</td><td>The empty part of the track.</td></tr>
+                <tr><td>--nx-slider-fill</td><td>--nx-accent</td><td>The filled part and the thumb's ring.</td></tr>
+                <tr><td>--nx-slider-thumb-bg</td><td>--nx-surface</td><td>The thumb's fill.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="slider" Page="api" />

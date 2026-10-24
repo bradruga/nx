@@ -1,0 +1,52 @@
+@page "/chiplist/api"
+
+<DocHeader Slug="chiplist" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Data</td><td>IEnumerable&lt;TItem&gt;?</td><td>—</td><td>The items, one chip each.</td></tr>
+                <tr><td>ItemText</td><td>Func&lt;TItem, string&gt;?</td><td>ToString()</td><td>A chip's text, and its remove button's name.</td></tr>
+                <tr><td>ItemTemplate</td><td>RenderFragment&lt;TItem&gt;?</td><td>—</td><td>A chip's content in place of its text.</td></tr>
+                <tr><td>Removable</td><td>bool</td><td>false</td><td>A remove button on each chip; Delete / Backspace removes the focused one.</td></tr>
+                <tr><td>Variant</td><td>NxChipVariant</td><td>Solid</td><td>Solid (soft fill) or Outline.</td></tr>
+                <tr><td>Size</td><td>NxSize</td><td>Medium</td><td>Chip height: 24, 28 or 32 px.</td></tr>
+                <tr><td>NoDataText</td><td>string?</td><td>—</td><td>Shown when there are no items.</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>false</td><td>Greys the chips out; no removing.</td></tr>
+                <tr><td>AriaLabel</td><td>string?</td><td>—</td><td>The list's accessible name.</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>On the list; other attributes go there too.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Event</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>OnRemove</td><td>EventCallback&lt;NxChipRemoveEventArgs&lt;TItem&gt;&gt;</td><td>A chip was removed: <code>Item</code>. Take it out of <code>Data</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-chip-bg</td><td>--nx-accent-subtle</td><td>A solid chip's fill (shared with NxMultiSelect's chips).</td></tr>
+                <tr><td>--nx-chip-fg</td><td>--nx-fg</td><td>Chip text.</td></tr>
+                <tr><td>--nx-chip-remove-hover-bg</td><td>rgba(0,0,0,.08)</td><td>The remove button under the pointer.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="chiplist" Page="api" />

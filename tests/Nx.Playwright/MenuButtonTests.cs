@@ -172,6 +172,8 @@ public class MenuButtonTests : PageTest
 
         Assert.That(await page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= window.innerWidth"), Is.True);
         await page.Locator("#overview-export").TapAsync();
+        // The list renders hidden at its desktop size; nx-menu.js makes it the sheet and reveals it.
+        await Expect(page.Locator("#overview-export-menu.nx-menu-sheet > ul")).ToBeVisibleAsync();
         var sheet = (await page.Locator("#overview-export-menu > ul").BoundingBoxAsync())!;
         Assert.That(sheet.Width, Is.EqualTo(390).Within(1));
         Assert.That(sheet.Y + sheet.Height, Is.EqualTo(844).Within(1));

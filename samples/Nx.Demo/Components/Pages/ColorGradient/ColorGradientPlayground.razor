@@ -1,0 +1,75 @@
+@page "/colorgradient/playground"
+
+<DocHeader Slug="colorgradient" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner">
+                <NxColorGradient Id="playground-gradient" @bind-Value="pgValue" @bind-Value:after="() => pgChanges++"
+                                 ValueFormat="pgValueFormat" Format="pgFormat" ShowOpacityEditor="pgOpacity" Disabled="pgDisabled"
+                                 AriaLabel="Playground color" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-value">Value: <strong>@(pgValue ?? "null")</strong></span>
+                <span class="demo-counter" id="playground-changes">ValueChanged × @pgChanges</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Value</div>
+            <label class="demo-control"><span>Value</span><input type="text" id="pg-value" @bind="pgValue" /></label>
+            <label class="demo-control">
+                <span>ValueFormat</span>
+                <select id="pg-value-format" @bind="pgValueFormat">
+                    @foreach (var f in Enum.GetValues<NxColorFormat>())
+                    {
+                        <option value="@f">@f</option>
+                    }
+                </select>
+            </label>
+
+            <div class="demo-controls-title">Look</div>
+            <label class="demo-control">
+                <span>Format</span>
+                <select id="pg-format" @bind="pgFormat">
+                    @foreach (var f in Enum.GetValues<NxColorFormat>())
+                    {
+                        <option value="@f">@f</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control"><span>ShowOpacityEditor</span><input type="checkbox" id="pg-opacity" @bind="pgOpacity" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="colorgradient" Page="playground" />
+
+@code {
+    string? pgValue = "#3e9e4f";
+    NxColorFormat pgValueFormat = NxColorFormat.Hex, pgFormat = NxColorFormat.Hex;
+    bool pgOpacity = true, pgDisabled;
+    int pgChanges;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "@bind-Value=\"color\"" };
+            if (pgValueFormat != NxColorFormat.Hex) attrs.Add($"ValueFormat=\"NxColorFormat.{pgValueFormat}\"");
+            if (pgFormat != NxColorFormat.Hex) attrs.Add($"Format=\"NxColorFormat.{pgFormat}\"");
+            if (!pgOpacity) attrs.Add("ShowOpacityEditor=\"false\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            return "<NxColorGradient " + string.Join(" ", attrs) + " />";
+        }
+    }
+}

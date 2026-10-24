@@ -363,3 +363,34 @@ Decisions I made without you. Each one says what I picked and why, so you can an
      (`0 9 # L ? A a & C`, `\` escape). Typing is handled in nx-input.js (`beforeinput`), so fast typing never races.
 134. **Categories**: NxToggleButton under Buttons; NxMaskedTextBox, NxFileSelect, NxUpload under Inputs; NxTreeView
      under Selection; NxDialog and NxMediaQuery under Layout.
+
+## Pass 8 — from ERP's usages (read only)
+
+135. **NxTileLayout's `ColumnWidth` is a maximum**, not a fixed width: columns share the row up to it. ERP passes
+     300, 700 and 5000 px with `Columns="5"` and expects the dashboard to fill the page; a fixed width would scroll
+     sideways. Tiles flow in reading order (not "dense"), a drop takes the target's place and the rest shift, and under
+     600 px of its own width the layout stacks in one column. NepCardGrid keeps its own column breakpoints. Ctrl+arrows
+     move and Shift+arrows resize from a tile's header (Telerik has no keys for it); row resizing needs a `RowHeight`.
+136. **`GetState()` keeps Telerik's shape** (`ItemStates` with `Id`, `Order`, `ColSpan`, `RowSpan`, `Visible`), so
+     NepCardGrid's `ReadState` ports as is. `SetState` before the tiles render still applies.
+137. **NxCarousel**: `Page` counts from 1, as Telerik's does. A pause button shows with the dots (WCAG 2.2.2); ERP's TV
+     screens hide arrows and dots, so they get none. After the last slide it jumps to the first instead of sliding
+     back across all of them. Dots are 32 px touch targets (arrows 44 px): ten 44 px dots would not fit a phone.
+138. **NxColorGradient is inline only**; put it in a dialog or popup. `Format` is which inputs show first, `ValueFormat`
+     the value's form (ERP: hex both). `ShowOpacityEditor` defaults to true as in Telerik; ERP passes false. The hue is
+     kept when a color goes grey, so dragging back out returns to it. **Shared change:** NxColorPicker's color parsing
+     moved into `ColorMath` (internal), which both use; NxColorPicker behaves the same and its tests pass.
+139. **NxSlider is a native range input.** ERP's one use is an int from 0 to 10 with nothing else set. Telerik shows
+     buttons and ticks by default; Nx shows neither unless `ShowButtons` / `LargeStep` are set. No vertical slider and
+     no range (two-thumb) slider: ERP uses neither.
+140. **NxChipList removes, it does not select.** ERP's one use removes delivery tickets; Telerik's `SelectionMode` was not
+     added. Say if you want it. The app removes the item from `Data` in `OnRemove`.
+141. **Answered (Brad): NxButtonVariant gained Success, Warning and Info** (ERP: Success 35, Warning 11, Info 10 uses), with
+     tokens in nx-theme.css (Warning is filled amber with dark text for contrast). The toolbar demo uses Success for Finalize
+     and Info for Export PDF, as ERP does. NxToolBarButton takes `Text` (also its More menu entry); ERP's
+     `<ToolBarButton>New</ToolBarButton>` becomes `Text="New"`.
+142. **NxDateInput reuses the date picker's pieces**: `DateFormatter` (one new internal `Order` property) and
+     nx-picker.js (new `stepDate`). Up/Down wrap within the part (December → January keeps the year) and an empty
+     field starts from today.
+143. **Categories**: NxToolBar under Buttons; NxSlider and NxColorGradient under Inputs; NxDateInput under Dates;
+     NxTileLayout under Layout; NxChipList and NxCarousel under Display.

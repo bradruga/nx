@@ -1,0 +1,57 @@
+@page "/chiplist"
+@page "/chiplist/overview"
+
+<DocHeader Slug="chiplist" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxChipList</code> shows a list as a wrapping row of chips — delivery tickets on a concrete test, tags, people on a
+        crew. Each chip shows its text or an <code>ItemTemplate</code>. With <code>Removable</code> a chip has a remove button and
+        Delete removes the focused one; <code>OnRemove</code> says which, and you take it out of <code>Data</code>.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxChipList TItem="string" Id="overview-chips" Data="tickets" ItemText="t => t" Removable="true" AriaLabel="Delivery tickets"
+                    OnRemove="e => tickets.Remove(e.Item)" NoDataText="No tickets" />
+        <div class="demo-row">
+            <span class="demo-value" id="overview-count">@tickets.Count tickets</span>
+            <NxButton id="overview-reset" Size="NxButtonSize.Small" OnClick="Reset">Reset</NxButton>
+        </div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Tab</td><td>Into the list once, on the last chip focused; Tab again leaves it.</td></tr>
+                <tr><td>← → ↑ ↓ / Home / End</td><td>Move between chips, wrapping at the ends.</td></tr>
+                <tr><td>Delete / Backspace</td><td>With <code>Removable</code>: removes the focused chip; focus moves to the next.</td></tr>
+                <tr><td>Remove button</td><td>Named "Remove <em>text</em>" for the pointer; out of the tab order.</td></tr>
+                <tr><td>Roles</td><td>A list of list items named by <code>AriaLabel</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="chiplist" Page="overview" />
+
+@code {
+    static readonly string[] Start = ["1-40212", "1-40218", "2-11873", "2-11880", "1-40231"];
+    List<string> tickets = [.. Start];
+
+    void Reset() => tickets = [.. Start];
+
+    const string basicCode =
+        """
+        <NxChipList Data="tickets" Removable="true" AriaLabel="Delivery tickets"
+                    OnRemove="e => tickets.Remove(e.Item)" NoDataText="No tickets" />
+        """;
+}

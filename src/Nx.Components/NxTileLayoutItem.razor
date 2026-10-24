@@ -1,0 +1,64 @@
+@namespace Nx.Components
+@implements IDisposable
+
+@* A tile registers with its NxTileLayout and renders nothing here: the layout draws it, in the layout's order. *@
+
+@code {
+    private readonly string generatedKey = $"tile-{Guid.NewGuid():N}"[..13];
+    private (string?, string?, int, int, string?, bool, bool) shown;
+
+    [CascadingParameter] private NxTileLayout? Layout { get; set; }
+
+    /// <summary>The tile's key in <c>GetState</c>, the events and <c>@key</c>. Generated when not set.</summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>The header's text.</summary>
+    [Parameter] public string? HeaderText { get; set; }
+
+    /// <summary>Rich header content, in place of <see cref="HeaderText"/>.</summary>
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+
+    /// <summary>The tile's content.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Columns the tile spans, up to the layout's <c>Columns</c>. Default: <c>1</c>.</summary>
+    [Parameter] public int ColSpan { get; set; } = 1;
+
+    /// <summary>Rows the tile spans, each <c>RowHeight</c> tall. Default: <c>1</c>.</summary>
+    [Parameter] public int RowSpan { get; set; } = 1;
+
+    /// <summary>Extra CSS class applied to the tile.</summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>Shows the tile. A hidden tile keeps its place in the order. Default: <c>true</c>.</summary>
+    [Parameter] public bool Visible { get; set; } = true;
+
+    internal string Key => Id ?? generatedKey;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Layout is null)
+            throw new InvalidOperationException("NxTileLayoutItem must be placed inside an NxTileLayout.");
+        shown = Shown;
+        Layout.Register(this);
+    }
+
+    private (string?, string?, int, int, string?, bool, bool) Shown => (Id, HeaderText, ColSpan, RowSpan, Class, Visible, HeaderTemplate is null);
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // The layout drew this tile before these parameters arrived; redraw only when what it shows changed
+        // (content fragments are new objects on every render, so they cannot be compared).
+        var now = Shown;
+        if (now != shown)
+        {
+            shown = now;
+            Layout?.ItemChanged(this);
+        }
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => Layout?.Unregister(this);
+}

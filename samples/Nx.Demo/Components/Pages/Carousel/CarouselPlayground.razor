@@ -1,0 +1,75 @@
+@page "/carousel/playground"
+
+<DocHeader Slug="carousel" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                <NxCarousel Id="playground-carousel" Data="DemoSlides.Projects.Take(pgCount)" @bind-Page="pgPage" @bind-Page:after="() => pgChanges++"
+                            AutomaticPageChange="pgAuto" AutomaticPageChangeInterval="pgInterval" Arrows="pgArrows" Pageable="pgPageable"
+                            ShowPauseButton="PauseValue" Height="@($"{pgHeight}px")" AriaLabel="Playground pictures">
+                    <Template><DemoSlideView Slide="context" /></Template>
+                </NxCarousel>
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-page">Page: <strong>@pgPage</strong></span>
+                <span class="demo-counter" id="playground-changes">PageChanged × @pgChanges</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Data</div>
+            <label class="demo-control"><span>Slides</span><input type="number" id="pg-count" min="0" max="5" @bind="pgCount" /></label>
+            <label class="demo-control"><span>Page</span><input type="number" id="pg-page" min="1" max="5" @bind="pgPage" /></label>
+
+            <div class="demo-controls-title">Rotation</div>
+            <label class="demo-control"><span>AutomaticPageChange</span><input type="checkbox" id="pg-auto" @bind="pgAuto" /></label>
+            <label class="demo-control"><span>Interval (ms)</span><input type="number" id="pg-interval" min="1000" step="500" @bind="pgInterval" /></label>
+            <label class="demo-control">
+                <span>ShowPauseButton</span>
+                <select id="pg-pause" @bind="pgPause">
+                    <option value="auto">auto</option>
+                    <option value="true">true</option>
+                    <option value="false">false</option>
+                </select>
+            </label>
+
+            <div class="demo-controls-title">Controls &amp; size</div>
+            <label class="demo-control"><span>Arrows</span><input type="checkbox" id="pg-arrows" @bind="pgArrows" /></label>
+            <label class="demo-control"><span>Pageable</span><input type="checkbox" id="pg-pageable" @bind="pgPageable" /></label>
+            <label class="demo-control"><span>Height (px)</span><input type="number" id="pg-height" min="120" step="20" @bind="pgHeight" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="carousel" Page="playground" />
+
+@code {
+    int pgCount = 5, pgPage = 1, pgInterval = 5000, pgHeight = 240, pgChanges;
+    bool pgAuto = true, pgArrows = true, pgPageable = true;
+    string pgPause = "auto";
+
+    bool? PauseValue => pgPause switch { "true" => true, "false" => false, _ => null };
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "Data=\"pictures\"", "@bind-Page=\"page\"", $"Height=\"{pgHeight}px\"" };
+            if (!pgAuto) attrs.Add("AutomaticPageChange=\"false\"");
+            if (pgInterval != 5000) attrs.Add($"AutomaticPageChangeInterval=\"{pgInterval}\"");
+            if (PauseValue is { } pause) attrs.Add($"ShowPauseButton=\"{pause.ToString().ToLowerInvariant()}\"");
+            if (!pgArrows) attrs.Add("Arrows=\"false\"");
+            if (!pgPageable) attrs.Add("Pageable=\"false\"");
+            return "<NxCarousel " + string.Join(" ", attrs) + ">\n    <Template>…</Template>\n</NxCarousel>";
+        }
+    }
+}

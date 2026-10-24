@@ -21,7 +21,8 @@ public class SiteLayoutTests : PageTest
                                                           "dropdown", "multiselect", "textarea", "tooltip", "contextmenu", "dropdownbutton", "splitbutton",
                                                           "form", "icon", "loader", "datetimepicker", "autocomplete",
                                                           "buttongroup", "colorpicker", "progressbar", "notification",
-                                                          "dialog", "mediaquery", "togglebutton", "upload", "fileselect", "treeview", "maskedtextbox"];
+                                                          "dialog", "mediaquery", "togglebutton", "upload", "fileselect", "treeview", "maskedtextbox",
+                                                          "tilelayout", "carousel", "colorgradient", "slider", "chiplist", "toolbar", "dateinput"];
     private static readonly string[] SubPages = ["overview", "examples", "playground", "api"];
 
     private static IEnumerable<string> AllPaths() =>

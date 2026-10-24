@@ -1,0 +1,118 @@
+@page "/tilelayout/examples"
+
+<DocHeader Slug="tilelayout" Page="examples" />
+
+<div class="doc-section">
+    <h2>Reorder, Resize &amp; Save</h2>
+    <p class="doc-note">
+        ERP's card grid: drag a tile by its header onto another, or pull its corner. <code>OnReorder</code> and
+        <code>OnResize</code> fire after each change; read <code>GetState()</code> to save it and <code>SetState</code> to bring it
+        back. The × in a header hides the tile (<code>Visible</code>).
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxTileLayout @ref="board" Id="edit-tiles" Columns="4" RowHeight="120px" Reorderable="true" Resizable="true"
+                      OnReorder='e => Log($"Moved {e.Id} from {e.OldIndex + 1} to {e.NewIndex + 1}")'
+                      OnResize='e => Log($"Resized {e.Id} to {e.ColSpan}×{e.RowSpan}")' AriaLabel="Production board">
+            @foreach (var card in cards)
+            {
+                <NxTileLayoutItem @key="card.Id" Id="@card.Id" ColSpan="card.Cols" RowSpan="card.Rows" Visible="card.Visible" HeaderText="@card.Title">
+                    <HeaderTemplate>
+                        <span class="nx-tile-title demo-tile-title">@card.Title</span>
+                        <button type="button" class="demo-tile-hide" aria-label="@($"Hide {card.Title}")" title="Hide" @onclick="() => card.Visible = false">
+                            <NxIcon Icon="NxIcons.X" />
+                        </button>
+                    </HeaderTemplate>
+                    <ChildContent>
+                        <div class="demo-tile-stat">
+                            <span class="demo-stat-number">@card.Number</span>
+                            <span>@card.Label</span>
+                        </div>
+                    </ChildContent>
+                </NxTileLayoutItem>
+            }
+        </NxTileLayout>
+        <div class="demo-row">
+            <NxButton id="edit-save" Size="NxButtonSize.Small" OnClick="Save">Save layout</NxButton>
+            <NxButton id="edit-restore" Size="NxButtonSize.Small" Disabled="saved is null" OnClick="Restore">Restore saved</NxButton>
+            <NxButton id="edit-show" Size="NxButtonSize.Small" Disabled="cards.All(c => c.Visible)" OnClick="ShowAll">Show hidden</NxButton>
+            <span class="demo-value" id="edit-log">@last</span>
+        </div>
+        <pre class="doc-code" id="edit-state">@stateText</pre>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Column Width &amp; Auto Rows</h2>
+    <p class="doc-note">
+        <code>ColumnWidth</code> caps how wide a column grows (here 220 px), and without <code>RowHeight</code> rows fit their
+        content.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxTileLayout Id="auto-tiles" Columns="3" ColumnWidth="220px" Gap="10px" AriaLabel="Inventory">
+            <NxTileLayoutItem HeaderText="Rebar">
+                <DemoTileList Rows='["#4 — 1,240 ft", "#5 — 860 ft"]' />
+            </NxTileLayoutItem>
+            <NxTileLayoutItem HeaderText="Strand">
+                <DemoTileList Rows='["0.5 in — 18 coils", "0.6 in — 9 coils", "Low on 0.6 in"]' />
+            </NxTileLayoutItem>
+            <NxTileLayoutItem HeaderText="Inserts">
+                <DemoTileList Rows='["Lifting loops — 420"]' />
+            </NxTileLayoutItem>
+            <NxTileLayoutItem HeaderText="Totals" ColSpan="3">
+                <DemoTileList Rows='["Value on hand: $184,220"]' />
+            </NxTileLayoutItem>
+        </NxTileLayout>
+    </div>
+</div>
+
+<DocPager Slug="tilelayout" Page="examples" />
+
+@code {
+    sealed class Card(string id, string title, string number, string label, int cols, int rows)
+    {
+        public string Id { get; } = id;
+        public string Title { get; } = title;
+        public string Number { get; } = number;
+        public string Label { get; } = label;
+        public int Cols { get; } = cols;
+        public int Rows { get; } = rows;
+        public bool Visible { get; set; } = true;
+    }
+
+    readonly List<Card> cards =
+    [
+        new("sets", "Today's Sets", "18", "pieces set", 2, 2),
+        new("products", "Top Products", "DT-24", "most poured", 1, 1),
+        new("cad", "CAD Required", "6", "drawings waiting", 1, 1),
+        new("tomorrow", "Tomorrow's Sets", "22", "pieces planned", 2, 1),
+        new("email", "Sent Email", "41", "notices this week", 2, 1),
+    ];
+
+    NxTileLayout? board;
+    NxTileLayoutState? saved;
+    string last = "Drag a header or a corner";
+    string stateText = "Not saved yet";
+
+    void Log(string what) => last = what;
+
+    void Save()
+    {
+        saved = board!.GetState();
+        stateText = string.Join("\n", saved.ItemStates.Select(s => $"{s.Order}: {s.Id,-9} {s.ColSpan}×{s.RowSpan}{(s.Visible ? "" : " hidden")}"));
+        Log("Layout saved");
+    }
+
+    void Restore()
+    {
+        if (saved is null)
+            return;
+        board!.SetState(saved);
+        Log("Layout restored");
+    }
+
+    void ShowAll()
+    {
+        foreach (var card in cards)
+            card.Visible = true;
+    }
+}

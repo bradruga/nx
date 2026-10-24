@@ -1,0 +1,8 @@
+@namespace Nx.Components
+
+@* Takes the free room in an NxToolBar, pushing the items after it to the end. *@
+<span class="nx-toolbar-spacer" aria-hidden="true" data-nx-toolbar-item="@key"></span>
+
+@code {
+    private readonly string key = $"tb-{Guid.NewGuid():N}"[..11];
+}

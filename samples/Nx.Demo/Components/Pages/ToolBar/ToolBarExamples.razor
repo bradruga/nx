@@ -1,0 +1,76 @@
+@page "/toolbar/examples"
+
+<DocHeader Slug="toolbar" Page="examples" />
+
+<div class="doc-section">
+    <h2>Spacer &amp; Icon-Only Buttons</h2>
+    <p class="doc-note">
+        An <code>NxToolBarSpacer</code> takes the free room, so the buttons after it sit at the end. An icon-only button needs an
+        <code>AriaLabel</code>, which is also its text in the More menu.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxToolBar Id="spacer-toolbar" AriaLabel="Drawing">
+            <NxToolBarButton Id="sp-undo" Icon="@Icon(NxIcons.Undo)" AriaLabel="Undo" Title="Undo" OnClick='() => Log("Undo")' />
+            <NxToolBarButton Id="sp-redo" Icon="@Icon(NxIcons.Redo)" AriaLabel="Redo" Title="Redo" OnClick='() => Log("Redo")' />
+            <NxToolBarSeparator />
+            <NxToolBarButton Id="sp-zoom-in" Icon="@Icon(NxIcons.ZoomIn)" AriaLabel="Zoom in" Title="Zoom in" OnClick='() => Log("Zoom in")' />
+            <NxToolBarButton Id="sp-zoom-out" Icon="@Icon(NxIcons.ZoomOut)" AriaLabel="Zoom out" Title="Zoom out" OnClick='() => Log("Zoom out")' />
+            <NxToolBarSpacer />
+            <NxToolBarButton Id="sp-print" Text="Print" Icon="@Icon(NxIcons.Print)" OnClick='() => Log("Print")' />
+            <NxToolBarButton Id="sp-share" Text="Share" Icon="@Icon(NxIcons.Share)" Variant="NxButtonVariant.Primary" OnClick='() => Log("Share")' />
+        </NxToolBar>
+        <span class="demo-value" id="spacer-log">@last</span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Overflow: Menu, Wrap or Scroll</h2>
+    <p class="doc-note">
+        In a narrow box the default moves buttons into the More menu; <code>Overflow="NxToolBarOverflow.Wrap"</code> wraps them
+        onto another line and <code>Scroll</code> scrolls the row sideways.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        @foreach (var mode in Enum.GetValues<NxToolBarOverflow>())
+        {
+            <div class="demo-toolbar-narrow">
+                <span class="demo-row-label">@mode</span>
+                <NxToolBar Id="@($"overflow-{mode.ToString().ToLowerInvariant()}")" Overflow="mode" AriaLabel="@($"Pour actions, {mode}")">
+                    <NxToolBarButton Text="Schedule" Icon="@Icon(NxIcons.Calendar)" OnClick='() => Log("Schedule")' />
+                    <NxToolBarButton Text="Assign crew" Icon="@Icon(NxIcons.User)" OnClick='() => Log("Assign crew")' />
+                    <NxToolBarSeparator />
+                    <NxToolBarButton Text="Print tickets" Icon="@Icon(NxIcons.Print)" OnClick='() => Log("Print tickets")' />
+                    <NxToolBarButton Text="Email plant" Icon="@Icon(NxIcons.Envelope)" OnClick='() => Log("Email plant")' />
+                    <NxToolBarButton Text="Delete" Icon="@Icon(NxIcons.Trash)" Variant="NxButtonVariant.Danger" OnClick='() => Log("Delete")' />
+                </NxToolBar>
+            </div>
+        }
+        <span class="demo-value" id="overflow-log">@last</span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Sizes &amp; Variants</h2>
+    <p class="doc-note"><code>Size</code> on the toolbar sets every button's size; a button's <code>Variant</code> and <code>Size</code> are its own.</p>
+    <div class="demo-stage demo-stage-column">
+        @foreach (var size in Enum.GetValues<NxButtonSize>())
+        {
+            <NxToolBar Size="size" AriaLabel="@($"{size} toolbar")" Overflow="NxToolBarOverflow.Wrap">
+                <NxToolBarButton Text="@size.ToString()" Variant="NxButtonVariant.Ghost" />
+                <NxToolBarButton Text="Secondary" />
+                <NxToolBarButton Text="Primary" Variant="NxButtonVariant.Primary" />
+                <NxToolBarButton Text="Danger" Variant="NxButtonVariant.Danger" />
+                <NxToolBarButton Text="Disabled" Disabled="true" />
+            </NxToolBar>
+        }
+    </div>
+</div>
+
+<DocPager Slug="toolbar" Page="examples" />
+
+@code {
+    static RenderFragment Icon(NxIconData icon) => @<NxIcon Icon="icon" />;
+
+    string last = "Nothing pressed yet";
+
+    void Log(string what) => last = what;
+}

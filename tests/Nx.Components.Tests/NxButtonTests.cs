@@ -56,6 +56,9 @@ public class NxButtonTests : BunitContext
     [TestCase(NxButtonVariant.Danger,    "nx-button-danger")]
     [TestCase(NxButtonVariant.Ghost,     "nx-button-ghost")]
     [TestCase(NxButtonVariant.Link,      "nx-button-link")]
+    [TestCase(NxButtonVariant.Success,   "nx-button-success")]
+    [TestCase(NxButtonVariant.Warning,   "nx-button-warning")]
+    [TestCase(NxButtonVariant.Info,      "nx-button-info")]
     public void Variant_AppliesClass(NxButtonVariant variant, string expected)
     {
         var button = RenderButton(p => p.Add(x => x.Variant, variant)).Find("button");

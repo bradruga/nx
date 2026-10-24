@@ -103,6 +103,9 @@ internal sealed class DateFormatter
     /// <summary>The input mask, e.g. <c>99/99/9999</c>; <c>null</c> for none.</summary>
     public string? Mask => edit?.Mask;
 
+    /// <summary>The order of the masked date parts as pattern letters, e.g. <c>Mdy</c>; <c>null</c> without a mask.</summary>
+    public string? Order => edit is { } e ? string.Concat(e.Edit.Where(c => c is 'd' or 'M' or 'y').Distinct()) : null;
+
     /// <summary>The edit pattern as a hint, e.g. <c>mm/dd/yyyy</c>.</summary>
     public string? Hint => edit?.Edit.Replace("/", culture.DateTimeFormat.DateSeparator).ToLowerInvariant();
 

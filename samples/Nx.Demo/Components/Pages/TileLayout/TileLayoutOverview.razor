@@ -1,0 +1,67 @@
+@page "/tilelayout"
+@page "/tilelayout/overview"
+
+<DocHeader Slug="tilelayout" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxTileLayout</code> lays titled tiles (<code>NxTileLayoutItem</code>) on a grid of <code>Columns</code> and rows of
+        <code>RowHeight</code>, each spanning <code>ColSpan</code> columns and <code>RowSpan</code> rows — ERP's dashboards. With
+        <code>Reorderable</code> a tile is dragged by its header onto another tile's place; with <code>Resizable</code> its corner
+        handle changes the spans. <code>GetState</code> and <code>SetState</code> save and restore the arrangement. Under 600 px of
+        its own width the tiles stack in one column.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <p class="doc-note">The legal dashboard: five columns, rows of 50 px.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxTileLayout Id="overview-tiles" Columns="5" RowHeight="50px" AriaLabel="Legal dashboard">
+            <NxTileLayoutItem Id="reminders" HeaderText="Reminders" ColSpan="2" RowSpan="5">
+                <DemoTileList Rows="Reminders" />
+            </NxTileLayoutItem>
+            <NxTileLayoutItem Id="matters" HeaderText="Recent Matters" ColSpan="3" RowSpan="5">
+                <DemoTileList Rows="Matters" />
+            </NxTileLayoutItem>
+            <NxTileLayoutItem Id="documents" HeaderText="Recent Documents" ColSpan="5" RowSpan="4">
+                <DemoTileList Rows="Documents" />
+            </NxTileLayoutItem>
+        </NxTileLayout>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Tab</td><td>With <code>Reorderable</code> or <code>Resizable</code>, each tile's header is a tab stop; then the tile's own content.</td></tr>
+                <tr><td>Ctrl + ← ↑ / → ↓</td><td>Moves the tile one place earlier / later. Ctrl + Home / End: first / last.</td></tr>
+                <tr><td>Shift + ← / →</td><td>One column narrower / wider.</td></tr>
+                <tr><td>Shift + ↑ / ↓</td><td>One row shorter / taller (with a <code>RowHeight</code>).</td></tr>
+                <tr><td>Screen readers</td><td>A list of tiles; each tile's content is a group named by its header. Moves and resizes are announced.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="tilelayout" Page="overview" />
+
+@code {
+    static readonly string[] Reminders = ["File answer — Harbor Lofts lien, Nov 3", "Renew surety bond, Nov 14", "Deposition prep, Nov 18"];
+    static readonly string[] Matters = ["Harbor Lofts v. NEP — lien", "Route 9 Bridge — change order dispute", "OSHA citation 2026-114", "Riverside Garage — warranty claim"];
+    static readonly string[] Documents = ["Settlement draft v3.docx", "Bond renewal.pdf", "Change order 14 backup.xlsx", "Citation response.docx"];
+
+    const string basicCode =
+        """
+        <NxTileLayout Columns="5" RowHeight="50px">
+            <NxTileLayoutItem HeaderText="Reminders" ColSpan="2" RowSpan="5"><Reminders /></NxTileLayoutItem>
+            <NxTileLayoutItem HeaderText="Recent Matters" ColSpan="3" RowSpan="5"><RecentMatters /></NxTileLayoutItem>
+            <NxTileLayoutItem HeaderText="Recent Documents" ColSpan="5" RowSpan="4"><RecentDocuments /></NxTileLayoutItem>
+        </NxTileLayout>
+        """;
+}

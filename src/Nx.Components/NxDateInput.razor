@@ -1,0 +1,35 @@
+@namespace Nx.Components
+@typeparam TValue
+
+<NxFieldFrame ClassPrefix="nx-dateinput"
+              InputId="@InputId"
+              Label="@Label"
+              FloatingLabel="FloatingLabel"
+              HasValue="@(currentText.Length > 0)"
+              ShowClear="ShowClear"
+              OnClear="HandleClearClick"
+              Disabled="Disabled"
+              ReadOnly="ReadOnly"
+              Invalid="validation.IsInvalid"
+              Class="@Class"
+              Style="@Style">
+    <input @ref="input"
+           @attributes="AdditionalAttributes"
+           id="@InputId"
+           class="@InputCssClass"
+           type="text"
+           autocomplete="off"
+           inputmode="@(formatter.Mask is null ? null : "numeric")"
+           placeholder="@(Placeholder ?? formatter.Hint)"
+           disabled="@Disabled"
+           readonly="@ReadOnly"
+           aria-invalid="@(validation.IsInvalid ? "true" : null)"
+           aria-description="@(formatter.Mask is null ? null : "Up and Down change the day, month or year")"
+           @bind="currentText"
+           @bind:event="oninput"
+           @bind:after="HandleInputAfter"
+           @onchange="HandleChange"
+           @onkeydown="HandleKeyDown"
+           @onfocus="HandleFocus"
+           @onblur="HandleBlur" />
+</NxFieldFrame>

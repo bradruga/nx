@@ -1,0 +1,109 @@
+@page "/colorgradient/examples"
+@using System.ComponentModel.DataAnnotations
+
+<DocHeader Slug="colorgradient" Page="examples" />
+
+<div class="doc-section">
+    <h2>Text &amp; Background</h2>
+    <p class="doc-note">
+        ERP's initials colors dialog: two gradients side by side, hex values, no opacity, and a preview of the initials badge.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-gradient-pair">
+            <div>
+                <h3 class="demo-subhead">Text</h3>
+                <NxColorGradient Id="text-gradient" @bind-Value="textColor" ShowOpacityEditor="false" AriaLabel="Text color" />
+            </div>
+            <div>
+                <h3 class="demo-subhead">Background</h3>
+                <NxColorGradient Id="background-gradient" @bind-Value="backColor" ShowOpacityEditor="false" AriaLabel="Background color" />
+            </div>
+        </div>
+        <div class="demo-row">
+            <span class="demo-row-label">Preview</span>
+            <span class="demo-initials" id="initials-preview" style="background: @backColor; color: @textColor">DO</span>
+            <span class="demo-value" id="initials-value">@textColor on @backColor</span>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Opacity &amp; RGB</h2>
+    <p class="doc-note">
+        With <code>ShowOpacityEditor</code> the value carries alpha (<code>#rrggbbaa</code>, or <code>rgba()</code> with
+        <code>ValueFormat="NxColorFormat.Rgb"</code>). <code>Format</code> chooses which text boxes show first.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxColorGradient Id="rgba-gradient" @bind-Value="overlay" ValueFormat="NxColorFormat.Rgb" Format="NxColorFormat.Rgb" AriaLabel="Overlay" />
+        <div class="demo-row">
+            <span class="demo-overlay-sample" id="overlay-sample"><span style="background: @overlay">Overlay</span></span>
+            <span class="demo-value" id="overlay-value">@overlay</span>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>In a Popup</h2>
+    <p class="doc-note">The gradient has no popup of its own; put it in one. Here an <code>NxDialog</code> opens it from a swatch.</p>
+    <div class="demo-stage">
+        <div class="demo-row">
+            <button type="button" class="demo-swatch-button" id="popup-swatch" aria-label="Crew color" style="background: @crewColor" @onclick="OpenPopup"></button>
+            <span class="demo-value" id="popup-value">@crewColor</span>
+        </div>
+    </div>
+    <NxDialog @bind-Visible="showPopup" Title="Crew color" Id="color-dialog">
+        <ChildContent>
+            <NxColorGradient Id="popup-gradient" @bind-Value="draftColor" ShowOpacityEditor="false" AriaLabel="Crew color" />
+        </ChildContent>
+        <Buttons>
+            <NxButton id="popup-ok" Variant="NxButtonVariant.Primary" OnClick="Accept">OK</NxButton>
+            <NxButton id="popup-cancel" OnClick="() => showPopup = false">Cancel</NxButton>
+        </Buttons>
+    </NxDialog>
+</div>
+
+<div class="doc-section">
+    <h2>Validation &amp; Disabled</h2>
+    <div class="demo-stage demo-stage-column">
+        <EditForm id="gradient-form" Model="badge" OnValidSubmit="() => result = Saved()" FormName="gradient-form">
+            <DataAnnotationsValidator />
+            <NxColorGradient Id="badge-gradient" @bind-Value="badge.Color" ShowOpacityEditor="false" AriaLabel="Badge color" />
+            <NxValidationMessage For="() => badge.Color" />
+            <div class="demo-row" style="margin-top:16px">
+                <NxButton id="gradient-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Save badge</NxButton>
+                <span class="demo-value" id="gradient-result">@result</span>
+            </div>
+        </EditForm>
+        <NxColorGradient Id="disabled-gradient" Value="#7a7a7a" Disabled="true" AriaLabel="Disabled" />
+    </div>
+</div>
+
+<DocPager Slug="colorgradient" Page="examples" />
+
+@code {
+    string? textColor = "#ffffff", backColor = "#2e6db4", overlay = "rgba(31, 78, 121, 0.6)", crewColor = "#c0392b", draftColor;
+    bool showPopup;
+    string result = "Not saved";
+    readonly BadgeForm badge = new() { Color = "#ffff00" };
+
+    void Accept()
+    {
+        crewColor = draftColor ?? crewColor;
+        showPopup = false;
+    }
+
+    void OpenPopup()
+    {
+        draftColor = crewColor;
+        showPopup = true;
+    }
+
+    string Saved() => $"Saved {badge.Color}";
+
+    class BadgeForm
+    {
+        [Required]
+        [RegularExpression("^#(?!ffff00|ffffff).*$", ErrorMessage = "Yellow and white badges cannot be read on the board.")]
+        public string? Color { get; set; }
+    }
+}

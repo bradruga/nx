@@ -1,6 +1,4 @@
-using System.Globalization;
 using System.Linq.Expressions;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
@@ -25,9 +23,6 @@ public partial class NxColorPicker : IAsyncDisposable
     // keys, focuses the selected swatch on open, and reports a press or Tab outside the popup.
 
     private const string ModulePath = "./_content/Nx.Components/nx-colorpicker.js";
-
-    [GeneratedRegex(@"^rgba?\(\s*(\d{1,3})[\s,]+(\d{1,3})[\s,]+(\d{1,3})", RegexOptions.IgnoreCase)]
-    private static partial Regex Rgb();
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -121,22 +116,7 @@ public partial class NxColorPicker : IAsyncDisposable
         a is not null && b is not null && (string.Equals(a.Trim(), b.Trim(), StringComparison.OrdinalIgnoreCase) || (Normalize(a) is { } na && na == Normalize(b)));
 
     /// <summary><c>#rrggbb</c> for a hex or rgb() color, else <c>null</c>.</summary>
-    internal static string? Normalize(string color)
-    {
-        var text = color.Trim();
-        if (text.StartsWith('#'))
-        {
-            var hex = text[1..];
-            if (hex.Length is 3 or 4)
-                hex = string.Concat(hex[..3].Select(c => $"{c}{c}"));
-            return hex.Length is 6 or 8 && hex.All(Uri.IsHexDigit) ? $"#{hex[..6].ToLowerInvariant()}" : null;
-        }
-        var rgb = Rgb().Match(text);
-        if (!rgb.Success)
-            return null;
-        var parts = Enumerable.Range(1, 3).Select(i => Math.Min(255, int.Parse(rgb.Groups[i].Value, CultureInfo.InvariantCulture)));
-        return "#" + string.Concat(parts.Select(p => p.ToString("x2", CultureInfo.InvariantCulture)));
-    }
+    internal static string? Normalize(string color) => ColorMath.Parse(color) is { } c ? ColorMath.ToHex(c with { A = 1 }) : null;
 
     /// <inheritdoc />
     protected override void OnParametersSet()

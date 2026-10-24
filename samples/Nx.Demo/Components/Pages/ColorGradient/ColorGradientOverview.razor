@@ -1,0 +1,50 @@
+@page "/colorgradient"
+@page "/colorgradient/overview"
+
+<DocHeader Slug="colorgradient" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxColorGradient</code> picks any color: drag in the saturation and brightness square, set the hue (and, with
+        <code>ShowOpacityEditor</code>, the opacity) on the sliders, or type HEX or R, G, B. It shows inline, as in ERP's initials
+        colors dialog; for a choice from a fixed palette use <a href="colorpicker/overview">NxColorPicker</a>, whose color parsing it
+        shares. The value is a CSS color string, <code>#rrggbb</code> by default.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column">
+        <NxColorGradient Id="overview-gradient" @bind-Value="color" ShowOpacityEditor="false" AriaLabel="Background" />
+        <span class="demo-value" id="overview-value">Value: <strong>@color</strong></span>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Part</th><th>Keys</th></tr></thead>
+            <tbody>
+                <tr><td>Square (a slider)</td><td>← → saturation, ↑ ↓ brightness, by 1% (Shift: 10%); Page Up / Down brightness by 10%; Home / End no / full saturation.</td></tr>
+                <tr><td>Hue, opacity</td><td>Native range inputs: arrows, Page Up / Down, Home / End.</td></tr>
+                <tr><td>HEX / R G B</td><td>Type and press Enter or leave the box; anything unreadable goes back.</td></tr>
+                <tr><td>Switch button</td><td>Toggles between the HEX box and the R, G, B boxes.</td></tr>
+                <tr><td>Screen readers</td><td>A group named by <code>AriaLabel</code>; the square says "Saturation 60%, brightness 80%".</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="colorgradient" Page="overview" />
+
+@code {
+    string? color = "#2e6db4";
+
+    const string basicCode =
+        """
+        <NxColorGradient @bind-Value="initials.BackgroundColor" ShowOpacityEditor="false" />
+        """;
+}

@@ -94,6 +94,8 @@
     string? homeColor = "#4371c4";
     string? homeBid = "26-0412";
     bool homeToggle = true;
+    int homeSlider = 4;
+    static readonly string[] HomeChips = ["5000 psi", "SCC", "Grout"];
     static readonly IReadOnlyList<PermissionNode> HomeExpanded = DemoTree.Permissions.Where(n => n.Id is "acc" or "acc.bills").ToList();
     static RenderFragment IconOf(NxIconData icon) => @<NxIcon Icon="icon" />;
     DateTime? gateOpens = DateTime.Today.AddDays(1).AddHours(6);
@@ -184,6 +186,18 @@
             <NxLoader Type="NxLoaderType.Converging" />
             <NxLoader Type="NxLoaderType.Pulsing" />
         </div>,
+        "slider" => @<NxSlider TValue="int" Min="0" Max="10" LargeStep="5" @bind-Value="homeSlider" aria-label="Crew size" Style="width:240px" />,
+        "chiplist" => @<NxChipList Data="HomeChips" AriaLabel="Mixes" />,
+        "dateinput" => @<NxDateInput TValue="DateOnly?" Label="Ship date" @bind-Value="pourDate" Style="width:240px" />,
+        "toolbar" => @<NxToolBar AriaLabel="Sheet" Overflow="NxToolBarOverflow.Wrap" Style="width:260px">
+            <NxToolBarButton Text="New" Icon="@IconOf(NxIcons.Plus)" />
+            <NxToolBarButton Text="Save" Icon="@IconOf(NxIcons.Save)" Variant="NxButtonVariant.Primary" />
+            <NxToolBarSeparator />
+            <NxToolBarButton Icon="@IconOf(NxIcons.Print)" AriaLabel="Print" />
+        </NxToolBar>,
+        "colorgradient" => @<div class="home-gradient" aria-hidden="true"><span></span><i></i></div>,
+        "carousel" => @<div class="home-carousel" aria-hidden="true"><DemoSlideView Slide="DemoSlides.Projects[0]" ShowCaption="false" /></div>,
+        "tilelayout" => @<div class="home-tiles" aria-hidden="true"><span class="home-tile-wide">Today's sets</span><span>CAD</span><span>Loads</span><span>Email</span></div>,
         _ => @<text></text>
     };
 

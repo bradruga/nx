@@ -1,0 +1,119 @@
+.nx-tilelayout {
+    container-type: inline-size;
+    /* A definite width: in a column flexbox a size container is otherwise measured at zero width, all stacked. */
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+    color: var(--nx-fg);
+}
+
+.nx-tilelayout-grid {
+    display: grid;
+    grid-template-columns: var(--nx-tilelayout-columns);
+    grid-auto-rows: var(--nx-tilelayout-row);
+    grid-auto-flow: row;
+    gap: var(--nx-tilelayout-gap);
+}
+
+/* ── A tile: header, scrolling body, resize handle ─────────────────────────── */
+
+.nx-tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    grid-column: span var(--nx-tile-cols);
+    grid-row: span var(--nx-tile-rows);
+    min-width: 0;
+    min-height: 0;
+    box-sizing: border-box;
+    border: 1px solid var(--nx-tile-border);
+    border-radius: var(--nx-radius);
+    background: var(--nx-tile-bg);
+    box-shadow: var(--nx-tile-shadow);
+    overflow: hidden;
+    transition: box-shadow var(--nx-transition), border-color var(--nx-transition);
+}
+
+.nx-tile-header {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 0 14px;
+    border-bottom: 1px solid var(--nx-tile-border);
+    font-weight: 600;
+}
+.nx-tile-header:focus { outline: none; }
+.nx-tile-header:focus-visible {
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline-offset: -2px;
+    border-radius: var(--nx-radius) var(--nx-radius) 0 0;
+}
+
+.nx-tile-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.nx-tile-body {
+    flex: 1;
+    min-height: 0;
+    padding: 12px 14px;
+    overflow: auto;
+}
+
+.nx-tilelayout-grid[data-reorderable="true"] .nx-tile-header { cursor: grab; }
+.nx-tilelayout-dragging,
+.nx-tilelayout-dragging .nx-tile-header { cursor: grabbing; user-select: none; }
+
+.nx-tile-dragging {
+    z-index: 2;
+    opacity: 0.85;
+    box-shadow: var(--nx-shadow-popup);
+    transition: none;
+}
+
+.nx-tile-drop-target {
+    border-color: var(--nx-accent);
+    box-shadow: 0 0 0 2px var(--nx-accent-subtle), var(--nx-tile-shadow);
+}
+
+.nx-tile-resize {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 18px;
+    height: 18px;
+    cursor: nwse-resize;
+    touch-action: none;
+    background:
+        linear-gradient(135deg, transparent 0 55%, var(--nx-border-hover) 55% 62%, transparent 62% 72%, var(--nx-border-hover) 72% 79%, transparent 79%);
+}
+.nx-tile-resizing { border-color: var(--nx-accent); user-select: none; }
+
+/* Read by screen readers only: the keys, and what a move or resize did. */
+.nx-tilelayout-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* ── Narrow: one column, each tile the full width at its own height ───────── */
+
+@container (max-width: 599px) {
+    .nx-tilelayout-grid { grid-template-columns: minmax(0, 1fr); }
+    .nx-tile { grid-column: auto; }
+    .nx-tile-resize { display: none; }
+}
+
+@media (pointer: coarse) {
+    .nx-tile-header { min-height: 44px; }
+    .nx-tile-resize { width: 28px; height: 28px; }
+}

@@ -1,0 +1,49 @@
+@page "/dateinput/api"
+
+<DocHeader Slug="dateinput" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Value</td><td>TValue?</td><td>—</td><td><code>DateTime</code> or <code>DateOnly</code>, nullable or not. Use <code>@@bind-Value</code>; a DateTime keeps its time.</td></tr>
+                <tr><td>Min / Max</td><td>DateOnly?</td><td>—</td><td>A typed date outside is moved to the nearest limit.</td></tr>
+                <tr><td>Format</td><td>string</td><td>"d"</td><td>How it shows unfocused; typing uses its all-number form, else the culture's short date.</td></tr>
+                <tr><td>Culture</td><td>CultureInfo?</td><td>current</td><td>Format, typing order and separators.</td></tr>
+                <tr><td>Label / FloatingLabel</td><td>string? / bool</td><td>— / false</td><td>A label above, or inside and lifted.</td></tr>
+                <tr><td>Placeholder</td><td>string?</td><td>the pattern</td><td>Shown while empty, e.g. <code>mm/dd/yyyy</code>.</td></tr>
+                <tr><td>Clearable</td><td>bool</td><td>false</td><td>A clear button while there is a date (nullable types).</td></tr>
+                <tr><td>Disabled / ReadOnly</td><td>bool</td><td>false</td><td>The native attributes; read-only does not step.</td></tr>
+                <tr><td>AutoFocus</td><td>bool</td><td>false</td><td>Focuses the input after it first renders.</td></tr>
+                <tr><td>Id</td><td>string?</td><td>generated</td><td>The input's id; the label points at it.</td></tr>
+                <tr><td>Class / Style</td><td>string?</td><td>—</td><td>On the outer element; other attributes go to the input.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events &amp; Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ValueChanged</td><td>EventCallback&lt;TValue?&gt;</td><td>On Enter, on leaving the field, on Up / Down, on clear.</td></tr>
+                <tr><td>OnFocus / OnBlur</td><td>EventCallback&lt;FocusEventArgs&gt;</td><td>The input gained or lost focus (after committing).</td></tr>
+                <tr><td>FocusAsync()</td><td>ValueTask</td><td>Moves focus to the input.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS</h2>
+    <p class="doc-note">
+        The field is NxTextBox's frame (<code>--nx-field-*</code>, see <a href="textbox/api">NxTextBox</a>) with the prefix
+        <code>nx-dateinput</code>: <code>.nx-dateinput-field</code>, <code>.nx-dateinput-input</code>.
+    </p>
+</div>
+
+<DocPager Slug="dateinput" Page="api" />

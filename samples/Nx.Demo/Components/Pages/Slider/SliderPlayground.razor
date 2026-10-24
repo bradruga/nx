@@ -1,0 +1,75 @@
+@page "/slider/playground"
+
+<DocHeader Slug="slider" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                <NxSlider TValue="int" Id="playground-slider" @bind-Value="pgValue" @bind-Value:after="() => pgChanges++"
+                          Min="pgMin" Max="pgMax" SmallStep="pgSmall" LargeStep="pgLarge" Format="@OrNull(pgFormat)"
+                          Immediate="pgImmediate" ShowButtons="pgButtons" ShowValue="pgShowValue" Label="@OrNull(pgLabel)"
+                          Disabled="pgDisabled" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-value">Value: <strong>@pgValue</strong></span>
+                <span class="demo-counter" id="playground-changes">ValueChanged × @pgChanges</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Range</div>
+            <label class="demo-control"><span>Value</span><input type="number" id="pg-value" @bind="pgValue" /></label>
+            <label class="demo-control"><span>Min</span><input type="number" id="pg-min" @bind="pgMin" /></label>
+            <label class="demo-control"><span>Max</span><input type="number" id="pg-max" @bind="pgMax" /></label>
+            <label class="demo-control"><span>SmallStep</span><input type="number" id="pg-small" min="1" @bind="pgSmall" /></label>
+            <label class="demo-control"><span>LargeStep</span><input type="number" id="pg-large" min="0" @bind="pgLarge" /></label>
+
+            <div class="demo-controls-title">Look</div>
+            <label class="demo-control"><span>Label</span><input type="text" id="pg-label" @bind="pgLabel" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>Format</span><input type="text" id="pg-format" @bind="pgFormat" @bind:event="oninput" placeholder="e.g. 0 or N1" /></label>
+            <label class="demo-control"><span>ShowButtons</span><input type="checkbox" id="pg-buttons" @bind="pgButtons" /></label>
+            <label class="demo-control"><span>ShowValue</span><input type="checkbox" id="pg-show-value" @bind="pgShowValue" /></label>
+
+            <div class="demo-controls-title">Behavior</div>
+            <label class="demo-control"><span>Immediate</span><input type="checkbox" id="pg-immediate" @bind="pgImmediate" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="slider" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+
+    int pgValue = 30, pgMin, pgMax = 100, pgSmall = 5, pgLarge = 25, pgChanges;
+    bool pgImmediate = true, pgButtons, pgShowValue = true, pgDisabled;
+    string pgLabel = "Cure (%)", pgFormat = "";
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "TValue=\"int\"", "@bind-Value=\"cure\"" };
+            if (OrNull(pgLabel) is { } label) attrs.Add($"Label=\"{label}\"");
+            if (pgMin != 0) attrs.Add($"Min=\"{pgMin}\"");
+            if (pgMax != 10) attrs.Add($"Max=\"{pgMax}\"");
+            if (pgSmall != 1) attrs.Add($"SmallStep=\"{pgSmall}\"");
+            if (pgLarge != 0) attrs.Add($"LargeStep=\"{pgLarge}\"");
+            if (OrNull(pgFormat) is { } format) attrs.Add($"Format=\"{format}\"");
+            if (!pgImmediate) attrs.Add("Immediate=\"false\"");
+            if (pgButtons) attrs.Add("ShowButtons=\"true\"");
+            if (pgShowValue) attrs.Add("ShowValue=\"true\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            return "<NxSlider " + string.Join(" ", attrs) + " />";
+        }
+    }
+}

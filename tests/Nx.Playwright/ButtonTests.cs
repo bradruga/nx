@@ -49,6 +49,27 @@ public class ButtonTests : PageTest
     }
 
     [Test]
+    public async Task StatusColors_FilledFromTheirTokens_WarningDarkText()
+    {
+        await GoToPage();
+
+        foreach (var (id, token, fg) in new[] { ("status-success", "--nx-success", "--nx-success-fg"),
+                                                ("status-warning", "--nx-warning-fill", "--nx-warning-fg"),
+                                                ("status-info", "--nx-info", "--nx-info-fg") })
+        {
+            var button = Page.Locator($"#{id}");
+            var colors = await button.EvaluateAsync<string[]>(
+                "(e, t) => { const probe = document.createElement('span'); e.after(probe); probe.style.color = `var(${t[0]})`; probe.style.backgroundColor = `var(${t[1]})`; const s = getComputedStyle(probe); const r = [s.color, s.backgroundColor]; probe.remove(); return r; }",
+                new[] { token, fg });
+            await Expect(button).ToHaveCSSAsync("background-color", colors[0]);
+            await Expect(button).ToHaveCSSAsync("color", colors[1]);
+        }
+        Assert.That(await Page.Locator("#status-warning").EvaluateAsync<double>(
+            "e => { const [r, g, b] = getComputedStyle(e).color.match(/\\d+/g).map(Number); return (r + g + b) / 3; }"), Is.LessThan(80),
+            "warning text is dark on amber");
+    }
+
+    [Test]
     public async Task Sizes_FollowControlHeightScale()
     {
         await GoToPage();
@@ -150,8 +171,8 @@ public class ButtonTests : PageTest
         await GoToPage();
 
         var disabled = Section("Disabled").Locator("button");
-        await Expect(disabled).ToHaveCountAsync(5);
-        for (var i = 0; i < 5; i++)
+        await Expect(disabled).ToHaveCountAsync(8);
+        for (var i = 0; i < 8; i++)
             await Expect(disabled.Nth(i)).ToBeDisabledAsync();
 
         // The last focusable control before the Disabled section is the AutoLoading button;

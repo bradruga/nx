@@ -1,0 +1,50 @@
+@page "/slider"
+@page "/slider/overview"
+
+<DocHeader Slug="slider" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxSlider</code> picks a number between <code>Min</code> and <code>Max</code> by dragging a thumb. Underneath it is
+        the browser's own range input, so the keyboard, touch and screen readers work as they do everywhere; Nx adds the filled
+        track, labelled ticks every <code>LargeStep</code>, optional − / + buttons and the value beside it. Any number type works:
+        <code>int</code>, <code>decimal</code>, <code>double</code>…
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxSlider TValue="int" Id="overview-slider" Label="Crew size" Min="0" Max="10" LargeStep="2" @bind-Value="crew" />
+        <span class="demo-value" id="overview-value">Value: <strong>@crew</strong></span>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>← / ↓ and → / ↑</td><td>One <code>SmallStep</code> down or up.</td></tr>
+                <tr><td>Page Up / Page Down</td><td>A larger jump, as the browser decides (a tenth of the range).</td></tr>
+                <tr><td>Home / End</td><td><code>Min</code> / <code>Max</code>.</td></tr>
+                <tr><td>Screen readers</td><td>A native slider: label, value, min and max are announced; the formatted value is <code>aria-valuetext</code>.</td></tr>
+                <tr><td>Buttons</td><td>The − and + buttons are for the pointer and stay out of the tab order; the keys already do it.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="slider" Page="overview" />
+
+@code {
+    int crew = 4;
+
+    const string basicCode =
+        """
+        <NxSlider TValue="int" Label="Crew size" Min="0" Max="10" LargeStep="2" @bind-Value="crew" />
+        """;
+}

@@ -1,0 +1,60 @@
+@namespace Nx.Components
+
+<div @attributes="AdditionalAttributes" id="@Id" class="@CssClass" style="@RootStyle" role="group" aria-label="@(AriaLabel ?? "Color")">
+    <div @ref="area" class="nx-colorgradient-area">
+        <div @ref="thumb"
+             class="nx-colorgradient-thumb"
+             role="slider"
+             tabindex="@(Disabled ? -1 : 0)"
+             aria-label="Saturation and brightness"
+             aria-valuemin="0"
+             aria-valuemax="100"
+             aria-valuenow="@Pct(hsv.S)"
+             aria-valuetext="@($"Saturation {Pct(hsv.S)}%, brightness {Pct(hsv.V)}%")"
+             aria-disabled="@(Disabled ? "true" : null)"
+             @onkeydown="HandleAreaKeyDown"></div>
+    </div>
+
+    <div class="nx-colorgradient-controls">
+        <div class="nx-colorgradient-sliders">
+            <input class="nx-colorgradient-hue" type="range" min="0" max="359" step="1" aria-label="Hue"
+                   disabled="@Disabled" @bind="hueText" @bind:event="oninput" @bind:after="HandleHueInput" />
+            @if (ShowOpacityEditor)
+            {
+                <input class="nx-colorgradient-alpha" type="range" min="0" max="100" step="1" aria-label="Opacity"
+                       aria-valuetext="@($"{Pct(hsv.A)}%")"
+                       disabled="@Disabled" @bind="alphaText" @bind:event="oninput" @bind:after="HandleAlphaInput" />
+            }
+        </div>
+        <span class="nx-colorgradient-preview" aria-hidden="true"><span class="nx-colorgradient-preview-color"></span></span>
+    </div>
+
+    <div class="nx-colorgradient-inputs">
+        @if (view == NxColorFormat.Hex)
+        {
+            <label class="nx-colorgradient-field nx-colorgradient-field-hex">
+                <input id="@($"{BaseId}-hex")" class="nx-colorgradient-input" type="text" spellcheck="false" autocomplete="off" maxlength="9"
+                       disabled="@Disabled" @bind="hexText" @bind:after="CommitHexAsync" />
+                <span class="nx-colorgradient-caption">HEX</span>
+            </label>
+        }
+        else
+        {
+            @foreach (var part in Parts)
+            {
+                var name = part;
+                <label class="nx-colorgradient-field">
+                    <input class="nx-colorgradient-input" type="text" inputmode="numeric" autocomplete="off" maxlength="3"
+                           aria-label="@PartLabel(name)" disabled="@Disabled"
+                           @bind="partTexts[name]" @bind:after="() => CommitPartAsync(name)" />
+                    <span class="nx-colorgradient-caption">@name</span>
+                </label>
+            }
+        }
+        <button type="button" class="nx-colorgradient-view" disabled="@Disabled"
+                aria-label="@(view == NxColorFormat.Hex ? "Show RGB inputs" : "Show HEX input")" title="Switch between HEX and RGB"
+                @onclick="ToggleView">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="7 15 12 20 17 15" /><polyline points="7 9 12 4 17 9" /></svg>
+        </button>
+    </div>
+</div>

@@ -1,0 +1,61 @@
+@page "/toolbar/api"
+
+<DocHeader Slug="toolbar" Page="api" />
+
+<div class="doc-section">
+    <h2>NxToolBar</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>Buttons, separators and spacers.</td></tr>
+                <tr><td>Overflow</td><td>NxToolBarOverflow</td><td>Menu</td><td>Menu (a More menu at the end), Wrap or Scroll.</td></tr>
+                <tr><td>Size</td><td>NxButtonSize</td><td>Medium</td><td>Every button's size, unless it sets its own.</td></tr>
+                <tr><td>AriaLabel</td><td>string?</td><td>—</td><td>The toolbar's accessible name.</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>On the toolbar; other attributes go there too.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxToolBarButton</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Text</td><td>string?</td><td>—</td><td>The button's text and its More menu entry.</td></tr>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>Rich content on the bar in place of <code>Text</code>.</td></tr>
+                <tr><td>Icon</td><td>RenderFragment?</td><td>—</td><td>Before the text, on the bar and in the menu.</td></tr>
+                <tr><td>AriaLabel / Title</td><td>string?</td><td>—</td><td>Name (needed icon-only, and the menu text then) and tooltip.</td></tr>
+                <tr><td>Variant</td><td>NxButtonVariant</td><td>Secondary</td><td>As NxButton.</td></tr>
+                <tr><td>Size</td><td>NxButtonSize?</td><td>the toolbar's</td><td>As NxButton.</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>false</td><td>Greyed out on the bar and in the menu.</td></tr>
+                <tr><td>Visible</td><td>bool</td><td>true</td><td>Hidden buttons take no room and are not in the menu.</td></tr>
+                <tr><td>OnClick</td><td>EventCallback&lt;MouseEventArgs&gt;</td><td>—</td><td>Raised from the bar or from the More menu.</td></tr>
+                <tr><td>Id / Class</td><td>string?</td><td>—</td><td>On the button; other attributes go there too.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="doc-note">
+        <code>NxToolBarSeparator</code> (a line; a line in the menu too) and <code>NxToolBarSpacer</code> (takes the free room) have
+        no parameters.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-toolbar-gap</td><td>6px</td><td>Space between items.</td></tr>
+                <tr><td>--nx-toolbar-padding</td><td>6px</td><td>Inside the border.</td></tr>
+                <tr><td>--nx-toolbar-bg</td><td>--nx-surface</td><td>The bar's fill.</td></tr>
+                <tr><td>--nx-toolbar-border</td><td>--nx-border</td><td>The bar's border.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="toolbar" Page="api" />

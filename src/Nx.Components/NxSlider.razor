@@ -1,0 +1,54 @@
+@namespace Nx.Components
+@typeparam TValue where TValue : struct, System.Numerics.INumber<TValue>
+
+<div class="@CssClass" style="@RootStyle">
+    @if (Label is not null)
+    {
+        <label class="nx-slider-label" for="@InputId">@Label</label>
+    }
+    <div class="nx-slider-row">
+        @if (ShowButtons)
+        {
+            <button type="button" class="nx-slider-button" tabindex="-1" aria-label="Decrease" title="Decrease"
+                    disabled="@(Disabled || current <= Min)" @onclick="() => StepAsync(-1)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            </button>
+        }
+        <div class="nx-slider-track">
+            <input @attributes="AdditionalAttributes"
+                   id="@InputId"
+                   class="@InputCssClass"
+                   type="range"
+                   min="@Text(Min)"
+                   max="@Text(Max)"
+                   step="@Text(SmallStep)"
+                   disabled="@Disabled"
+                   aria-valuetext="@ValueText"
+                   aria-invalid="@(validation.IsInvalid ? "true" : null)"
+                   @bind="currentText"
+                   @bind:event="oninput"
+                   @bind:after="HandleInputAfter"
+                   @onchange="HandleChange" />
+            @if (Ticks.Count > 0)
+            {
+                <div class="nx-slider-ticks" aria-hidden="true">
+                    @foreach (var tick in Ticks)
+                    {
+                        <span class="nx-slider-tick" style="--nx-slider-at: @Percent(tick)">@TickText(tick)</span>
+                    }
+                </div>
+            }
+        </div>
+        @if (ShowButtons)
+        {
+            <button type="button" class="nx-slider-button" tabindex="-1" aria-label="Increase" title="Increase"
+                    disabled="@(Disabled || current >= Max)" @onclick="() => StepAsync(1)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12" /><line x1="12" y1="5" x2="12" y2="19" /></svg>
+            </button>
+        }
+        @if (ShowValue)
+        {
+            <output class="nx-slider-value" for="@InputId">@ValueText</output>
+        }
+    </div>
+</div>

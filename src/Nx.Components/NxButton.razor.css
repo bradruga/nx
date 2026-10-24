@@ -46,6 +46,21 @@
 .nx-button-danger:active:not(:disabled):not([aria-disabled=true]) { background: var(--nx-danger-active); }
 .nx-button-danger { --nx-focus-ring-color: var(--nx-danger); }
 
+.nx-button-success { background: var(--nx-success); color: var(--nx-success-fg); }
+.nx-button-success:hover:not(:disabled):not([aria-disabled=true])  { background: var(--nx-success-hover); }
+.nx-button-success:active:not(:disabled):not([aria-disabled=true]) { background: var(--nx-success-active); }
+.nx-button-success { --nx-focus-ring-color: var(--nx-success); }
+
+.nx-button-warning { background: var(--nx-warning-fill); color: var(--nx-warning-fg); }
+.nx-button-warning:hover:not(:disabled):not([aria-disabled=true])  { background: var(--nx-warning-fill-hover); }
+.nx-button-warning:active:not(:disabled):not([aria-disabled=true]) { background: var(--nx-warning-fill-active); }
+.nx-button-warning { --nx-focus-ring-color: var(--nx-warning); }
+
+.nx-button-info { background: var(--nx-info); color: var(--nx-info-fg); }
+.nx-button-info:hover:not(:disabled):not([aria-disabled=true])  { background: var(--nx-info-hover); }
+.nx-button-info:active:not(:disabled):not([aria-disabled=true]) { background: var(--nx-info-active); }
+.nx-button-info { --nx-focus-ring-color: var(--nx-info); }
+
 .nx-button-ghost { background: transparent; color: var(--nx-fg); }
 .nx-button-ghost:hover:not(:disabled):not([aria-disabled=true])  { background: var(--nx-surface-hover); }
 .nx-button-ghost:active:not(:disabled):not([aria-disabled=true]) { background: var(--nx-surface-active); }
@@ -100,6 +115,12 @@
 .nx-button-ghost[aria-pressed=true]:hover:not(:disabled) { background: var(--nx-accent-subtle); border-color: var(--nx-accent-hover); }
 
 .nx-button-primary[aria-pressed=true],
-.nx-button-danger[aria-pressed=true] { box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.28); }
+.nx-button-danger[aria-pressed=true],
+.nx-button-success[aria-pressed=true],
+.nx-button-warning[aria-pressed=true],
+.nx-button-info[aria-pressed=true] { box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.28); }
 .nx-button-primary[aria-pressed=true] { background: var(--nx-accent-active); }
 .nx-button-danger[aria-pressed=true] { background: var(--nx-danger-active); }
+.nx-button-success[aria-pressed=true] { background: var(--nx-success-active); }
+.nx-button-warning[aria-pressed=true] { background: var(--nx-warning-fill-active); }
+.nx-button-info[aria-pressed=true] { background: var(--nx-info-active); }

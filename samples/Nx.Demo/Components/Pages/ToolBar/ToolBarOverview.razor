@@ -1,0 +1,81 @@
+@page "/toolbar"
+@page "/toolbar/overview"
+
+<DocHeader Slug="toolbar" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxToolBar</code> is a row of actions: <code>NxToolBarButton</code>s, <code>NxToolBarSeparator</code>s between groups,
+        and an <code>NxToolBarSpacer</code> that pushes the rest to the end. When the row is too narrow, the buttons that do not fit
+        move into a More menu at the end, so a phone still reaches every action. It is one tab stop; the arrow keys move between
+        the buttons.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <p class="doc-note">ERP's elongation sheet toolbar. Make the window narrower to see buttons move into the More menu.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxToolBar Id="overview-toolbar" AriaLabel="Elongation sheet">
+            <NxToolBarButton Id="tb-new" Text="New" Icon="@Icon(NxIcons.Plus)" OnClick='() => Log("New sheet")' />
+            <NxToolBarButton Id="tb-edit" Text="@(editing ? "Cancel" : "Edit")" Icon="@Icon(editing ? NxIcons.X : NxIcons.Pencil)"
+                             Visible="!finalized" OnClick="() => editing = !editing" />
+            <NxToolBarButton Id="tb-save" Text="Save" Icon="@Icon(NxIcons.Save)" Variant="NxButtonVariant.Primary" Visible="!finalized"
+                             Disabled="!editing" OnClick='() => { editing = false; Log("Saved"); }' />
+            <NxToolBarButton Id="tb-finalize" Text="Finalize" Icon="@Icon(NxIcons.Check)" Variant="NxButtonVariant.Success" Visible="!finalized"
+                             OnClick='() => { finalized = true; Log("Finalized"); }' />
+            <NxToolBarSeparator />
+            <NxToolBarButton Id="tb-pdf" Text="Export PDF" Icon="@Icon(NxIcons.FilePdf)" Variant="NxButtonVariant.Info" OnClick='() => Log("Exported PDF")' />
+            <NxToolBarButton Id="tb-notes" Text="Notes" Icon="@Icon(NxIcons.FileTxt)" OnClick='() => Log("Notes opened")' />
+            <NxToolBarButton Id="tb-schedule" Text="Prod. Schedule" Icon="@Icon(NxIcons.ListOrdered)" OnClick='() => Log("Back to schedule")' />
+        </NxToolBar>
+        <div class="demo-row">
+            <span class="demo-value" id="overview-log">@last</span>
+            @if (finalized)
+            {
+                <NxButton id="overview-reopen" Size="NxButtonSize.Small" OnClick="() => finalized = false">Reopen</NxButton>
+            }
+        </div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Tab</td><td>Into the toolbar once, on the last button used; Tab again leaves it.</td></tr>
+                <tr><td>← / →</td><td>Previous / next button, wrapping; disabled buttons are skipped.</td></tr>
+                <tr><td>Home / End</td><td>First / last button (the More button is last).</td></tr>
+                <tr><td>Enter / Space</td><td>Presses the button; on More, opens the menu of the buttons that did not fit.</td></tr>
+                <tr><td>Roles</td><td><code>role="toolbar"</code> named by <code>AriaLabel</code>; separators are <code>role="separator"</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="toolbar" Page="overview" />
+
+@code {
+    static RenderFragment Icon(NxIconData icon) => @<NxIcon Icon="icon" />;
+
+    bool editing, finalized;
+    string last = "Nothing pressed yet";
+
+    void Log(string what) => last = what;
+
+    const string basicCode =
+        """
+        <NxToolBar AriaLabel="Elongation sheet">
+            <NxToolBarButton Text="New" Icon="@plus" OnClick="NewSheetAsync" />
+            <NxToolBarButton Text="@(IsEditing ? "Cancel" : "Edit")" Icon="@pencil" Visible="!Sheet.IsFinalized" OnClick="ToggleEditAsync" />
+            <NxToolBarButton Text="Save" Icon="@save" Variant="NxButtonVariant.Primary" Disabled="!IsEditing" OnClick="SaveAsync" />
+            <NxToolBarButton Text="Finalize" Icon="@check" Variant="NxButtonVariant.Success" OnClick="FinalizeAsync" />
+            <NxToolBarSeparator />
+            <NxToolBarButton Text="Export PDF" Icon="@pdf" Variant="NxButtonVariant.Info" OnClick="ExportPdfAsync" />
+        </NxToolBar>
+        """;
+}

@@ -20,6 +20,21 @@
 </div>
 
 <div class="doc-section">
+    <h2>Status Colors</h2>
+    <p class="doc-note">
+        <code>Success</code> for completing actions (Finalize, Approve), <code>Warning</code> for actions that need care
+        (Reopen, Override) and <code>Info</code> for actions that show or export something — the theme colors ERP's buttons
+        use. Warning is amber with dark text, so it stays readable.
+    </p>
+    <div class="demo-stage" id="status-variants">
+        <NxButton id="status-success" Variant="NxButtonVariant.Success" Icon="@IconFragment("check")">Finalize</NxButton>
+        <NxButton id="status-warning" Variant="NxButtonVariant.Warning" Icon="@IconFragment("refresh")">Reopen</NxButton>
+        <NxButton id="status-info" Variant="NxButtonVariant.Info" Icon="@IconFragment("download")">Export PDF</NxButton>
+    </div>
+    <pre class="doc-code">@statusCode</pre>
+</div>
+
+<div class="doc-section">
     <h2>Sizes</h2>
     <p class="doc-note">
         <code>Small</code>, <code>Medium</code> and <code>Large</code> share the control height scale with
@@ -199,6 +214,13 @@
         <NxButton Variant="NxButtonVariant.Danger">Danger</NxButton>
         <NxButton Variant="NxButtonVariant.Ghost">Ghost</NxButton>
         <NxButton Variant="NxButtonVariant.Link">Link</NxButton>
+        """;
+
+    const string statusCode =
+        """
+        <NxButton Variant="NxButtonVariant.Success">Finalize</NxButton>
+        <NxButton Variant="NxButtonVariant.Warning">Reopen</NxButton>
+        <NxButton Variant="NxButtonVariant.Info">Export PDF</NxButton>
         """;
 
     const string iconsCode =

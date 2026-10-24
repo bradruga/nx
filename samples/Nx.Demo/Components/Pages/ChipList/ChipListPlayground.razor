@@ -1,0 +1,90 @@
+@page "/chiplist/playground"
+
+<DocHeader Slug="chiplist" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner">
+                <NxChipList TItem="string" Id="playground-chips" Data="items" Removable="pgRemovable" Variant="pgVariant" Size="pgSize"
+                            Disabled="pgDisabled" NoDataText="@OrNull(pgNoData)" AriaLabel="Crew"
+                            OnRemove="Remove" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-count">@items.Count chips</span>
+                <span class="demo-counter" id="playground-removed">OnRemove × @pgRemoved</span>
+                <NxButton id="playground-reset" Size="NxButtonSize.Small" OnClick="Reset">Reset</NxButton>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Behavior</div>
+            <label class="demo-control"><span>Removable</span><input type="checkbox" id="pg-removable" @bind="pgRemovable" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+            <label class="demo-control"><span>NoDataText</span><input type="text" id="pg-nodata" @bind="pgNoData" @bind:event="oninput" /></label>
+
+            <div class="demo-controls-title">Look</div>
+            <label class="demo-control">
+                <span>Variant</span>
+                <select id="pg-variant" @bind="pgVariant">
+                    @foreach (var v in Enum.GetValues<NxChipVariant>())
+                    {
+                        <option value="@v">@v</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control">
+                <span>Size</span>
+                <select id="pg-size" @bind="pgSize">
+                    @foreach (var s in Enum.GetValues<NxSize>())
+                    {
+                        <option value="@s">@s</option>
+                    }
+                </select>
+            </label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="chiplist" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+    static readonly string[] Start = ["Dana Ortiz", "Sam Lee", "Priya Nair", "Tom Becker", "Alex Kim"];
+
+    List<string> items = [.. Start];
+    bool pgRemovable = true, pgDisabled;
+    string pgNoData = "Nobody on the crew";
+    NxChipVariant pgVariant = NxChipVariant.Solid;
+    NxSize pgSize = NxSize.Medium;
+    int pgRemoved;
+
+    void Remove(NxChipRemoveEventArgs<string> e)
+    {
+        items.Remove(e.Item);
+        pgRemoved++;
+    }
+
+    void Reset() => items = [.. Start];
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "Data=\"crew\"", "AriaLabel=\"Crew\"" };
+            if (pgRemovable) attrs.Add("Removable=\"true\" OnRemove=\"e => crew.Remove(e.Item)\"");
+            if (pgVariant != NxChipVariant.Solid) attrs.Add($"Variant=\"NxChipVariant.{pgVariant}\"");
+            if (pgSize != NxSize.Medium) attrs.Add($"Size=\"NxSize.{pgSize}\"");
+            if (OrNull(pgNoData) is { } text) attrs.Add($"NoDataText=\"{text}\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            return "<NxChipList " + string.Join(" ", attrs) + " />";
+        }
+    }
+}

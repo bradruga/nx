@@ -1,0 +1,12 @@
+@* A tile demo's content: a short list of rows. *@
+<ul class="demo-tile-list">
+    @foreach (var row in Rows)
+    {
+        <li>@row</li>
+    }
+</ul>
+
+@code {
+    /// <summary>The rows shown.</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<string> Rows { get; set; } = [];
+}

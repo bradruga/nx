@@ -1,0 +1,17 @@
+@namespace Nx.Components
+
+@* Buttons, separators and spacers render where they are declared and register here; the bar only measures and
+   draws the More menu for the buttons that do not fit. *@
+<div @ref="bar" @attributes="AdditionalAttributes" id="@Id" class="@CssClass" style="@Style" role="toolbar" aria-label="@AriaLabel">
+    <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+    @if (moreItems.Count > 0)
+    {
+        <NxDropDownButton Class="nx-toolbar-more" Variant="NxButtonVariant.Ghost" Size="Size" ShowArrow="false" AlignEnd="true"
+                          AriaLabel="More actions" Title="More" Items="moreItems" OnItemClick="HandleMoreClickAsync"
+                          Icon="MoreIcon" />
+    }
+</div>
+
+@code {
+    private static readonly RenderFragment MoreIcon = @<NxIcon Icon="NxIcons.MoreHorizontal" />;
+}

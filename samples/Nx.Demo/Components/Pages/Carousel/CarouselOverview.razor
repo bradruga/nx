@@ -1,0 +1,58 @@
+@page "/carousel"
+@page "/carousel/overview"
+
+<DocHeader Slug="carousel" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxCarousel</code> shows one item of <code>Data</code> at a time through a <code>Template</code> and slides on by
+        itself every <code>AutomaticPageChangeInterval</code> milliseconds — ERP's picture spotlight and lobby screens. Arrows,
+        dots, a pause button, swipe and the arrow keys move it by hand; the rotation stops while the pointer is over it or
+        focus is in it, and starts again after the last slide.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column">
+        <NxCarousel Id="overview-carousel" Data="DemoSlides.Projects" Height="280px" AutomaticPageChangeInterval="6000"
+                    AriaLabel="Project pictures" @bind-Page="shown">
+            <Template><DemoSlideView Slide="context" /></Template>
+        </NxCarousel>
+        <span class="demo-value" id="overview-page">Page <strong>@shown</strong> of @DemoSlides.Projects.Count</span>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / part</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Tab</td><td>To the arrows, the pause button and the dots; focus anywhere in it pauses the rotation.</td></tr>
+                <tr><td>← / →</td><td>Previous / next slide while focus is in the carousel.</td></tr>
+                <tr><td>Pause button</td><td>Stops and restarts the rotation, so moving content can be stopped (WCAG 2.2.2).</td></tr>
+                <tr><td>Swipe</td><td>Left or right on touch screens.</td></tr>
+                <tr><td>Roles</td><td>A region with <code>aria-roledescription="carousel"</code>; each slide is a group "2 of 5"; hidden slides are inert.</td></tr>
+                <tr><td>Reduced motion</td><td>Slides change without sliding.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="carousel" Page="overview" />
+
+@code {
+    int shown = 1;
+
+    const string basicCode =
+        """
+        <NxCarousel Data="pictures" Height="280px" AutomaticPageChangeInterval="6000" @bind-Page="page">
+            <Template>
+                <img src="@context.Url" alt="@context.ProjectName" />
+            </Template>
+        </NxCarousel>
+        """;
+}

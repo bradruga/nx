@@ -1,0 +1,25 @@
+@namespace Nx.Components
+@implements IDisposable
+
+@* A line between groups of an NxToolBar's buttons; between overflowed buttons it becomes a line in the More menu. *@
+<span class="@(Bar?.IsOverflowed(key) == true ? "nx-toolbar-separator nx-toolbar-item-overflow" : "nx-toolbar-separator")"
+      role="separator" aria-orientation="vertical" data-nx-toolbar-item="@key"></span>
+
+@code {
+    private readonly string key = $"tb-{Guid.NewGuid():N}"[..11];
+
+    [CascadingParameter] private NxToolBar? Bar { get; set; }
+
+    internal void Refresh() => StateHasChanged();
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Bar is null)
+            throw new InvalidOperationException("NxToolBarSeparator must be placed inside an NxToolBar.");
+        Bar.Register(key, this);
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => Bar?.Unregister(key);
+}

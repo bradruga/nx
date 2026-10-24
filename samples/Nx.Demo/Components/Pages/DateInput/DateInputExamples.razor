@@ -1,0 +1,84 @@
+@page "/dateinput/examples"
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+
+<DocHeader Slug="dateinput" Page="examples" />
+
+<div class="doc-section">
+    <h2>Beside a Calendar</h2>
+    <p class="doc-note">
+        ERP's date dialog puts a date input over a calendar, both bound to one date, and focuses the input when it opens. Type
+        and the calendar follows; pick and the input follows.
+    </p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxDateInput @ref="dialogInput" TValue="DateTime" Id="calendar-input" Label="Date" @bind-Value="picked" />
+        <NxCalendar Id="calendar-grid" Value="DateOnly.FromDateTime(picked)" ValueChanged="d => picked = d?.ToDateTime(TimeOnly.MinValue) ?? picked" AriaLabel="Date" />
+        <div class="demo-row">
+            <NxButton id="calendar-focus" Size="NxButtonSize.Small" OnClick="() => dialogInput!.FocusAsync()">Focus the input</NxButton>
+            <span class="demo-value" id="calendar-value">@picked.ToString("D")</span>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Formats, Cultures &amp; Limits</h2>
+    <p class="doc-note">
+        <code>Format</code> is how the date shows when the field is not focused; the typing pattern is its all-number form.
+        <code>Min</code> and <code>Max</code> move a typed date inside the range.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <NxDateInput TValue="DateOnly?" Id="format-long" Label="Long format" Format="ddd, MMM d, yyyy" @bind-Value="pour" Clearable="true" />
+            <NxDateInput TValue="DateOnly?" Id="format-iso" Label="ISO" Format="yyyy-MM-dd" @bind-Value="pour" />
+            <NxDateInput TValue="DateOnly?" Id="format-de" Label="German (de-DE)" Culture="German" @bind-Value="pour" />
+            <NxDateInput TValue="DateOnly?" Id="limits-date" Label="This year only" Min="new DateOnly(2026, 1, 1)" Max="new DateOnly(2026, 12, 31)" @bind-Value="limited" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Floating Label &amp; States</h2>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <NxDateInput TValue="DateOnly?" Id="floating-date" Label="Floating label" FloatingLabel="true" @bind-Value="floating" />
+            <NxDateInput TValue="DateOnly?" Id="placeholder-date" Label="Placeholder" Placeholder="Any day" @bind-Value="placeholder" />
+            <NxDateInput TValue="DateOnly" Id="readonly-date" Label="Read-only" Value="new DateOnly(2026, 3, 14)" ReadOnly="true" />
+            <NxDateInput TValue="DateOnly" Id="disabled-date" Label="Disabled" Value="new DateOnly(2026, 3, 14)" Disabled="true" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Form Validation</h2>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <EditForm id="dateinput-form" Model="permit" OnValidSubmit="() => result = Saved()" FormName="dateinput-form">
+            <DataAnnotationsValidator />
+            <NxDateInput TValue="DateOnly?" Id="permit-date" Label="Permit expires" Clearable="true" @bind-Value="permit.Expires" />
+            <NxValidationMessage For="() => permit.Expires" />
+            <div class="demo-row" style="margin-top:16px">
+                <NxButton id="dateinput-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Save permit</NxButton>
+                <span class="demo-value" id="dateinput-result">@result</span>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<DocPager Slug="dateinput" Page="examples" />
+
+@code {
+    static readonly CultureInfo German = CultureInfo.GetCultureInfo("de-DE");
+
+    NxDateInput<DateTime>? dialogInput;
+    DateTime picked = new(2026, 10, 23);
+    DateOnly? pour = new DateOnly(2026, 11, 2), limited, floating, placeholder;
+    string result = "Not saved";
+    readonly PermitForm permit = new();
+
+    string Saved() => $"Saved {permit.Expires:yyyy-MM-dd}";
+
+    class PermitForm
+    {
+        [Required(ErrorMessage = "Enter the expiry date.")]
+        public DateOnly? Expires { get; set; }
+    }
+}

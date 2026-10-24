@@ -1,0 +1,49 @@
+.nx-toolbar {
+    position: relative;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: var(--nx-toolbar-gap);
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    /* Its width comes from its container, never from its buttons: what does not fit overflows. */
+    contain: inline-size;
+    padding: var(--nx-toolbar-padding);
+    border: 1px solid var(--nx-toolbar-border);
+    border-radius: var(--nx-radius);
+    background: var(--nx-toolbar-bg);
+    /* Overflowed items are laid out invisible to be measured; the clip margin keeps focus rings whole. */
+    overflow: clip;
+    overflow-clip-margin: 4px;
+}
+
+.nx-toolbar-wrap { flex-wrap: wrap; }
+
+.nx-toolbar-scroll {
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.nx-toolbar ::deep > .nx-toolbar-item { flex-shrink: 0; }
+
+/* Out of room: still laid out at full width for the next measure, but invisible and out of the flow. */
+.nx-toolbar ::deep > .nx-toolbar-item-overflow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.nx-toolbar ::deep > .nx-toolbar-separator {
+    flex-shrink: 0;
+    align-self: stretch;
+    width: 1px;
+    margin: 4px 2px;
+    background: var(--nx-border);
+}
+
+.nx-toolbar ::deep > .nx-toolbar-spacer { flex: 1 1 0; }
+
+.nx-toolbar ::deep > .nx-toolbar-more { flex-shrink: 0; margin-left: auto; }
