@@ -1,0 +1,55 @@
+@page "/colorpicker"
+@page "/colorpicker/overview"
+
+<DocHeader Slug="colorpicker" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxColorPicker</code> picks a color from a palette. The button shows the current color; it opens a grid of
+        swatches — the Office palette ERP's schedules use, unless you pass your own <code>Colors</code> — moved through with
+        the arrow keys. The value is the swatch's CSS color string, such as <code>#4371c4</code>.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <div class="demo-row">
+            <label class="demo-field-label" for="overview-color" style="margin:0">Crew color</label>
+            <NxColorPicker Id="overview-color" @bind-Value="color" AriaLabel="Crew color" />
+        </div>
+        <div class="demo-crew-chip" id="overview-chip" style="--crew: @(color ?? "transparent")">Crew 3 · Ortiz</div>
+        <span class="demo-value" id="overview-value">Value: <strong>@(color ?? "null")</strong></span>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Enter / Space / ↓ on the button</td><td>Opens the palette with focus on the current color.</td></tr>
+                <tr><td>← → ↑ ↓</td><td>Move through the swatches; ↑ and ↓ by a row. Home and End jump to the ends.</td></tr>
+                <tr><td>Enter / Space on a swatch</td><td>Picks it, closes the palette and returns focus to the button.</td></tr>
+                <tr><td>Esc</td><td>Closes without picking. Tab or a click outside closes too.</td></tr>
+                <tr><td>Button</td><td><code>aria-haspopup="listbox"</code>, named "Crew color: #4371c4" from <code>AriaLabel</code> and the value.</td></tr>
+                <tr><td>Swatches</td><td><code>role="option"</code> with <code>aria-selected</code>, named by their color.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="colorpicker" Page="overview" />
+
+@code {
+    string? color = "#4371c4";
+
+    const string basicCode =
+        """
+        <label for="crew-color">Crew color</label>
+        <NxColorPicker Id="crew-color" @bind-Value="crew.Color" AriaLabel="Crew color" />
+        """;
+}

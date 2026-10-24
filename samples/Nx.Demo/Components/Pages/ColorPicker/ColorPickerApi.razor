@@ -1,0 +1,53 @@
+@page "/colorpicker/api"
+
+<DocHeader Slug="colorpicker" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Value</td><td>string?</td><td>—</td><td>The color as the palette writes it. Use <code>@@bind-Value</code>. A hex or rgb() value matches its swatch.</td></tr>
+                <tr><td>Colors</td><td>IEnumerable&lt;string&gt;?</td><td>NxColorPalettes.Office</td><td>The swatches, as CSS colors, in reading order.</td></tr>
+                <tr><td>Columns</td><td>int</td><td>10</td><td>Swatches per row.</td></tr>
+                <tr><td>Clearable</td><td>bool</td><td>false</td><td>A "No color" button that sets <code>null</code>.</td></tr>
+                <tr><td>ShowValue / Placeholder</td><td>bool / string</td><td>false / "None"</td><td>The color's text beside the swatch; the text for no color.</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>false</td><td>The native <code>disabled</code> attribute.</td></tr>
+                <tr><td>AriaLabel</td><td>string?</td><td>"Color"</td><td>Names the button (with the value) and the palette.</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>Button id; outer class and style. Other attributes go to the button.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events, Methods &amp; Palettes</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ValueChanged</td><td>string?</td><td>A swatch or "No color" was picked.</td></tr>
+                <tr><td>IsOpen / FocusAsync()</td><td>bool / ValueTask</td><td>Whether the palette is open; focuses the button.</td></tr>
+                <tr><td>NxColorPalettes.Office</td><td>IReadOnlyList&lt;string&gt;</td><td>70 colors, 10 columns: theme colors, tints and shades, standard colors.</td></tr>
+                <tr><td>NxColorPalettes.Basic</td><td>IReadOnlyList&lt;string&gt;</td><td>12 distinct colors for categories, 6 columns.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-colorpicker-swatch-size</td><td>20px</td><td>The swatch on the button.</td></tr>
+                <tr><td>--nx-colorpicker-cell-size / -cell-gap</td><td>22px / 4px (30px / 3px on touch)</td><td>The palette's swatches.</td></tr>
+                <tr><td>--nx-colorpicker-cell-border</td><td>black 18% (dark: white 22%)</td><td>The hairline that shows white on white.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="colorpicker" Page="api" />

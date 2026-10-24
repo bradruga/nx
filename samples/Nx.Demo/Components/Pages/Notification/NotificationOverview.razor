@@ -1,0 +1,71 @@
+@page "/notification"
+@page "/notification/overview"
+
+<DocHeader Slug="notification" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxNotification</code> shows short messages ("toasts") stacked in a corner. Place one on the page, keep a
+        <code>@@ref</code>, and call <code>Show</code>. A message closes after its <code>CloseAfter</code> — held open
+        while the pointer or keyboard focus is on it — or with its close button. Errors are announced at once, the rest
+        politely. On a phone the stack spans the screen.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage">
+        <div class="demo-row">
+            <NxButton id="overview-saved" Variant="NxButtonVariant.Primary" OnClick="Saved">Save pour</NxButton>
+            <NxButton id="overview-error" OnClick="Failed">Fail to save</NxButton>
+        </div>
+    </div>
+    <NxNotification @ref="notification" id="overview-notification" />
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Part</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>The stack</td><td>A polite live region, always in the page, so new messages are read.</td></tr>
+                <tr><td>Error</td><td><code>role="alert"</code>: read at once. Others are <code>role="status"</code>.</td></tr>
+                <tr><td>Timing</td><td>The countdown stops while the pointer or focus is on the message, and starts over when it leaves.</td></tr>
+                <tr><td>Close</td><td>A button named "Close notification".</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="notification" Page="overview" />
+
+@code {
+    NxNotification? notification;
+
+    void Saved() => notification?.Show(new NxNotificationModel
+    {
+        Text = $"Saved by Dana Ortiz at {DateTime.Now:h:mm tt}",
+        Type = NxNotificationType.Success
+    });
+
+    void Failed() => notification?.Show(new NxNotificationModel
+    {
+        Text = "The pour could not be saved: the truck schedule changed. Reload and try again.",
+        Type = NxNotificationType.Error,
+        CloseAfter = 0
+    });
+
+    const string basicCode =
+        """
+        <NxNotification @ref="notification" />
+
+        notification.Show(new NxNotificationModel
+        {
+            Text = $"Saved by {user} at {DateTime.Now:h:mm tt}",
+            Type = NxNotificationType.Success
+        });
+        """;
+}

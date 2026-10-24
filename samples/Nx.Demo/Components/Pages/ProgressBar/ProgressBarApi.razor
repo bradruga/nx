@@ -1,0 +1,39 @@
+@page "/progressbar/api"
+
+<DocHeader Slug="progressbar" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Value</td><td>double</td><td>0</td><td>How far along, clamped to 0 … Max.</td></tr>
+                <tr><td>Max</td><td>double</td><td>100</td><td>The value of a full bar.</td></tr>
+                <tr><td>Indeterminate</td><td>bool</td><td>false</td><td>An animated bar while the amount is unknown; no value or label.</td></tr>
+                <tr><td>ShowLabel</td><td>bool</td><td>true</td><td>The label in the middle.</td></tr>
+                <tr><td>LabelTemplate</td><td>RenderFragment&lt;NxProgressBarContext&gt;?</td><td>the percentage</td><td><code>context</code>: Value, Max, Percent, IsComplete.</td></tr>
+                <tr><td>Thin</td><td>bool</td><td>false</td><td>A slim bar without the label.</td></tr>
+                <tr><td>AriaLabel</td><td>string?</td><td>—</td><td>The accessible name.</td></tr>
+                <tr><td>Class / Style</td><td>string?</td><td>—</td><td>On the bar; other attributes go there too.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-progressbar-height / -thin-height</td><td>22px / 4px</td><td>Bar height.</td></tr>
+                <tr><td>--nx-progressbar-radius</td><td>999px</td><td>Corner radius.</td></tr>
+                <tr><td>--nx-progressbar-track / -fill</td><td>--nx-surface-active / --nx-accent</td><td>The empty and filled parts.</td></tr>
+                <tr><td>--nx-progressbar-label / -label-on-fill</td><td>--nx-fg / --nx-accent-fg</td><td>The label over the track and over the fill.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="progressbar" Page="api" />

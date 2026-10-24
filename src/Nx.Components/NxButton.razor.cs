@@ -16,6 +16,9 @@ public partial class NxButton
 {
     private ElementReference element;
     private bool isBusy;
+    private bool hasVariant, hasSize;
+
+    [CascadingParameter] private NxButtonGroup? Group { get; set; }
 
     // ── Content ───────────────────────────────────────────────────────────────
 
@@ -97,8 +100,24 @@ public partial class NxButton
     public ValueTask FocusAsync() => element.FocusAsync();
 
     private bool IsIconOnly => Icon is not null && ChildContent is null;
+
+    // In an NxButtonGroup, the group's Variant and Size apply unless the button sets its own; Disabled adds up.
+    private NxButtonVariant EffectiveVariant => !hasVariant && Group?.Variant is { } v ? v : Variant;
+    private NxButtonSize EffectiveSize => !hasSize && Group?.Size is { } s ? s : Size;
+    private bool IsDisabled => Disabled || Group?.Disabled == true;
+
+    /// <inheritdoc />
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        // A passed Variant="Secondary" and no Variant look the same once assigned; ask the parameter list.
+        if (parameters.TryGetValue<NxButtonVariant>(nameof(Variant), out _))
+            hasVariant = true;
+        if (parameters.TryGetValue<NxButtonSize>(nameof(Size), out _))
+            hasSize = true;
+        return base.SetParametersAsync(parameters);
+    }
     private bool ShowLoading => Loading || (AutoLoading && isBusy);
-    private bool Blocked => !Disabled && (ShowLoading || isBusy);
+    private bool Blocked => !IsDisabled && (ShowLoading || isBusy);
 
     private string TypeAttribute => Type switch
     {
@@ -111,7 +130,7 @@ public partial class NxButton
     {
         get
         {
-            var variant = Variant switch
+            var variant = EffectiveVariant switch
             {
                 NxButtonVariant.Primary => "nx-button-primary",
                 NxButtonVariant.Danger  => "nx-button-danger",
@@ -119,7 +138,7 @@ public partial class NxButton
                 NxButtonVariant.Link    => "nx-button-link",
                 _                       => "nx-button-secondary"
             };
-            var size = Size switch
+            var size = EffectiveSize switch
             {
                 NxButtonSize.Small => "nx-button-sm",
                 NxButtonSize.Large => "nx-button-lg",
@@ -138,7 +157,7 @@ public partial class NxButton
 
     private async Task HandleClick(MouseEventArgs args)
     {
-        if (Disabled || Blocked || !OnClick.HasDelegate)
+        if (IsDisabled || Blocked || !OnClick.HasDelegate)
             return;
 
         if (!PreventDoubleClick)

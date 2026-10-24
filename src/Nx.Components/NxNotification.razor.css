@@ -1,0 +1,117 @@
+/* ── The stack: fixed in a corner; empty, it takes no clicks ──────────────── */
+
+.nx-notification-stack {
+    position: fixed;
+    z-index: var(--nx-z-notification);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-sizing: border-box;
+    width: min(var(--nx-notification-width), calc(100vw - 2 * var(--nx-notification-offset)));
+    pointer-events: none;
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+}
+
+.nx-notification-bottom { bottom: var(--nx-notification-offset); }
+/* At the top the newest message, last in the markup, shows first. */
+.nx-notification-top { top: var(--nx-notification-offset); flex-direction: column-reverse; }
+.nx-notification-right { right: var(--nx-notification-offset); }
+.nx-notification-left { left: var(--nx-notification-offset); }
+.nx-notification-center { left: 50%; transform: translateX(-50%); }
+
+/* ── One message ──────────────────────────────────────────────────────────── */
+
+.nx-notification {
+    --nx-notification-color: var(--nx-notification-info);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    box-sizing: border-box;
+    padding: 12px 8px 12px 12px;
+    border: 1px solid var(--nx-border);
+    border-left: 4px solid var(--nx-notification-color);
+    border-radius: var(--nx-radius);
+    background: var(--nx-notification-bg);
+    color: var(--nx-notification-fg);
+    box-shadow: var(--nx-shadow-popup);
+    pointer-events: auto;
+    animation: nx-notification-in 0.2s ease-out;
+}
+
+.nx-notification-success { --nx-notification-color: var(--nx-notification-success); }
+.nx-notification-warning { --nx-notification-color: var(--nx-notification-warning); }
+.nx-notification-error   { --nx-notification-color: var(--nx-notification-error); }
+.nx-notification-neutral {
+    --nx-notification-color: var(--nx-notification-neutral-bg);
+    border-color: var(--nx-notification-neutral-bg);
+    background: var(--nx-notification-neutral-bg);
+    color: var(--nx-notification-neutral-fg);
+}
+
+.nx-notification-leaving { animation: nx-notification-out 0.18s ease-in forwards; }
+
+.nx-notification-icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: var(--nx-notification-color);
+}
+.nx-notification-neutral .nx-notification-icon { color: inherit; }
+
+.nx-notification-text {
+    flex: 1;
+    min-width: 0;
+    padding-top: 1px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.nx-notification-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    margin: -4px 0 -4px 0;
+    padding: 0;
+    border: none;
+    border-radius: var(--nx-radius-sm);
+    background: transparent;
+    color: inherit;
+    opacity: 0.7;
+    cursor: pointer;
+}
+.nx-notification-close:hover { opacity: 1; background: color-mix(in srgb, currentColor 10%, transparent); }
+.nx-notification-close:focus { outline: none; }
+.nx-notification-close:focus-visible {
+    opacity: 1;
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline-offset: 0;
+}
+
+/* Slides in from its side, or up or down when centered. */
+@keyframes nx-notification-in {
+    from { opacity: 0; transform: translateX(var(--nx-notification-slide, 24px)); }
+}
+@keyframes nx-notification-out {
+    to { opacity: 0; transform: translateX(var(--nx-notification-slide, 24px)); }
+}
+.nx-notification-left { --nx-notification-slide: -24px; }
+.nx-notification-center { --nx-notification-slide: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+    .nx-notification, .nx-notification-leaving { animation-duration: 0.01s; }
+}
+
+/* ── Phones: full width ───────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+    .nx-notification-stack {
+        left: var(--nx-notification-offset);
+        right: var(--nx-notification-offset);
+        width: auto;
+        transform: none;
+    }
+    .nx-notification-close { width: 40px; height: 40px; margin: -10px -4px -10px 0; }
+}

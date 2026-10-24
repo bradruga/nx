@@ -91,6 +91,8 @@
     string? range = "Week";
 
     string? homeCity;
+    string? homeColor = "#4371c4";
+    static RenderFragment IconOf(NxIconData icon) => @<NxIcon Icon="icon" />;
     DateTime? gateOpens = DateTime.Today.AddDays(1).AddHours(6);
     readonly PourForm homeForm = new();
     static readonly IReadOnlyList<string> HomeCities = SampleData.Places.Select(p => p.City).ToList();
@@ -151,6 +153,17 @@
             <NxIcon Icon="NxIcons.Trash" Size="NxIconSize.XLarge" Color="NxIconColor.Danger" />
             <NxIcon Icon="NxIcons.Print" Size="NxIconSize.XLarge" />
             <NxIcon Icon="NxIcons.CheckCircle" Size="NxIconSize.XLarge" Color="NxIconColor.Success" />
+        </div>,
+        "buttongroup" => @<NxButtonGroup AriaLabel="Week">
+            <NxButton>Today</NxButton>
+            <NxButton AriaLabel="Previous week" Icon="@IconOf(NxIcons.ChevronLeft)" />
+            <NxButton AriaLabel="Next week" Icon="@IconOf(NxIcons.ChevronRight)" />
+        </NxButtonGroup>,
+        "colorpicker" => @<NxColorPicker @bind-Value="homeColor" AriaLabel="Crew color" ShowValue="true" />,
+        "progressbar" => @<NxProgressBar Value="68" AriaLabel="Pieces produced" Style="width:240px" />,
+        "notification" => @<div class="home-toast" aria-hidden="true">
+            <NxIcon Icon="NxIcons.CheckCircle" Color="NxIconColor.Success" />
+            <span>Saved by Dana Ortiz at 9:12 AM</span>
         </div>,
         "loader" => @<div class="demo-row">
             <NxLoader />

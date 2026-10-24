@@ -1,0 +1,19 @@
+@namespace Nx.Components
+
+<div @attributes="AdditionalAttributes"
+     class="@CssClass"
+     style="@Style"
+     role="progressbar"
+     aria-label="@AriaLabel"
+     aria-valuemin="@(Indeterminate ? null : "0")"
+     aria-valuemax="@(Indeterminate ? null : Invariant(Max))"
+     aria-valuenow="@(Indeterminate ? null : Invariant(Clamped))"
+     aria-valuetext="@(Indeterminate ? null : PercentText)">
+    <div class="nx-progressbar-fill" style="@FillStyle"></div>
+    @if (ShowLabel && !Indeterminate)
+    {
+        @* The label twice: dark over the track, light over the fill, clipped where the fill ends. *@
+        <span class="nx-progressbar-label" aria-hidden="true">@Label</span>
+        <span class="nx-progressbar-label nx-progressbar-label-on-fill" aria-hidden="true" style="@ClipStyle">@Label</span>
+    }
+</div>

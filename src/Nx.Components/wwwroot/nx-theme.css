@@ -153,6 +153,34 @@
     --nx-form-group-gap:     24px;
     --nx-validation-color:   var(--nx-invalid);
     --nx-validation-font-size: 12.5px;
+
+    /* Progress bar (NxProgressBar) */
+    --nx-progressbar-height:        22px;
+    --nx-progressbar-thin-height:   4px;
+    --nx-progressbar-radius:        999px;
+    --nx-progressbar-track:         var(--nx-surface-active);
+    --nx-progressbar-fill:          var(--nx-accent);
+    --nx-progressbar-label:         var(--nx-fg);
+    --nx-progressbar-label-on-fill: var(--nx-accent-fg);
+
+    /* Color picker (NxColorPicker) */
+    --nx-colorpicker-swatch-size:   20px;
+    --nx-colorpicker-cell-size:     22px;
+    --nx-colorpicker-cell-gap:      4px;
+    --nx-colorpicker-cell-border:   rgba(0, 0, 0, 0.18);
+
+    /* Notifications (NxNotification): above windows and popups, under tooltips */
+    --nx-z-notification:            1150;
+    --nx-notification-width:        360px;
+    --nx-notification-offset:       16px;
+    --nx-notification-bg:           var(--nx-surface);
+    --nx-notification-fg:           var(--nx-fg);
+    --nx-notification-info:         var(--nx-accent);
+    --nx-notification-success:      var(--nx-success);
+    --nx-notification-warning:      var(--nx-warning);
+    --nx-notification-error:        var(--nx-danger);
+    --nx-notification-neutral-bg:   #2b2b31;
+    --nx-notification-neutral-fg:   #ffffff;
 }
 
 /* Dark theme: add class="nx-theme-dark" to <html> or any container. */
@@ -183,6 +211,9 @@
     --nx-success:            #54c454;
     --nx-warning:            #ffb547;
     --nx-loader-overlay-bg:  rgba(22, 22, 26, 0.72);
+    --nx-colorpicker-cell-border:   rgba(255, 255, 255, 0.22);
+    --nx-notification-neutral-bg:   #e8e8ee;
+    --nx-notification-neutral-fg:   #16161a;
 
     --nx-switch-off-bg:      #4a4a55;
     --nx-switch-off-fg:      #d0d0da;

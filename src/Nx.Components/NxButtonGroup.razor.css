@@ -1,0 +1,31 @@
+.nx-buttongroup {
+    display: inline-flex;
+    align-items: stretch;
+    max-width: 100%;
+    vertical-align: middle;
+}
+
+.nx-buttongroup-full-width { display: flex; width: 100%; }
+
+/* The buttons, or the menu buttons that wrap them, sit edge to edge: the shared borders overlap, and only the
+   group's outer corners are rounded. A hovered or focused button comes forward so its whole border shows. */
+.nx-buttongroup ::deep > * { margin: 0; }
+.nx-buttongroup ::deep > * + * { margin-left: -1px; }
+.nx-buttongroup-full-width ::deep > * { flex: 1 1 0; min-width: 0; }
+.nx-buttongroup-full-width ::deep .nx-button { width: 100%; }
+
+.nx-buttongroup ::deep .nx-button { position: relative; border-radius: 0; }
+.nx-buttongroup ::deep .nx-button:hover,
+.nx-buttongroup ::deep .nx-button:focus-visible { z-index: 1; }
+
+.nx-buttongroup ::deep > :first-child .nx-button,
+.nx-buttongroup ::deep > .nx-button:first-child {
+    border-top-left-radius: var(--nx-radius);
+    border-bottom-left-radius: var(--nx-radius);
+}
+
+.nx-buttongroup ::deep > :last-child .nx-button,
+.nx-buttongroup ::deep > .nx-button:last-child {
+    border-top-right-radius: var(--nx-radius);
+    border-bottom-right-radius: var(--nx-radius);
+}

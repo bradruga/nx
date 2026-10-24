@@ -1,0 +1,102 @@
+@page "/buttongroup/examples"
+
+<DocHeader Slug="buttongroup" Page="examples" />
+
+<div class="doc-section">
+    <h2>Variants &amp; Sizes</h2>
+    <p class="doc-note">Set once on the group. A button that sets its own <code>Variant</code> keeps it — here the primary Save.</p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <NxButtonGroup id="variant-group" AriaLabel="Edit" Size="NxButtonSize.Small">
+                <NxButton Icon="@IconOf(NxIcons.Undo)" OnClick='() => Log("Undo")'>Undo</NxButton>
+                <NxButton Icon="@IconOf(NxIcons.Redo)" OnClick='() => Log("Redo")'>Redo</NxButton>
+                <NxButton id="variant-save" Variant="NxButtonVariant.Primary" Icon="@IconOf(NxIcons.Save)" OnClick='() => Log("Save")'>Save</NxButton>
+            </NxButtonGroup>
+        </div>
+        <div class="demo-row">
+            <NxButtonGroup AriaLabel="Zoom" Variant="NxButtonVariant.Ghost">
+                <NxButton Icon="@IconOf(NxIcons.ZoomOut)" AriaLabel="Zoom out" OnClick='() => Log("Zoom out")' />
+                <NxButton OnClick='() => Log("100%")'>100%</NxButton>
+                <NxButton Icon="@IconOf(NxIcons.ZoomIn)" AriaLabel="Zoom in" OnClick='() => Log("Zoom in")' />
+            </NxButtonGroup>
+            <NxButtonGroup AriaLabel="Export" Size="NxButtonSize.Large">
+                <NxButton Icon="@IconOf(NxIcons.Print)" OnClick='() => Log("Print")'>Print</NxButton>
+                <NxButton Icon="@IconOf(NxIcons.FileExcel)" OnClick='() => Log("Excel")'>Excel</NxButton>
+            </NxButtonGroup>
+        </div>
+        <span class="demo-value" id="variant-log">Last: <strong>@last</strong></span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>With a Menu Button</h2>
+    <p class="doc-note">An <code>NxDropDownButton</code> joins the bar like any button.</p>
+    <div class="demo-stage">
+        <NxButtonGroup id="menu-group" AriaLabel="Pour actions">
+            <NxButton OnClick='() => Log("Release")'>Release</NxButton>
+            <NxButton OnClick='() => Log("Hold")'>Hold</NxButton>
+            <NxDropDownButton Id="menu-more" Items="moreItems" OnItemClick="e => Log(e.Item.Text)" AlignEnd="true">More</NxDropDownButton>
+        </NxButtonGroup>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Beside a Toggle Group</h2>
+    <p class="doc-note">
+        A calendar toolbar: actions in an <code>NxButtonGroup</code>, the view as a value in an <code>NxToggleGroup</code>.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-toolbar">
+            <NxButtonGroup AriaLabel="Navigate">
+                <NxButton OnClick="() => offset = 0">Today</NxButton>
+                <NxButton AriaLabel="Previous" Icon="@IconOf(NxIcons.ChevronLeft)" OnClick="() => offset--" />
+                <NxButton AriaLabel="Next" Icon="@IconOf(NxIcons.ChevronRight)" OnClick="() => offset++" />
+            </NxButtonGroup>
+            <strong id="toolbar-title">@Title</strong>
+            <NxToggleGroup Data="Views" @bind-Value="view" AriaLabel="View" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Full Width &amp; Disabled</h2>
+    <p class="doc-note"><code>FullWidth</code> shares the width equally — a footer bar on a phone. <code>Disabled</code> turns every button off.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxButtonGroup id="full-group" AriaLabel="Decision" FullWidth="true">
+            <NxButton Variant="NxButtonVariant.Danger" OnClick='() => Log("Reject")'>Reject</NxButton>
+            <NxButton OnClick='() => Log("Defer")'>Defer</NxButton>
+            <NxButton Variant="NxButtonVariant.Primary" OnClick='() => Log("Approve")'>Approve</NxButton>
+        </NxButtonGroup>
+        <div class="demo-row">
+            <NxButtonGroup id="disabled-group" AriaLabel="Locked" Disabled="locked">
+                <NxButton>Edit</NxButton>
+                <NxButton>Duplicate</NxButton>
+                <NxButton>Delete</NxButton>
+            </NxButtonGroup>
+            <NxCheckBox Id="disabled-toggle" @bind-Value="locked" Label="Disabled" />
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="buttongroup" Page="examples" />
+
+@code {
+    string last = "—";
+    bool locked = true;
+    int offset;
+    string view = "Week";
+
+    static readonly string[] Views = ["Day", "Week", "Month"];
+    readonly IReadOnlyList<NxMenuItem> moreItems = [new("Duplicate"), new("Split pour"), NxMenuItem.Separator(), new("Cancel pour")];
+
+    string Title => view switch
+    {
+        "Day"   => DateTime.Today.AddDays(offset).ToString("ddd, MMM d"),
+        "Month" => DateTime.Today.AddMonths(offset).ToString("MMMM yyyy"),
+        _       => $"Week of {DateTime.Today.AddDays(7 * offset - (int)DateTime.Today.DayOfWeek):MMM d}"
+    };
+
+    void Log(string what) => last = what;
+
+    static RenderFragment IconOf(NxIconData icon) => @<NxIcon Icon="icon" />;
+}

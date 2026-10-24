@@ -1,0 +1,28 @@
+@page "/buttongroup/api"
+
+<DocHeader Slug="buttongroup" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>The buttons: <code>NxButton</code>s and <code>NxDropDownButton</code>s.</td></tr>
+                <tr><td>Variant</td><td>NxButtonVariant?</td><td>—</td><td>Applies to every NxButton that does not set its own.</td></tr>
+                <tr><td>Size</td><td>NxButtonSize?</td><td>—</td><td>Applies to every NxButton that does not set its own.</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>false</td><td>Disables every button.</td></tr>
+                <tr><td>FullWidth</td><td>bool</td><td>false</td><td>The group fills its container; the buttons share the width.</td></tr>
+                <tr><td>AriaLabel</td><td>string?</td><td>—</td><td>The group's name (<code>role="group"</code>).</td></tr>
+                <tr><td>Class / Style</td><td>string?</td><td>—</td><td>On the group; other attributes go there too.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <p class="doc-note">The buttons' own (<code>--nx-radius</code> rounds the group's outer corners). Shared borders overlap by 1 px; a hovered or focused button comes forward.</p>
+</div>
+
+<DocPager Slug="buttongroup" Page="api" />

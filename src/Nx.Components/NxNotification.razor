@@ -1,0 +1,46 @@
+@namespace Nx.Components
+
+@* Always rendered, so a message added to it is announced. *@
+<div @attributes="AdditionalAttributes" class="@CssClass" style="@Style" aria-live="polite">
+    @foreach (var entry in entries)
+    {
+        var model = entry.Model;
+        <div @key="entry"
+             class="@ItemClass(entry)"
+             role="@(model.Type == NxNotificationType.Error ? "alert" : "status")"
+             @onmouseenter="() => Pause(entry)"
+             @onmouseleave="() => Resume(entry)"
+             @onfocusin="() => Pause(entry)"
+             @onfocusout="() => Resume(entry)">
+            @if (model.ShowIcon)
+            {
+                <svg class="nx-notification-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    @switch (model.Type)
+                    {
+                        case NxNotificationType.Success:
+                            <circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" />
+                            break;
+                        case NxNotificationType.Warning:
+                            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" />
+                            break;
+                        case NxNotificationType.Error:
+                            <circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" />
+                            break;
+                        default:
+                            <circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" />
+                            break;
+                    }
+                </svg>
+            }
+            <span class="nx-notification-text">@model.Text</span>
+            @if (model.Closable)
+            {
+                <button type="button" class="nx-notification-close" aria-label="Close notification" title="Close" @onclick="() => Hide(model)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true">
+                        <line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" />
+                    </svg>
+                </button>
+            }
+        </div>
+    }
+</div>

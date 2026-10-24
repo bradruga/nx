@@ -1,0 +1,97 @@
+@page "/buttongroup/playground"
+
+<DocHeader Slug="buttongroup" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner @(pgFullWidth ? "demo-preview-inner-stretch" : "")">
+                <NxButtonGroup id="playground-group" AriaLabel="@OrNull(pgAriaLabel)" Variant="pgVariant" Size="pgSize" Disabled="pgDisabled" FullWidth="pgFullWidth">
+                    <NxButton OnClick="() => pgClicks++">Today</NxButton>
+                    @if (pgIcons)
+                    {
+                        <NxButton AriaLabel="Previous" Icon="@Prev" OnClick="() => pgClicks++" />
+                        <NxButton AriaLabel="Next" Icon="@Next" OnClick="() => pgClicks++" />
+                    }
+                    else
+                    {
+                        <NxButton OnClick="() => pgClicks++">Previous</NxButton>
+                        <NxButton OnClick="() => pgClicks++">Next</NxButton>
+                    }
+                </NxButtonGroup>
+            </div>
+            <div class="demo-row">
+                <span class="demo-counter" id="playground-clicks">Clicks × @pgClicks</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Appearance</div>
+            <label class="demo-control">
+                <span>Variant</span>
+                <select id="pg-variant" @bind="pgVariantText">
+                    <option value="">(each button's)</option>
+                    @foreach (var v in Enum.GetValues<NxButtonVariant>())
+                    {
+                        <option value="@v">@v</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control">
+                <span>Size</span>
+                <select id="pg-size" @bind="pgSizeText">
+                    <option value="">(each button's)</option>
+                    @foreach (var s in Enum.GetValues<NxButtonSize>())
+                    {
+                        <option value="@s">@s</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control"><span>Icon buttons</span><input type="checkbox" id="pg-icons" @bind="pgIcons" /></label>
+            <label class="demo-control"><span>FullWidth</span><input type="checkbox" id="pg-full-width" @bind="pgFullWidth" /></label>
+
+            <div class="demo-controls-title">State</div>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+            <label class="demo-control"><span>AriaLabel</span><input type="text" id="pg-aria-label" @bind="pgAriaLabel" @bind:event="oninput" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="buttongroup" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+    static readonly RenderFragment Prev = @<NxIcon Icon="NxIcons.ChevronLeft" />;
+    static readonly RenderFragment Next = @<NxIcon Icon="NxIcons.ChevronRight" />;
+
+    string pgVariantText = "", pgSizeText = "", pgAriaLabel = "Week";
+    bool pgIcons = true, pgFullWidth, pgDisabled;
+    int pgClicks;
+
+    NxButtonVariant? pgVariant => Enum.TryParse<NxButtonVariant>(pgVariantText, out var v) ? v : null;
+    NxButtonSize? pgSize => Enum.TryParse<NxButtonSize>(pgSizeText, out var s) ? s : null;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string>();
+            if (OrNull(pgAriaLabel) is { } a) attrs.Add($"AriaLabel=\"{a}\"");
+            if (pgVariant is { } v) attrs.Add($"Variant=\"NxButtonVariant.{v}\"");
+            if (pgSize is { } s) attrs.Add($"Size=\"NxButtonSize.{s}\"");
+            if (pgFullWidth) attrs.Add("FullWidth=\"true\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            var buttons = pgIcons
+                ? "    <NxButton OnClick=\"GoToToday\">Today</NxButton>\n    <NxButton AriaLabel=\"Previous\" Icon=\"@prev\" OnClick=\"Previous\" />\n    <NxButton AriaLabel=\"Next\" Icon=\"@next\" OnClick=\"Next\" />"
+                : "    <NxButton OnClick=\"GoToToday\">Today</NxButton>\n    <NxButton OnClick=\"Previous\">Previous</NxButton>\n    <NxButton OnClick=\"Next\">Next</NxButton>";
+            return $"<NxButtonGroup {string.Join(" ", attrs)}>\n{buttons}\n</NxButtonGroup>";
+        }
+    }
+}

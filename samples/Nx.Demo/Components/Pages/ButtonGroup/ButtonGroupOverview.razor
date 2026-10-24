@@ -1,0 +1,66 @@
+@page "/buttongroup"
+@page "/buttongroup/overview"
+
+<DocHeader Slug="buttongroup" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxButtonGroup</code> joins <code>NxButton</code>s into one bar of related actions — Today ‹ ›, Undo Redo,
+        Print Export. <code>Variant</code>, <code>Size</code> and <code>Disabled</code> on the group apply to every button
+        that does not set its own. To pick a value from joined buttons (Day / Week / Month), use
+        <a href="togglegroup/overview">NxToggleGroup</a>; the two sit side by side in a toolbar.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <NxButtonGroup id="overview-week" AriaLabel="Week">
+                <NxButton id="overview-today" OnClick="() => week = 0">Today</NxButton>
+                <NxButton id="overview-prev" AriaLabel="Previous week" Title="Previous week" Icon="@Prev" OnClick="() => week--" />
+                <NxButton id="overview-next" AriaLabel="Next week" Title="Next week" Icon="@Next" OnClick="() => week++" />
+            </NxButtonGroup>
+            <span class="demo-value" id="overview-week-value">Week of <strong>@WeekStart.ToString("MMM d")</strong></span>
+        </div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Tab</td><td>Each button is its own tab stop, as separate actions should be.</td></tr>
+                <tr><td>Enter / Space</td><td>Presses the focused button.</td></tr>
+                <tr><td>role="group"</td><td>Named by <code>AriaLabel</code>; icon-only buttons need their own <code>AriaLabel</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="buttongroup" Page="overview" />
+
+@code {
+    int week;
+    DateTime WeekStart => DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek + 7 * week);
+
+    static readonly RenderFragment Prev = @<NxIcon Icon="NxIcons.ChevronLeft" />;
+    static readonly RenderFragment Next = @<NxIcon Icon="NxIcons.ChevronRight" />;
+
+    const string basicCode =
+        """
+        <NxButtonGroup AriaLabel="Week">
+            <NxButton OnClick="GoToToday">Today</NxButton>
+            <NxButton AriaLabel="Previous week" OnClick="PreviousWeek">
+                <Icon><NxIcon Icon="NxIcons.ChevronLeft" /></Icon>
+            </NxButton>
+            <NxButton AriaLabel="Next week" OnClick="NextWeek">
+                <Icon><NxIcon Icon="NxIcons.ChevronRight" /></Icon>
+            </NxButton>
+        </NxButtonGroup>
+        """;
+}

@@ -1,0 +1,99 @@
+@page "/colorpicker/examples"
+@using System.ComponentModel.DataAnnotations
+
+<DocHeader Slug="colorpicker" Page="examples" />
+
+<div class="doc-section">
+    <h2>Your Own Palette</h2>
+    <p class="doc-note"><code>Colors</code> takes any CSS colors in reading order; <code>Columns</code> sets the row length.</p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <label class="demo-field-label" for="basic-palette">Category (6 columns)</label>
+                <NxColorPicker Id="basic-palette" Colors="NxColorPalettes.Basic" Columns="6" @bind-Value="category" AriaLabel="Category" />
+            </div>
+            <div>
+                <label class="demo-field-label" for="status-palette">Status (4 colors in a row)</label>
+                <NxColorPicker Id="status-palette" Colors="StatusColors" Columns="4" @bind-Value="status" AriaLabel="Status" ShowValue="true" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Background &amp; Text Colors</h2>
+    <p class="doc-note">
+        A schedule item with a fill and a text color, as ERP's project schedule has. <code>ShowValue</code> prints the color
+        beside the swatch.
+    </p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <div class="demo-form-grid">
+            <div>
+                <label class="demo-field-label" for="fill-color">Fill</label>
+                <NxColorPicker Id="fill-color" @bind-Value="fill" AriaLabel="Fill" ShowValue="true" />
+            </div>
+            <div>
+                <label class="demo-field-label" for="text-color">Text</label>
+                <NxColorPicker Id="text-color" @bind-Value="text" AriaLabel="Text color" ShowValue="true" />
+            </div>
+        </div>
+        <div class="demo-schedule-item" id="schedule-item" style="background: @(fill ?? "transparent"); color: @(text ?? "inherit")">
+            <strong>Riverside Garage</strong>
+            <span>Erection · week 32</span>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>No Color</h2>
+    <p class="doc-note"><code>Clearable</code> adds "No color", which sets the value to <code>null</code>; the button shows a struck-out swatch.</p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxColorPicker Id="clear-color" @bind-Value="highlight" Clearable="true" AriaLabel="Highlight" ShowValue="true" />
+        <span class="demo-value" id="clear-value">Value: <strong>@(highlight ?? "null")</strong></span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Disabled</h2>
+    <p class="doc-note">ERP turns the picker off once a crew has members.</p>
+    <div class="demo-stage">
+        <div class="demo-row">
+            <NxColorPicker Id="disabled-color" Value="#2e5496" Disabled="true" AriaLabel="Crew color" />
+            <span class="demo-value">The crew has members.</span>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Form Validation</h2>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <EditForm id="color-form" Model="load" OnValidSubmit="() => result = Saved()" FormName="color-form">
+            <DataAnnotationsValidator />
+            <label class="demo-field-label" for="load-color">Driver color</label>
+            <NxColorPicker Id="load-color" @bind-Value="load.Color" Clearable="true" AriaLabel="Driver color" />
+            <NxValidationMessage For="() => load.Color" />
+            <div class="demo-row" style="margin-top:16px">
+                <NxButton id="color-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Save load</NxButton>
+                <span class="demo-value" id="color-result">@result</span>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<DocPager Slug="colorpicker" Page="examples" />
+
+@code {
+    static readonly string[] StatusColors = ["#3e9e4f", "#e1b12c", "#d97a1e", "#c0392b"];
+
+    string? category = "#2e6db4", status = "#3e9e4f", fill = "#dae1f4", text = "#203764", highlight = "#ffff00";
+    string result = "Not saved";
+    readonly LoadForm load = new();
+
+    string Saved() => $"Saved with {load.Color}";
+
+    class LoadForm
+    {
+        [Required(ErrorMessage = "Pick a color for the driver.")]
+        public string? Color { get; set; }
+    }
+}

@@ -1,0 +1,108 @@
+@page "/notification/playground"
+
+<DocHeader Slug="notification" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">The notification's parameters and a message's settings, live. Show sends one message.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner">
+                <div class="demo-row">
+                    <NxButton id="playground-show" Variant="NxButtonVariant.Primary" OnClick="Show">Show</NxButton>
+                    <NxButton id="playground-hide-all" OnClick="() => notification?.HideAll()">Hide all</NxButton>
+                </div>
+            </div>
+            <div class="demo-row">
+                <span class="demo-counter" id="playground-shown">Shown × @pgShown</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">NxNotification</div>
+            <label class="demo-control">
+                <span>HorizontalPosition</span>
+                <select id="pg-horizontal" @bind="pgHorizontal">
+                    @foreach (var h in Enum.GetValues<NxNotificationHorizontalPosition>())
+                    {
+                        <option value="@h">@h</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control">
+                <span>VerticalPosition</span>
+                <select id="pg-vertical" @bind="pgVertical">
+                    @foreach (var v in Enum.GetValues<NxNotificationVerticalPosition>())
+                    {
+                        <option value="@v">@v</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control"><span>MaxVisible</span><input type="number" id="pg-max" min="1" @bind="pgMax" /></label>
+
+            <div class="demo-controls-title">NxNotificationModel</div>
+            <label class="demo-control"><span>Text</span><input type="text" id="pg-text" @bind="pgText" @bind:event="oninput" /></label>
+            <label class="demo-control">
+                <span>Type</span>
+                <select id="pg-type" @bind="pgType">
+                    @foreach (var t in Enum.GetValues<NxNotificationType>())
+                    {
+                        <option value="@t">@t</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control"><span>CloseAfter (ms)</span><input type="number" id="pg-close-after" min="0" step="500" @bind="pgCloseAfter" /></label>
+            <label class="demo-control"><span>Closable</span><input type="checkbox" id="pg-closable" @bind="pgClosable" /></label>
+            <label class="demo-control"><span>ShowIcon</span><input type="checkbox" id="pg-show-icon" @bind="pgShowIcon" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<NxNotification @ref="notification" id="playground-notification" HorizontalPosition="pgHorizontal" VerticalPosition="pgVertical" MaxVisible="pgMax" />
+
+<DocPager Slug="notification" Page="playground" />
+
+@code {
+    NxNotification? notification;
+    NxNotificationHorizontalPosition pgHorizontal = NxNotificationHorizontalPosition.Right;
+    NxNotificationVerticalPosition pgVertical = NxNotificationVerticalPosition.Bottom;
+    NxNotificationType pgType = NxNotificationType.Success;
+    string pgText = "Pour P-1042 released to the plant.";
+    int pgMax = 5, pgCloseAfter = 5000, pgShown;
+    bool pgClosable = true, pgShowIcon = true;
+
+    void Show()
+    {
+        pgShown++;
+        notification?.Show(new NxNotificationModel
+        {
+            Text = pgText,
+            Type = pgType,
+            CloseAfter = pgCloseAfter,
+            Closable = pgClosable,
+            ShowIcon = pgShowIcon
+        });
+    }
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "@ref=\"notification\"" };
+            if (pgHorizontal != NxNotificationHorizontalPosition.Right) attrs.Add($"HorizontalPosition=\"NxNotificationHorizontalPosition.{pgHorizontal}\"");
+            if (pgVertical != NxNotificationVerticalPosition.Bottom) attrs.Add($"VerticalPosition=\"NxNotificationVerticalPosition.{pgVertical}\"");
+            if (pgMax != 5) attrs.Add($"MaxVisible=\"{pgMax}\"");
+            var model = new List<string> { $"    Text = \"{pgText}\"" };
+            if (pgType != NxNotificationType.Info) model.Add($"    Type = NxNotificationType.{pgType}");
+            if (pgCloseAfter != 5000) model.Add($"    CloseAfter = {pgCloseAfter}");
+            if (!pgClosable) model.Add("    Closable = false");
+            if (!pgShowIcon) model.Add("    ShowIcon = false");
+            return $"<NxNotification {string.Join(" ", attrs)} />\n\nnotification.Show(new NxNotificationModel\n{{\n{string.Join(",\n", model)}\n}});";
+        }
+    }
+}

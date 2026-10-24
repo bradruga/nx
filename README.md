@@ -6,6 +6,7 @@ Blazor UI components for the Northeast Precast ERP portal, built to replace Tele
 | Component | What it does |
 |---|---|
 | `NxButton` | Native button: primary/secondary/danger/ghost/link variants, three sizes, icon slot and icon-only mode, loading spinner, busy-click guard, submit/reset types, full width. |
+| `NxButtonGroup` | Joins NxButtons (and menu buttons) into one bar of related actions; `Variant`, `Size` and `Disabled` on the group apply to every button that does not set its own; full width; `role="group"`. |
 | `NxTextBox` | Text input: `@bind-Value` on change or as you type (with debounce), label or floating label, prefix/suffix slots, clear button, password toggle, max length with counter, read-only/disabled, `EditForm` validation, autofocus, input modes. |
 | `NxNumericTextBox<TValue>` | Number input for int/long/short/decimal/double/float, nullable or not: min/max/step, spin buttons with press-and-hold, arrow and page keys, .NET format strings and culture-aware parsing, decimals, prefix/suffix, select-on-focus, clear, validation. |
 | `NxComboBox<TItem, TValue>` | Filterable dropdown: `Data` or async `DataProvider`, contains/starts-with/custom filtering, virtualization, keyboard navigation, custom values, clear, templates, grouping, loading state, validation, popup that flips at the viewport edge, `@bind-Value`/`@bind-SelectedItem`. Opt-in **multi-column** grid list, **multi-select** chips (`@bind-Values`/`@bind-SelectedItems`), and a full-screen **mobile overlay** below 600 px. |
@@ -13,6 +14,7 @@ Blazor UI components for the Northeast Precast ERP portal, built to replace Tele
 | `NxMultiSelect<TItem, TValue>` | Multi-select on the same engine as NxComboBox `Multiple` (shared code): chips or a "3 selected" summary, filter box, select-all, max selections, pick-only mode, phone sheet that applies on Done. |
 | `NxAutoComplete<TItem>` | A text box that suggests, on the NxComboBox engine: the value is the typed text; matches open after `MinLength` characters (contains/starts-with/custom), arrow-and-Enter or click picks one, Enter and leaving commit free text; item template, prefix icon, `DataProvider`, virtualization, validation. |
 | `NxTextArea` | Multi-line text in the NxTextBox field: label/floating label, counter, clear, validation, debounce; rows, auto-resize between min and max rows, resize handle. |
+| `NxColorPicker` | Picks a CSS color from a palette grid (the Office palette ERP uses, or your own `Colors` and `Columns`): arrow keys by cell and row, "No color", the value's text, validation. |
 | `NxDatePicker<TValue>` | Date input for `DateOnly`/`DateTime`, nullable or not: masked typing in the culture's order, any display `Format`, calendar popup with month/year/decade views, min/max, disabled-dates callback, week numbers, first day of week, Today, clear, validation; a full-screen sheet on phones. |
 | `NxDateRangePicker<TValue>` | Start and end dates (`@bind-StartValue`/`@bind-EndValue`) on one calendar, two months side by side on a desktop, start-then-end picking with the range band, the date picker's typing and limits, a phone sheet. |
 | `NxTimePicker<TValue>` | Time input for `TimeOnly`/`TimeSpan`/`DateTime`: 12- or 24-hour, loose typing (`930p`, `1430`), a list every `Step` minutes between min and max, clear, validation; a phone sheet. |
@@ -29,6 +31,8 @@ Blazor UI components for the Northeast Precast ERP portal, built to replace Tele
 | `NxDropDownButton` / `NxSplitButton` | An NxButton that opens a menu; a primary action joined to a menu arrow. Every NxButton variant and size. |
 | `NxIcon` + `NxIcons` | Inline SVG icons: every one ERP uses (131), named after the Telerik SvgIcons they replace (Lucide, ISC), seven sizes, theme colors, custom `NxIconData`, decorative or labelled. |
 | `NxLoader` / `NxLoaderContainer` | Spinner, converging or pulsing dots in three sizes; an overlay with a loader (and text or your content) that covers its positioned parent and blocks clicks. |
+| `NxProgressBar` | `Value` of `Max` with a centered label readable over fill and track, a `LabelTemplate`, a `Thin` bar, an `Indeterminate` one; ARIA progressbar values. |
+| `NxNotification` | Toasts stacked in a corner: `` + `Show(model)` with Info/Success/Warning/Error/Neutral, `CloseAfter` held by hover or focus, close button, six positions, `MaxVisible`, a live region (errors as alerts); full width on phones. |
 | `NxCheckBox<TValue>` | Check box for `bool` or `bool?` (indeterminate), three-state cycling, label on either side, read-only, validation. |
 | `NxToggleSwitch` | `role="switch"` on/off toggle: on/off text inside or beside, three sizes, loading state, validation. |
 | `NxRadioGroup<TValue>` + `NxRadioButton<TValue>` | One choice from `Data` or declared buttons, vertical or horizontal, disabled items, item template, native-radio roving tab stop, validation. |
@@ -49,6 +53,7 @@ src/Nx.Components/          Razor class library — every component
   wwwroot/nx-tooltip.js     Tooltip JS: triggers, delays, placement, long press, aria-describedby
   wwwroot/nx-menu.js        Menu JS: placement, submenus, keyboard, dismissal, right click and long press
   wwwroot/nx-input.js       Shared JS: per-key preventDefault, roving focus, input masks, select-on-focus
+  wwwroot/nx-colorpicker.js Color picker JS: palette grid keys, focus on open, close on Tab out
   NxFieldFrame.razor        Shared label/box/prefix/suffix/clear chrome of every text-style input
   NxPickerSheet.razor       Shared full-screen phone sheet of the pickers
   NxButton.razor(.cs/.css)  One component = markup + code-behind + scoped CSS

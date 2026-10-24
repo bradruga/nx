@@ -1,0 +1,61 @@
+@page "/progressbar/playground"
+
+<DocHeader Slug="progressbar" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                <NxProgressBar id="playground-bar" Value="pgValue" Max="pgMax" Indeterminate="pgIndeterminate" ShowLabel="pgShowLabel"
+                               Thin="pgThin" AriaLabel="@OrNull(pgAriaLabel)" />
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Value</div>
+            <label class="demo-control"><span>Value</span><input type="range" id="pg-value" min="0" max="@pgMax" step="1" @bind="pgValue" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>Max</span><input type="number" id="pg-max" min="1" @bind="pgMax" /></label>
+            <label class="demo-control"><span>Indeterminate</span><input type="checkbox" id="pg-indeterminate" @bind="pgIndeterminate" /></label>
+
+            <div class="demo-controls-title">Look</div>
+            <label class="demo-control"><span>ShowLabel</span><input type="checkbox" id="pg-show-label" @bind="pgShowLabel" /></label>
+            <label class="demo-control"><span>Thin</span><input type="checkbox" id="pg-thin" @bind="pgThin" /></label>
+            <label class="demo-control"><span>AriaLabel</span><input type="text" id="pg-aria-label" @bind="pgAriaLabel" @bind:event="oninput" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="progressbar" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+
+    double pgValue = 40, pgMax = 100;
+    bool pgIndeterminate, pgShowLabel = true, pgThin;
+    string pgAriaLabel = "Pieces produced";
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string>();
+            if (pgIndeterminate) attrs.Add("Indeterminate=\"true\"");
+            else
+            {
+                attrs.Add($"Value=\"{pgValue}\"");
+                if (pgMax != 100) attrs.Add($"Max=\"{pgMax}\"");
+            }
+            if (!pgShowLabel) attrs.Add("ShowLabel=\"false\"");
+            if (pgThin) attrs.Add("Thin=\"true\"");
+            if (OrNull(pgAriaLabel) is { } a) attrs.Add($"AriaLabel=\"{a}\"");
+            return "<NxProgressBar " + string.Join(" ", attrs) + " />";
+        }
+    }
+}

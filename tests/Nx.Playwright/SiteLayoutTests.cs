@@ -19,7 +19,8 @@ public class SiteLayoutTests : PageTest
     private static readonly string[] Components = ["button", "textbox", "numeric", "combobox", "checkbox", "switch", "radio", "togglegroup",
                                                           "datepicker", "daterange", "timepicker", "window", "tabstrip", "splitter",
                                                           "dropdown", "multiselect", "textarea", "tooltip", "contextmenu", "dropdownbutton", "splitbutton",
-                                                          "form", "icon", "loader", "datetimepicker", "autocomplete"];
+                                                          "form", "icon", "loader", "datetimepicker", "autocomplete",
+                                                          "buttongroup", "colorpicker", "progressbar", "notification"];
     private static readonly string[] SubPages = ["overview", "examples", "playground", "api"];
 
     private static IEnumerable<string> AllPaths() =>

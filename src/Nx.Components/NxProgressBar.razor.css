@@ -1,0 +1,59 @@
+.nx-progressbar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    width: 100%;
+    height: var(--nx-progressbar-height);
+    overflow: hidden;
+    border-radius: var(--nx-progressbar-radius);
+    background: var(--nx-progressbar-track);
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size-sm);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.nx-progressbar-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: var(--nx-progressbar-fill);
+    transition: width 0.3s ease;
+}
+
+/* Centered in the whole bar, once over the track and once (clipped to the fill) over the fill. */
+.nx-progressbar-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    color: var(--nx-progressbar-label);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nx-progressbar-label-on-fill { color: var(--nx-progressbar-label-on-fill); }
+
+.nx-progressbar-thin { height: var(--nx-progressbar-thin-height); }
+.nx-progressbar-thin .nx-progressbar-label { display: none; }
+
+/* ── Indeterminate: a band sliding across ─────────────────────────────────── */
+
+.nx-progressbar-indeterminate .nx-progressbar-fill {
+    width: 40%;
+    animation: nx-progressbar-slide 1.4s ease-in-out infinite;
+    transition: none;
+}
+
+@keyframes nx-progressbar-slide {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(250%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nx-progressbar-fill { transition: none; }
+    .nx-progressbar-indeterminate .nx-progressbar-fill { animation-duration: 3s; }
+}

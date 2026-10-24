@@ -1,0 +1,53 @@
+@page "/progressbar"
+@page "/progressbar/overview"
+
+<DocHeader Slug="progressbar" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxProgressBar</code> shows how far along something is: <code>Value</code> out of <code>Max</code> (100 by
+        default), with the percentage in the middle — readable over both the fill and the track. A
+        <code>LabelTemplate</code> says something else; <code>Thin</code> drops the label for a slim bar;
+        <code>Indeterminate</code> animates while the amount is unknown.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <div class="demo-progress-row"><span>Produced</span><NxProgressBar id="overview-produced" Value="produced" AriaLabel="Pieces produced" /></div>
+        <div class="demo-progress-row"><span>Set</span><NxProgressBar Value="41" AriaLabel="Pieces set" /></div>
+        <div class="demo-progress-row"><span>Shipped</span><NxProgressBar Value="12" AriaLabel="Pieces shipped" /></div>
+        <div class="demo-row">
+            <NxButton id="overview-more" Size="NxButtonSize.Small" OnClick="() => produced = Math.Min(100, produced + 10)">Produce 10%</NxButton>
+            <NxButton Size="NxButtonSize.Small" OnClick="() => produced = 0">Reset</NxButton>
+        </div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Attribute</th><th>Value</th></tr></thead>
+            <tbody>
+                <tr><td>role="progressbar"</td><td>Named by <code>AriaLabel</code>.</td></tr>
+                <tr><td>aria-valuenow / -valuemin / -valuemax</td><td>The value, 0 and Max; left out while indeterminate.</td></tr>
+                <tr><td>aria-valuetext</td><td>The percentage, e.g. "68%". The visible label is hidden from screen readers.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="progressbar" Page="overview" />
+
+@code {
+    double produced = 68;
+
+    const string basicCode =
+        """
+        <NxProgressBar Value="summary.PctPiecesProduced" AriaLabel="Pieces produced" />
+        """;
+}

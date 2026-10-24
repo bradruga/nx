@@ -290,3 +290,36 @@ Decisions I made without you. Each one says what I picked and why, so you can an
      typing replaces the number; a click still puts the caret. NxDatePicker and NxDateTimePicker swap the same way
      from .NET and have the same race; not changed.
 
+## Pass 6 — from ERP's usages (read only)
+
+113. **Answered (Brad): keep NxButtonGroup actions-only, toggles through NxToggleGroup.** **NxButtonGroup is for actions only.** ERP's 12 groups mix action buttons (Today ‹ ›) with toggle buttons whose
+     `Selected` flags the page keeps exclusive by hand (This week / Next 2 weeks, Day / Week / Month, Table / List).
+     Those toggles are one value picked from a set, which NxToggleGroup already does (single or `Multiple`, the latter
+     for QualityControlList2's panes), so the group has no toggle buttons of its own. Say if you want an `NxButton`
+     with `Selected` (`aria-pressed`) instead.
+114. **Group defaults reach NxButton only.** NxButton now reads a cascaded NxButtonGroup for `Variant`, `Size` and
+     `Disabled` (shared component change; a button that passes its own Variant or Size keeps it, even the default value).
+     NxDropDownButton and NxSplitButton pass their own Variant and Size to their inner button, so a group's Variant and
+     Size do not reach them; its Disabled does.
+115. **ERP's per-button ThemeColor/FillMode** (Secondary + Outline on nearly every grouped button) is NxButton's default
+     Secondary look; no outline variant was added.
+
+116. **NxColorPicker is palette-only**, as ERP uses it (7 of 7 are palette views). Telerik's gradient view and typed
+     hex/RGB input were not added. ERP's `NepColorPalettes.OfficeAndStandard` has 90 colors: the 70 Office ones are
+     `NxColorPalettes.Office` (the default); ERP's 20 extra colors stay in ERP and are passed as `Colors`.
+117. **The value is the swatch's string as given** (`#4371c4`); an incoming hex in other case or length, or `rgb(…)`,
+     still marks its swatch. Telerik's `ValueFormat` (Hex ×1, the rest default) is not a parameter. ERP data saved in
+     Telerik's default format may be `rgb(…)` strings: they display and match, and a new pick writes hex.
+118. **The popup opens at every width** (no phone sheet): 10 columns of 30 px touch targets fit a 390 px screen.
+
+119. **NxProgressBar**: ERP's label is always centered, so there is no `LabelPosition`. Telerik's `ProgressBarLabel
+     Visible="false"` with a thin CSS class is `Thin`. `Indeterminate` was added (cheap, common need); no
+     chunk/step bar.
+
+120. **NxNotification keeps ERP's call shape** (`@ref` + `Show(new …Model { Text, ThemeColor, Closable, CloseAfter })`):
+     `ThemeColor` is `Type`; Telerik's `Inverse` is `Neutral`. One animation (slide in from the side, fade when
+     centered) replaces `AnimationType`. Defaults: bottom right (ERP 3 of 4), close after 5 s, closable.
+121. **The countdown restarts** when the pointer or focus leaves a message, rather than resuming (WCAG 2.2.1 "pause").
+122. **New categories reused**: NxButtonGroup under Buttons, NxColorPicker under Inputs, NxNotification under Menus &
+     Overlays, NxProgressBar under Display.
+

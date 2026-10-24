@@ -1,0 +1,56 @@
+@page "/notification/api"
+
+<DocHeader Slug="notification" Page="api" />
+
+<div class="doc-section">
+    <h2>NxNotification</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>HorizontalPosition</td><td>NxNotificationHorizontalPosition</td><td>Right</td><td>Left, Center, Right.</td></tr>
+                <tr><td>VerticalPosition</td><td>NxNotificationVerticalPosition</td><td>Bottom</td><td>Top (newest first) or Bottom (newest last).</td></tr>
+                <tr><td>MaxVisible</td><td>int</td><td>5</td><td>A new message beyond it closes the oldest.</td></tr>
+                <tr><td>Class / Style</td><td>string?</td><td>—</td><td>On the stack, e.g. <code>--nx-notification-offset</code>.</td></tr>
+                <tr><td>Show(model)</td><td>NxNotificationModel</td><td></td><td>Shows a message; safe from any thread. Returns the model.</td></tr>
+                <tr><td>Show(text, type)</td><td>NxNotificationModel</td><td></td><td>The short form with the model's defaults.</td></tr>
+                <tr><td>Hide(model) / HideAll()</td><td>void</td><td></td><td>Closes one message, or all.</td></tr>
+                <tr><td>Visible</td><td>IReadOnlyList&lt;NxNotificationModel&gt;</td><td></td><td>The messages showing, oldest first.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxNotificationModel</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Text</td><td>string</td><td>""</td><td>The message.</td></tr>
+                <tr><td>Type</td><td>NxNotificationType</td><td>Info</td><td>Info, Success, Warning, Error, Neutral.</td></tr>
+                <tr><td>CloseAfter</td><td>int</td><td>5000</td><td>Milliseconds before it closes; 0 keeps it. Counts again after a hover or focus.</td></tr>
+                <tr><td>Closable</td><td>bool</td><td>true</td><td>The close button.</td></tr>
+                <tr><td>ShowIcon</td><td>bool</td><td>true</td><td>The type's icon.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-notification-width / -offset</td><td>360px / 16px</td><td>Message width; distance from the screen edges.</td></tr>
+                <tr><td>--nx-notification-bg / -fg</td><td>--nx-surface / --nx-fg</td><td>A message.</td></tr>
+                <tr><td>--nx-notification-info / -success / -warning / -error</td><td>theme colors</td><td>The edge stripe and icon per type.</td></tr>
+                <tr><td>--nx-notification-neutral-bg / -fg</td><td>#2b2b31 / white (inverted in dark)</td><td>Neutral messages.</td></tr>
+                <tr><td>--nx-z-notification</td><td>1150</td><td>Above windows, popups and sheets; under tooltips.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="notification" Page="api" />

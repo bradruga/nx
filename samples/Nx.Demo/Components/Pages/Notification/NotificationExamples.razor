@@ -1,0 +1,111 @@
+@page "/notification/examples"
+
+<DocHeader Slug="notification" Page="examples" />
+
+<div class="doc-section">
+    <h2>Types</h2>
+    <p class="doc-note">Info, Success, Warning and Error take the theme's colors and icons; Neutral is the plain dark message ERP uses for "Saved by …".</p>
+    <div class="demo-stage">
+        <div class="demo-row">
+            @foreach (var type in Enum.GetValues<NxNotificationType>())
+            {
+                <NxButton id="@($"type-{type}")" Size="NxButtonSize.Small" OnClick="() => ShowType(type)">@type</NxButton>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Timing</h2>
+    <p class="doc-note">
+        <code>CloseAfter</code> is in milliseconds; <code>0</code> keeps the message until it is closed. Hover one to hold it.
+        <code>Show(text, type)</code> is the short form, with a 5 s timeout.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-row">
+            <NxButton id="timing-short" Size="NxButtonSize.Small" OnClick="ShowShort">1.5 seconds</NxButton>
+            <NxButton id="timing-sticky" Size="NxButtonSize.Small" OnClick="ShowSticky">Until closed</NxButton>
+            <NxButton id="timing-text" Size="NxButtonSize.Small" OnClick='() => notification?.Show("Copied to the clipboard")'>Show(text)</NxButton>
+            <NxButton id="timing-not-closable" Size="NxButtonSize.Small" OnClick="ShowNotClosable">No close button</NxButton>
+            <NxButton id="timing-hide-all" Size="NxButtonSize.Small" Variant="NxButtonVariant.Ghost" OnClick="() => notification?.HideAll()">Hide all</NxButton>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Positions</h2>
+    <p class="doc-note">
+        <code>HorizontalPosition</code> and <code>VerticalPosition</code>; each page usually has one notification. At the
+        top the newest message is first, at the bottom it is last — always nearest the edge.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-position-grid">
+            @foreach (var vertical in Enum.GetValues<NxNotificationVerticalPosition>())
+            {
+                @foreach (var horizontal in Enum.GetValues<NxNotificationHorizontalPosition>())
+                {
+                    <NxButton id="@($"position-{vertical}-{horizontal}")" Size="NxButtonSize.Small" OnClick="() => ShowAt(vertical, horizontal)">
+                        @vertical @horizontal
+                    </NxButton>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Many at Once</h2>
+    <p class="doc-note"><code>MaxVisible</code> (5) caps the stack; a sixth message closes the oldest.</p>
+    <div class="demo-stage">
+        <NxButton id="many-burst" Size="NxButtonSize.Small" OnClick="Burst">Show 8</NxButton>
+    </div>
+</div>
+
+<NxNotification @ref="notification" id="examples-notification" />
+<NxNotification @ref="positioned" id="positioned-notification" HorizontalPosition="horizontal" VerticalPosition="vertical" />
+
+<DocPager Slug="notification" Page="examples" />
+
+@code {
+    NxNotification? notification, positioned;
+    NxNotificationHorizontalPosition horizontal = NxNotificationHorizontalPosition.Right;
+    NxNotificationVerticalPosition vertical = NxNotificationVerticalPosition.Bottom;
+    int burst;
+
+    static string TextFor(NxNotificationType type) => type switch
+    {
+        NxNotificationType.Success => "Pour P-1042 released to the plant.",
+        NxNotificationType.Warning => "Two trucks are not confirmed for tomorrow.",
+        NxNotificationType.Error   => "Item name and location duplicate another row.",
+        NxNotificationType.Neutral => $"Saved by Dana Ortiz at {DateTime.Now:h:mm tt}",
+        _                          => "The schedule was updated by another user."
+    };
+
+    void ShowType(NxNotificationType type) => notification?.Show(new NxNotificationModel { Text = TextFor(type), Type = type });
+
+    void ShowShort() => notification?.Show(new NxNotificationModel { Text = "Gone in a moment.", CloseAfter = 1500 });
+
+    void ShowSticky() => notification?.Show(new NxNotificationModel
+    {
+        Text = "Stays until you close it.",
+        Type = NxNotificationType.Warning,
+        CloseAfter = 0
+    });
+
+    void ShowNotClosable() => notification?.Show(new NxNotificationModel { Text = "No close button; closes in 3 s.", Closable = false, CloseAfter = 3000 });
+
+    async Task ShowAt(NxNotificationVerticalPosition v, NxNotificationHorizontalPosition h)
+    {
+        positioned?.HideAll();
+        vertical = v;
+        horizontal = h;
+        await Task.Yield();     // let the stack move before the message appears
+        positioned?.Show(new NxNotificationModel { Text = $"{v} {h}", Type = NxNotificationType.Neutral, CloseAfter = 2500 });
+    }
+
+    void Burst()
+    {
+        for (var i = 0; i < 8; i++)
+            notification?.Show(new NxNotificationModel { Text = $"Message {++burst}", CloseAfter = 8000 });
+    }
+}

@@ -1,0 +1,77 @@
+@page "/colorpicker/playground"
+
+<DocHeader Slug="colorpicker" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner">
+                <NxColorPicker Id="playground-color" @bind-Value="pgValue" @bind-Value:after="() => pgChanges++"
+                               Colors="@(pgPalette == "Basic" ? NxColorPalettes.Basic : NxColorPalettes.Office)" Columns="pgColumns"
+                               Clearable="pgClearable" ShowValue="pgShowValue" Placeholder="@pgPlaceholder" Disabled="pgDisabled"
+                               AriaLabel="@OrNull(pgAriaLabel)" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-value">Value: <strong>@(pgValue ?? "null")</strong></span>
+                <span class="demo-counter" id="playground-changes">ValueChanged × @pgChanges</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Palette</div>
+            <label class="demo-control">
+                <span>Colors</span>
+                <select id="pg-palette" @bind="pgPalette" @bind:after="PaletteChanged">
+                    <option value="Office">NxColorPalettes.Office</option>
+                    <option value="Basic">NxColorPalettes.Basic</option>
+                </select>
+            </label>
+            <label class="demo-control"><span>Columns</span><input type="number" id="pg-columns" min="1" max="14" @bind="pgColumns" /></label>
+
+            <div class="demo-controls-title">Display</div>
+            <label class="demo-control"><span>ShowValue</span><input type="checkbox" id="pg-show-value" @bind="pgShowValue" /></label>
+            <label class="demo-control"><span>Placeholder</span><input type="text" id="pg-placeholder" @bind="pgPlaceholder" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>AriaLabel</span><input type="text" id="pg-aria-label" @bind="pgAriaLabel" @bind:event="oninput" /></label>
+
+            <div class="demo-controls-title">Behavior</div>
+            <label class="demo-control"><span>Clearable</span><input type="checkbox" id="pg-clearable" @bind="pgClearable" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="colorpicker" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+
+    string? pgValue = "#ed7e32";
+    string pgPalette = "Office", pgPlaceholder = "None", pgAriaLabel = "Color";
+    int pgColumns = 10, pgChanges;
+    bool pgClearable = true, pgShowValue = true, pgDisabled;
+
+    void PaletteChanged() => pgColumns = pgPalette == "Basic" ? 6 : 10;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "@bind-Value=\"item.Color\"" };
+            if (pgPalette == "Basic") attrs.Add("Colors=\"NxColorPalettes.Basic\"");
+            if (pgColumns != 10) attrs.Add($"Columns=\"{pgColumns}\"");
+            if (pgClearable) attrs.Add("Clearable=\"true\"");
+            if (pgShowValue) attrs.Add("ShowValue=\"true\"");
+            if (pgShowValue && pgPlaceholder != "None") attrs.Add($"Placeholder=\"{pgPlaceholder}\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            if (OrNull(pgAriaLabel) is { } a) attrs.Add($"AriaLabel=\"{a}\"");
+            return "<NxColorPicker " + string.Join("\n               ", attrs) + " />";
+        }
+    }
+}
