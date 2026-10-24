@@ -1,0 +1,58 @@
+@page "/fileselect/playground"
+
+<DocHeader Slug="fileselect" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live. Pick a few files.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                <NxFileSelect Id="playground-files" Multiple="pgMultiple" AllowedExtensions="Extensions" MaxFileSize="MaxBytes" Disabled="pgDisabled"
+                              OnSelect='e => pgLog = $"OnSelect: {e.Files.Count} file(s)"' OnRemove='e => pgLog = $"OnRemove: {e.Files[0].Name}"' />
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-log">@pgLog</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Limits</div>
+            <label class="demo-control"><span>AllowedExtensions</span><input type="text" id="pg-extensions" placeholder="any" @bind="pgExtensions" /></label>
+            <label class="demo-control"><span>MaxFileSize (KB)</span><input type="number" id="pg-max" min="0" @bind="pgMaxKb" /></label>
+            <div class="demo-controls-title">Behavior</div>
+            <label class="demo-control"><span>Multiple</span><input type="checkbox" id="pg-multiple" @bind="pgMultiple" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="fileselect" Page="playground" />
+
+@code {
+    string pgExtensions = ".pdf, .png, .xlsx", pgLog = "—";
+    int pgMaxKb = 5000;
+    bool pgMultiple = true, pgDisabled;
+
+    string[] Extensions => pgExtensions.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    long? MaxBytes => pgMaxKb > 0 ? pgMaxKb * 1024L : null;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string>();
+            if (Extensions.Length > 0) attrs.Add($"AllowedExtensions=\"new[] {{ {string.Join(", ", Extensions.Select(e => $"\"{e}\""))} }}\"");
+            if (MaxBytes is long max) attrs.Add($"MaxFileSize=\"{max}\"");
+            if (!pgMultiple) attrs.Add("Multiple=\"false\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            attrs.Add("OnSelect=\"ReadAsync\"");
+            return "<NxFileSelect " + string.Join("\n              ", attrs) + " />";
+        }
+    }
+}

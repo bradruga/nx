@@ -1,0 +1,54 @@
+@page "/mediaquery"
+@page "/mediaquery/overview"
+
+<DocHeader Slug="mediaquery" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxMediaQuery</code> turns a CSS media query into a bool you can bind: <code>@@bind-Matches</code> follows the
+        browser as the window is resized, the pointer changes or the color scheme flips. It renders nothing. Use it when the
+        markup itself must change — a grid for a list, locked columns or not; for looks alone, CSS media queries are enough.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column">
+        <NxMediaQuery Media="(min-width: 992px)" @bind-Matches="isLarge" />
+        <NxMediaQuery Media="(max-width: 767px)" @bind-Matches="isSmall" />
+        <div class="demo-mq-grid">
+            <div class="@(isSmall ? "demo-mq-badge demo-mq-on" : "demo-mq-badge")" id="overview-small">(max-width: 767px) <strong>@isSmall</strong></div>
+            <div class="@(isLarge ? "demo-mq-badge demo-mq-on" : "demo-mq-badge")" id="overview-large">(min-width: 992px) <strong>@isLarge</strong></div>
+        </div>
+        <p class="doc-note">Resize the window across 768 and 992 px.</p>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Notes</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Case</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Prerendering</td><td>Matches is false until the browser answers, just after the page becomes interactive.</td></tr>
+                <tr><td>First answer</td><td><code>MatchesChanged</code> fires once with the current state, true or false.</td></tr>
+                <tr><td>Changing Media</td><td>The old query stops; the new one reports at once.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="mediaquery" Page="overview" />
+
+@code {
+    bool isLarge, isSmall;
+
+    const string basicCode =
+        """
+        <NxMediaQuery Media="(min-width: 992px)" @bind-Matches="isLarge" />
+
+        @if (isLarge) { <SideBySide /> } else { <Stacked /> }
+        """;
+}

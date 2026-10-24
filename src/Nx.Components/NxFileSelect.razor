@@ -1,0 +1,27 @@
+@namespace Nx.Components
+
+<div @attributes="AdditionalAttributes" class="@CssClass" style="@Style">
+    <NxFileDropZone Multiple="Multiple" Hint="@Hint" Disabled="Disabled">
+        <InputFile id="@InputId" multiple="@Multiple" accept="@FileRules.Accept(extensions)" disabled="@Disabled"
+                   aria-label="@(AriaLabel ?? (Multiple ? "Select files" : "Select a file"))" OnChange="HandleChangeAsync" />
+    </NxFileDropZone>
+    @if (files.Count > 0)
+    {
+        <ul class="nx-fileselect-list" aria-label="Selected files">
+            @foreach (var file in files)
+            {
+                <NxFileRow @key="file.Id" Name="@file.Name" Size="file.Size"
+                           Error="@(file.Error is { } error ? FileRules.Message(error, MinFileSize, MaxFileSize) : null)">
+                    <Actions>
+                        <button type="button" class="nx-fileselect-remove" aria-label="@($"Remove {file.Name}")" title="Remove"
+                                disabled="@Disabled" @onclick="() => RemoveAsync(file)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true">
+                                <line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" />
+                            </svg>
+                        </button>
+                    </Actions>
+                </NxFileRow>
+            }
+        </ul>
+    }
+</div>

@@ -1,0 +1,113 @@
+@page "/dialog"
+@page "/dialog/overview"
+@inject NxDialogService Dialogs
+
+<DocHeader Slug="dialog" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        Two ways to ask the user something. <code>NxDialog</code> is a short modal you put in your markup and bind with
+        <code>@@bind-Visible</code>. <code>NxDialogService</code> opens dialogs from code — <code>AlertAsync</code>,
+        <code>ConfirmAsync</code>, <code>PromptAsync</code>, any dialog with <code>ShowAsync</code>, and a progress dialog —
+        rendered by one <code>NxDialogHost</code> in the layout. Both are <code>NxWindow</code> underneath (focus trap,
+        Escape, stacking), as a centered card even on a phone.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage">
+        <div class="demo-row">
+            <NxButton id="overview-alert" OnClick="AlertAsync">Alert</NxButton>
+            <NxButton id="overview-confirm" Variant="NxButtonVariant.Danger" OnClick="ConfirmAsync">Delete pour…</NxButton>
+            <NxButton id="overview-markup" OnClick="() => showSubmit = true">Submit for review…</NxButton>
+            <span class="demo-value" id="overview-result">@result</span>
+        </div>
+    </div>
+    <NxDialog @bind-Visible="showSubmit" Title="Submit schedule for review" Id="overview-submit">
+        <ChildContent>
+            <p class="demo-dialog-text">This sends the schedule to the crew's manager for approval.</p>
+            <NxTextArea Id="overview-note" Label="Note for the reviewer" @bind-Value="note" Rows="3" />
+        </ChildContent>
+        <Buttons>
+            <NxButton id="overview-submit-ok" Variant="NxButtonVariant.Primary" OnClick="Submit">Submit</NxButton>
+            <NxButton id="overview-submit-cancel" OnClick="() => showSubmit = false">Cancel</NxButton>
+        </Buttons>
+    </NxDialog>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Setup</h2>
+    <pre class="doc-code">@setupCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Opening</td><td>A message dialog starts on its confirm button (Enter takes it); a dialog with fields starts on the first.</td></tr>
+                <tr><td>Tab</td><td>Stays inside a modal dialog.</td></tr>
+                <tr><td>Esc / close button</td><td>Dismiss: <code>ConfirmAsync</code> answers false, <code>ShowAsync</code> null.</td></tr>
+                <tr><td>Enter in a prompt</td><td>Confirms with the text.</td></tr>
+                <tr><td>role="dialog"</td><td>Named by its title, described by its message; focus returns where it was on close.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="dialog" Page="overview" />
+
+@code {
+    bool showSubmit;
+    string? note;
+    string result = "";
+
+    async Task AlertAsync()
+    {
+        await Dialogs.AlertAsync("Pour P-1042 was released to the plant.\nThe batch ticket prints at 6:10.", "Released");
+        result = "Alert closed";
+    }
+
+    async Task ConfirmAsync() =>
+        result = await Dialogs.ConfirmAsync("Delete pour P-1042? Its truck schedule is deleted with it.", "Delete pour",
+            confirmText: "Delete", confirmVariant: NxButtonVariant.Danger) ? "Deleted" : "Kept";
+
+    void Submit()
+    {
+        showSubmit = false;
+        result = string.IsNullOrWhiteSpace(note) ? "Submitted" : $"Submitted: {note}";
+    }
+
+    const string basicCode =
+        """
+        @inject NxDialogService Dialogs
+
+        await Dialogs.AlertAsync("Pour P-1042 was released.", "Released");
+
+        if (await Dialogs.ConfirmAsync("Delete pour P-1042?", "Delete pour", confirmText: "Delete",
+                                       confirmVariant: NxButtonVariant.Danger))
+            await DeleteAsync();
+
+        <NxDialog @bind-Visible="showSubmit" Title="Submit schedule for review">
+            <ChildContent>…</ChildContent>
+            <Buttons>
+                <NxButton Variant="NxButtonVariant.Primary" OnClick="SubmitAsync">Submit</NxButton>
+                <NxButton OnClick="() => showSubmit = false">Cancel</NxButton>
+            </Buttons>
+        </NxDialog>
+        """;
+
+    const string setupCode =
+        """
+        // Program.cs
+        builder.Services.AddNxDialogs();
+
+        @* MainLayout.razor, after the page *@
+        @Body
+        <NxDialogHost />
+        """;
+}

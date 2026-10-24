@@ -1,0 +1,45 @@
+.nx-filerow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 6px 4px 6px 8px;
+    border-bottom: 1px solid var(--nx-border);
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+}
+.nx-filerow:last-child { border-bottom: none; }
+
+.nx-filerow ::deep .nx-filerow-icon { color: var(--nx-fg-muted); }
+.nx-filerow-success ::deep .nx-filerow-icon { color: var(--nx-success); }
+.nx-filerow-error-row ::deep .nx-filerow-icon { color: var(--nx-danger); }
+
+.nx-filerow-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+    width: 0; /* a long name must not widen what holds the list */
+}
+
+.nx-filerow-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--nx-fg);
+}
+
+.nx-filerow-detail {
+    display: flex;
+    gap: 4px;
+    font-size: var(--nx-font-size-sm);
+    color: var(--nx-fg-muted);
+    font-variant-numeric: tabular-nums;
+}
+.nx-filerow-success .nx-filerow-status { color: var(--nx-success); }
+.nx-filerow-error { color: var(--nx-danger); }
+
+.nx-filerow-main ::deep .nx-filerow-progress { margin-top: 3px; }
+
+.nx-filerow-actions { display: flex; gap: 2px; flex-shrink: 0; }

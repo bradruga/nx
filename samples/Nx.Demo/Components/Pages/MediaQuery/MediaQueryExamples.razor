@@ -1,0 +1,94 @@
+@page "/mediaquery/examples"
+
+<DocHeader Slug="mediaquery" Page="examples" />
+
+<div class="doc-section">
+    <h2>The Queries ERP Uses</h2>
+    <p class="doc-note">Each badge is one <code>NxMediaQuery</code>; green matches now.</p>
+    <div class="demo-stage">
+        <div class="demo-mq-grid" id="examples-badges">
+            @foreach (var query in queries)
+            {
+                <NxMediaQuery Media="@query.Media" @bind-Matches="query.Matches" />
+                <div class="@(query.Matches ? "demo-mq-badge demo-mq-on" : "demo-mq-badge")" data-media="@query.Media">
+                    <code>@query.Media</code>
+                    <span>@query.Use</span>
+                    <strong>@query.Matches</strong>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Different Markup by Width</h2>
+    <p class="doc-note">Under 768 px the pours are cards; above it, a table — not the same table squeezed.</p>
+    <NxMediaQuery Media="(max-width: 767px)" @bind-Matches="small" />
+    <div class="demo-stage demo-stage-column" id="layout-sample">
+        @if (small)
+        {
+            <div class="demo-mq-cards" id="layout-cards">
+                @foreach (var (id, place, yards) in Pours)
+                {
+                    <div class="demo-context-card"><strong>@id</strong><span>@place · @yards yd³</span></div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="doc-table-wrap">
+                <table class="doc-table" id="layout-table">
+                    <thead><tr><th>Pour</th><th>Place</th><th>Volume</th></tr></thead>
+                    <tbody>
+                        @foreach (var (id, place, yards) in Pours)
+                        {
+                            <tr><td>@id</td><td>@place</td><td>@yards yd³</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Pointer and Color Scheme</h2>
+    <p class="doc-note">Not only widths: a touch screen gets bigger targets, a dark system theme its own chart colors.</p>
+    <NxMediaQuery Media="(pointer: coarse)" @bind-Matches="coarse" />
+    <NxMediaQuery Media="(prefers-color-scheme: dark)" @bind-Matches="dark" />
+    <div class="demo-stage">
+        <div class="demo-row">
+            <span class="demo-value" id="pointer-value">Touch: <strong>@coarse</strong></span>
+            <span class="demo-value" id="scheme-value">System dark: <strong>@dark</strong></span>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="mediaquery" Page="examples" />
+
+@code {
+    bool small, coarse, dark;
+
+    sealed class Query(string media, string use)
+    {
+        public string Media { get; } = media;
+        public string Use { get; } = use;
+        public bool Matches { get; set; }
+    }
+
+    readonly Query[] queries =
+    [
+        new("(max-width: 767px)", "phone layout"),
+        new("(min-width: 768px)", "md and up"),
+        new("(min-width: 992px)", "lg and up"),
+        new("(pointer: coarse)", "touch screen"),
+        new("(prefers-color-scheme: dark)", "system theme"),
+    ];
+
+    static readonly (string Id, string Place, int Yards)[] Pours =
+    [
+        ("P-1042", "North wall", 14),
+        ("P-1043", "Footings", 22),
+        ("P-1044", "Deck", 31),
+    ];
+}

@@ -464,6 +464,7 @@ code {
     height: 132px;
     overflow-y: auto;
     color: var(--fg-secondary);
+    overflow-wrap: anywhere;
     margin-top: 12px;
 }
 .demo-log-empty { color: var(--fg-muted); font-style: italic; }
@@ -479,6 +480,7 @@ code {
     padding: 4px 10px;
 }
 .demo-value strong { color: var(--fg-primary); font-weight: 500; }
+.demo-value:empty { display: none; }
 
 .demo-counter {
     font-variant-numeric: tabular-nums;
@@ -1153,4 +1155,121 @@ code {
     background: var(--bg);
     box-shadow: var(--shadow-md);
     font-size: 13px;
+}
+
+/* ── Pass 7: dialog, media query, toggle button, masked, files, tree ──────── */
+
+.demo-dialog-text { margin: 0; color: var(--fg-secondary); }
+.demo-dialog-form { gap: 12px; }
+
+.demo-truck-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.demo-truck {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    user-select: none;
+}
+.demo-truck:hover { border-color: var(--accent); }
+.demo-truck-picked { border-color: var(--accent); background: var(--accent-subtle); color: var(--accent); font-weight: 500; }
+
+.demo-mq-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; width: 100%; }
+.demo-mq-badge {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--fg-secondary);
+    font-size: 13px;
+}
+.demo-mq-badge strong { color: var(--fg-primary); }
+.demo-mq-on { border-color: var(--accent); background: var(--accent-subtle); }
+.demo-mq-on strong { color: var(--accent); }
+.demo-mq-big { min-width: 260px; font-size: 15px; }
+.demo-mq-cards { display: grid; gap: 8px; }
+
+.demo-chip-button {
+    display: block;
+    width: 100%;
+    margin-bottom: 4px;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--fg-primary);
+    font: 12px var(--font-mono);
+    text-align: left;
+    cursor: pointer;
+}
+.demo-chip-button:hover { border-color: var(--accent); }
+
+.demo-holiday-list { margin: 0; padding-left: 18px; display: grid; gap: 2px; }
+.demo-holiday-deleted { color: var(--fg-muted); text-decoration: line-through; }
+
+.demo-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    margin-left: 4px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--nx-danger);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.demo-rail-sample { display: flex; gap: 12px; min-height: 120px; }
+.demo-rail-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-md);
+    color: var(--fg-secondary);
+}
+.demo-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 220px;
+    padding: 12px;
+    border-radius: var(--radius-md);
+    background: var(--bg-subtle);
+    font-size: 13px;
+}
+
+.demo-file-preview { margin: 0; font-size: 12px; }
+
+.demo-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(200px, 260px); gap: 16px; align-items: start; }
+.demo-tree-box { max-height: 340px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg); }
+.demo-tree-detail { display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: var(--radius-md); background: var(--bg-subtle); font-size: 13px; }
+
+.home-filezone {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border: 1.5px dashed var(--border-strong);
+    border-radius: var(--radius-md);
+    color: var(--fg-secondary);
+    font-size: 13px;
+}
+.home-filezone strong { color: var(--accent); }
+.home-mq { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; border: 1px solid var(--accent); border-radius: var(--radius-md); background: var(--accent-subtle); font-size: 13px; }
+.home-mq strong { color: var(--accent); }
+
+@media (max-width: 760px) {
+    .demo-split { grid-template-columns: minmax(0, 1fr); }
+    .demo-rail-sample { flex-direction: column; }
+    .demo-rail { width: auto; }
 }

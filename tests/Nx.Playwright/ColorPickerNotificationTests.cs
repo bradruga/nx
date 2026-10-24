@@ -194,9 +194,9 @@ public class ColorPickerNotificationTests : PageTest
 
         await SettledAsync(toast);
         var box = (await toast.BoundingBoxAsync())!;
-        var viewport = await Page.EvaluateAsync<double[]>("() => [document.documentElement.clientWidth, window.innerHeight]");
-        Assert.That(viewport[0] - (box.X + box.Width), Is.EqualTo(16).Within(2));
-        Assert.That(viewport[1] - (box.Y + box.Height), Is.EqualTo(16).Within(2));
+        var area = await FixedArea.SizeAsync(Page);
+        Assert.That(area.Width - (box.X + box.Width), Is.EqualTo(16).Within(2));
+        Assert.That(area.Height - (box.Y + box.Height), Is.EqualTo(16).Within(2));
 
         await Page.Locator("#overview-error").ClickAsync();
         await Expect(Page.Locator("#overview-notification .nx-notification[role=alert]")).ToContainTextAsync("could not be saved");

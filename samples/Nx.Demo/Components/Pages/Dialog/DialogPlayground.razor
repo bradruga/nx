@@ -1,0 +1,114 @@
+@page "/dialog/playground"
+@inject NxDialogService Dialogs
+
+<DocHeader Slug="dialog" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note"><code>NxDialogOptions</code>, live: set them and open the dialog.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner">
+                <NxButton id="playground-open" Variant="NxButtonVariant.Primary" OnClick="OpenAsync">Open dialog</NxButton>
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-result">Result: <strong>@pgResult</strong></span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Text</div>
+            <label class="demo-control"><span>Title</span><input type="text" id="pg-title" @bind="pgTitle" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>Message</span><input type="text" id="pg-message" @bind="pgMessage" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>ConfirmText</span><input type="text" id="pg-confirm-text" @bind="pgConfirmText" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>CancelText</span><input type="text" id="pg-cancel-text" @bind="pgCancelText" @bind:event="oninput" /></label>
+            <label class="demo-control">
+                <span>ConfirmVariant</span>
+                <select id="pg-variant" @bind="pgVariant">
+                    @foreach (var v in Enum.GetValues<NxButtonVariant>())
+                    {
+                        <option value="@v">@v</option>
+                    }
+                </select>
+            </label>
+
+            <div class="demo-controls-title">Buttons</div>
+            <label class="demo-control"><span>ShowConfirmButton</span><input type="checkbox" id="pg-show-confirm" @bind="pgShowConfirm" /></label>
+            <label class="demo-control"><span>ShowCancelButton</span><input type="checkbox" id="pg-show-cancel" @bind="pgShowCancel" /></label>
+            <label class="demo-control"><span>Closable</span><input type="checkbox" id="pg-closable" @bind="pgClosable" /></label>
+            <label class="demo-control"><span>Validate (fails)</span><input type="checkbox" id="pg-validate" @bind="pgValidate" /></label>
+
+            <div class="demo-controls-title">Window</div>
+            <label class="demo-control"><span>Width</span><input type="text" id="pg-width" placeholder="400px" @bind="pgWidth" /></label>
+            <label class="demo-control"><span>Modal</span><input type="checkbox" id="pg-modal" @bind="pgModal" /></label>
+            <label class="demo-control"><span>Draggable</span><input type="checkbox" id="pg-draggable" @bind="pgDraggable" /></label>
+            <label class="demo-control"><span>Resizable</span><input type="checkbox" id="pg-resizable" @bind="pgResizable" /></label>
+            <label class="demo-control"><span>Maximizable</span><input type="checkbox" id="pg-maximizable" @bind="pgMaximizable" /></label>
+            <label class="demo-control"><span>FullScreenOnPhone</span><input type="checkbox" id="pg-fullscreen" @bind="pgFullScreen" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="dialog" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+
+    string pgTitle = "Release pour", pgMessage = "Release pour P-1042 to the plant?", pgConfirmText = "Release", pgCancelText = "Cancel", pgWidth = "";
+    NxButtonVariant pgVariant = NxButtonVariant.Primary;
+    bool pgShowConfirm = true, pgShowCancel = true, pgClosable = true, pgValidate, pgModal = true, pgDraggable, pgResizable, pgMaximizable, pgFullScreen;
+    string pgResult = "—";
+
+    async Task OpenAsync()
+    {
+        var result = await Dialogs.ShowAsync(new NxDialogOptions
+        {
+            Id = "playground-dialog",
+            Title = OrNull(pgTitle),
+            Message = OrNull(pgMessage),
+            ConfirmText = pgConfirmText,
+            CancelText = pgCancelText,
+            ConfirmVariant = pgVariant,
+            ShowConfirmButton = pgShowConfirm,
+            ShowCancelButton = pgShowCancel,
+            Closable = pgClosable,
+            Validate = pgValidate ? () => "Validate returned this message, so the dialog stays open." : null,
+            Width = OrNull(pgWidth),
+            Modal = pgModal,
+            Draggable = pgDraggable,
+            Resizable = pgResizable,
+            Maximizable = pgMaximizable,
+            FullScreenOnPhone = pgFullScreen
+        });
+        pgResult = result switch { true => "true (confirmed)", false => "false (cancelled)", _ => "null (dismissed)" };
+    }
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var lines = new List<string>();
+            if (OrNull(pgTitle) is { } t) lines.Add($"Title = \"{t}\"");
+            if (OrNull(pgMessage) is { } m) lines.Add($"Message = \"{m}\"");
+            if (pgConfirmText != "OK") lines.Add($"ConfirmText = \"{pgConfirmText}\"");
+            if (pgVariant != NxButtonVariant.Primary) lines.Add($"ConfirmVariant = NxButtonVariant.{pgVariant}");
+            if (!pgShowConfirm) lines.Add("ShowConfirmButton = false");
+            if (pgShowCancel) lines.Add("ShowCancelButton = true");
+            if (pgShowCancel && pgCancelText != "Cancel") lines.Add($"CancelText = \"{pgCancelText}\"");
+            if (!pgClosable) lines.Add("Closable = false");
+            if (pgValidate) lines.Add("Validate = () => \"…\"");
+            if (OrNull(pgWidth) is { } w) lines.Add($"Width = \"{w}\"");
+            if (!pgModal) lines.Add("Modal = false");
+            if (pgDraggable) lines.Add("Draggable = true");
+            if (pgResizable) lines.Add("Resizable = true");
+            if (pgMaximizable) lines.Add("Maximizable = true");
+            if (pgFullScreen) lines.Add("FullScreenOnPhone = true");
+            return "bool? result = await Dialogs.ShowAsync(new NxDialogOptions\n{\n    " + string.Join(",\n    ", lines) + "\n});";
+        }
+    }
+}

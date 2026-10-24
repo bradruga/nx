@@ -1,0 +1,42 @@
+@page "/fileselect/api"
+
+<DocHeader Slug="fileselect" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Multiple</td><td>bool</td><td>true</td><td>Several files per pick, added to the list; false: one, replacing it.</td></tr>
+                <tr><td>AllowedExtensions</td><td>IEnumerable&lt;string&gt;?</td><td>any</td><td><code>.pdf</code>, <code>pdf</code> or <code>*.pdf</code>; also the dialog's <code>accept</code>.</td></tr>
+                <tr><td>MaxFileSize / MinFileSize</td><td>long?</td><td>no limit</td><td>In bytes.</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>false</td><td>The zone and remove buttons off.</td></tr>
+                <tr><td>AriaLabel / Id / Class / Style</td><td>string?</td><td>—</td><td>The input's name and id; the outer element's class and style.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events, Members &amp; Files</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>OnSelect</td><td>NxFileSelectEventArgs</td><td>The files just picked; set <code>IsCancelled</code> to leave them out.</td></tr>
+                <tr><td>OnRemove</td><td>NxFileSelectEventArgs</td><td>A file the user removed.</td></tr>
+                <tr><td>Files / ClearFiles()</td><td>IReadOnlyList&lt;NxSelectedFile&gt; / void</td><td>The list; empty it without OnRemove.</td></tr>
+                <tr><td>NxSelectedFile</td><td>Id, Name, Extension, Size, Error, IsValid, BrowserFile</td><td><code>OpenReadStream(maxAllowedSize?)</code> reads it; the default limit is the file's size.</td></tr>
+                <tr><td>NxFileError</td><td>InvalidExtension, TooLarge, TooSmall</td><td>Why a file was refused.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <p class="doc-note"><code>--nx-filezone-border</code> and <code>--nx-filezone-bg</code> for the drop zone; it lights up in <code>--nx-accent</code>.</p>
+</div>
+
+<DocPager Slug="fileselect" Page="api" />

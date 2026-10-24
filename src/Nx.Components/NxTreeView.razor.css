@@ -1,0 +1,82 @@
+.nx-treeview {
+    min-width: 0;
+    overflow: auto;
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+    color: var(--nx-fg);
+}
+
+.nx-treeview-root,
+.nx-treeview-group {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.nx-treeview-root { padding: 2px; border-radius: var(--nx-radius); }
+.nx-treeview-root:focus { outline: none; }
+.nx-treeview-root:focus-visible { outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color); }
+
+.nx-treeview-empty { padding: 12px; color: var(--nx-fg-muted); }
+
+/* ── A row: indent, arrow, content ────────────────────────────────────────── */
+
+.nx-treeview-row {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    box-sizing: border-box;
+    min-height: var(--nx-treeview-row-height);
+    padding: 0 8px 0 calc(4px + var(--nx-treeview-level, 0) * var(--nx-treeview-indent));
+    border-radius: var(--nx-radius-sm);
+    cursor: pointer;
+    user-select: none;
+}
+
+.nx-treeview-row:hover { background: var(--nx-item-hover-bg); }
+.nx-treeview-row-selected,
+.nx-treeview-row-selected:hover { background: var(--nx-accent-subtle); color: var(--nx-accent); font-weight: var(--nx-font-weight-medium); }
+
+/* The keyboard's item: a ring only while the tree has keyboard focus. */
+.nx-treeview-root:focus-visible .nx-treeview-row-active { box-shadow: inset 0 0 0 2px var(--nx-focus-ring-color); }
+
+.nx-treeview-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: var(--nx-radius-sm);
+    color: var(--nx-fg-muted);
+    transition: transform 0.15s ease;
+}
+.nx-treeview-toggle:hover:not(.nx-treeview-leaf) { background: var(--nx-surface-active); color: var(--nx-fg); }
+.nx-treeview-item[aria-expanded=true] > .nx-treeview-row > .nx-treeview-toggle svg { transform: rotate(90deg); }
+.nx-treeview-toggle svg { transition: transform 0.15s ease; }
+
+.nx-treeview-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── Dragging: the rows' insides let the row be the drop target, so its offset tells before, onto or after ── */
+
+.nx-treeview-dragging .nx-treeview-row * { pointer-events: none; }
+.nx-treeview-row-dragged { opacity: 0.45; }
+.nx-treeview-row-drop { background: var(--nx-accent-subtle); box-shadow: inset 0 0 0 1px var(--nx-accent); }
+
+@media (pointer: coarse) {
+    .nx-treeview { --nx-treeview-row-height: 44px; }
+    .nx-treeview-toggle { width: 36px; height: 36px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nx-treeview-toggle svg { transition: none; }
+}

@@ -1,0 +1,97 @@
+@page "/togglebutton/playground"
+
+<DocHeader Slug="togglebutton" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner">
+                @if (pgIconOnly)
+                {
+                    <NxToggleButton id="playground-toggle" @bind-Selected="pgSelected" @bind-Selected:after="() => pgChanges++"
+                                    Variant="pgVariant" Size="pgSize" Disabled="pgDisabled" FullWidth="pgFullWidth"
+                                    Icon="EyeIcon" AriaLabel="Show hidden" Title="@OrNull(pgTitle)" />
+                }
+                else
+                {
+                    <NxToggleButton id="playground-toggle" @bind-Selected="pgSelected" @bind-Selected:after="() => pgChanges++"
+                                    Variant="pgVariant" Size="pgSize" Disabled="pgDisabled" FullWidth="pgFullWidth"
+                                    Icon="@(pgIcon ? EyeIcon : null)" Title="@OrNull(pgTitle)">@pgText</NxToggleButton>
+                }
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-value">Selected: <strong>@pgSelected</strong></span>
+                <span class="demo-counter" id="playground-changes">SelectedChanged × @pgChanges</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">State</div>
+            <label class="demo-control"><span>Selected</span><input type="checkbox" id="pg-selected" @bind="pgSelected" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+
+            <div class="demo-controls-title">Look</div>
+            <label class="demo-control"><span>Text</span><input type="text" id="pg-text" @bind="pgText" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>Icon</span><input type="checkbox" id="pg-icon" @bind="pgIcon" /></label>
+            <label class="demo-control"><span>Icon only</span><input type="checkbox" id="pg-icon-only" @bind="pgIconOnly" /></label>
+            <label class="demo-control">
+                <span>Variant</span>
+                <select id="pg-variant" @bind="pgVariant">
+                    @foreach (var v in Enum.GetValues<NxButtonVariant>())
+                    {
+                        <option value="@v">@v</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control">
+                <span>Size</span>
+                <select id="pg-size" @bind="pgSize">
+                    @foreach (var s in Enum.GetValues<NxButtonSize>())
+                    {
+                        <option value="@s">@s</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control"><span>FullWidth</span><input type="checkbox" id="pg-full-width" @bind="pgFullWidth" /></label>
+            <label class="demo-control"><span>Title</span><input type="text" id="pg-title" @bind="pgTitle" @bind:event="oninput" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="togglebutton" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+    static readonly RenderFragment EyeIcon = @<NxIcon Icon="NxIcons.Eye" />;
+
+    bool pgSelected, pgDisabled, pgIcon = true, pgIconOnly, pgFullWidth;
+    string pgText = "Hide unused forms", pgTitle = "";
+    NxButtonVariant pgVariant = NxButtonVariant.Secondary;
+    NxButtonSize pgSize = NxButtonSize.Medium;
+    int pgChanges;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "@bind-Selected=\"hideUnused\"" };
+            if (pgVariant != NxButtonVariant.Secondary) attrs.Add($"Variant=\"NxButtonVariant.{pgVariant}\"");
+            if (pgSize != NxButtonSize.Medium) attrs.Add($"Size=\"NxButtonSize.{pgSize}\"");
+            if (pgIcon || pgIconOnly) attrs.Add("Icon=\"@eye\"");
+            if (pgIconOnly) attrs.Add("AriaLabel=\"Show hidden\"");
+            if (OrNull(pgTitle) is { } t) attrs.Add($"Title=\"{t}\"");
+            if (pgFullWidth) attrs.Add("FullWidth=\"true\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            return pgIconOnly
+                ? "<NxToggleButton " + string.Join(" ", attrs) + " />"
+                : "<NxToggleButton " + string.Join(" ", attrs) + $">{pgText}</NxToggleButton>";
+        }
+    }
+}

@@ -92,6 +92,9 @@
 
     string? homeCity;
     string? homeColor = "#4371c4";
+    string? homeBid = "26-0412";
+    bool homeToggle = true;
+    static readonly IReadOnlyList<PermissionNode> HomeExpanded = DemoTree.Permissions.Where(n => n.Id is "acc" or "acc.bills").ToList();
     static RenderFragment IconOf(NxIconData icon) => @<NxIcon Icon="icon" />;
     DateTime? gateOpens = DateTime.Today.AddDays(1).AddHours(6);
     readonly PourForm homeForm = new();
@@ -165,6 +168,17 @@
             <NxIcon Icon="NxIcons.CheckCircle" Color="NxIconColor.Success" />
             <span>Saved by Dana Ortiz at 9:12 AM</span>
         </div>,
+        "togglebutton" => @<NxToggleButton @bind-Selected="homeToggle" Icon="@IconOf(NxIcons.Eye)">Show deleted</NxToggleButton>,
+        "maskedtextbox" => @<NxMaskedTextBox Label="Bid number" Mask="00-0000" IncludeLiterals="true" @bind-Value="homeBid" Style="width:240px" />,
+        "fileselect" or "upload" => @<div class="home-filezone" aria-hidden="true"><NxIcon Icon="NxIcons.Upload" Color="NxIconColor.Primary" /><span><strong>Select files</strong> or drop them here</span></div>,
+        "dialog" => @<div class="home-window-preview" aria-hidden="true">
+            <div class="home-window-titlebar"><span>Delete pour</span><span class="home-window-x">×</span></div>
+            <div class="home-window-body">Delete pour P-1042?</div>
+            <div class="home-window-footer"><NxButton Size="NxButtonSize.Small" Variant="NxButtonVariant.Danger" tabindex="-1">Delete</NxButton><NxButton Size="NxButtonSize.Small" tabindex="-1">Cancel</NxButton></div>
+        </div>,
+        "mediaquery" => @<div class="home-mq" aria-hidden="true"><code>(min-width: 992px)</code><strong>true</strong></div>,
+        "treeview" => @<NxTreeView Data="DemoTree.Permissions" ItemId="n => n.Id" ParentId="n => n.ParentId" ItemText="n => n.Text"
+                                   ExpandedItems="HomeExpanded" AriaLabel="Permissions" Style="width:240px; height:120px" />,
         "loader" => @<div class="demo-row">
             <NxLoader />
             <NxLoader Type="NxLoaderType.Converging" />

@@ -1,0 +1,68 @@
+@page "/treeview"
+@page "/treeview/overview"
+
+<DocHeader Slug="treeview" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxTreeView</code> shows items in a tree: from a flat list with <code>ItemId</code> and <code>ParentId</code> (as
+        ERP's data comes), or from a <code>Children</code> selector. Expand and collapse by click or keys, select one or
+        several, template the items, and drag items onto, before or after others.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-split">
+        <NxTreeView TItem="PermissionNode" Id="overview-tree" Data="DemoTree.Permissions" ItemId="n => n.Id" ParentId="n => n.ParentId" ItemText="n => n.Text"
+                    @bind-SelectedItem="selected" @bind-ExpandedItems="expanded" AriaLabel="Permissions" Class="demo-tree-box" />
+        <div class="demo-tree-detail" id="overview-detail">
+            @if (selected is null)
+            {
+                <span class="demo-log-empty">Pick a permission.</span>
+            }
+            else
+            {
+                <strong>@selected.Text</strong>
+                <span>@(selected.Permission ?? "A group of permissions")</span>
+                @if (selected.Permission is not null)
+                {
+                    <span>@selected.Users users have it</span>
+                }
+            }
+        </div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Tab</td><td>One stop for the whole tree; it lands on the selected item.</td></tr>
+                <tr><td>↑ / ↓</td><td>The previous / next item shown.</td></tr>
+                <tr><td>→</td><td>Expands a closed item; on an open one, moves to its first child.</td></tr>
+                <tr><td>←</td><td>Collapses an open item; on a closed one, moves to its parent.</td></tr>
+                <tr><td>Home / End</td><td>The first / last item shown.</td></tr>
+                <tr><td>Enter / Space</td><td>Selects (toggles with multiple selection).</td></tr>
+                <tr><td>role="tree"</td><td><code>treeitem</code>s with <code>aria-level</code>, <code>aria-expanded</code>, <code>aria-selected</code>, <code>aria-setsize</code>/<code>posinset</code>; the keyboard's item is <code>aria-activedescendant</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="treeview" Page="overview" />
+
+@code {
+    PermissionNode? selected;
+    IEnumerable<PermissionNode> expanded = DemoTree.Permissions.Where(n => n.Id is "acc" or "acc.bills").ToList();
+
+    const string basicCode =
+        """
+        <NxTreeView Data="nodes" ItemId="n => n.Id" ParentId="n => n.ParentId" ItemText="n => n.Text"
+                    @bind-SelectedItem="selected" @bind-ExpandedItems="expanded" AriaLabel="Permissions" />
+        """;
+}

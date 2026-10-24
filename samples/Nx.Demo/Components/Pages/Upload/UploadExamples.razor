@@ -1,0 +1,68 @@
+@page "/upload/examples"
+
+<DocHeader Slug="upload" Page="examples" />
+
+<div class="doc-section">
+    <h2>Success, Failure and Retry</h2>
+    <p class="doc-note">
+        A 2xx answer raises <code>OnSuccess</code>, anything else <code>OnError</code>, with the status and body on the file.
+        Name a file with "fail" in it to see one fail, then Retry.
+    </p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxUpload Id="results-upload" SaveUrl="demo/upload" OnSuccess='e => Log($"OK {e.File.Name}: {e.File.ResponseText}")'
+                  OnError='e => Log($"Failed {e.File.Name}: {e.File.StatusCode}")' OnCancel='e => Log($"Cancelled {e.File.Name}")' />
+        <ul class="demo-log" id="results-log">
+            @foreach (var line in events)
+            {
+                <li>@line</li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Upload on Demand</h2>
+    <p class="doc-note"><code>AutoUpload="false"</code> lists the files and shows Upload and Clear; or call <code>UploadFilesAsync()</code>.</p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxUpload Id="manual-upload" SaveUrl="demo/upload" AutoUpload="false" MaxConcurrentUploads="2" />
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Paste</h2>
+    <p class="doc-note">
+        <code>ShowPasteButton</code> adds a Paste button that reads files from the clipboard (the browser asks first). Ctrl+V
+        on the focused drop zone works without it.
+    </p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxUpload Id="paste-upload" SaveUrl="demo/upload" ShowPasteButton="true" AllowedExtensions='new[] { ".png", ".jpg" }' />
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>One File, Checks</h2>
+    <p class="doc-note">A single 1 MB PDF: another pick replaces it; other files are refused and never sent.</p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxUpload Id="single-upload" SaveUrl="demo/upload" Multiple="false" AllowedExtensions='new[] { ".pdf" }' MaxFileSize="1_000_000" />
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Disabled</h2>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxUpload Id="disabled-upload" SaveUrl="demo/upload" Disabled="true" />
+    </div>
+</div>
+
+<DocPager Slug="upload" Page="examples" />
+
+@code {
+    readonly List<string> events = [];
+
+    void Log(string line)
+    {
+        events.Insert(0, line);
+        if (events.Count > 6)
+            events.RemoveAt(events.Count - 1);
+    }
+}

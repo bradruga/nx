@@ -11,7 +11,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 `NxSplitter` (+ `NxSplitterPane`), `NxDropDown<TItem, TValue>`, `NxMultiSelect<TItem, TValue>`, `NxTextArea`, `NxTooltip`,
 `NxMenu`, `NxContextMenu`, `NxDropDownButton`, `NxSplitButton`, `NxAutoComplete<TItem>`, `NxDateTimePicker<TValue>`,
 `NxForm` (+ `NxFormItem`, `NxFormGroup`, `NxValidationMessage`), `NxIcon` (+ `NxIcons`), `NxLoader`, `NxLoaderContainer`,
-`NxButtonGroup`, `NxColorPicker`, `NxProgressBar`, `NxNotification`. No third-party dependencies; themed by CSS custom properties.
+`NxButtonGroup`, `NxColorPicker`, `NxProgressBar`, `NxNotification`, `NxDialog` (+ `NxDialogService`, `NxDialogHost`), `NxMediaQuery`,
+`NxToggleButton`, `NxUpload`, `NxFileSelect`, `NxTreeView<TItem>`, `NxMaskedTextBox`. No third-party dependencies; themed by CSS custom properties.
 Conventions follow the NxGrid repo (`../nxgrid`), which stays where it is.
 
 ## Build and Test Commands
@@ -40,7 +41,7 @@ src/Nx.Components/
   Nx*.cs                                    # one public enum or record per file
   FieldValidation.cs                        # internal: EditContext plumbing shared by inputs
   wwwroot/nx-theme.css                      # ALL tokens (--nx-*), dark theme, shared .nx-spinner, scroll lock
-  wwwroot/nx-popup.js, nx-combobox.js, nx-picker.js, nx-window.js, nx-tabstrip.js, nx-splitter.js, nx-tooltip.js, nx-menu.js, nx-colorpicker.js, nx-input.js  # the only JS modules
+  wwwroot/nx-popup.js, nx-combobox.js, nx-picker.js, nx-window.js, nx-tabstrip.js, nx-splitter.js, nx-tooltip.js, nx-menu.js, nx-colorpicker.js, nx-mediaquery.js, nx-upload.js, nx-input.js  # the only JS modules
 samples/Nx.Demo/Data/DemoCatalog.cs          # site map: nav tree, home cards, page headers, prev/next
 samples/Nx.Demo/Components/Pages/{Component}/ # Overview, Examples, Playground, Api — routes /{slug}/{page}
 tests/Nx.Components.Tests/                  # one bUnit fixture per component
@@ -129,6 +130,14 @@ tests/Nx.Playwright/                        # one Playwright fixture per compone
   (read in `SetParametersAsync`, as NxNumericTextBox does for Min); Disabled adds up. Joined look is `::deep` CSS on the group.
 - **NxNotification is driven from code** (`@ref` + `Show`), safe from any thread through `InvokeAsync`; timers restart after
   hover or focus leaves a message.
+- **NxDialogService needs one `<NxDialogHost />`** in the layout; the host renders each open dialog in a cascading
+  `NxDialogReference` (content closes it with `Close`). Its tasks complete only when the dialog closes, so in bUnit start
+  them outside `cut.InvokeAsync` and `WaitForState`. NxDialog is NxWindow with `FullScreenOnPhone=false`.
+- **NxMaskedTextBox types in JS** (nx-input.js `editMask` on `beforeinput`): .NET only formats and extracts (`MaskPattern`).
+- **NxUpload keeps the File objects in nx-upload.js** and sends them with XHR; .NET holds the list, checks and events.
+  NxFileSelect and NxUpload share `FileRules`, `NxFileDropZone` and `NxFileRow`.
+- **NxTreeView rebuilds its nodes on every parameter set** (ERP edits items in place) and tracks outside changes to
+  `ExpandedItems`/`SelectedItems` by reference, like the two-way rule above.
 - **NxComboBox opt-in modes** (`Multiple`, columns, mobile overlay) must never change single-select, single-column
   behavior. bUnit covers both paths.
 

@@ -1,0 +1,77 @@
+@namespace Nx.Components
+@implements IDisposable
+
+@foreach (var dialog in Dialogs.OpenDialogs)
+{
+    var options = dialog.Options;
+    <CascadingValue Value="dialog" IsFixed="true" @key="dialog">
+        <NxDialog Visible="true"
+                  VisibleChanged="visible => HandleVisibleChanged(dialog, visible)"
+                  Title="@options.Title"
+                  Closable="options.Closable"
+                  Modal="options.Modal"
+                  Width="@(options.Width ?? (options.MaxWidth is null ? null : "auto"))"
+                  Height="@options.Height"
+                  Draggable="options.Draggable"
+                  Resizable="options.Resizable"
+                  Maximizable="options.Maximizable"
+                  FullScreenOnPhone="options.FullScreenOnPhone"
+                  Id="@dialog.Id"
+                  Class="@options.Class"
+                  aria-describedby="@(options.Message is null ? null : $"{dialog.Id}-message")"
+                  Buttons="RenderButtons(dialog)">
+            <div class="@ContentClass(options)" style="@ContentStyle(options)" @onkeydown="e => HandleContentKeyDown(dialog, e)">
+                @if (options.Message is not null)
+                {
+                    <p class="nx-dialog-message" id="@($"{dialog.Id}-message")">@options.Message</p>
+                }
+                @if (dialog.IsPrompt)
+                {
+                    <NxTextBox Id="@($"{dialog.Id}-input")" @bind-Value="dialog.PromptText" Immediate="true"
+                               Placeholder="@dialog.PromptPlaceholder" aria-label="@(options.Title ?? options.Message)" AutoFocus="true" />
+                }
+                @options.Content
+                @if (!string.IsNullOrEmpty(dialog.Error))
+                {
+                    <div class="nx-dialog-error" role="alert">@dialog.Error</div>
+                }
+            </div>
+        </NxDialog>
+    </CascadingValue>
+}
+
+@foreach (var progress in Dialogs.Progresses())
+{
+    <NxDialog @key="progress" Visible="true" Title="@progress.Title" Closable="false" Id="@progress.Id" Class="nx-dialog-progress">
+        <div class="nx-dialog-progress-body" role="status">
+            <NxLoader Size="NxSize.Large" AriaLabel="@progress.Title" />
+            <span class="nx-dialog-progress-text">@progress.Text</span>
+        </div>
+    </NxDialog>
+}
+
+@code {
+    private RenderFragment? RenderButtons(NxDialogReference dialog)
+    {
+        var options = dialog.Options;
+        if (!options.ShowConfirmButton && !options.ShowCancelButton && options.Footer is null)
+            return null;
+        // Message-only dialogs start on the confirm button, so Enter takes it; a dialog with content starts on its first field.
+        var focusConfirm = options.Content is null && !dialog.IsPrompt;
+        return @<text>
+            @if (options.Footer is not null)
+            {
+                <div class="nx-dialog-footer-start">@options.Footer</div>
+            }
+            @if (options.ShowConfirmButton)
+            {
+                <NxButton id="@($"{dialog.Id}-confirm")" Variant="options.ConfirmVariant" Loading="dialog.Busy"
+                          OnClick="() => ConfirmAsync(dialog)" autofocus="@focusConfirm">@options.ConfirmText</NxButton>
+            }
+            @if (options.ShowCancelButton)
+            {
+                <NxButton id="@($"{dialog.Id}-cancel")" OnClick="() => dialog.Close(false)">@options.CancelText</NxButton>
+            }
+        </text>;
+    }
+}

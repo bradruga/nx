@@ -1,0 +1,84 @@
+@namespace Nx.Components
+@typeparam TItem
+
+<div @attributes="AdditionalAttributes" class="@CssClass" style="@Style">
+    @if (roots.Count == 0)
+    {
+        <div class="nx-treeview-empty">@NoDataText</div>
+    }
+    else
+    {
+        <ul @ref="tree"
+            id="@TreeId"
+            class="nx-treeview-root"
+            role="tree"
+            tabindex="0"
+            aria-label="@AriaLabel"
+            aria-multiselectable="@(SelectionMode == NxTreeSelectionMode.Multiple ? "true" : null)"
+            aria-activedescendant="@(active is null ? null : NodeId(active))"
+            @onkeydown="HandleKeyDown"
+            @onfocus="HandleFocus">
+            @foreach (var node in roots)
+            {
+                @RenderNode(node)
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    private RenderFragment RenderNode(Node node) => __builder =>
+    {
+        var expanded = IsExpanded(node);
+        var selected = selectedIds.Contains(node.Id);
+        <li id="@NodeId(node)"
+            class="nx-treeview-item"
+            role="treeitem"
+            aria-level="@(node.Level + 1)"
+            aria-setsize="@node.SetSize"
+            aria-posinset="@node.PosInSet"
+            aria-expanded="@(node.Children.Count > 0 ? (expanded ? "true" : "false") : null)"
+            aria-selected="@(SelectionMode == NxTreeSelectionMode.None ? null : (selected ? "true" : "false"))">
+            <div class="@RowClass(node, selected)"
+                 style="--nx-treeview-level: @node.Level"
+                 draggable="@(Draggable ? "true" : null)"
+                 @onclick="() => HandleRowClick(node)"
+                 @ondblclick="() => ToggleAsync(node)"
+                 @ondragstart="() => HandleDragStart(node)"
+                 @ondragend="HandleDragEnd"
+                 @ondragenter="() => HandleDragEnter(node)"
+                 @ondragover:preventDefault="Draggable"
+                 @ondrop="e => HandleDropAsync(node, e)">
+                @if (node.Children.Count > 0)
+                {
+                    <span class="nx-treeview-toggle" aria-hidden="true" @onclick="() => ToggleAsync(node)" @onclick:stopPropagation="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18" /></svg>
+                    </span>
+                }
+                else
+                {
+                    <span class="nx-treeview-toggle nx-treeview-leaf" aria-hidden="true"></span>
+                }
+                <span class="nx-treeview-content">
+                    @if (ItemTemplate is not null)
+                    {
+                        @ItemTemplate(node.Item)
+                    }
+                    else
+                    {
+                        @TextOf(node.Item)
+                    }
+                </span>
+            </div>
+            @if (expanded && node.Children.Count > 0)
+            {
+                <ul class="nx-treeview-group" role="group">
+                    @foreach (var child in node.Children)
+                    {
+                        @RenderNode(child)
+                    }
+                </ul>
+            }
+        </li>
+    };
+}

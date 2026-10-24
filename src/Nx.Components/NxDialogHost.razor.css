@@ -1,0 +1,41 @@
+/* The message keeps the line breaks it was given. */
+.nx-dialog-message {
+    margin: 0;
+    white-space: pre-line;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.nx-dialog-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.nx-dialog-content-fill { height: 100%; min-height: 0; }
+
+.nx-dialog-error {
+    color: var(--nx-validation-color);
+    font-size: var(--nx-validation-font-size);
+}
+
+/* Footer content first, pushing the buttons to the end. */
+.nx-dialog-footer-start {
+    display: flex;
+    align-items: center;
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-right: auto;
+}
+
+.nx-dialog-progress-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 0;
+    text-align: center;
+}
+
+.nx-dialog-progress-text { color: var(--nx-fg-muted); min-height: 1.4em; }

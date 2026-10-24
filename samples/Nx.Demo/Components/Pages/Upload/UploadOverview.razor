@@ -1,0 +1,56 @@
+@page "/upload"
+@page "/upload/overview"
+
+<DocHeader Slug="upload" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxUpload</code> sends files to a URL as they are picked, dropped or pasted (Ctrl+V a screenshot). Each file is
+        posted on its own as <code>multipart/form-data</code> by the browser, with a progress bar, cancel, retry and remove;
+        <code>OnSuccess</code> gets the server's answer — ERP's file API answers with a temp file id. Files that fail the
+        type and size checks are listed and never sent.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxUpload Id="overview-upload" SaveUrl="demo/upload" AllowedExtensions="Allowed" MaxFileSize="25_000_000"
+                  OnSuccess="Stored" OnRemove="Removed" />
+        <span class="demo-value" id="overview-log">@log</span>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+    <p class="doc-note">The demo's <code>demo/upload</code> reads the file and answers with a made-up id; a name containing "fail" gets a 500.</p>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Part</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Drop zone</td><td>A real file input: Tab, Enter or Space; Ctrl+V while it is focused pastes files.</td></tr>
+                <tr><td>Progress</td><td>A thin progress bar per file (<code>role="progressbar"</code>) and the percentage.</td></tr>
+                <tr><td>Buttons</td><td>Cancel, Retry and Remove, each named with the file.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="upload" Page="overview" />
+
+@code {
+    static readonly string[] Allowed = [".pdf", ".png", ".jpg", ".xlsx", ".docx", ".txt"];
+    string log = "No uploads yet";
+
+    void Stored(NxUploadEventArgs e) => log = $"{e.File.Name} stored as {e.File.ResponseText}";
+    void Removed(NxUploadEventArgs e) => log = $"Removed {e.File.Name}";
+
+    const string basicCode =
+        """
+        <NxUpload SaveUrl="api/v1.0/Portal/Shared/File/Save" AllowedExtensions="allowed" MaxFileSize="25_000_000"
+                  OnSuccess="e => tempFiles.Add(e.File.Name, e.File.ResponseText)"
+                  OnRemove="e => DeleteTempFileAsync(e.File)" />
+        """;
+}

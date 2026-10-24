@@ -731,9 +731,9 @@ public class ComboBoxTests : PageTest
         await Expect(Overlay).ToBeVisibleAsync();
         await Expect(Overlay).ToHaveAttributeAsync("role", "dialog");
         var box = await BoxAsync(Overlay);
-        var viewport = Page.ViewportSize!;
-        Assert.That(box.Right - box.Left, Is.GreaterThanOrEqualTo(viewport.Width - 20));
-        Assert.That(box.Bottom - box.Top, Is.EqualTo(viewport.Height).Within(1));
+        var area = await FixedArea.SizeAsync(Page);
+        Assert.That(box.Right - box.Left, Is.GreaterThanOrEqualTo(area.Width - 20));
+        Assert.That(box.Bottom - box.Top, Is.EqualTo(area.Height).Within(1));
         await Expect(Overlay.Locator(".nx-combobox-overlay-search")).ToBeFocusedAsync();
         await Expect(Overlay.Locator(".nx-combobox-overlay-search")).ToHaveAttributeAsync("placeholder", "Find a customer");
     }

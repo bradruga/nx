@@ -1,0 +1,24 @@
+@namespace Nx.Components
+
+@* A short modal window: NxWindow with a dialog's defaults — compact on phones, not draggable, buttons in the footer. *@
+<NxWindow Visible="Visible"
+          VisibleChanged="VisibleChanged"
+          OnClosing="OnClosing"
+          Modal="Modal"
+          CloseOnEscape="CloseOnEscape"
+          CloseOnBackdropClick="CloseOnBackdropClick"
+          Title="@Title"
+          Closable="Closable"
+          Maximizable="Maximizable"
+          Size="NxWindowSize.Small"
+          Width="@Width"
+          Height="@Height"
+          Draggable="Draggable"
+          Resizable="Resizable"
+          FullScreenOnPhone="FullScreenOnPhone"
+          Id="@Id"
+          Class="@CssClass"
+          Footer="Buttons"
+          AdditionalAttributes="AdditionalAttributes">
+    @ChildContent
+</NxWindow>

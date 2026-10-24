@@ -146,6 +146,11 @@ export function editOnFocus(input, selectText) {
     states.set(input, state);
 }
 
+// Scrolls the element matching `selector` inside `container` into view, e.g. a tree's keyboard item.
+export function reveal(container, selector) {
+    container?.querySelector(selector)?.scrollIntoView({ block: 'nearest' });
+}
+
 export function release(element) {
     const state = element && states.get(element);
     if (state?.onKeyDown) {
@@ -166,5 +171,89 @@ export function dispose(element) {
     }
     if (state.onMask) element.removeEventListener('input', state.onMask);
     if (state.onResize) element.removeEventListener('input', state.onResize);
+    if (state.onEditMask) {
+        element.removeEventListener('beforeinput', state.onEditMask);
+        element.removeEventListener('focus', state.onEditFocus);
+    }
     states.delete(element);
+}
+
+// NxMaskedTextBox: typing into a fixed mask such as "00-0000". Rule characters are slots (0 digit, 9 digit or
+// space, # digit space + -, L letter, ? letter or space, A letter or digit, a letter digit or space, & any but
+// space, C any); others are literals, and \ makes the next one literal. MaskPattern.cs reads the same rules.
+// Every edit is made here — a typed character goes in the next slot that takes it, Backspace and Delete empty a
+// slot — and reported to .NET as an input event, so the text never waits on a round trip.
+const accepts = (rule, c) => ({
+    '0': /\d/, '9': /[\d ]/, '#': /[\d +-]/, 'L': /\p{L}/u, '?': /[\p{L} ]/u,
+    'A': /[\p{L}\d]/u, 'a': /[\p{L}\d ]/u, '&': /\S/, 'C': /[\s\S]/
+})[rule]?.test(c) ?? false;
+
+function parseMask(mask) {
+    const parts = [];
+    for (let i = 0; i < mask.length; i++) {
+        const c = mask[i];
+        if (c === '\\' && i + 1 < mask.length) parts.push({ literal: mask[++i] });
+        else if ('09#L?Aa&C'.includes(c)) parts.push({ rule: c });
+        else parts.push({ literal: c });
+    }
+    return parts;
+}
+
+export function editMask(input, mask, prompt) {
+    if (!input) return;
+    const state = states.get(input) ?? {};
+    state.maskParts = parseMask(mask ?? '');
+    state.maskPrompt = prompt || '_';
+    if (!state.onEditMask) {
+        const template = () => state.maskParts.map(p => p.rule ? state.maskPrompt : p.literal).join('');
+        const slot = i => state.maskParts[i]?.rule;
+        const nextSlot = from => { let i = from; while (i < state.maskParts.length && !slot(i)) i++; return i; };
+        const prevSlot = from => { let i = from - 1; while (i >= 0 && !slot(i)) i--; return i; };
+        const commit = (chars, caret) => {
+            input.value = chars.join('');
+            input.setSelectionRange(caret, caret);
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+        };
+        state.onEditMask = e => {
+            if (input.readOnly) return;
+            e.preventDefault();
+            const chars = (input.value.length === state.maskParts.length ? input.value : template()).split('');
+            let start = input.selectionStart ?? 0;
+            const end = input.selectionEnd ?? start;
+            const clear = (from, to) => { for (let i = from; i < to; i++) if (slot(i)) chars[i] = state.maskPrompt; };
+            if (e.inputType.startsWith('insert')) {
+                clear(start, end);
+                let at = start;
+                for (const c of [...(e.data ?? e.dataTransfer?.getData('text/plain') ?? '')]) {
+                    // A typed literal steps over the same literal ahead; any other character goes in the next slot that takes it.
+                    let i = at;
+                    while (i < state.maskParts.length && !slot(i) && state.maskParts[i].literal !== c) i++;
+                    if (i < state.maskParts.length && !slot(i)) { at = i + 1; continue; }
+                    i = nextSlot(at);
+                    if (i < state.maskParts.length && accepts(slot(i), c)) { chars[i] = c; at = i + 1; }
+                }
+                commit(chars, Math.min(nextSlot(at), state.maskParts.length));
+            } else if (e.inputType === 'deleteContentBackward' && start === end) {
+                const i = prevSlot(start);
+                if (i >= 0) { chars[i] = state.maskPrompt; start = i; }
+                commit(chars, start);
+            } else if (e.inputType === 'deleteContentForward' && start === end) {
+                const i = nextSlot(start);
+                if (i < chars.length) chars[i] = state.maskPrompt;
+                commit(chars, start);
+            } else if (e.inputType.startsWith('delete')) {
+                clear(start, end);
+                commit(chars, start);
+            }
+        };
+        // An empty field shows the mask once focused, with the caret on the first slot.
+        state.onEditFocus = () => {
+            if (input.readOnly || input.value.length === state.maskParts.length) return;
+            const chars = template().split('');
+            commit(chars, nextSlot(0));
+        };
+        input.addEventListener('beforeinput', state.onEditMask);
+        input.addEventListener('focus', state.onEditFocus);
+    }
+    states.set(input, state);
 }

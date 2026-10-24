@@ -155,10 +155,10 @@
 .nx-window-resizing { user-select: none; }
 .nx-window-resizing .nx-window-body { pointer-events: none; }
 
-/* ── Phone: every window fills the screen ─────────────────────────────────── */
+/* ── Phone: every window fills the screen, unless FullScreenOnPhone is off ── */
 
 @media (max-width: 600px) {
-    .nx-window:not(.nx-window-minimized) {
+    .nx-window:not(.nx-window-minimized):not(.nx-window-compact) {
         inset: 0 !important;
         width: auto !important;
         height: auto !important;

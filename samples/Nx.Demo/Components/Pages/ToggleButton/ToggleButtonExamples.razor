@@ -1,0 +1,75 @@
+@page "/togglebutton/examples"
+
+<DocHeader Slug="togglebutton" Page="examples" />
+
+<div class="doc-section">
+    <h2>Icons &amp; Icon-Only</h2>
+    <p class="doc-note">An icon before the label, or alone with an <code>AriaLabel</code> and a <code>Title</code>.</p>
+    <div class="demo-stage">
+        <div class="demo-row">
+            <NxToggleButton id="icon-schedule" @bind-Selected="schedule" Icon="@IconOf(NxIcons.TableUnmerge)">Show schedule</NxToggleButton>
+            <NxToggleButton id="icon-colors" @bind-Selected="colors" Icon="@IconOf(NxIcons.Palette)">Color code designs</NxToggleButton>
+            <NxToggleButton id="icon-feed" @bind-Selected="feed" Icon="@IconOf(NxIcons.LayoutSideBySide)" AriaLabel="Activity feed" Title="Activity feed" />
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>A Side Panel</h2>
+    <p class="doc-note">The toggle opens and closes a panel; its state is the panel's.</p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <NxToggleButton id="panel-toggle" @bind-Selected="showRail" Icon="@IconOf(NxIcons.WarningCircle)" Title="What is wrong with the plan">
+                Problems <span class="demo-count-badge">3</span>
+            </NxToggleButton>
+        </div>
+        <div class="demo-rail-sample">
+            <div class="demo-rail-main">Week 32 plan</div>
+            @if (showRail)
+            {
+                <aside class="demo-rail" id="panel-rail">
+                    <strong>Problems</strong>
+                    <span>Two pours share truck 14 at 6:30.</span>
+                    <span>Form 7 is double-booked on Thursday.</span>
+                    <span>Crew B has no lead on Friday.</span>
+                </aside>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Variants, Sizes &amp; Groups</h2>
+    <p class="doc-note">Pressed draws in the accent on outline variants and darker on filled ones. In an <code>NxButtonGroup</code> the group's size applies.</p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <NxToggleButton id="variant-secondary" @bind-Selected="a">Secondary</NxToggleButton>
+            <NxToggleButton @bind-Selected="b" Variant="NxButtonVariant.Ghost">Ghost</NxToggleButton>
+            <NxToggleButton @bind-Selected="c" Variant="NxButtonVariant.Primary">Primary</NxToggleButton>
+            <NxToggleButton @bind-Selected="d" Size="NxButtonSize.Small">Small</NxToggleButton>
+        </div>
+        <NxButtonGroup id="toggle-group" AriaLabel="Text style" Size="NxButtonSize.Small">
+            <NxToggleButton id="toggle-bold" @bind-Selected="bold" AriaLabel="Bold"><strong>B</strong></NxToggleButton>
+            <NxToggleButton @bind-Selected="italic" AriaLabel="Italic"><em>I</em></NxToggleButton>
+            <NxToggleButton @bind-Selected="underline" AriaLabel="Underline"><u>U</u></NxToggleButton>
+        </NxButtonGroup>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Disabled</h2>
+    <div class="demo-stage">
+        <div class="demo-row">
+            <NxToggleButton id="disabled-on" Selected="true" Disabled="true">On, disabled</NxToggleButton>
+            <NxToggleButton Disabled="true">Off, disabled</NxToggleButton>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="togglebutton" Page="examples" />
+
+@code {
+    bool schedule = true, colors, feed, showRail, a = true, b, c = true, d, bold = true, italic, underline;
+
+    static RenderFragment IconOf(NxIconData icon) => @<NxIcon Icon="icon" />;
+}

@@ -1,0 +1,64 @@
+@namespace Nx.Components
+
+@* One file in the list of NxFileSelect or NxUpload: an icon by type, name and size or state, a thin progress bar
+   while uploading, and the host's buttons. *@
+<li class="@CssClass">
+    <NxIcon Icon="IconFor(Name)" Size="NxIconSize.Large" Class="nx-filerow-icon" />
+    <span class="nx-filerow-main">
+        <span class="nx-filerow-name" title="@Name">@Name</span>
+        <span class="nx-filerow-detail">
+            @if (Error is not null)
+            {
+                <span class="nx-filerow-error">@Error</span>
+            }
+            else
+            {
+                <span>@FileRules.Size(Size)</span>
+                @if (Status is not null)
+                {
+                    <span class="nx-filerow-status">· @Status</span>
+                }
+            }
+        </span>
+        @if (Progress is double progress)
+        {
+            <NxProgressBar Value="progress" Thin="true" AriaLabel="@($"Uploading {Name}")" Class="nx-filerow-progress" />
+        }
+    </span>
+    <span class="nx-filerow-actions">@Actions</span>
+</li>
+
+@code {
+    /// <summary>The file name.</summary>
+    [Parameter, EditorRequired] public string Name { get; set; } = "";
+
+    /// <summary>The size in bytes.</summary>
+    [Parameter] public long Size { get; set; }
+
+    /// <summary>A word on the state, after the size, e.g. "Uploaded".</summary>
+    [Parameter] public string? Status { get; set; }
+
+    /// <summary>Why the file failed, in place of size and state.</summary>
+    [Parameter] public string? Error { get; set; }
+
+    /// <summary>Upload progress, 0 to 100; no bar when <c>null</c>.</summary>
+    [Parameter] public double? Progress { get; set; }
+
+    /// <summary>A state for the row's color: <c>success</c>, <c>error</c> or none.</summary>
+    [Parameter] public string? Tone { get; set; }
+
+    /// <summary>The row's buttons.</summary>
+    [Parameter] public RenderFragment? Actions { get; set; }
+
+    private string CssClass => Error is not null ? "nx-filerow nx-filerow-error-row" : Tone is null ? "nx-filerow" : $"nx-filerow nx-filerow-{Tone}";
+
+    private static NxIconData IconFor(string name) => FileRules.ExtensionOf(name) switch
+    {
+        ".pdf"                                       => NxIcons.FilePdf,
+        ".xls" or ".xlsx" or ".csv"                  => NxIcons.FileExcel,
+        ".doc" or ".docx"                            => NxIcons.FileWord,
+        ".txt" or ".log"                             => NxIcons.FileTxt,
+        ".png" or ".jpg" or ".jpeg" or ".gif" or ".webp" or ".bmp" or ".heic" => NxIcons.FileImage,
+        _                                            => NxIcons.File
+    };
+}

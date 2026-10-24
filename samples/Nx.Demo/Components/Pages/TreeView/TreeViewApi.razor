@@ -1,0 +1,56 @@
+@page "/treeview/api"
+
+<DocHeader Slug="treeview" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Data</td><td>IEnumerable&lt;TItem&gt;?</td><td>—</td><td>Every item (flat), or the top items (with Children).</td></tr>
+                <tr><td>ItemId</td><td>Func&lt;TItem, object&gt;?</td><td>the item</td><td>A unique id; required with ParentId.</td></tr>
+                <tr><td>ParentId</td><td>Func&lt;TItem, object?&gt;?</td><td>—</td><td>The parent's id; null (or unknown) for a top item.</td></tr>
+                <tr><td>Children</td><td>Func&lt;TItem, IEnumerable&lt;TItem&gt;?&gt;?</td><td>—</td><td>For nested data instead of ParentId.</td></tr>
+                <tr><td>ItemText / ItemTemplate</td><td>Func&lt;TItem, string&gt;? / RenderFragment&lt;TItem&gt;?</td><td>ToString()</td><td>An item's text, or its markup.</td></tr>
+                <tr><td>SelectionMode</td><td>NxTreeSelectionMode</td><td>Single</td><td>None, Single, Multiple.</td></tr>
+                <tr><td>SelectedItems / SelectedItem</td><td>IEnumerable&lt;TItem&gt;? / TItem?</td><td>—</td><td>Use <code>@@bind-SelectedItems</code> or <code>@@bind-SelectedItem</code>.</td></tr>
+                <tr><td>ExpandedItems</td><td>IEnumerable&lt;TItem&gt;?</td><td>—</td><td>Use <code>@@bind-ExpandedItems</code>.</td></tr>
+                <tr><td>Draggable</td><td>bool</td><td>false</td><td>Mouse drag and drop; <code>OnDrop</code> does the move.</td></tr>
+                <tr><td>NoDataText</td><td>string</td><td>"No items"</td><td>Shown for no data.</td></tr>
+                <tr><td>AriaLabel / Id / Class / Style</td><td>string?</td><td>—</td><td>The tree's name; ids are <code>{Id}-{n}</code>; give Style a height to scroll.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events &amp; Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>SelectedItemsChanged / SelectedItemChanged</td><td>IEnumerable&lt;TItem&gt; / TItem?</td><td>The selection, in tree order.</td></tr>
+                <tr><td>ExpandedItemsChanged</td><td>IEnumerable&lt;TItem&gt;</td><td>Every expanded item.</td></tr>
+                <tr><td>OnDrop</td><td>NxTreeDropEventArgs&lt;TItem&gt;</td><td>Item, Destination, Position (Before, Inside, After).</td></tr>
+                <tr><td>ExpandAllAsync() / CollapseAllAsync() / FocusAsync()</td><td>Task / Task / ValueTask</td><td></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-treeview-row-height</td><td>32px (44px on touch)</td><td>Row height; the drop zones are its top and bottom quarters.</td></tr>
+                <tr><td>--nx-treeview-indent</td><td>18px</td><td>Indent per level.</td></tr>
+                <tr><td>--nx-item-hover-bg / --nx-accent-subtle</td><td>theme</td><td>Hover, selection and drop target.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="treeview" Page="api" />

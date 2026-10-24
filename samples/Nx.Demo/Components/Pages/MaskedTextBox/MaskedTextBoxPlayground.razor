@@ -1,0 +1,78 @@
+@page "/maskedtextbox/playground"
+
+<DocHeader Slug="maskedtextbox" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                <NxMaskedTextBox @ref="box" Id="playground-mask" @bind-Value="pgValue" @bind-Value:after="() => pgChanges++"
+                                 Mask="@pgMask" Prompt="Prompt" IncludeLiterals="pgLiterals" MaskOnFocus="pgMaskOnFocus"
+                                 Label="@OrNull(pgLabel)" FloatingLabel="pgFloating" Placeholder="@OrNull(pgPlaceholder)"
+                                 Clearable="pgClearable" ReadOnly="pgReadOnly" Disabled="pgDisabled" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-value">Value: <strong>@(pgValue ?? "null")</strong></span>
+                <span class="demo-value" id="playground-complete">Complete: <strong>@(box?.IsComplete ?? false)</strong></span>
+                <span class="demo-counter" id="playground-changes">ValueChanged × @pgChanges</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Mask</div>
+            <label class="demo-control"><span>Mask</span><input type="text" id="pg-mask" @bind="pgMask" /></label>
+            <label class="demo-control"><span>Prompt</span><input type="text" id="pg-prompt" maxlength="1" @bind="pgPrompt" /></label>
+            <label class="demo-control"><span>IncludeLiterals</span><input type="checkbox" id="pg-literals" @bind="pgLiterals" /></label>
+            <label class="demo-control"><span>MaskOnFocus</span><input type="checkbox" id="pg-mask-on-focus" @bind="pgMaskOnFocus" /></label>
+
+            <div class="demo-controls-title">Text</div>
+            <label class="demo-control"><span>Label</span><input type="text" @bind="pgLabel" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>FloatingLabel</span><input type="checkbox" id="pg-floating" @bind="pgFloating" /></label>
+            <label class="demo-control"><span>Placeholder</span><input type="text" @bind="pgPlaceholder" @bind:event="oninput" /></label>
+
+            <div class="demo-controls-title">Behavior</div>
+            <label class="demo-control"><span>Clearable</span><input type="checkbox" id="pg-clearable" @bind="pgClearable" /></label>
+            <label class="demo-control"><span>ReadOnly</span><input type="checkbox" id="pg-readonly" @bind="pgReadOnly" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="maskedtextbox" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+
+    NxMaskedTextBox? box;
+    string? pgValue;
+    string pgMask = "(000) 000-0000", pgPrompt = "_", pgLabel = "Phone", pgPlaceholder = "";
+    bool pgLiterals, pgMaskOnFocus, pgFloating, pgClearable = true, pgReadOnly, pgDisabled;
+    int pgChanges;
+
+    char Prompt => string.IsNullOrEmpty(pgPrompt) ? '_' : pgPrompt[0];
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { $"Mask=\"{pgMask}\"", "@bind-Value=\"contact.Phone\"" };
+            if (Prompt != '_') attrs.Add($"Prompt=\"'{Prompt}'\"");
+            if (pgLiterals) attrs.Add("IncludeLiterals=\"true\"");
+            if (pgMaskOnFocus) attrs.Add("MaskOnFocus=\"true\"");
+            if (OrNull(pgLabel) is { } l) attrs.Add($"Label=\"{l}\"");
+            if (pgFloating) attrs.Add("FloatingLabel=\"true\"");
+            if (OrNull(pgPlaceholder) is { } p) attrs.Add($"Placeholder=\"{p}\"");
+            if (pgClearable) attrs.Add("Clearable=\"true\"");
+            if (pgReadOnly) attrs.Add("ReadOnly=\"true\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            return "<NxMaskedTextBox " + string.Join("\n                 ", attrs) + " />";
+        }
+    }
+}

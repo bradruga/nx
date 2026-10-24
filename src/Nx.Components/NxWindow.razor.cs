@@ -131,6 +131,9 @@ public partial class NxWindow : IAsyncDisposable
     /// <summary>Smallest height while resizing, in px. Default: <c>120</c>.</summary>
     [Parameter] public int MinHeight { get; set; } = 120;
 
+    /// <summary>Fills the screen at 600 px and below. <c>false</c> keeps it a centered card, for a short dialog. Default: <c>true</c>.</summary>
+    [Parameter] public bool FullScreenOnPhone { get; set; } = true;
+
     // ── Attributes ────────────────────────────────────────────────────────────
 
     /// <summary>The window's <c>id</c>. Generated when not set.</summary>
@@ -187,6 +190,7 @@ public partial class NxWindow : IAsyncDisposable
         minimized ? "nx-window-minimized" : null,
         Resizable ? "nx-window-resizable" : null,
         Draggable ? "nx-window-draggable" : null,
+        FullScreenOnPhone ? null : "nx-window-compact",
         Class
     }.Where(c => !string.IsNullOrEmpty(c)));
 

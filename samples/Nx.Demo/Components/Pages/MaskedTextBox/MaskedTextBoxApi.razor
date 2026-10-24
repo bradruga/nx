@@ -1,0 +1,40 @@
+@page "/maskedtextbox/api"
+
+<DocHeader Slug="maskedtextbox" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Value</td><td>string?</td><td>—</td><td>Use <code>@@bind-Value</code>. Empty slots as the prompt; trailing empty slots left off; null when nothing is typed.</td></tr>
+                <tr><td>Mask</td><td>string</td><td>—</td><td>The pattern; see the mask characters on Overview.</td></tr>
+                <tr><td>Prompt</td><td>char</td><td>'_'</td><td>The character in an empty slot.</td></tr>
+                <tr><td>IncludeLiterals</td><td>bool</td><td>false</td><td>The value keeps the literals (<code>26-0412</code>, not <code>260412</code>).</td></tr>
+                <tr><td>MaskOnFocus</td><td>bool</td><td>false</td><td>An empty field shows the mask only while focused.</td></tr>
+                <tr><td>Label / FloatingLabel / Placeholder</td><td></td><td></td><td>As NxTextBox.</td></tr>
+                <tr><td>Clearable / ReadOnly / Disabled</td><td>bool</td><td>false</td><td>As NxTextBox.</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>Input id; outer class and style. Other attributes go to the input.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events &amp; Members</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ValueChanged</td><td>string?</td><td>Committed: Enter, leaving the field, clear.</td></tr>
+                <tr><td>OnFocus / OnBlur</td><td>FocusEventArgs</td><td>Focus in and out (after the commit).</td></tr>
+                <tr><td>IsComplete</td><td>bool</td><td>Every slot is filled.</td></tr>
+                <tr><td>FocusAsync()</td><td>ValueTask</td><td>Focuses the input.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="doc-note">CSS: NxTextBox's field variables (it is an <code>NxFieldFrame</code>); digits are tabular.</p>
+</div>
+
+<DocPager Slug="maskedtextbox" Page="api" />

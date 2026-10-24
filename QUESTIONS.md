@@ -323,3 +323,43 @@ Decisions I made without you. Each one says what I picked and why, so you can an
 122. **New categories reused**: NxButtonGroup under Buttons, NxColorPicker under Inputs, NxNotification under Menus &
      Overlays, NxProgressBar under Display.
 
+
+## Pass 7 — from ERP's usages (read only)
+
+123. **NxDialogService covers INepDialogFactory**, so ERP can swap the wrapper's inside and keep its ~540 callers:
+     `AlertAsync`, `ConfirmAsync` (+ `confirmText`/`cancelText` for `ConfirmYesNoAsync`), `PromptAsync`,
+     `ShowAsync(NxDialogOptions)` for `ShowAsync(NepDialogOptions)`, and `CreateProgress` (an `IProgress<string>` +
+     `IDisposable`, as `IDialogProgress`). `ShowTernaryAsync` maps onto `ShowAsync`'s `bool?` (null = dismissed).
+     The app adds `services.AddNxDialogs()` and one `<NxDialogHost />` in the layout; `RegisterRootCapture` goes away.
+124. **Messages are plain text, not markup.** ERP's factory renders `message` with `AddMarkupContent`, and callers put
+     server error text in it — an XSS hole. Nx keeps line breaks (`\n`); the wrapper should turn ERP's `<br/>` into `\n`.
+     A caller that really needs markup passes `Content` (any RenderFragment, so `(MarkupString)html` still works).
+     Say if you'd rather have an opt-in `MessageIsMarkup`.
+125. **Polled `IsConfirmed`/`IsCancelled` are replaced by `NxDialogReference.Close(bool?)`** (from `Open`, or cascaded
+     into Content). The wrapper can keep ERP's Func properties by polling them and calling `Close`.
+126. **Not carried from NepDialogOptions**: `ConfirmButtonClass` (→ `ConfirmVariant`), `TitleTestId` (the title is
+     `{Id}-title`), `BottomRow` (→ `Footer`), `FillWindow` (→ `FillContent`). `Validate` returns the message to show,
+     as ERP's does; the order is ValidateAsync → Validate → OnConfirmAsync, with the confirm button busy meanwhile.
+127. **NxWindow changed (shared)**: new `FullScreenOnPhone` (default true, as before) so a dialog stays a card on a
+     phone; and nx-window.js now focuses a body `[autofocus]`, then a footer `[autofocus]` (the OK button of an alert),
+     then the body's first focusable. `Closable` stays true by default, since Escape needs it.
+128. **NxToggleButton** wraps NxButton (`aria-pressed`, `@bind-Selected`); its pressed look is new CSS in
+     NxButton.razor.css (shared). In an NxButtonGroup it takes the group's Variant and Size. NxToggleGroup stays the
+     choice for one-of-many (answer to #113).
+129. **NxMediaQuery is `@bind-Matches`** instead of Telerik's `OnChange` (ERP always stores the bool). It reports once
+     the browser answers, so it is `false` during prerender; ERP's pages already start from false.
+130. **NxUpload posts from the browser (XHR)**, one request per file, field `files` (Telerik's default), cookies sent:
+     ERP's `api/v1.0/Portal/Shared/File/Save` keeps working and its response body (the temp id) is
+     `File.ResponseText` in `OnSuccess`. No `RemoveUrl`: ERP deletes temp files in `OnRemove` itself. Paste is a
+     button (clipboard permission) and Ctrl+V on the focused zone. The demo's `/demo/upload` endpoint fails names
+     containing "fail".
+131. **NxFileSelect is Blazor's InputFile** underneath: files are streamed to .NET on demand via
+     `OpenReadStream`, so the 1 ERP use (a demo page) works without a save URL.
+132. **NxTreeView builds from flat Id/ParentId** (ERP's Permissions shape) or from `Children`. `HasChildren` and load
+     on demand were not added (ERP loads the whole tree). Drag and drop is mouse only (HTML5 drag events do not fire
+     on touch); the before/inside/after split assumes the 32 px desktop row.
+133. **NxMaskedTextBox's value**: without `IncludeLiterals`, only the typed characters; with it, the text up to the
+     last typed character (BidDialog's `26-04` while incomplete); nothing typed is `null`. Rules are Telerik's
+     (`0 9 # L ? A a & C`, `\` escape). Typing is handled in nx-input.js (`beforeinput`), so fast typing never races.
+134. **Categories**: NxToggleButton under Buttons; NxMaskedTextBox, NxFileSelect, NxUpload under Inputs; NxTreeView
+     under Selection; NxDialog and NxMediaQuery under Layout.

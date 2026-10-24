@@ -1,0 +1,69 @@
+@page "/treeview/playground"
+
+<DocHeader Slug="treeview" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live, over the permission tree.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                <NxTreeView @ref="tree" Id="playground-tree" Data="DemoTree.Permissions" ItemId="n => n.Id" ParentId="n => n.ParentId" ItemText="n => n.Text"
+                            SelectionMode="pgMode" @bind-SelectedItems="pgSelected" @bind-ExpandedItems="pgExpanded"
+                            Draggable="pgDraggable" AriaLabel="Permissions" Class="demo-tree-box" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-selected">Selected: <strong>@(pgSelected.Any() ? string.Join(", ", pgSelected.Select(n => n.Text)) : "none")</strong></span>
+                <span class="demo-counter" id="playground-expanded">Expanded × @pgExpanded.Count()</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Selection</div>
+            <label class="demo-control">
+                <span>SelectionMode</span>
+                <select id="pg-mode" @bind="pgMode">
+                    @foreach (var m in Enum.GetValues<NxTreeSelectionMode>())
+                    {
+                        <option value="@m">@m</option>
+                    }
+                </select>
+            </label>
+            <div class="demo-controls-title">Expansion</div>
+            <NxButtonGroup AriaLabel="Expand" Size="NxButtonSize.Small">
+                <NxButton id="pg-expand-all" OnClick="() => tree!.ExpandAllAsync()">Expand all</NxButton>
+                <NxButton id="pg-collapse-all" OnClick="() => tree!.CollapseAllAsync()">Collapse all</NxButton>
+            </NxButtonGroup>
+            <div class="demo-controls-title">Behavior</div>
+            <label class="demo-control"><span>Draggable</span><input type="checkbox" id="pg-draggable" @bind="pgDraggable" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="treeview" Page="playground" />
+
+@code {
+    NxTreeView<PermissionNode>? tree;
+    NxTreeSelectionMode pgMode = NxTreeSelectionMode.Single;
+    IEnumerable<PermissionNode> pgSelected = [];
+    IEnumerable<PermissionNode> pgExpanded = DemoTree.Permissions.Where(n => n.ParentId is null).ToList();
+    bool pgDraggable;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "Data=\"nodes\"", "ItemId=\"n => n.Id\"", "ParentId=\"n => n.ParentId\"", "ItemText=\"n => n.Text\"" };
+            if (pgMode != NxTreeSelectionMode.Single) attrs.Add($"SelectionMode=\"NxTreeSelectionMode.{pgMode}\"");
+            attrs.Add("@bind-SelectedItems=\"selected\"");
+            attrs.Add("@bind-ExpandedItems=\"expanded\"");
+            if (pgDraggable) attrs.Add("Draggable=\"true\" OnDrop=\"MoveAsync\"");
+            return "<NxTreeView " + string.Join("\n            ", attrs) + " />";
+        }
+    }
+}

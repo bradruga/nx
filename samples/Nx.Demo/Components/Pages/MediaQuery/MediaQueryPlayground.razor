@@ -1,0 +1,47 @@
+@page "/mediaquery/playground"
+
+<DocHeader Slug="mediaquery" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Type any media query.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner">
+                <NxMediaQuery Media="@pgMedia" @bind-Matches="pgMatches" @bind-Matches:after="() => pgChanges++" />
+                <div class="@(pgMatches ? "demo-mq-badge demo-mq-on demo-mq-big" : "demo-mq-badge demo-mq-big")" id="playground-badge">
+                    <code>@pgMedia</code>
+                    <strong id="playground-matches">@pgMatches</strong>
+                </div>
+            </div>
+            <div class="demo-row">
+                <span class="demo-counter" id="playground-changes">MatchesChanged × @pgChanges</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">NxMediaQuery</div>
+            <label class="demo-control"><span>Media</span><input type="text" id="pg-media" @bind="pgMedia" /></label>
+            <div class="demo-controls-title">Try</div>
+            @foreach (var sample in Samples)
+            {
+                <button type="button" class="demo-chip-button" @onclick="() => pgMedia = sample">@sample</button>
+            }
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">&lt;NxMediaQuery Media="@pgMedia" @@bind-Matches="matches" /&gt;</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="mediaquery" Page="playground" />
+
+@code {
+    static readonly string[] Samples = ["(min-width: 768px)", "(min-width: 1200px)", "(orientation: portrait)", "(pointer: coarse)", "(prefers-reduced-motion: reduce)"];
+
+    string pgMedia = "(min-width: 768px)";
+    bool pgMatches;
+    int pgChanges;
+}

@@ -1,0 +1,125 @@
+@page "/treeview/examples"
+
+<DocHeader Slug="treeview" Page="examples" />
+
+<div class="doc-section">
+    <h2>Item Template</h2>
+    <p class="doc-note"><code>ItemTemplate</code> renders each item — here groups in bold and permissions with their user count.</p>
+    <div class="demo-stage">
+        <NxTreeView Id="template-tree" Data="DemoTree.Permissions" ItemId="n => n.Id" ParentId="n => n.ParentId"
+                    @bind-ExpandedItems="templateExpanded" AriaLabel="Permissions" Class="demo-tree-box">
+            <ItemTemplate>
+                @if (context.Permission is null)
+                {
+                    <NxIcon Icon="NxIcons.Folder" Color="NxIconColor.Muted" />
+                    <strong>@context.Text</strong>
+                }
+                else
+                {
+                    <NxIcon Icon="NxIcons.Lock" Color="NxIconColor.Primary" />
+                    <span>@context.Text</span>
+                    <span class="demo-count-badge" title="Users">@context.Users</span>
+                }
+            </ItemTemplate>
+        </NxTreeView>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Multiple Selection</h2>
+    <p class="doc-note">A click or Space toggles each item; <code>@@bind-SelectedItems</code> holds them in tree order.</p>
+    <div class="demo-stage demo-split">
+        <NxTreeView Id="multi-tree" Data="DemoTree.Permissions" ItemId="n => n.Id" ParentId="n => n.ParentId" ItemText="n => n.Text"
+                    SelectionMode="NxTreeSelectionMode.Multiple" @bind-SelectedItems="multi" @bind-ExpandedItems="multiExpanded"
+                    AriaLabel="Grant permissions" Class="demo-tree-box" />
+        <div class="demo-tree-detail" id="multi-detail">
+            <strong>@multi.Count() selected</strong>
+            @foreach (var node in multi)
+            {
+                <span>@node.Text</span>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Drag and Drop</h2>
+    <p class="doc-note">
+        With <code>Draggable</code>, drop an item onto another to put it inside, or near the top or bottom edge of a row to
+        put it before or after. <code>OnDrop</code> says what was dropped where; you move it in your data. A drop inside the
+        item's own branch is refused.
+    </p>
+    <div class="demo-stage demo-split">
+        <NxTreeView TItem="Location" Id="drag-tree" Data="SortedLocations" ItemId="l => l.Id" ParentId="l => l.ContainerId" Draggable="true" OnDrop="Moved"
+                    @bind-ExpandedItems="dragExpanded" AriaLabel="Locations" Class="demo-tree-box">
+            <ItemTemplate>
+                <NxIcon Icon="@(context.Kind == "form" ? NxIcons.Table : context.Kind == "bay" ? NxIcons.Rows : NxIcons.MapMarker)" Color="NxIconColor.Muted" />
+                <span>@context.Name</span>
+            </ItemTemplate>
+        </NxTreeView>
+        <div class="demo-tree-detail" id="drag-log">
+            <strong>Last move</strong>
+            <span>@lastMove</span>
+            <NxButton Size="NxButtonSize.Small" OnClick="Reset">Reset</NxButton>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Nested Data</h2>
+    <p class="doc-note">For data that already nests, <code>Children</code> instead of <code>ParentId</code>. <code>ExpandAllAsync()</code> and <code>CollapseAllAsync()</code> open and shut everything.</p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <NxButton id="nested-expand" Size="NxButtonSize.Small" OnClick="() => nested!.ExpandAllAsync()">Expand all</NxButton>
+            <NxButton id="nested-collapse" Size="NxButtonSize.Small" OnClick="() => nested!.CollapseAllAsync()">Collapse all</NxButton>
+        </div>
+        <NxTreeView @ref="nested" Id="nested-tree" Data="DemoTree.Drawings" Children="f => f.Children" ItemText="f => f.Name"
+                    SelectionMode="NxTreeSelectionMode.None" AriaLabel="Drawings" Class="demo-tree-box" />
+    </div>
+</div>
+
+<DocPager Slug="treeview" Page="examples" />
+
+@code {
+    IEnumerable<PermissionNode> templateExpanded = DemoTree.Permissions.Where(n => n.Id is "com" or "com.proj" or "com.sched").ToList();
+    IEnumerable<PermissionNode> multi = [];
+    IEnumerable<PermissionNode> multiExpanded = DemoTree.Permissions.Where(n => n.ParentId is null || n.Id is "acc.bills").ToList();
+    NxTreeView<Folder>? nested;
+
+    List<Location> locations = DemoTree.Locations();
+    IEnumerable<Location> dragExpanded = [];
+    string lastMove = "Nothing moved yet.";
+
+    IEnumerable<Location> SortedLocations => locations.OrderBy(l => l.Order);
+
+    protected override void OnInitialized() => dragExpanded = locations.Where(l => l.Kind != "form").ToList();
+
+    void Moved(NxTreeDropEventArgs<Location> e)
+    {
+        var item = e.Item;
+        if (e.Position == NxTreeDropPosition.Inside)
+        {
+            item.ContainerId = e.Destination.Id;
+            item.Order = locations.Where(l => l.ContainerId == e.Destination.Id).Select(l => l.Order).DefaultIfEmpty(0).Max() + 1;
+            dragExpanded = dragExpanded.Append(e.Destination).Distinct().ToList();
+        }
+        else
+        {
+            item.ContainerId = e.Destination.ContainerId;
+            // Renumber the siblings so the item lands just before or after the destination.
+            var siblings = locations.Where(l => l.ContainerId == e.Destination.ContainerId && l != item).OrderBy(l => l.Order).ToList();
+            var at = siblings.IndexOf(e.Destination) + (e.Position == NxTreeDropPosition.After ? 1 : 0);
+            siblings.Insert(at, item);
+            for (var i = 0; i < siblings.Count; i++)
+                siblings[i].Order = i;
+        }
+        lastMove = $"{item.Name} {e.Position.ToString().ToLowerInvariant()} {e.Destination.Name}";
+    }
+
+    void Reset()
+    {
+        locations = DemoTree.Locations();
+        dragExpanded = locations.Where(l => l.Kind != "form").ToList();
+        lastMove = "Nothing moved yet.";
+    }
+}

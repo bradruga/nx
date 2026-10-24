@@ -1,0 +1,45 @@
+@page "/upload/api"
+
+<DocHeader Slug="upload" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>SaveUrl</td><td>string</td><td>—</td><td>Where each file is posted.</td></tr>
+                <tr><td>SaveField</td><td>string</td><td>"files"</td><td>The form field holding the file.</td></tr>
+                <tr><td>WithCredentials</td><td>bool</td><td>true</td><td>Send cookies (and credentials across origins).</td></tr>
+                <tr><td>AutoUpload</td><td>bool</td><td>true</td><td>Send on pick; false shows Upload and Clear buttons.</td></tr>
+                <tr><td>MaxConcurrentUploads</td><td>int</td><td>0</td><td>The most files sent at once; 0 for no limit.</td></tr>
+                <tr><td>Multiple</td><td>bool</td><td>true</td><td>Several files per pick; false: one, replacing the last.</td></tr>
+                <tr><td>AllowedExtensions</td><td>IEnumerable&lt;string&gt;?</td><td>any</td><td>Others are listed as refused and never sent.</td></tr>
+                <tr><td>MaxFileSize / MinFileSize</td><td>long?</td><td>no limit</td><td>In bytes.</td></tr>
+                <tr><td>ShowPasteButton</td><td>bool</td><td>false</td><td>A Paste button reading files from the clipboard. Ctrl+V on the zone works anyway.</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>false</td><td>Picking, retrying and removing off.</td></tr>
+                <tr><td>AriaLabel / Id / Class / Style</td><td>string?</td><td>—</td><td>The input's name and id (buttons <code>{Id}-paste</code>, <code>-upload</code>, <code>-clear</code>); outer class and style.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events &amp; Members</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>OnSelect</td><td>NxUploadSelectEventArgs</td><td>Files just picked, before they are listed and sent; <code>IsCancelled</code> drops them.</td></tr>
+                <tr><td>OnSuccess / OnError</td><td>NxUploadEventArgs</td><td>A 2xx answer, or anything else; <code>File.StatusCode</code> and <code>File.ResponseText</code>.</td></tr>
+                <tr><td>OnCancel / OnRemove</td><td>NxUploadEventArgs</td><td>The user cancelled or removed a file (delete what the server stored).</td></tr>
+                <tr><td>Files / IsUploading</td><td>IReadOnlyList&lt;NxUploadFile&gt; / bool</td><td>The list; whether anything is being sent or waits in the queue.</td></tr>
+                <tr><td>UploadFilesAsync() / ClearFilesAsync() / PasteAsync()</td><td>Task / Task / Task&lt;bool&gt;</td><td>Send waiting files; cancel and empty the list; take files from the clipboard.</td></tr>
+                <tr><td>NxUploadFile</td><td>Id, Name, Extension, Size, Error, Status, Progress, StatusCode, ResponseText</td><td>Status: Invalid, Waiting, Uploading, Uploaded, Failed, Cancelled.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="doc-note">CSS: the drop zone's <code>--nx-filezone-*</code> and NxProgressBar's variables. JS: nx-upload.js holds the files and sends them.</p>
+</div>
+
+<DocPager Slug="upload" Page="api" />

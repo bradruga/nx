@@ -162,7 +162,9 @@ export function open(id, win, backdrop, dotNet, options) {
     win.querySelector('.nx-window-titlebar')?.addEventListener('pointerdown', state.onTitleDown);
     win.addEventListener('pointerdown', state.onHandleDown);
 
-    const target = win.querySelector('.nx-window-body [autofocus]') ?? focusables(win.querySelector('.nx-window-body') ?? win)[0] ?? win;
+    // An [autofocus] in the body, else one in the footer (a dialog's OK), else the body's first field.
+    const target = win.querySelector('.nx-window-body [autofocus]') ?? win.querySelector('.nx-window-footer [autofocus]')
+        ?? focusables(win.querySelector('.nx-window-body') ?? win)[0] ?? win;
     target.focus({ preventScroll: true });
 }
 

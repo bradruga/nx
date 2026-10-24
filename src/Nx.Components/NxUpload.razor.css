@@ -1,0 +1,46 @@
+.nx-upload {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.nx-upload-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.nx-upload-paste-message { color: var(--nx-fg-muted); font-size: var(--nx-font-size-sm); }
+
+.nx-upload-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius);
+}
+
+.nx-upload-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: var(--nx-radius-sm);
+    background: transparent;
+    color: var(--nx-fg-muted);
+    cursor: pointer;
+}
+.nx-upload-action:hover:not(:disabled) { background: var(--nx-surface-hover); color: var(--nx-fg); }
+.nx-upload-remove:hover:not(:disabled) { color: var(--nx-danger); }
+.nx-upload-action:disabled { opacity: 0.5; cursor: not-allowed; }
+.nx-upload-action:focus { outline: none; }
+.nx-upload-action:focus-visible { outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color); }
+
+@media (pointer: coarse) {
+    .nx-upload-action { width: 44px; height: 44px; }
+}

@@ -1,0 +1,26 @@
+@* The list in the dialog demo's "Pick a truck": a click picks, a double click picks and closes the dialog it is in. *@
+<ul class="demo-truck-list" role="listbox" aria-label="Trucks">
+    @foreach (var truck in Trucks)
+    {
+        <li role="option" id="@($"truck-{truck}")" aria-selected="@(Picked.Truck == truck ? "true" : "false")"
+            class="@(Picked.Truck == truck ? "demo-truck demo-truck-picked" : "demo-truck")"
+            @onclick="() => Picked.Truck = truck" @ondblclick="() => PickAndClose(truck)">
+            <NxIcon Icon="NxIcons.Cart" /> Truck @truck
+        </li>
+    }
+</ul>
+
+@code {
+    private static readonly string[] Trucks = ["12", "14", "21", "27"];
+
+    /// <summary>The pick, shared with the dialog's Validate.</summary>
+    [Parameter, EditorRequired] public TruckPick Picked { get; set; } = default!;
+
+    [CascadingParameter] private NxDialogReference? Dialog { get; set; }
+
+    private void PickAndClose(string truck)
+    {
+        Picked.Truck = truck;
+        Dialog?.Close(true);
+    }
+}

@@ -181,6 +181,14 @@
     --nx-notification-error:        var(--nx-danger);
     --nx-notification-neutral-bg:   #2b2b31;
     --nx-notification-neutral-fg:   #ffffff;
+
+    /* File drop zone (NxFileSelect, NxUpload) */
+    --nx-filezone-border:           var(--nx-border-hover);
+    --nx-filezone-bg:               var(--nx-surface);
+
+    /* Tree (NxTreeView) */
+    --nx-treeview-row-height:       32px;
+    --nx-treeview-indent:           18px;
 }
 
 /* Dark theme: add class="nx-theme-dark" to <html> or any container. */

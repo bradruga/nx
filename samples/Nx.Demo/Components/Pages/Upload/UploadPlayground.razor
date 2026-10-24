@@ -1,0 +1,68 @@
+@page "/upload/playground"
+
+<DocHeader Slug="upload" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live, posting to the demo's <code>demo/upload</code>.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                <NxUpload @key="pgKey" Id="playground-upload" SaveUrl="demo/upload" SaveField="files" AutoUpload="pgAuto" Multiple="pgMultiple"
+                          AllowedExtensions="Extensions" MaxFileSize="MaxBytes" MaxConcurrentUploads="pgConcurrent"
+                          ShowPasteButton="pgPaste" Disabled="pgDisabled"
+                          OnSuccess='e => pgLog = $"OnSuccess: {e.File.Name}"' OnError='e => pgLog = $"OnError: {e.File.Name}"' />
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-log">@pgLog</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Sending</div>
+            <label class="demo-control"><span>AutoUpload</span><input type="checkbox" id="pg-auto" @bind="pgAuto" /></label>
+            <label class="demo-control"><span>MaxConcurrentUploads</span><input type="number" id="pg-concurrent" min="0" @bind="pgConcurrent" /></label>
+            <div class="demo-controls-title">Limits</div>
+            <label class="demo-control"><span>AllowedExtensions</span><input type="text" id="pg-extensions" placeholder="any" @bind="pgExtensions" /></label>
+            <label class="demo-control"><span>MaxFileSize (KB)</span><input type="number" id="pg-max" min="0" @bind="pgMaxKb" /></label>
+            <div class="demo-controls-title">Behavior</div>
+            <label class="demo-control"><span>Multiple</span><input type="checkbox" id="pg-multiple" @bind="pgMultiple" /></label>
+            <label class="demo-control"><span>ShowPasteButton</span><input type="checkbox" id="pg-paste" @bind="pgPaste" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+            <NxButton Size="NxButtonSize.Small" OnClick="() => pgKey++">Reset list</NxButton>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="upload" Page="playground" />
+
+@code {
+    string pgExtensions = "", pgLog = "—";
+    int pgMaxKb = 25000, pgConcurrent, pgKey;
+    bool pgAuto = true, pgMultiple = true, pgPaste, pgDisabled;
+
+    string[] Extensions => pgExtensions.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    long? MaxBytes => pgMaxKb > 0 ? pgMaxKb * 1024L : null;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "SaveUrl=\"api/files\"" };
+            if (!pgAuto) attrs.Add("AutoUpload=\"false\"");
+            if (pgConcurrent > 0) attrs.Add($"MaxConcurrentUploads=\"{pgConcurrent}\"");
+            if (Extensions.Length > 0) attrs.Add($"AllowedExtensions=\"new[] {{ {string.Join(", ", Extensions.Select(e => $"\"{e}\""))} }}\"");
+            if (MaxBytes is long max) attrs.Add($"MaxFileSize=\"{max}\"");
+            if (!pgMultiple) attrs.Add("Multiple=\"false\"");
+            if (pgPaste) attrs.Add("ShowPasteButton=\"true\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            attrs.Add("OnSuccess=\"Stored\"");
+            return "<NxUpload " + string.Join("\n          ", attrs) + " />";
+        }
+    }
+}

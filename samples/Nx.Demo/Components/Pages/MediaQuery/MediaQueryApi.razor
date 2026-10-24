@@ -1,0 +1,20 @@
+@page "/mediaquery/api"
+
+<DocHeader Slug="mediaquery" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Media</td><td>string</td><td>—</td><td>Any CSS media query, e.g. <code>(min-width: 768px)</code>.</td></tr>
+                <tr><td>Matches</td><td>bool</td><td>false</td><td>Use <code>@@bind-Matches</code>; set by the component.</td></tr>
+                <tr><td>MatchesChanged</td><td>EventCallback&lt;bool&gt;</td><td></td><td>Once with the first answer, then on every change. ERP's <code>OnChange</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="doc-note">No markup, no CSS. Uses the browser's <code>matchMedia</code> (nx-mediaquery.js).</p>
+</div>
+
+<DocPager Slug="mediaquery" Page="api" />

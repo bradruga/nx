@@ -1,0 +1,73 @@
+@page "/maskedtextbox"
+@page "/maskedtextbox/overview"
+
+<DocHeader Slug="maskedtextbox" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxMaskedTextBox</code> takes text in a fixed pattern — a bid number, a phone, a part code. Each <code>Mask</code>
+        rule character is a slot that only takes its kind of character; the literals between fill themselves in, and typing
+        skips over them. The masking happens in the browser, so fast typing is never garbled; the value is committed on
+        Enter and on leaving the field.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxMaskedTextBox Id="overview-bid" Label="Bid number" Mask="00-0000" Prompt="' '" IncludeLiterals="true" MaskOnFocus="true"
+                         Placeholder="YY-MM00" @bind-Value="bid" />
+        <span class="demo-value" id="overview-value">Value: <strong>@(bid ?? "null")</strong></span>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Mask Characters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Character</th><th>Takes</th></tr></thead>
+            <tbody>
+                <tr><td><code>0</code></td><td>A digit.</td></tr>
+                <tr><td><code>9</code></td><td>A digit or a space.</td></tr>
+                <tr><td><code>#</code></td><td>A digit, a space, + or -.</td></tr>
+                <tr><td><code>L</code></td><td>A letter.</td></tr>
+                <tr><td><code>?</code></td><td>A letter or a space.</td></tr>
+                <tr><td><code>A</code></td><td>A letter or a digit.</td></tr>
+                <tr><td><code>a</code></td><td>A letter, a digit or a space.</td></tr>
+                <tr><td><code>&amp;</code></td><td>Any character but a space.</td></tr>
+                <tr><td><code>C</code></td><td>Any character.</td></tr>
+                <tr><td>anything else</td><td>A literal; <code>\</code> makes the next character one (<code>\0</code> is a literal 0).</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>A character</td><td>Goes in the next slot that takes it; others are ignored. A literal steps over the same literal.</td></tr>
+                <tr><td>Backspace / Delete</td><td>Empty the slot before / after the caret, or every slot in a selection.</td></tr>
+                <tr><td>Paste</td><td>Each character goes in the next slot that takes it.</td></tr>
+                <tr><td>Enter / leaving</td><td>Commits the value. Esc clears when <code>Clearable</code>.</td></tr>
+                <tr><td>A digits-only mask</td><td>Brings up the number pad on phones (<code>inputmode="numeric"</code>).</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="maskedtextbox" Page="overview" />
+
+@code {
+    string? bid = "26-0412";
+
+    const string basicCode =
+        """
+        <NxMaskedTextBox Label="Bid number" Mask="00-0000" Prompt="' '" IncludeLiterals="true"
+                         MaskOnFocus="true" Placeholder="YY-MM00" @bind-Value="bid.Number" />
+        """;
+}

@@ -1,0 +1,20 @@
+@* The dialog demo's "New crew" content. A component of its own, so its bindings re-render it inside the dialog host. *@
+@if (Footer)
+{
+    <NxCheckBox Id="crew-lead" @bind-Value="Crew.Lead" Label="Set a lead" />
+}
+else
+{
+    <div class="demo-form-grid demo-dialog-form">
+        <NxTextBox Id="crew-name" Label="Crew name" @bind-Value="Crew.Name" Immediate="true" AutoFocus="true" />
+        <NxNumericTextBox Id="crew-size" Label="People" @bind-Value="Crew.Size" Min="1" Max="12" />
+    </div>
+}
+
+@code {
+    /// <summary>The crew being made.</summary>
+    [Parameter, EditorRequired] public CrewDraft Crew { get; set; } = default!;
+
+    /// <summary>Renders the footer's check box instead of the form.</summary>
+    [Parameter] public bool Footer { get; set; }
+}

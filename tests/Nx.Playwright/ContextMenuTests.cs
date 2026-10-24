@@ -159,9 +159,8 @@ public class ContextMenuTests : PageTest
     {
         await GoToPage("overview");
 
-        var vw = Page.ViewportSize!.Width;
-        var vh = Page.ViewportSize!.Height;
         await Page.EvaluateAsync("() => window.scrollTo(0, 0)");
+        var (vw, vh) = await FixedArea.SizeAsync(Page);
         // Open from code at the bottom-right corner: the menu must end up left of and above the point.
         await Page.EvaluateAsync($"() => document.querySelector('#overview-card').dispatchEvent(new MouseEvent('contextmenu', {{ bubbles: true, clientX: {vw - 10}, clientY: {vh - 10} }}))");
         var list = Page.Locator("#overview-menu > ul");

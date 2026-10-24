@@ -7,6 +7,7 @@ Blazor UI components for the Northeast Precast ERP portal, built to replace Tele
 |---|---|
 | `NxButton` | Native button: primary/secondary/danger/ghost/link variants, three sizes, icon slot and icon-only mode, loading spinner, busy-click guard, submit/reset types, full width. |
 | `NxButtonGroup` | Joins NxButtons (and menu buttons) into one bar of related actions; `Variant`, `Size` and `Disabled` on the group apply to every button that does not set its own; full width; `role="group"`. |
+| `NxToggleButton` | A button that stays on or off: `@bind-Selected`, `aria-pressed`, a pressed look in every NxButton variant, icons and icon-only, works inside NxButtonGroup. |
 | `NxTextBox` | Text input: `@bind-Value` on change or as you type (with debounce), label or floating label, prefix/suffix slots, clear button, password toggle, max length with counter, read-only/disabled, `EditForm` validation, autofocus, input modes. |
 | `NxNumericTextBox<TValue>` | Number input for int/long/short/decimal/double/float, nullable or not: min/max/step, spin buttons with press-and-hold, arrow and page keys, .NET format strings and culture-aware parsing, decimals, prefix/suffix, select-on-focus, clear, validation. |
 | `NxComboBox<TItem, TValue>` | Filterable dropdown: `Data` or async `DataProvider`, contains/starts-with/custom filtering, virtualization, keyboard navigation, custom values, clear, templates, grouping, loading state, validation, popup that flips at the viewport edge, `@bind-Value`/`@bind-SelectedItem`. Opt-in **multi-column** grid list, **multi-select** chips (`@bind-Values`/`@bind-SelectedItems`), and a full-screen **mobile overlay** below 600 px. |
@@ -15,6 +16,9 @@ Blazor UI components for the Northeast Precast ERP portal, built to replace Tele
 | `NxAutoComplete<TItem>` | A text box that suggests, on the NxComboBox engine: the value is the typed text; matches open after `MinLength` characters (contains/starts-with/custom), arrow-and-Enter or click picks one, Enter and leaving commit free text; item template, prefix icon, `DataProvider`, virtualization, validation. |
 | `NxTextArea` | Multi-line text in the NxTextBox field: label/floating label, counter, clear, validation, debounce; rows, auto-resize between min and max rows, resize handle. |
 | `NxColorPicker` | Picks a CSS color from a palette grid (the Office palette ERP uses, or your own `Colors` and `Columns`): arrow keys by cell and row, "No color", the value's text, validation. |
+| `NxMaskedTextBox` | Text in a fixed pattern (`00-0000`, `(000) 000-0000`, `LL-000-A`): Telerik's mask rules, a prompt character, the mask always or on focus, value with or without literals, number pad for digit masks, clear, validation. |
+| `NxFileSelect` | Picks files to read in .NET (Blazor's InputFile): a click-or-drop zone, type and size checks, a list with remove buttons, `OnSelect` with each file's stream. |
+| `NxUpload` | Sends files to a URL from the browser: drop, pick or paste, type and size checks, a progress bar per file, cancel, retry, remove, concurrency limit, upload now or on demand, the server's answer in `OnSuccess`. |
 | `NxDatePicker<TValue>` | Date input for `DateOnly`/`DateTime`, nullable or not: masked typing in the culture's order, any display `Format`, calendar popup with month/year/decade views, min/max, disabled-dates callback, week numbers, first day of week, Today, clear, validation; a full-screen sheet on phones. |
 | `NxDateRangePicker<TValue>` | Start and end dates (`@bind-StartValue`/`@bind-EndValue`) on one calendar, two months side by side on a desktop, start-then-end picking with the range band, the date picker's typing and limits, a phone sheet. |
 | `NxTimePicker<TValue>` | Time input for `TimeOnly`/`TimeSpan`/`DateTime`: 12- or 24-hour, loose typing (`930p`, `1430`), a list every `Step` minutes between min and max, clear, validation; a phone sheet. |
@@ -23,6 +27,8 @@ Blazor UI components for the Northeast Precast ERP portal, built to replace Tele
 | `NxForm` + `NxFormItem` + `NxFormGroup` | An `EditForm` laid out in a grid: `Columns`/`ColSpan`, titled groups, labels above or beside, one column on narrow forms (container query). An item names a model property and generates its editor (text, number, check box, date, time, enum) with label and messages, or wraps your own editor. DataAnnotations by default, any validators in `Validation`, `IsValid()`, `SubmitOnEnter`. |
 | `NxValidationMessage` | One field's messages (`For` lambda or `Field` name) with an icon, in a live region. |
 | `NxWindow` | Dialog window: `@bind-Visible`, modal or not, title with icon, close / minimize / maximize, drag by the title bar, resize from the edges, size presets or explicit size and position, focus trap and focus return, Escape and backdrop close, a cancelable `OnClosing`, stacking of nested windows, body and footer slots; full screen on phones. |
+| `NxDialog` + `NxDialogService` | A short modal card in markup (`@bind-Visible`, title, content, buttons), and a service for `AlertAsync`, `ConfirmAsync`, `PromptAsync`, `ShowAsync(options)` with validation and a busy save, `Open` + `Close` from code, and a progress dialog; stays a card on phones. |
+| `NxMediaQuery` | A CSS media query as a bindable bool (`@bind-Matches`) that follows resizes, pointer and color scheme. |
 | `NxTabStrip` + `NxTab` | Tabs over panels: text, icon or template headers, disabled and closable tabs (`OnTabClose`), lazy or `KeepAlive` panels, `@bind-ActiveTab`, tabs top/bottom/left/right, overflow arrows, ARIA tablist keyboard with automatic activation. |
 | `NxSplitter` + `NxSplitterPane` | Resizable panes, horizontal or vertical: sizes in px or % with `@bind-Size`, min/max, collapsible panes with `@bind-Collapsed`, drag and keyboard resizing, nesting; panes stack with collapse headers on phones. |
 | `NxTooltip` | Tooltip for a wrapped or targeted element: hover, keyboard focus, click or long press; delays; placement with flip and an arrow; rich content; never takes pointer events; `aria-describedby`. |
@@ -37,6 +43,7 @@ Blazor UI components for the Northeast Precast ERP portal, built to replace Tele
 | `NxToggleSwitch` | `role="switch"` on/off toggle: on/off text inside or beside, three sizes, loading state, validation. |
 | `NxRadioGroup<TValue>` + `NxRadioButton<TValue>` | One choice from `Data` or declared buttons, vertical or horizontal, disabled items, item template, native-radio roving tab stop, validation. |
 | `NxToggleGroup<TValue>` + `NxToggleGroupItem<TValue>` | Segmented buttons: single select (radio group) or `Multiple` (toggle buttons), icons and icon-only, sizes, full width, disabled items, roving tabindex, validation. |
+| `NxTreeView<TItem>` | A tree from flat Id/ParentId data or nested children: expand, single or multiple selection with `@bind`, item template, ARIA tree keyboard, drag and drop before, onto or after items. |
 
 ## Layout
 
@@ -123,6 +130,16 @@ $env:NX_DEMO_URL = "http://build-box:44420"; dotnet test tests/Nx.Playwright
 
     <NxButton Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Save</NxButton>
 </EditForm>
+```
+
+For `NxDialogService`, register it and put one host in the layout:
+
+```csharp
+builder.Services.AddNxDialogs();          // Program.cs
+```
+
+```razor
+<NxDialogHost />                          @* MainLayout.razor, inside the interactive layout *@
 ```
 
 ## Theming

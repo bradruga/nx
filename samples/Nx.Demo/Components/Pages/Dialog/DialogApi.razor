@@ -1,0 +1,69 @@
+@page "/dialog/api"
+
+<DocHeader Slug="dialog" Page="api" />
+
+<div class="doc-section">
+    <h2>NxDialogService</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Returns</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>AlertAsync(message, title?, confirmText = "OK")</td><td>Task</td><td>A message with OK; completes when closed.</td></tr>
+                <tr><td>ConfirmAsync(message, title?, confirmText, cancelText, confirmVariant)</td><td>Task&lt;bool&gt;</td><td>true for the confirm button; false for cancel, close or Escape.</td></tr>
+                <tr><td>PromptAsync(message, title?, value?, placeholder?, confirmText, cancelText)</td><td>Task&lt;string?&gt;</td><td>The text on OK or Enter; null otherwise.</td></tr>
+                <tr><td>ShowAsync(options)</td><td>Task&lt;bool?&gt;</td><td>true confirmed, false cancelled, null dismissed.</td></tr>
+                <tr><td>Open(options)</td><td>NxDialogReference</td><td>Opens and returns at once: await <code>Result</code>, or <code>Close(result)</code>.</td></tr>
+                <tr><td>CreateProgress(title)</td><td>NxDialogProgress</td><td>A spinner dialog: shown at the first <code>Report(text)</code>, closed by <code>Close()</code> or <code>Dispose()</code>.</td></tr>
+                <tr><td>OpenDialogs</td><td>IReadOnlyList&lt;NxDialogReference&gt;</td><td>The dialogs open now.</td></tr>
+                <tr><td>services.AddNxDialogs()</td><td></td><td>Registers the service (scoped). Put one <code>&lt;NxDialogHost /&gt;</code> in the layout.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxDialogOptions</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Title</td><td>string?</td><td>—</td><td>The title.</td></tr>
+                <tr><td>Message</td><td>string?</td><td>—</td><td>Plain text; line breaks show, markup does not.</td></tr>
+                <tr><td>Content / Footer</td><td>RenderFragment?</td><td>—</td><td>Content under the message; content at the start of the button row.</td></tr>
+                <tr><td>ShowConfirmButton / ConfirmText / ConfirmVariant</td><td>bool / string / NxButtonVariant</td><td>true / "OK" / Primary</td><td>The confirm button.</td></tr>
+                <tr><td>ShowCancelButton / CancelText</td><td>bool / string</td><td>false / "Cancel"</td><td>The cancel button (result false).</td></tr>
+                <tr><td>Closable</td><td>bool</td><td>true</td><td>The close button and Escape (result null).</td></tr>
+                <tr><td>ValidateAsync</td><td>Func&lt;Task&lt;bool&gt;&gt;?</td><td>—</td><td>First on confirm; false keeps it open.</td></tr>
+                <tr><td>Validate</td><td>Func&lt;string?&gt;?</td><td>—</td><td>Then: a message keeps it open and shows above the buttons.</td></tr>
+                <tr><td>OnConfirmAsync</td><td>Func&lt;Task&lt;bool&gt;&gt;?</td><td>—</td><td>Last, e.g. the save; false keeps it open.</td></tr>
+                <tr><td>Width / Height</td><td>string?</td><td>400px / content</td><td>As CSS.</td></tr>
+                <tr><td>MaxWidth / MaxHeight</td><td>string?</td><td>—</td><td>Content limits; the dialog sizes to the content up to MaxWidth, scrolls past MaxHeight.</td></tr>
+                <tr><td>FillContent</td><td>bool</td><td>false</td><td>The content fills the dialog's height.</td></tr>
+                <tr><td>Modal / Draggable / Resizable / Maximizable</td><td>bool</td><td>true / false / false / false</td><td>As NxWindow.</td></tr>
+                <tr><td>FullScreenOnPhone</td><td>bool</td><td>false</td><td>Fill a phone's screen rather than a centered card.</td></tr>
+                <tr><td>Id / Class</td><td>string?</td><td>generated</td><td>The dialog's id (title <code>{Id}-title</code>, buttons <code>{Id}-confirm</code>, <code>{Id}-cancel</code>); a CSS class.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxDialog Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Visible</td><td>bool</td><td>false</td><td>Use <code>@@bind-Visible</code>.</td></tr>
+                <tr><td>Title / ChildContent / Buttons</td><td></td><td></td><td>The title, the content, the footer's buttons.</td></tr>
+                <tr><td>Width / Height</td><td>string?</td><td>400px / content</td><td>As CSS.</td></tr>
+                <tr><td>Modal / Closable / CloseOnEscape / CloseOnBackdropClick</td><td>bool</td><td>true / true / true / false</td><td>As NxWindow.</td></tr>
+                <tr><td>Draggable / Resizable / Maximizable / FullScreenOnPhone</td><td>bool</td><td>false</td><td>As NxWindow; a card on phones by default.</td></tr>
+                <tr><td>OnClosing</td><td>EventCallback&lt;NxWindowClosingEventArgs&gt;</td><td></td><td>Cancelable, before it closes itself.</td></tr>
+                <tr><td>Id / Class</td><td>string?</td><td>—</td><td>Other attributes go to the dialog element.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="doc-note">CSS: NxWindow's variables (<code>--nx-window-radius</code>, <code>--nx-shadow-window</code>, <code>--nx-window-backdrop</code>); the message keeps line breaks; the error uses <code>--nx-validation-color</code>.</p>
+</div>
+
+<DocPager Slug="dialog" Page="api" />

@@ -1,0 +1,36 @@
+@namespace Nx.Components
+
+<NxFieldFrame ClassPrefix="nx-maskedtextbox"
+              InputId="@InputId"
+              Label="@Label"
+              FloatingLabel="FloatingLabel"
+              HasValue="@(hasFocus || currentText.Length > 0)"
+              ShowClear="ShowClear"
+              OnClear="HandleClearClick"
+              Disabled="Disabled"
+              ReadOnly="ReadOnly"
+              Invalid="validation.IsInvalid"
+              Class="@Class"
+              Style="@Style">
+    <ChildContent>
+        <input @ref="input"
+               @attributes="AdditionalAttributes"
+               id="@InputId"
+               class="@InputCssClass"
+               type="text"
+               autocomplete="off"
+               spellcheck="false"
+               inputmode="@InputMode"
+               placeholder="@Placeholder"
+               disabled="@Disabled"
+               readonly="@ReadOnly"
+               aria-invalid="@(validation.IsInvalid ? "true" : null)"
+               @bind="currentText"
+               @bind:event="oninput"
+               @bind:after="HandleInputAfter"
+               @onchange="HandleChange"
+               @onkeydown="HandleKeyDown"
+               @onfocus="HandleFocus"
+               @onblur="HandleBlur" />
+    </ChildContent>
+</NxFieldFrame>

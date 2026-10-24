@@ -230,8 +230,8 @@ public class DatePickerTests : PageTest
 
         await Expect(Sheet).ToBeVisibleAsync();
         var box = (await Sheet.BoundingBoxAsync())!;
-        var clientWidth = await Page.EvaluateAsync<int>("() => document.documentElement.clientWidth");
-        Assert.That(box.Width, Is.EqualTo(clientWidth).Within(1));
+        var area = await FixedArea.SizeAsync(Page);
+        Assert.That(box.Width, Is.EqualTo(area.Width).Within(1));
         await Expect(Sheet.Locator(".nx-calendar-grids")).ToBeFocusedAsync();
         Assert.That(await Page.EvaluateAsync<bool>("() => document.documentElement.classList.contains('nx-scroll-locked')"), Is.True);
 

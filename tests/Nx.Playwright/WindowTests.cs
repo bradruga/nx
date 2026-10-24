@@ -35,9 +35,9 @@ public class WindowTests : PageTest
         Assert.That(await ScrollLockedAsync(), Is.True);
 
         var box = (await Window("overview-window").BoundingBoxAsync())!;
-        var width = await Page.EvaluateAsync<int>("() => document.documentElement.clientWidth");
-        Assert.That(box.X + box.Width / 2, Is.EqualTo(width / 2.0).Within(2));
-        Assert.That(box.Y + box.Height / 2, Is.EqualTo(Page.ViewportSize!.Height / 2.0).Within(2));
+        var area = await FixedArea.SizeAsync(Page);
+        Assert.That(box.X + box.Width / 2, Is.EqualTo(area.Width / 2).Within(2));
+        Assert.That(box.Y + box.Height / 2, Is.EqualTo(area.Height / 2).Within(2));
 
         await Page.Keyboard.PressAsync("Escape");
         await Expect(Window("overview-window")).ToHaveCountAsync(0);
@@ -190,7 +190,7 @@ public class WindowTests : PageTest
         var box = (await Window("actions-window").BoundingBoxAsync())!;
         Assert.That(box.X, Is.EqualTo(0).Within(1));
         Assert.That(box.Y, Is.EqualTo(0).Within(1));
-        Assert.That(box.Height, Is.EqualTo(Page.ViewportSize!.Height).Within(1));
+        Assert.That(box.Height, Is.EqualTo((await FixedArea.SizeAsync(Page)).Height).Within(1));
 
         await Window("actions-window").Locator(".nx-window-maximize").ClickAsync();
         await Expect(Page.Locator("#actions-state")).ToContainTextAsync("Maximized: no");

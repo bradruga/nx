@@ -86,3 +86,20 @@
 }
 
 .nx-button-spinner { width: 1em; height: 1em; }
+
+/* ── Pressed (aria-pressed="true", as NxToggleButton sets it) ─────────────── */
+
+.nx-button-secondary[aria-pressed=true],
+.nx-button-ghost[aria-pressed=true],
+.nx-button-link[aria-pressed=true] {
+    background: var(--nx-accent-subtle);
+    border-color: var(--nx-accent);
+    color: var(--nx-accent);
+}
+.nx-button-secondary[aria-pressed=true]:hover:not(:disabled),
+.nx-button-ghost[aria-pressed=true]:hover:not(:disabled) { background: var(--nx-accent-subtle); border-color: var(--nx-accent-hover); }
+
+.nx-button-primary[aria-pressed=true],
+.nx-button-danger[aria-pressed=true] { box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.28); }
+.nx-button-primary[aria-pressed=true] { background: var(--nx-accent-active); }
+.nx-button-danger[aria-pressed=true] { background: var(--nx-danger-active); }

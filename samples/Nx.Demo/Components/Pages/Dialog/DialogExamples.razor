@@ -1,0 +1,216 @@
+@page "/dialog/examples"
+@inject NxDialogService Dialogs
+
+<DocHeader Slug="dialog" Page="examples" />
+
+<div class="doc-section">
+    <h2>Alert, Confirm, Prompt</h2>
+    <p class="doc-note">
+        The three one-liners. Messages are plain text — line breaks show, markup does not — so a server's error text is
+        always safe to pass. Prompt answers <code>null</code> when cancelled.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <NxButton id="ex-alert" OnClick="AlertAsync">Alert</NxButton>
+            <NxButton id="ex-confirm" OnClick="ConfirmAsync">Confirm</NxButton>
+            <NxButton id="ex-yesno" OnClick="YesNoAsync">Yes / No</NxButton>
+            <NxButton id="ex-prompt" OnClick="PromptAsync">Prompt</NxButton>
+        </div>
+        <span class="demo-value" id="ex-result">Result: <strong>@result</strong></span>
+    </div>
+    <pre class="doc-code">@oneLinerCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Any Dialog with ShowAsync</h2>
+    <p class="doc-note">
+        <code>NxDialogOptions</code> carries content, footer content, button texts, size and the confirm checks:
+        <code>ValidateAsync</code>, then <code>Validate</code> (a message keeps the dialog open), then
+        <code>OnConfirmAsync</code> (say, the save). The confirm button shows as busy while they run.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <NxButton id="ex-show" Variant="NxButtonVariant.Primary" OnClick="NewCrewAsync">New crew…</NxButton>
+            <span class="demo-value" id="ex-show-result">@crewResult</span>
+        </div>
+    </div>
+    <pre class="doc-code">@showCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Closing from Code</h2>
+    <p class="doc-note">
+        <code>Open</code> returns an <code>NxDialogReference</code>: await its <code>Result</code>, or <code>Close</code> it.
+        Content can take it as a cascading parameter — here a list closes the dialog on a double click.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <NxButton id="ex-pick" OnClick="PickTruckAsync">Pick a truck…</NxButton>
+            <NxButton id="ex-timed" OnClick="TimedAsync">Close in 2 s</NxButton>
+            <span class="demo-value" id="ex-pick-result">@pickResult</span>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Progress</h2>
+    <p class="doc-note"><code>CreateProgress</code> shows a spinner dialog at the first report; each report replaces its text; dispose closes it.</p>
+    <div class="demo-stage">
+        <div class="demo-row">
+            <NxButton id="ex-progress" OnClick="ProcessAsync">Import 4 files</NxButton>
+            <span class="demo-value" id="ex-progress-result">@progressResult</span>
+        </div>
+    </div>
+    <pre class="doc-code">@progressCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>NxDialog in Markup</h2>
+    <p class="doc-note">
+        For a dialog with its own state, put <code>NxDialog</code> in the page. Size it with <code>Width</code>; on a phone it
+        stays a card unless <code>FullScreenOnPhone</code>.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-row">
+            <NxButton id="ex-markup" OnClick="() => showReview = true">Approve schedule…</NxButton>
+            <span class="demo-value" id="ex-markup-result">@reviewResult</span>
+        </div>
+    </div>
+    <NxDialog @bind-Visible="showReview" Title="Approve schedule" Width="460px" Id="ex-review">
+        <ChildContent>
+            <p class="demo-dialog-text">Approving publishes this schedule to the crew. Add an optional note for the submitter.</p>
+            <NxTextArea Id="ex-review-note" Label="Note" @bind-Value="reviewNote" Rows="3" />
+            <NxCheckBox Id="ex-review-notify" @bind-Value="notify" Label="Email the crew" />
+        </ChildContent>
+        <Buttons>
+            <NxButton id="ex-review-ok" Variant="NxButtonVariant.Primary" OnClick="Approve">Approve</NxButton>
+            <NxButton id="ex-review-cancel" OnClick="() => showReview = false">Cancel</NxButton>
+        </Buttons>
+    </NxDialog>
+</div>
+
+<DocPager Slug="dialog" Page="examples" />
+
+@code {
+    string result = "—", crewResult = "", pickResult = "", progressResult = "", reviewResult = "";
+    bool showReview, notify = true;
+    string? reviewNote;
+
+    async Task AlertAsync()
+    {
+        await Dialogs.AlertAsync("These purchase order lines were left closed:\n\n• PO 4410 line 3\n• PO 4411 line 1", "Lines closed");
+        result = "alert closed";
+    }
+
+    async Task ConfirmAsync() => result = (await Dialogs.ConfirmAsync("Discard the changes to this pour?", "Discard changes")).ToString().ToLowerInvariant();
+
+    async Task YesNoAsync() =>
+        result = (await Dialogs.ConfirmAsync("Email the schedule to the crew now?", "Send schedule", confirmText: "Yes", cancelText: "No")) ? "yes" : "no";
+
+    async Task PromptAsync()
+    {
+        var name = await Dialogs.PromptAsync("Enter a name for the new draft.", "New draft", placeholder: "Draft name");
+        result = name is null ? "cancelled" : $"\"{name}\"";
+    }
+
+    async Task NewCrewAsync()
+    {
+        var crew = new CrewDraft();
+        var ok = await Dialogs.ShowAsync(new NxDialogOptions
+        {
+            Id = "crew-dialog",
+            Title = "New crew",
+            Width = "460px",
+            ConfirmText = "Create crew",
+            ShowCancelButton = true,
+            Content = CrewForm(crew),
+            Footer = CrewFooter(crew),
+            Validate = () => string.IsNullOrWhiteSpace(crew.Name) ? "Give the crew a name." : null,
+            OnConfirmAsync = async () =>
+            {
+                await Task.Delay(600);      // the save
+                return true;
+            }
+        });
+        crewResult = ok == true ? $"Created {crew.Name} ({crew.Size} people{(crew.Lead ? ", lead set" : "")})" : ok is null ? "Dismissed" : "Cancelled";
+    }
+
+    async Task PickTruckAsync()
+    {
+        var picked = new TruckPick();
+        var ok = await Dialogs.ShowAsync(new NxDialogOptions
+        {
+            Id = "truck-dialog",
+            Title = "Pick a truck",
+            ConfirmText = "Use truck",
+            ShowCancelButton = true,
+            Content = TruckList(picked),
+            Validate = () => picked.Truck is null ? "Pick a truck." : null
+        });
+        pickResult = ok == true ? $"Truck {picked.Truck}" : "No truck";
+    }
+
+    async Task TimedAsync()
+    {
+        var dialog = Dialogs.Open(new NxDialogOptions { Id = "timed-dialog", Title = "Saving", Message = "This closes itself in 2 seconds." });
+        _ = Task.Delay(2000).ContinueWith(_ => dialog.Close(true));
+        pickResult = await dialog.Result == true ? "Closed by code" : "Closed by you";
+    }
+
+    async Task ProcessAsync()
+    {
+        using (var progress = Dialogs.CreateProgress("Importing files"))
+        {
+            for (var i = 1; i <= 4; i++)
+            {
+                progress.Report($"File {i} of 4: takeoff-{i}.xlsx");
+                await Task.Delay(500);
+            }
+        }
+        progressResult = "Imported 4 files";
+    }
+
+    void Approve()
+    {
+        showReview = false;
+        reviewResult = notify ? "Approved, crew emailed" : "Approved";
+    }
+
+    static RenderFragment CrewForm(CrewDraft crew) => @<DemoCrewForm Crew="crew" />;
+
+    static RenderFragment CrewFooter(CrewDraft crew) => @<DemoCrewForm Crew="crew" Footer="true" />;
+
+    static RenderFragment TruckList(TruckPick picked) => @<DemoTruckList Picked="picked" />;
+
+    const string oneLinerCode =
+        """
+        await Dialogs.AlertAsync("These lines were left closed:\n\n• PO 4410 line 3", "Lines closed");
+        bool yes = await Dialogs.ConfirmAsync("Email the schedule now?", "Send", confirmText: "Yes", cancelText: "No");
+        string? name = await Dialogs.PromptAsync("Enter a name for the new draft.", "New draft");
+        """;
+
+    const string showCode =
+        """
+        bool? ok = await Dialogs.ShowAsync(new NxDialogOptions
+        {
+            Title = "New crew",
+            ConfirmText = "Create crew",
+            ShowCancelButton = true,
+            Content = @<CrewForm Crew="crew" />,
+            Validate = () => string.IsNullOrWhiteSpace(crew.Name) ? "Give the crew a name." : null,
+            OnConfirmAsync = () => SaveAsync(crew)      // false keeps it open
+        });
+        """;
+
+    const string progressCode =
+        """
+        using (var progress = Dialogs.CreateProgress("Importing files"))
+        {
+            foreach (var file in files)
+            {
+                progress.Report($"File {file.Number} of {files.Count}: {file.Name}");
+                await ImportAsync(file);
+            }
+        }
+        """;
+}

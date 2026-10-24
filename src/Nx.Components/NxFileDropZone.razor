@@ -1,0 +1,46 @@
+@namespace Nx.Components
+
+@* The drop zone of NxFileSelect and NxUpload. The host's file input (ChildContent) lies over the whole zone,
+   invisible, so a click anywhere opens the file dialog and a drop anywhere lands in it. *@
+<div class="@CssClass"
+     @ondragenter="() => SetDragging(true)"
+     @ondragleave="() => SetDragging(false)"
+     @ondrop="() => SetDragging(false)">
+    <svg class="nx-filezone-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" />
+    </svg>
+    <span class="nx-filezone-text">
+        <span class="nx-filezone-action">@(Multiple ? "Select files" : "Select a file")</span>
+        <span class="nx-filezone-or">or drop @(Multiple ? "them" : "it") here</span>
+    </span>
+    @if (Hint is not null)
+    {
+        <span class="nx-filezone-hint">@Hint</span>
+    }
+    @ChildContent
+</div>
+
+@code {
+    private bool dragging;
+
+    /// <summary>The host's file input, laid over the zone.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Words the action for several files.</summary>
+    [Parameter] public bool Multiple { get; set; }
+
+    /// <summary>The line under the action, e.g. the allowed types and the size limit.</summary>
+    [Parameter] public string? Hint { get; set; }
+
+    /// <summary>Disabled styling.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    private string CssClass => string.Join(' ', new[]
+    {
+        "nx-filezone",
+        dragging && !Disabled ? "nx-filezone-dragging" : null,
+        Disabled ? "nx-filezone-disabled" : null
+    }.Where(c => c is not null));
+
+    private void SetDragging(bool value) => dragging = value;
+}

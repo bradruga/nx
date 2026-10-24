@@ -1,0 +1,62 @@
+@page "/togglebutton"
+@page "/togglebutton/overview"
+
+<DocHeader Slug="togglebutton" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxToggleButton</code> is a button that stays on or off — Show deleted, Link selection, a side panel — bound with
+        <code>@@bind-Selected</code> and announced with <code>aria-pressed</code>. It is an <code>NxButton</code>, so every
+        variant, size and icon applies and it joins an <code>NxButtonGroup</code>. To pick one of several values, use
+        <a href="togglegroup/overview">NxToggleGroup</a>.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <NxToggleButton id="overview-deleted" @bind-Selected="showDeleted">Show deleted</NxToggleButton>
+            <span class="demo-value" id="overview-value">@(showDeleted ? "Showing 6 holidays, 2 deleted" : "Showing 4 holidays")</span>
+        </div>
+        <ul class="demo-holiday-list">
+            @foreach (var (name, deleted) in Holidays.Where(h => showDeleted || !h.Deleted))
+            {
+                <li class="@(deleted ? "demo-holiday-deleted" : "")">@name</li>
+            }
+        </ul>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Enter / Space</td><td>Turns it on or off.</td></tr>
+                <tr><td>aria-pressed</td><td><code>true</code> or <code>false</code>: screen readers say "toggle button, pressed".</td></tr>
+                <tr><td>Icon-only</td><td>Give it an <code>AriaLabel</code>; the label should name the thing turned on, not change with the state.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="togglebutton" Page="overview" />
+
+@code {
+    bool showDeleted;
+
+    static readonly (string Name, bool Deleted)[] Holidays =
+    [
+        ("New Year's Day", false), ("Memorial Day", false), ("Plant shutdown (old)", true),
+        ("Independence Day", false), ("Thanksgiving", false), ("Founders' Day", true),
+    ];
+
+    const string basicCode =
+        """
+        <NxToggleButton @bind-Selected="viewModel.ShowDeletedHolidays">Show deleted</NxToggleButton>
+        """;
+}

@@ -1,0 +1,62 @@
+@namespace Nx.Components
+
+<div @attributes="AdditionalAttributes" class="@CssClass" style="@Style">
+    <div class="nx-upload-zone" @ref="zone">
+        <NxFileDropZone Multiple="Multiple" Hint="@Hint" Disabled="Disabled">
+            <input @ref="input" id="@InputId" type="file" multiple="@Multiple" accept="@FileRules.Accept(extensions)" disabled="@Disabled"
+                   aria-label="@(AriaLabel ?? (Multiple ? "Select files to upload" : "Select a file to upload"))" />
+        </NxFileDropZone>
+    </div>
+    @if (ShowPasteButton || (!AutoUpload && files.Any(f => f.Status == NxUploadStatus.Waiting)))
+    {
+        <div class="nx-upload-actions">
+            @if (ShowPasteButton)
+            {
+                <NxButton Size="NxButtonSize.Small" Disabled="Disabled" OnClick="PasteAsync" id="@($"{InputId}-paste")">
+                    <Icon><NxIcon Icon="NxIcons.Clipboard" /></Icon>
+                    <ChildContent>Paste</ChildContent>
+                </NxButton>
+            }
+            @if (!AutoUpload && files.Any(f => f.Status == NxUploadStatus.Waiting))
+            {
+                <NxButton Size="NxButtonSize.Small" Variant="NxButtonVariant.Primary" Disabled="Disabled" OnClick="UploadFilesAsync" id="@($"{InputId}-upload")">Upload</NxButton>
+                <NxButton Size="NxButtonSize.Small" Disabled="Disabled" OnClick="ClearFilesAsync" id="@($"{InputId}-clear")">Clear</NxButton>
+            }
+            @if (pasteMessage is not null)
+            {
+                <span class="nx-upload-paste-message" role="status">@pasteMessage</span>
+            }
+        </div>
+    }
+    @if (files.Count > 0)
+    {
+        <ul class="nx-upload-list" aria-label="Files">
+            @foreach (var file in files)
+            {
+                <NxFileRow @key="file.Id" Name="@file.Name" Size="file.Size" Status="@StatusText(file)" Tone="@ToneOf(file)"
+                           Error="@ErrorText(file)" Progress="@(file.Status == NxUploadStatus.Uploading ? file.Progress : null)">
+                    <Actions>
+                        @if (CanCancel(file))
+                        {
+                            <button type="button" class="nx-upload-action" aria-label="@($"Cancel {file.Name}")" title="Cancel" @onclick="() => CancelAsync(file)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></svg>
+                            </button>
+                        }
+                        @if (file.Status is NxUploadStatus.Failed or NxUploadStatus.Cancelled)
+                        {
+                            <button type="button" class="nx-upload-action" aria-label="@($"Retry {file.Name}")" title="Retry" disabled="@Disabled" @onclick="() => RetryAsync(file)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
+                            </button>
+                        }
+                        @if (file.Status is not NxUploadStatus.Uploading)
+                        {
+                            <button type="button" class="nx-upload-action nx-upload-remove" aria-label="@($"Remove {file.Name}")" title="Remove" disabled="@Disabled" @onclick="() => RemoveAsync(file)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" /></svg>
+                            </button>
+                        }
+                    </Actions>
+                </NxFileRow>
+            }
+        </ul>
+    }
+</div>

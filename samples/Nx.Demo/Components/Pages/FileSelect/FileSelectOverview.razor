@@ -1,0 +1,74 @@
+@page "/fileselect"
+@page "/fileselect/overview"
+
+<DocHeader Slug="fileselect" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxFileSelect</code> picks files to read in .NET — there is no upload endpoint. Click the drop zone or drop
+        files on it; each is checked against <code>AllowedExtensions</code> and <code>MaxFileSize</code>, listed, and handed to
+        <code>OnSelect</code>, where <code>OpenReadStream()</code> reads it. Built on Blazor's <code>InputFile</code>. To post
+        files to a URL with progress, use <a href="upload/overview">NxUpload</a>.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxFileSelect Id="overview-files" AllowedExtensions="Allowed" MaxFileSize="10_000_000" OnSelect="ReadAsync" OnRemove="Removed" />
+        <span class="demo-value" id="overview-read">@read</span>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Part</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Drop zone</td><td>A real file input under it: Tab reaches it, Enter or Space opens the file dialog, the zone shows the focus ring.</td></tr>
+                <tr><td>Drop</td><td>Files dropped anywhere on the zone; the zone lights up while files are over it.</td></tr>
+                <tr><td>List</td><td>Each file says its size or why it was refused; its remove button is named "Remove <em>name</em>".</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="fileselect" Page="overview" />
+
+@code {
+    static readonly string[] Allowed = [".pdf", ".png", ".jpg", ".xlsx", ".txt"];
+    string read = "Nothing read yet";
+
+    async Task ReadAsync(NxFileSelectEventArgs e)
+    {
+        long total = 0;
+        foreach (var file in e.Files.Where(f => f.IsValid))
+        {
+            await using var stream = file.OpenReadStream();
+            var buffer = new byte[81920];
+            int n;
+            while ((n = await stream.ReadAsync(buffer)) > 0)
+                total += n;
+        }
+        read = $"Read {e.Files.Count(f => f.IsValid)} file(s), {total:N0} bytes";
+    }
+
+    void Removed(NxFileSelectEventArgs e) => read = $"Removed {e.Files[0].Name}";
+
+    const string basicCode =
+        """
+        <NxFileSelect AllowedExtensions="allowed" MaxFileSize="10_000_000" OnSelect="ReadAsync" />
+
+        async Task ReadAsync(NxFileSelectEventArgs e)
+        {
+            foreach (var file in e.Files.Where(f => f.IsValid))
+            {
+                await using var stream = file.OpenReadStream();
+                await SaveAsync(file.Name, stream);
+            }
+        }
+        """;
+}

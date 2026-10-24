@@ -20,7 +20,8 @@ public class SiteLayoutTests : PageTest
                                                           "datepicker", "daterange", "timepicker", "window", "tabstrip", "splitter",
                                                           "dropdown", "multiselect", "textarea", "tooltip", "contextmenu", "dropdownbutton", "splitbutton",
                                                           "form", "icon", "loader", "datetimepicker", "autocomplete",
-                                                          "buttongroup", "colorpicker", "progressbar", "notification"];
+                                                          "buttongroup", "colorpicker", "progressbar", "notification",
+                                                          "dialog", "mediaquery", "togglebutton", "upload", "fileselect", "treeview", "maskedtextbox"];
     private static readonly string[] SubPages = ["overview", "examples", "playground", "api"];
 
     private static IEnumerable<string> AllPaths() =>
