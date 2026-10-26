@@ -1,0 +1,40 @@
+@namespace Nx.Components
+@implements IDisposable
+
+@* A value axis registers with its NxChart and renders nothing. The first is on the left, the second on the right. *@
+
+@code {
+    [CascadingParameter] private NxChart? Chart { get; set; }
+
+    /// <summary>The name series use in their <c>Axis</c>.</summary>
+    [Parameter] public string? Name { get; set; }
+
+    /// <summary>The axis title, beside the labels.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>The label format, e.g. <c>C0</c>, <c>N1</c> or <c>{0:#,0}</c>; also the tooltip's. Default: <c>#,0.##</c>.</summary>
+    [Parameter] public string? LabelFormat { get; set; }
+
+    /// <summary>The lowest value shown. Default: 0, or below the data when it goes below 0.</summary>
+    [Parameter] public double? Min { get; set; }
+
+    /// <summary>The highest value shown. Default: a round number above the data.</summary>
+    [Parameter] public double? Max { get; set; }
+
+    /// <summary>Fits the range to the data instead of starting at 0, for values that vary a little around a level.</summary>
+    [Parameter] public bool NarrowRange { get; set; }
+
+    /// <summary>Shows the labels and title (the scale applies either way). Default: <c>true</c>.</summary>
+    [Parameter] public bool Visible { get; set; } = true;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Chart is null)
+            throw new InvalidOperationException("NxChartValueAxis must be placed inside an NxChart.");
+        Chart.Register(this);
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => Chart?.Unregister(this);
+}

@@ -394,3 +394,39 @@ Decisions I made without you. Each one says what I picked and why, so you can an
      field starts from today.
 143. **Categories**: NxToolBar under Buttons; NxSlider and NxColorGradient under Inputs; NxDateInput under Dates;
      NxTileLayout under Layout; NxChipList and NxCarousel under Display.
+
+## Pass 9 — NxChart, from ERP's 10 chart pages (read only)
+
+144. **The chart is drawn by .NET as SVG**; nx-chart.js only measures the plot (ResizeObserver), finds the point under the
+     pointer and keeps the arrow keys from scrolling. Each hover change re-renders the surface; Blazor's diff only touches
+     what changed. Sized for ERP's data (up to a year of days times a few series); thousands of points are not tuned.
+145. **The API keeps Telerik's field-name binding** (`Data` + `Field` / `CategoryField` / `ColorField` with `nameof`), with
+     series and axes as child components, so ERP's pages port nearly line for line. Renamed: `ChartSeriesStack Enabled`
+     → `Stacked`, `ChartSeriesMarkers Visible` → `Markers`, `ChartSeriesLine Color/Width` → `LineColor` / `LineWidth`,
+     `ChartSeriesLabels` → `ShowLabels` / `LabelFormat`, `ChartSeriesTooltip Template` → `TooltipTemplate` (context
+     `NxChartPoint`: `DataItem`, `FormattedValue`, `Percentage`…), `ChartLegend Position` → `LegendPosition`,
+     `ChartTitle` → `Title`, axis label `Format` → `LabelFormat` (both `{0:C0}` and `C0` work).
+146. **One category axis.** The storage history's two axes (a hidden one holding the dates, a visible one with sparse
+     labels) become one axis with `Categories` and `Labels`. The engagement chart's `AxisCrossingValue` is not needed: the
+     second value axis draws on the right on its own; a third, invisible axis still scales its series.
+147. **Defaults**: legend at the bottom (Telerik's is right) and, when asked for on the right, under the chart below 360 px
+     wide; height 400 px; date categories every step of the base unit, empty ones included; aggregate Max (Telerik's
+     default; BatchSummary passes Sum); line points in the middle of their category, as Telerik draws them.
+148. **`Refresh()` is `RefreshAsync()`**: ERP calls it after a tab or tile shows; the ResizeObserver covers most of that.
+149. **Not built** (ERP uses none): a shared tooltip for all series, zoom and pan, donut, scatter, export to an image,
+     entry animations, labels on line points.
+150. **The pointer picks the nearest point in the category under it**; a drawn marker wins a near-tie over a series drawn
+     without markers, so the control chart's limit lines never steal a click from the tests beside them.
+151. **Palette**: `--nx-chart-1` … `--nx-chart-8` (blue, orange, green, red, purple, teal, magenta, brown), light and dark;
+     NxChart sits under Display.
+
+## NxChart status (paused 10/26)
+
+- **Works** (seen in the browser at 390/768/1280, bUnit 25/25): line, area, column, bar and pie; date axes (hours to years,
+  aggregates) and plain categories with `Labels`; two value axes; stacking; dashes, markers, value labels; legend that
+  hides series or slices; tooltips by hover, tap and arrow keys; `OnSeriesClick`; redraw on resize; a screen-reader table.
+  Four demo pages, a home card and the `chart` slug in SiteLayoutTests are in.
+- **Missing**: `ChartTests` (Playwright, 9 tests) is written but has never been run; dark theme and the home card not
+  looked at; grid lines of a second value axis do not line up with the first; large data (thousands of points) not
+  measured; decisions #144–151 not reviewed.
+- **Next**: run the Playwright fixture, review #144–151, then port one ERP page (ControlCharts or StorageHistory) as a trial.

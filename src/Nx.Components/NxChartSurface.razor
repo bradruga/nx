@@ -1,0 +1,134 @@
+@namespace Nx.Components
+@{ Rebuild(); }
+
+@if (Chart.Title is not null)
+{
+    <div class="nx-chart-title" id="@($"{id}-title")">@Chart.Title</div>
+}
+<div class="@($"nx-chart-body nx-chart-legend-{LegendPosition.ToString().ToLowerInvariant()}")">
+    <div @ref="plot"
+         class="nx-chart-plot"
+         tabindex="0"
+         role="group"
+         aria-roledescription="chart"
+         aria-label="@Label"
+         aria-describedby="@($"{id}-table")"
+         data-band="@ChartMath.N(drawing.Band)"
+         @onkeydown="HandleKeyDown"
+         @onblur="HandleBlur">
+        @if (Measured)
+        {
+            <svg class="nx-chart-svg" width="@ChartMath.N(width)" height="@ChartMath.N(height)" viewBox="@($"0 0 {ChartMath.N(width)} {ChartMath.N(height)}")" aria-hidden="true">
+                <g class="nx-chart-grid">
+                    @foreach (var g in drawing.Grid)
+                    {
+                        <line x1="@ChartMath.N(g.X1)" y1="@ChartMath.N(g.Y1)" x2="@ChartMath.N(g.X2)" y2="@ChartMath.N(g.Y2)" />
+                    }
+                </g>
+                @foreach (var s in drawing.Shapes)
+                {
+                    var on = s.Key is { } k && active == k;
+                    var hit = s.Key is { } key ? $"{key.Series}-{key.Index}" : null;
+                    switch (s.Kind)
+                    {
+                        case "rect":
+                            <rect class="@(on ? $"{s.CssClass} nx-chart-active" : s.CssClass)" data-p="@hit"
+                                  x="@ChartMath.N(s.X)" y="@ChartMath.N(s.Y)" width="@ChartMath.N(Math.Max(0, s.W))" height="@ChartMath.N(Math.Max(0, s.H))"
+                                  style="@($"fill: {s.Color}")" />
+                            break;
+                        case "slice":
+                            <path class="@(on ? $"{s.CssClass} nx-chart-active" : s.CssClass)" data-p="@hit" d="@s.D"
+                                  style="@($"fill: {s.Color}; --nx-chart-dx: {ChartMath.N(s.X * 6)}px; --nx-chart-dy: {ChartMath.N(s.Y * 6)}px")" />
+                            break;
+                        case "area":
+                            <path class="@s.CssClass" d="@s.D" style="@($"fill: {s.Color}")" />
+                            break;
+                        default:
+                            <path class="@s.CssClass" d="@s.D"
+                                  style="@($"stroke: {s.Stroke}; stroke-width: {ChartMath.N(s.StrokeWidth)}px")"
+                                  stroke-dasharray="@s.Dash" />
+                            break;
+                    }
+                }
+                @if (GuideX is double gx)
+                {
+                    <line class="nx-chart-guide" x1="@ChartMath.N(gx)" y1="@ChartMath.N(drawing.Y0)" x2="@ChartMath.N(gx)" y2="@ChartMath.N(drawing.Y1)" />
+                }
+                @foreach (var m in drawing.Markers)
+                {
+                    var on = m.Key == active;
+                    <circle class="@(on ? "nx-chart-marker nx-chart-active" : "nx-chart-marker")" data-p="@($"{m.Key!.Value.Series}-{m.Key!.Value.Index}")"
+                            cx="@ChartMath.N(m.X)" cy="@ChartMath.N(m.Y)" r="@ChartMath.N(on ? 5 : m.W)"
+                            style="@($"stroke: {m.Stroke}")" />
+                }
+                <g class="nx-chart-labels">
+                    @foreach (var l in drawing.Labels)
+                    {
+                        @SvgText(l.X, l.Y, l.Text, l.Anchor, null, null)
+                    }
+                    @foreach (var t in drawing.Titles)
+                    {
+                        @SvgText(t.X, t.Y, t.Text, "middle", "nx-chart-axis-title", t.Vertical ? $"rotate(-90 {ChartMath.N(t.X)} {ChartMath.N(t.Y)})" : null)
+                    }
+                </g>
+                <g class="nx-chart-value-labels">
+                    @foreach (var l in drawing.ValueLabels)
+                    {
+                        @SvgText(l.X, l.Y, l.Text, l.Anchor, null, null)
+                    }
+                </g>
+            </svg>
+            @if (Chart.ShowTooltips && active is { } a && drawing.Anchors.ContainsKey(a))
+            {
+                <div class="nx-chart-tooltip" role="status" style="@TooltipStyle">@TooltipFor(a.Series, a.Index)</div>
+            }
+        }
+    </div>
+    @if (LegendPosition != NxChartLegendPosition.None)
+    {
+        <ul class="nx-chart-legend" aria-label="Legend">
+            @foreach (var item in LegendItems())
+            {
+                var index = item.Index;
+                <li>
+                    <button type="button" class="@(item.Shown ? "nx-chart-legend-item" : "nx-chart-legend-item nx-chart-legend-off")"
+                            aria-pressed="@(item.Shown ? "true" : "false")" @onclick="() => ToggleLegend(index)">
+                        <span class="@(item.IsLine ? "nx-chart-swatch nx-chart-swatch-line" : "nx-chart-swatch")" style="@($"background: {item.Color}")"></span>
+                        <span class="nx-chart-legend-text">@item.Text</span>
+                    </button>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@* The numbers for screen readers: one row per category, one column per series (one row per slice for a pie). *@
+<table class="nx-chart-sr" id="@($"{id}-table")">
+    <caption>@Label</caption>
+    @if (model.IsPie)
+    {
+        <tbody>
+            @for (var i = 0; i < model.Labels.Count; i++)
+            {
+                <tr><th scope="row">@model.Labels[i]</th><td>@PointAt(0, i).FormattedValue</td></tr>
+            }
+        </tbody>
+    }
+    else
+    {
+        <thead><tr><th scope="col"></th>@foreach (var s in model.Shown) { <th scope="col">@(s.Source.Name ?? $"Series {s.Index + 1}")</th> }</tr></thead>
+        <tbody>
+            @for (var i = 0; i < model.Categories.Count; i++)
+            {
+                var row = i;
+                <tr>
+                    <th scope="row">@model.Labels[row]</th>
+                    @foreach (var s in model.Shown)
+                    {
+                        <td>@(s.Values[row] is null ? "" : PointAt(s.Index, row).FormattedValue)</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    }
+</table>

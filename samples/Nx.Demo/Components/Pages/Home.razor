@@ -186,7 +186,13 @@
             <NxLoader Type="NxLoaderType.Converging" />
             <NxLoader Type="NxLoaderType.Pulsing" />
         </div>,
-        "slider" => @<NxSlider TValue="int" Min="0" Max="10" LargeStep="5" @bind-Value="homeSlider" aria-label="Crew size" Style="width:240px" />,
+        "chart" => @<NxChart Height="140px" Width="260px" LegendPosition="NxChartLegendPosition.None" ShowTooltips="false" AriaLabel="Loads per day">
+            <NxChartSeries Name="Loads" Data="DemoCharts.Days.TakeLast(14)" Field="@nameof(YardDay.Loads)" CategoryField="@nameof(YardDay.Date)" Markers="false" />
+            <NxChartSeries Name="Hours" Type="NxChartSeriesType.Area" Data="DemoCharts.Days.TakeLast(14)" Field="@nameof(YardDay.Hours)" CategoryField="@nameof(YardDay.Date)" />
+            <NxChartCategoryAxis Visible="false" />
+            <NxChartValueAxis Visible="false" />
+        </NxChart>,
+        "slider" =>@<NxSlider TValue="int" Min="0" Max="10" LargeStep="5" @bind-Value="homeSlider" aria-label="Crew size" Style="width:240px" />,
         "chiplist" => @<NxChipList Data="HomeChips" AriaLabel="Mixes" />,
         "dateinput" => @<NxDateInput TValue="DateOnly?" Label="Ship date" @bind-Value="pourDate" Style="width:240px" />,
         "toolbar" => @<NxToolBar AriaLabel="Sheet" Overflow="NxToolBarOverflow.Wrap" Style="width:260px">

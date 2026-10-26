@@ -1,0 +1,107 @@
+@page "/chart/api"
+
+<DocHeader Slug="chart" Page="api" />
+
+<div class="doc-section">
+    <h2>NxChart</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>Series and axes.</td></tr>
+                <tr><td>Title</td><td>string?</td><td>—</td><td>A title above the chart; also its accessible name.</td></tr>
+                <tr><td>Height / Width</td><td>string?</td><td>400px / 100%</td><td>CSS sizes; <code>100%</code> height needs a container with a height.</td></tr>
+                <tr><td>LegendPosition</td><td>NxChartLegendPosition</td><td>Bottom</td><td>Bottom, Right (Bottom under 360 px), Top or None.</td></tr>
+                <tr><td>ShowTooltips</td><td>bool</td><td>true</td><td>Tooltips on hover, tap and the arrow keys.</td></tr>
+                <tr><td>TooltipTemplate</td><td>RenderFragment&lt;NxChartPoint&gt;?</td><td>name: value</td><td>Every series' tooltip, unless the series has its own.</td></tr>
+                <tr><td>Culture</td><td>CultureInfo?</td><td>current</td><td>Numbers, dates and the first day of a week.</td></tr>
+                <tr><td>AriaLabel</td><td>string?</td><td>Title</td><td>The chart's accessible name.</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>On the outer element; other attributes go there too.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxChartSeries</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Type</td><td>NxChartSeriesType</td><td>Line</td><td>Line, Area, Column, Bar or Pie.</td></tr>
+                <tr><td>Name</td><td>string?</td><td>—</td><td>In the legend and the tooltip.</td></tr>
+                <tr><td>Data</td><td>IEnumerable?</td><td>—</td><td>Objects read through <code>Field</code>, or plain numbers.</td></tr>
+                <tr><td>Field / CategoryField / ColorField</td><td>string?</td><td>—</td><td>Property names (<code>nameof</code>) of the value, the category and a point's color.</td></tr>
+                <tr><td>Color</td><td>string?</td><td>--nx-chart-1 … 8</td><td>The series' color.</td></tr>
+                <tr><td>Axis</td><td>string?</td><td>the first</td><td>The value axis' <code>Name</code>.</td></tr>
+                <tr><td>Stacked</td><td>bool</td><td>false</td><td>Stacks on the earlier series of its type on its axis.</td></tr>
+                <tr><td>DashType</td><td>NxChartDashType</td><td>Solid</td><td>Solid, Dash or Dot.</td></tr>
+                <tr><td>LineWidth / LineColor</td><td>double? / string?</td><td>2 / the color</td><td>A line's width, an area's outline.</td></tr>
+                <tr><td>Markers</td><td>bool?</td><td>line: on, area: off</td><td>A dot on each point.</td></tr>
+                <tr><td>VisibleInLegend</td><td>bool</td><td>true</td><td>Lists it in the legend.</td></tr>
+                <tr><td>Aggregate</td><td>NxChartAggregate</td><td>Max</td><td>How items of one date category combine: Max, Min, Sum, Average, Count, First.</td></tr>
+                <tr><td>ShowLabels / LabelFormat</td><td>bool / string?</td><td>false / axis' format</td><td>Values written on columns, bars and slices.</td></tr>
+                <tr><td>Gap / Spacing</td><td>double</td><td>1.5 / 0.4</td><td>Room between categories' and series' columns, in column widths.</td></tr>
+                <tr><td>TooltipTemplate</td><td>RenderFragment&lt;NxChartPoint&gt;?</td><td>—</td><td>This series' tooltip.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxChartCategoryAxis &amp; NxChartValueAxis</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td colspan="4"><strong>NxChartCategoryAxis</strong> (one per chart)</td></tr>
+                <tr><td>Title</td><td>string?</td><td>—</td><td>Under the labels.</td></tr>
+                <tr><td>Categories</td><td>IEnumerable?</td><td>—</td><td>The categories for series without a <code>CategoryField</code>.</td></tr>
+                <tr><td>Labels</td><td>IEnumerable&lt;string?&gt;?</td><td>—</td><td>Text under each category instead of it; empty shows none.</td></tr>
+                <tr><td>Type</td><td>NxChartAxisType</td><td>Auto</td><td>Auto (dates when the values are dates), Category or Date.</td></tr>
+                <tr><td>BaseUnit</td><td>NxChartBaseUnit</td><td>Auto</td><td>Hours, Days, Weeks, Months or Years for dates.</td></tr>
+                <tr><td>LabelFormat</td><td>string?</td><td>by unit</td><td><code>MMM yy</code> or <code>{0:MMM yy}</code>.</td></tr>
+                <tr><td>LabelStep / LabelSkip</td><td>int? / int</td><td>fit / 0</td><td>Label every n-th category, after skipping some.</td></tr>
+                <tr><td>Visible</td><td>bool</td><td>true</td><td>Shows labels and title.</td></tr>
+                <tr><td colspan="4"><strong>NxChartValueAxis</strong> (the first left, the second right)</td></tr>
+                <tr><td>Name</td><td>string?</td><td>—</td><td>What series name in <code>Axis</code>.</td></tr>
+                <tr><td>Title</td><td>string?</td><td>—</td><td>Beside the labels.</td></tr>
+                <tr><td>LabelFormat</td><td>string?</td><td>#,0.##</td><td>Labels and tooltips: <code>C0</code>, <code>N1</code>, <code>{0:#,0}</code>.</td></tr>
+                <tr><td>Min / Max</td><td>double?</td><td>round numbers</td><td>The range's ends.</td></tr>
+                <tr><td>NarrowRange</td><td>bool</td><td>false</td><td>Fit to the data instead of starting at 0.</td></tr>
+                <tr><td>Visible</td><td>bool</td><td>true</td><td>Shows labels and title; the scale applies either way.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events &amp; Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>OnSeriesClick</td><td>EventCallback&lt;NxChartPoint&gt;</td><td>A point, column, bar or slice clicked, or Enter on it.</td></tr>
+                <tr><td>RefreshAsync()</td><td>Task</td><td>Measures the container again; resizes are followed on their own.</td></tr>
+                <tr><td>NxChartPoint</td><td></td><td><code>SeriesName</code>, <code>DataItem</code>, <code>Category</code>, <code>Value</code>, <code>FormattedValue</code>, <code>Percentage</code> (pie).</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-chart-1 … --nx-chart-8</td><td>blue, orange, green, red, purple, teal, magenta, brown</td><td>Series and slice colors, in order.</td></tr>
+                <tr><td>--nx-chart-grid</td><td>#e6e6ea</td><td>Grid lines.</td></tr>
+                <tr><td>--nx-chart-label</td><td>--nx-fg-muted</td><td>Axis labels.</td></tr>
+                <tr><td>--nx-chart-area-opacity</td><td>0.35</td><td>An area's fill.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="chart" Page="api" />

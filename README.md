@@ -45,6 +45,7 @@ Blazor UI components for the Northeast Precast ERP portal, built to replace Tele
 | `NxProgressBar` | `Value` of `Max` with a centered label readable over fill and track, a `LabelTemplate`, a `Thin` bar, an `Indeterminate` one; ARIA progressbar values. |
 | `NxChipList<TItem>` | A wrapping row of chips from `Data`, text or `ItemTemplate`, removable with a button or Delete/Backspace, arrow keys between chips, solid or outline, three sizes. |
 | `NxCarousel<TItem>` | One slide at a time from `Data` and a `Template`, rotating every `AutomaticPageChangeInterval` ms and pausing on hover, focus or the pause button; arrows, dots, swipe, arrow keys, `@bind-Page`. |
+| `NxChart` + `NxChartSeries` | Line, area, column, bar and pie charts drawn as SVG by .NET, no chart library: Telerik-style `Data` + `Field`/`CategoryField` binding, date category axes with hour-to-year steps and aggregates, two value axes, stacking, dashed lines, value labels, a legend that hides series, tooltips by hover, tap or arrow keys, `OnSeriesClick`, redraws as its container resizes. |
 | `NxNotification` | Toasts stacked in a corner: `` + `Show(model)` with Info/Success/Warning/Error/Neutral, `CloseAfter` held by hover or focus, close button, six positions, `MaxVisible`, a live region (errors as alerts); full width on phones. |
 | `NxCheckBox<TValue>` | Check box for `bool` or `bool?` (indeterminate), three-state cycling, label on either side, read-only, validation. |
 | `NxToggleSwitch` | `role="switch"` on/off toggle: on/off text inside or beside, three sizes, loading state, validation. |

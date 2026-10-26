@@ -1,0 +1,8 @@
+@namespace Nx.Components
+
+@* Series and axes register in ChildContent and render nothing; the surface after them draws the chart. Being a
+   later sibling, it renders after they took their new parameters, in the same batch. *@
+<div @attributes="AdditionalAttributes" id="@Id" class="@CssClass" style="@RootStyle">
+    <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+    <NxChartSurface @ref="surface" Chart="this" />
+</div>

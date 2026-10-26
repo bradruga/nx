@@ -1,0 +1,79 @@
+@namespace Nx.Components
+@implements IDisposable
+
+@* A series registers with its NxChart and renders nothing: the chart draws every series together. *@
+
+@code {
+    [CascadingParameter] private NxChart? Chart { get; set; }
+
+    /// <summary>How the series is drawn. Default: <see cref="NxChartSeriesType.Line"/>.</summary>
+    [Parameter] public NxChartSeriesType Type { get; set; } = NxChartSeriesType.Line;
+
+    /// <summary>The series' name, in the legend and the tooltip.</summary>
+    [Parameter] public string? Name { get; set; }
+
+    /// <summary>The items: objects read through <see cref="Field"/>, or plain numbers.</summary>
+    [Parameter] public System.Collections.IEnumerable? Data { get; set; }
+
+    /// <summary>The property holding an item's value. Not set: the items are the values.</summary>
+    [Parameter] public string? Field { get; set; }
+
+    /// <summary>The property holding an item's category (text or a date). Not set: items line up with the axis' <c>Categories</c>.</summary>
+    [Parameter] public string? CategoryField { get; set; }
+
+    /// <summary>The property holding an item's own color, e.g. a pie slice's.</summary>
+    [Parameter] public string? ColorField { get; set; }
+
+    /// <summary>The series' color. Default: the next of <c>--nx-chart-1</c> … <c>--nx-chart-8</c>.</summary>
+    [Parameter] public string? Color { get; set; }
+
+    /// <summary>The <see cref="NxChartValueAxis.Name"/> of the value axis it is measured on. Default: the first.</summary>
+    [Parameter] public string? Axis { get; set; }
+
+    /// <summary>Stacks it on the series of the same type before it, on the same axis (columns, bars, areas).</summary>
+    [Parameter] public bool Stacked { get; set; }
+
+    /// <summary>A line's stroke. Default: <see cref="NxChartDashType.Solid"/>.</summary>
+    [Parameter] public NxChartDashType DashType { get; set; } = NxChartDashType.Solid;
+
+    /// <summary>A line's or area's outline width in pixels. Default: <c>2</c>.</summary>
+    [Parameter] public double? LineWidth { get; set; }
+
+    /// <summary>An area's outline color, e.g. <c>white</c> between stacked areas. Default: the series' color.</summary>
+    [Parameter] public string? LineColor { get; set; }
+
+    /// <summary>Draws a marker on each point. Default: on for a line, off for an area.</summary>
+    [Parameter] public bool? Markers { get; set; }
+
+    /// <summary>Lists the series in the legend. Default: <c>true</c>.</summary>
+    [Parameter] public bool VisibleInLegend { get; set; } = true;
+
+    /// <summary>How items in one date category combine. Default: <see cref="NxChartAggregate.Max"/>.</summary>
+    [Parameter] public NxChartAggregate Aggregate { get; set; } = NxChartAggregate.Max;
+
+    /// <summary>Writes each value on its column, bar or pie slice.</summary>
+    [Parameter] public bool ShowLabels { get; set; }
+
+    /// <summary>The format of those labels, e.g. <c>C0</c> or <c>{0:C0}</c>. Default: the value axis' format.</summary>
+    [Parameter] public string? LabelFormat { get; set; }
+
+    /// <summary>Space between categories' columns or bars, as a share of one column. Default: <c>1.5</c>.</summary>
+    [Parameter] public double Gap { get; set; } = 1.5;
+
+    /// <summary>Space between the columns of one category, as a share of one column. Default: <c>0.4</c>.</summary>
+    [Parameter] public double Spacing { get; set; } = 0.4;
+
+    /// <summary>The tooltip of this series' points. Default: the chart's <c>TooltipTemplate</c>, else name and value.</summary>
+    [Parameter] public RenderFragment<NxChartPoint>? TooltipTemplate { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Chart is null)
+            throw new InvalidOperationException("NxChartSeries must be placed inside an NxChart.");
+        Chart.Register(this);
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => Chart?.Unregister(this);
+}

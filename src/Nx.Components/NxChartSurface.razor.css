@@ -1,0 +1,179 @@
+.nx-chart-title {
+    flex-shrink: 0;
+    padding: 2px 0 8px;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* ── Plot and legend: the legend under, over or beside the plot ───────────── */
+
+.nx-chart-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+}
+.nx-chart-legend-top { flex-direction: column-reverse; }
+.nx-chart-legend-right { flex-direction: row; }
+
+/* The SVG lies over the plot instead of sizing it, so the plot's size comes from the layout alone. */
+.nx-chart-plot {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    min-height: 120px;
+    border-radius: var(--nx-radius-sm);
+}
+.nx-chart-plot:focus { outline: none; }
+.nx-chart-plot:focus-visible {
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline-offset: 2px;
+}
+
+.nx-chart-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: visible;
+    font-family: var(--nx-font-family);
+    font-size: 12px;
+    user-select: none;
+}
+
+.nx-chart-grid line {
+    stroke: var(--nx-chart-grid);
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+/* The texts are built in code (Razor reads a bare <text> as its own tag), so they need ::deep. */
+.nx-chart-labels ::deep text { fill: var(--nx-chart-label); }
+.nx-chart-labels ::deep .nx-chart-axis-title { fill: var(--nx-fg); font-weight: 600; }
+.nx-chart-value-labels ::deep text { fill: var(--nx-fg); font-weight: 500; }
+
+/* ── Series ───────────────────────────────────────────────────────────────── */
+
+.nx-chart-line {
+    fill: none;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+.nx-chart-area { opacity: var(--nx-chart-area-opacity); }
+
+.nx-chart-guide {
+    stroke: var(--nx-border-hover);
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+    shape-rendering: crispEdges;
+}
+
+.nx-chart-marker {
+    fill: var(--nx-surface);
+    stroke-width: 2;
+    transition: r var(--nx-transition);
+}
+.nx-chart-marker.nx-chart-active { stroke-width: 3; }
+
+.nx-chart-bar { transition: opacity var(--nx-transition); }
+.nx-chart-bar.nx-chart-active { opacity: 0.8; }
+
+.nx-chart-slice {
+    stroke: var(--nx-surface);
+    stroke-width: 1.5;
+    transition: transform var(--nx-transition);
+}
+.nx-chart-slice.nx-chart-active { transform: translate(var(--nx-chart-dx), var(--nx-chart-dy)); }
+
+/* ── Tooltip: over the plot at the point, never catching the pointer ──────── */
+
+.nx-chart-tooltip {
+    position: absolute;
+    z-index: 2;
+    max-width: 260px;
+    padding: 6px 10px;
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius);
+    background: var(--nx-popup-bg);
+    box-shadow: var(--nx-shadow-popup);
+    color: var(--nx-fg);
+    font-size: var(--nx-font-size-sm);
+    line-height: 1.4;
+    white-space: nowrap;
+    pointer-events: none;
+}
+.nx-chart-tooltip-category { color: var(--nx-fg-muted); }
+
+/* ── Legend: buttons that hide and show a series ──────────────────────────── */
+
+.nx-chart-legend {
+    display: flex;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2px 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--nx-font-size-sm);
+}
+.nx-chart-legend-right .nx-chart-legend {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: center;
+    max-width: 40%;
+    overflow-y: auto;
+}
+
+.nx-chart-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    min-height: 28px;
+    padding: 0 4px;
+    border: none;
+    border-radius: var(--nx-radius-sm);
+    background: transparent;
+    color: var(--nx-fg);
+    font: inherit;
+    cursor: pointer;
+}
+.nx-chart-legend-item:hover { background: var(--nx-surface-hover); }
+.nx-chart-legend-item:focus { outline: none; }
+.nx-chart-legend-item:focus-visible { outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color); }
+.nx-chart-legend-off { color: var(--nx-fg-subtle); }
+.nx-chart-legend-off .nx-chart-swatch { opacity: 0.3; }
+
+.nx-chart-legend-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.nx-chart-swatch {
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+.nx-chart-swatch-line { height: 3px; border-radius: 2px; }
+
+/* The data as a table, for screen readers only. */
+.nx-chart-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+@media (pointer: coarse) {
+    .nx-chart-legend-item { min-height: 40px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nx-chart-slice, .nx-chart-marker, .nx-chart-bar { transition: none; }
+}

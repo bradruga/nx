@@ -1,0 +1,139 @@
+@page "/chart/playground"
+
+<DocHeader Slug="chart" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live. The data is a week of loads from three plants.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch demo-preview-inner-full">
+                <NxChart Id="playground-chart" Title="@OrNull(pgTitle)" Height="@($"{pgHeight}px")" LegendPosition="pgLegend"
+                         ShowTooltips="pgTooltips" OnSeriesClick="p => pgClicked = p.SeriesName + ' ' + p.Category">
+                    @foreach (var (name, data) in Series.Take(pgType == NxChartSeriesType.Pie ? 1 : pgCount))
+                    {
+                        <NxChartSeries Type="pgType" Name="@name" Data="data" Stacked="pgStacked" DashType="pgDash"
+                                       Markers="pgMarkers" ShowLabels="pgLabels" LineWidth="pgLineWidth" />
+                    }
+                    <NxChartCategoryAxis Categories="Days" Title="@OrNull(pgCategoryTitle)" LabelStep="@(pgStep > 0 ? pgStep : null)" />
+                    <NxChartValueAxis Title="@OrNull(pgValueTitle)" LabelFormat="@OrNull(pgFormat)" NarrowRange="pgNarrow"
+                                      Min="pgUseMin ? pgMin : null" Max="pgUseMax ? pgMax : null" />
+                </NxChart>
+            </div>
+            <div class="demo-row">
+                <span class="demo-counter" id="playground-clicked">OnSeriesClick: @(pgClicked ?? "—")</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Series</div>
+            <label class="demo-control">
+                <span>Type</span>
+                <select id="pg-type" @bind="pgType">
+                    @foreach (var t in Enum.GetValues<NxChartSeriesType>())
+                    {
+                        <option value="@t">@t</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control"><span>Series</span><input type="number" id="pg-count" min="1" max="3" @bind="pgCount" /></label>
+            <label class="demo-control"><span>Stacked</span><input type="checkbox" id="pg-stacked" @bind="pgStacked" /></label>
+            <label class="demo-control"><span>Markers</span><input type="checkbox" id="pg-markers" @bind="pgMarkers" /></label>
+            <label class="demo-control">
+                <span>DashType</span>
+                <select id="pg-dash" @bind="pgDash">
+                    @foreach (var d in Enum.GetValues<NxChartDashType>())
+                    {
+                        <option value="@d">@d</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control"><span>LineWidth</span><input type="number" id="pg-line-width" min="1" max="6" @bind="pgLineWidth" /></label>
+            <label class="demo-control"><span>ShowLabels</span><input type="checkbox" id="pg-labels" @bind="pgLabels" /></label>
+
+            <div class="demo-controls-title">Chart</div>
+            <label class="demo-control"><span>Title</span><input type="text" id="pg-title" @bind="pgTitle" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>Height (px)</span><input type="number" id="pg-height" min="160" step="20" @bind="pgHeight" /></label>
+            <label class="demo-control">
+                <span>LegendPosition</span>
+                <select id="pg-legend" @bind="pgLegend">
+                    @foreach (var l in Enum.GetValues<NxChartLegendPosition>())
+                    {
+                        <option value="@l">@l</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control"><span>ShowTooltips</span><input type="checkbox" id="pg-tooltips" @bind="pgTooltips" /></label>
+
+            <div class="demo-controls-title">Axes</div>
+            <label class="demo-control"><span>Category title</span><input type="text" id="pg-category-title" @bind="pgCategoryTitle" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>LabelStep</span><input type="number" id="pg-step" min="0" max="7" @bind="pgStep" /></label>
+            <label class="demo-control"><span>Value title</span><input type="text" id="pg-value-title" @bind="pgValueTitle" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>LabelFormat</span><input type="text" id="pg-format" @bind="pgFormat" @bind:event="oninput" placeholder="e.g. N0 or {0:C0}" /></label>
+            <label class="demo-control"><span>NarrowRange</span><input type="checkbox" id="pg-narrow" @bind="pgNarrow" /></label>
+            <label class="demo-control"><span>Min</span><input type="checkbox" id="pg-use-min" @bind="pgUseMin" /><input type="number" id="pg-min" class="demo-control-small" @bind="pgMin" /></label>
+            <label class="demo-control"><span>Max</span><input type="checkbox" id="pg-use-max" @bind="pgUseMax" /><input type="number" id="pg-max" class="demo-control-small" @bind="pgMax" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="chart" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+    static readonly string[] Days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    static readonly (string Name, int[] Data)[] Series =
+    [
+        ("Plant 1", [14, 17, 12, 19, 21, 6, 2]),
+        ("Plant 2", [9, 11, 13, 10, 12, 4, 0]),
+        ("Plant 3", [5, 6, 4, 8, 7, 3, 1]),
+    ];
+
+    NxChartSeriesType pgType = NxChartSeriesType.Line;
+    NxChartDashType pgDash = NxChartDashType.Solid;
+    NxChartLegendPosition pgLegend = NxChartLegendPosition.Bottom;
+    int pgCount = 2, pgHeight = 320, pgLineWidth = 2, pgStep;
+    double pgMin, pgMax = 40;
+    bool pgStacked, pgMarkers = true, pgLabels, pgTooltips = true, pgNarrow, pgUseMin, pgUseMax;
+    string pgTitle = "Loads this week", pgCategoryTitle = "", pgValueTitle = "Loads", pgFormat = "";
+    string? pgClicked;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var chart = new List<string>();
+            if (OrNull(pgTitle) is { } title) chart.Add($"Title=\"{title}\"");
+            chart.Add($"Height=\"{pgHeight}px\"");
+            if (pgLegend != NxChartLegendPosition.Bottom) chart.Add($"LegendPosition=\"NxChartLegendPosition.{pgLegend}\"");
+            if (!pgTooltips) chart.Add("ShowTooltips=\"false\"");
+            var series = new List<string> { $"Name=\"@plant.Name\" Data=\"plant.Loads\"" };
+            if (pgType != NxChartSeriesType.Line) series.Insert(0, $"Type=\"NxChartSeriesType.{pgType}\"");
+            if (pgStacked) series.Add("Stacked=\"true\"");
+            if (!pgMarkers) series.Add("Markers=\"false\"");
+            if (pgDash != NxChartDashType.Solid) series.Add($"DashType=\"NxChartDashType.{pgDash}\"");
+            if (pgLineWidth != 2) series.Add($"LineWidth=\"{pgLineWidth}\"");
+            if (pgLabels) series.Add("ShowLabels=\"true\"");
+            var category = new List<string> { "Categories=\"days\"" };
+            if (OrNull(pgCategoryTitle) is { } ct) category.Add($"Title=\"{ct}\"");
+            if (pgStep > 0) category.Add($"LabelStep=\"{pgStep}\"");
+            var value = new List<string>();
+            if (OrNull(pgValueTitle) is { } vt) value.Add($"Title=\"{vt}\"");
+            if (OrNull(pgFormat) is { } f) value.Add($"LabelFormat=\"{f}\"");
+            if (pgNarrow) value.Add("NarrowRange=\"true\"");
+            if (pgUseMin) value.Add($"Min=\"{pgMin}\"");
+            if (pgUseMax) value.Add($"Max=\"{pgMax}\"");
+            return $"<NxChart {string.Join(" ", chart)}>\n" +
+                   "    @foreach (var plant in plants)\n    {\n" +
+                   $"        <NxChartSeries {string.Join(" ", series)} />\n    }}\n" +
+                   $"    <NxChartCategoryAxis {string.Join(" ", category)} />\n" +
+                   (value.Count > 0 ? $"    <NxChartValueAxis {string.Join(" ", value)} />\n" : "") +
+                   "</NxChart>";
+        }
+    }
+}

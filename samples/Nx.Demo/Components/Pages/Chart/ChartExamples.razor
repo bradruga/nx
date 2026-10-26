@@ -1,0 +1,131 @@
+@page "/chart/examples"
+
+<DocHeader Slug="chart" Page="examples" />
+
+<div class="doc-section">
+    <h2>Lines on Two Value Axes</h2>
+    <p class="doc-note">
+        ERP's engagement chart: two lines on the first value axis and an area on a second one, named by the series' <code>Axis</code>.
+        The first axis draws on the left, the second on the right. Click a legend entry to hide its series.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxChart Id="axes-chart" Height="340px" LegendPosition="NxChartLegendPosition.Bottom" AriaLabel="Yard activity">
+            <NxChartSeries Name="Loads" Data="DemoCharts.Days" Field="@nameof(YardDay.Loads)" CategoryField="@nameof(YardDay.Date)" />
+            <NxChartSeries Name="Pieces / 10" Data="Tenths" Field="@nameof(YardDay.Pieces)" CategoryField="@nameof(YardDay.Date)" />
+            <NxChartSeries Name="Crane hours" Type="NxChartSeriesType.Area" Axis="hours" Data="DemoCharts.Days"
+                           Field="@nameof(YardDay.Hours)" CategoryField="@nameof(YardDay.Date)" />
+            <NxChartValueAxis Name="count" Title="Number" LabelFormat="#,0" />
+            <NxChartValueAxis Name="hours" Title="Hours" LabelFormat="0.0" />
+        </NxChart>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>A Control Chart</h2>
+    <p class="doc-note">
+        Slump tests with the mean dotted and the 95% limits faded, no markers on the limits, and <code>NarrowRange</code> so the
+        scale fits the values instead of starting at 0. Clicking a test raises <code>OnSeriesClick</code> with its data item.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxChart Id="control-chart" Title="Slump" Height="300px" OnSeriesClick="Picked">
+            <NxChartSeries Name="Slump (in)" Data="DemoCharts.Slumps" Field="@nameof(SlumpTest.Slump)" CategoryField="@nameof(SlumpTest.Index)" Color="#4472C4">
+                <TooltipTemplate>Test @(((SlumpTest)context.DataItem!).Ticket): <strong>@context.FormattedValue in</strong></TooltipTemplate>
+            </NxChartSeries>
+            <NxChartSeries Name="Mean" Data="DemoCharts.Slumps" Field="@nameof(SlumpTest.Mean)" CategoryField="@nameof(SlumpTest.Index)"
+                           Color="red" DashType="NxChartDashType.Dot" Markers="false" />
+            <NxChartSeries Name="95U" Data="DemoCharts.Slumps" Field="@nameof(SlumpTest.Upper)" CategoryField="@nameof(SlumpTest.Index)"
+                           Color="rgba(255,0,0,0.5)" Markers="false" />
+            <NxChartSeries Name="95L" Data="DemoCharts.Slumps" Field="@nameof(SlumpTest.Lower)" CategoryField="@nameof(SlumpTest.Index)"
+                           Color="rgba(255,0,0,0.5)" Markers="false" />
+            <NxChartValueAxis NarrowRange="true" LabelFormat="0.0" />
+        </NxChart>
+        <span class="demo-value" id="control-picked">@picked</span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Stacked Areas</h2>
+    <p class="doc-note">
+        Pieces in storage by yard, stacked (<code>Stacked</code>) with a white outline between areas (<code>LineColor</code>),
+        and the categories' labels given apart (<code>Labels</code>: weekly dates, the rest blank), as ERP's storage history does.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxChart Id="stacked-area-chart" Title="Number of pieces in storage" Height="320px">
+            @foreach (var yard in StorageYards)
+            {
+                <NxChartSeries Type="NxChartSeriesType.Area" Name="@yard.Name" Data="StorageOf(yard)" Stacked="true" LineColor="white" LineWidth="1" />
+            }
+            <NxChartCategoryAxis Categories="DemoCharts.Days.Select(d => (object)d.Date)" Labels="WeeklyLabels" />
+        </NxChart>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Columns: Grouped, Stacked, by Month</h2>
+    <p class="doc-note">
+        Columns side by side, or stacked when every series is <code>Stacked</code>. Here the dates are months: a date category axis
+        with <code>BaseUnit="NxChartBaseUnit.Months"</code> adds the items of each month (<code>Aggregate</code>).
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <NxToggleButton id="columns-stacked" @bind-Selected="stacked">Stacked</NxToggleButton>
+        </div>
+        <NxChart Id="column-chart" Title="Loads shipped" Height="320px">
+            @foreach (var plant in Plants)
+            {
+                <NxChartSeries Type="NxChartSeriesType.Column" Name="@plant" Data="DemoCharts.PlantMonths.Where(p => p.Plant == plant)"
+                               Field="@nameof(PlantMonth.Loads)" CategoryField="@nameof(PlantMonth.Month)" Stacked="stacked" Aggregate="NxChartAggregate.Sum" />
+            }
+            <NxChartCategoryAxis BaseUnit="NxChartBaseUnit.Months" Title="Month" />
+            <NxChartValueAxis Title="Loads" />
+        </NxChart>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Bars with Labels</h2>
+    <p class="doc-note">A <code>Bar</code> series lays the categories down the side; <code>ShowLabels</code> writes each value at the end of its bar.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxChart Id="bar-chart" Height="280px" LegendPosition="NxChartLegendPosition.None" AriaLabel="Inventory on hand">
+            <NxChartSeries Type="NxChartSeriesType.Bar" Name="On hand" Data="DemoCharts.Inventory" Field="@nameof(Share.Count)"
+                           CategoryField="@nameof(Share.Name)" ShowLabels="true" LabelFormat="N0" />
+            <NxChartValueAxis LabelFormat="N0" Title="Quantity" />
+        </NxChart>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>A Pie</h2>
+    <p class="doc-note">
+        A <code>Pie</code> series takes each item as a slice; the legend lists the slices and hides one when clicked, and the
+        tooltip context carries the slice's <code>Percentage</code>.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxChart Id="pie-chart" Title="Pieces by location" Height="300px" LegendPosition="NxChartLegendPosition.Right">
+            <NxChartSeries Type="NxChartSeriesType.Pie" Data="DemoCharts.Yards" Field="@nameof(Share.Count)" CategoryField="@nameof(Share.Name)">
+                <TooltipTemplate>@context.SeriesName: <strong>@context.FormattedValue</strong> (@context.Percentage?.ToString("P1"))</TooltipTemplate>
+            </NxChartSeries>
+        </NxChart>
+    </div>
+</div>
+
+<DocPager Slug="chart" Page="examples" />
+
+@code {
+    static readonly string[] Plants = ["Plant 1", "Plant 2", "Plant 3"];
+    static readonly IEnumerable<YardDay> Tenths = DemoCharts.Days.Select(d => d with { Pieces = d.Pieces / 10 }).ToList();
+    static readonly IReadOnlyList<Share> StorageYards = DemoCharts.Yards.Take(3).ToList();
+    static readonly IReadOnlyList<string?> WeeklyLabels = DemoCharts.Days.Select((d, i) => i % 7 == 0 ? d.Date.ToString("M/d") : "").ToList();
+
+    bool stacked = true;
+    string picked = "Click a slump test";
+
+    static IEnumerable<int> StorageOf(Share yard) =>
+        DemoCharts.Days.Select((d, i) => (int)(yard.Count * (0.8 + 0.2 * Math.Sin(i / 4.0 + yard.Name.Length))));
+
+    void Picked(NxChartPoint point)
+    {
+        if (point.DataItem is SlumpTest test && point.SeriesName == "Slump (in)")
+            picked = $"Test {test.Ticket}: {test.Slump} in";
+    }
+}
