@@ -243,7 +243,8 @@ public class ButtonTests : PageTest
     {
         await GoToPage("playground");
 
-        await Page.Locator("#pg-variant").SelectOptionAsync("Danger");
+        await Page.Locator("#pg-variant").ClickAsync();
+        await Page.GetByRole(AriaRole.Option, new() { Name = "Danger", Exact = true }).ClickAsync();
 
         await Expect(PlaygroundButton).ToHaveClassAsync(new Regex("nx-button-danger"));
         await Expect(Section("Playground").Locator(".demo-playground-code")).ToContainTextAsync("NxButtonVariant.Danger");

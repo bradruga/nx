@@ -79,6 +79,9 @@ public partial class NxButton
     /// </summary>
     [Parameter] public bool AutoLoading { get; set; }
 
+    /// <summary>With <see cref="AutoLoading"/>, the fewest milliseconds the loading state shows, so a fast handler does not flicker. Default: <c>1000</c>.</summary>
+    [Parameter] public int MinimumLoadingTime { get; set; } = 1000;
+
     /// <summary>Raised on click. Not raised while disabled, loading, or busy with a previous click.</summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
@@ -172,7 +175,9 @@ public partial class NxButton
         isBusy = true;
         try
         {
+            var minimum = AutoLoading && MinimumLoadingTime > 0 ? Task.Delay(MinimumLoadingTime) : Task.CompletedTask;
             await OnClick.InvokeAsync(args);
+            await minimum;
         }
         finally
         {

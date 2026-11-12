@@ -78,11 +78,11 @@
 
 .nx-button:disabled,
 .nx-button[aria-disabled=true] {
-    cursor: not-allowed;
+    cursor: default;
     opacity: var(--nx-disabled-opacity);
 }
 
-.nx-button-loading[aria-disabled=true] { cursor: progress; opacity: 0.8; }
+.nx-button-loading[aria-disabled=true] { cursor: pointer; opacity: 0.8; }
 
 /* ── Parts ───────────────────────────────────────────────────────────────── */
 

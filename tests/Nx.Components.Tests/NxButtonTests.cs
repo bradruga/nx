@@ -370,6 +370,37 @@ public class NxButtonTests : BunitContext
     }
 
     [Test]
+    public async Task AutoLoading_FastHandler_StaysLoadingForMinimumTime()
+    {
+        var cut = RenderButton(p => p
+            .Add(x => x.AutoLoading, true)
+            .Add(x => x.MinimumLoadingTime, 300)
+            .Add(x => x.OnClick, () => Task.CompletedTask));
+
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        var click = cut.Find("button").ClickAsync(new MouseEventArgs());
+        cut.WaitForState(() => cut.FindAll(".nx-spinner").Count == 1);
+
+        await click;
+        Assert.That(watch.ElapsedMilliseconds, Is.GreaterThanOrEqualTo(250));
+        cut.WaitForState(() => cut.FindAll(".nx-spinner").Count == 0);
+    }
+
+    [Test]
+    public async Task WithoutAutoLoading_MinimumLoadingTimeDoesNotDelay()
+    {
+        var cut = RenderButton(p => p
+            .Add(x => x.MinimumLoadingTime, 5000)
+            .Add(x => x.OnClick, () => Task.CompletedTask));
+
+        var click = cut.Find("button").ClickAsync(new MouseEventArgs());
+
+        Assert.That(click.IsCompleted, Is.True);
+        await click;
+        Assert.That(cut.Instance.IsBusy, Is.False);
+    }
+
+    [Test]
     public async Task WithoutAutoLoading_BusyHandlerShowsNoSpinner()
     {
         var gate = new TaskCompletionSource();

@@ -87,6 +87,11 @@
             @(loadingDemo ? "Stop loading" : "Start loading")
         </NxButton>
     </div>
+    <p class="doc-note">Click Save: the button shows <code>Saving…</code> for 1.5 seconds, then goes back.</p>
+    <div class="demo-stage">
+        <NxButton id="loading-save" Variant="NxButtonVariant.Primary" Loading="saving" LoadingText="Saving…" Icon="@IconFragment("save")" OnClick="SaveClick">Save</NxButton>
+    </div>
+    <pre class="doc-code">@saveCode</pre>
 </div>
 
 <div class="doc-section">
@@ -95,7 +100,8 @@
         Each button below runs a 1.5-second async handler. Click each one several times quickly. The guarded
         button ignores clicks while its handler is running (<code>PreventDoubleClick</code>, on by default);
         the unguarded one runs the handler once per click. <code>AutoLoading</code> also shows the spinner
-        while the handler runs, with no <code>Loading</code> flag to manage.
+        while the handler runs, with no <code>Loading</code> flag to manage, and for at least
+        <code>MinimumLoadingTime</code> (1000 ms by default) so a fast handler does not flicker.
     </p>
     <div class="demo-stage demo-stage-column">
         <div class="demo-row">
@@ -178,6 +184,14 @@
 
     // ── Loading ────────────────────────────────────────────────────────────────
     bool loadingDemo = true;
+    bool saving;
+
+    async Task SaveClick()
+    {
+        saving = true;
+        await Task.Delay(1500);
+        saving = false;
+    }
 
     // ── Busy-click guard ───────────────────────────────────────────────────────
     int guardedRuns, unguardedRuns, autoRuns;
@@ -233,6 +247,22 @@
 
         @code {
             RenderFragment saveIcon = @<svg>…</svg>;
+        }
+        """;
+
+    const string saveCode =
+        """
+        <NxButton Loading="saving" LoadingText="Saving…" OnClick="SaveAsync">Save</NxButton>
+
+        @code {
+            bool saving;
+
+            async Task SaveAsync()
+            {
+                saving = true;
+                await Task.Delay(1500);
+                saving = false;
+            }
         }
         """;
 

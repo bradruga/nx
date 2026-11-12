@@ -414,8 +414,9 @@ code {
 .demo-control > span:first-child { color: var(--fg-secondary); }
 .demo-control code { font-size: 11.5px; }
 
+/* Native controls only: an Nx component's inner input has an nx- class and styles itself. */
 .demo-control select,
-.demo-control input[type=text],
+.demo-control input[type=text]:not([class*="nx-"]),
 .demo-control input[type=number] {
     font: inherit;
     font-size: 12.5px;
@@ -817,7 +818,7 @@ code {
     .demo-control { min-height: 44px; }
     .demo-control input[type=checkbox] { width: 20px; height: 20px; }
     .demo-control select,
-    .demo-control input[type=text],
+    .demo-control input[type=text]:not([class*="nx-"]),
     .demo-control input[type=number] { min-height: 36px; width: 160px; }
     .demo-segmented button { min-height: 36px; padding: 0 12px; }
     .demo-controls { max-height: none; }
