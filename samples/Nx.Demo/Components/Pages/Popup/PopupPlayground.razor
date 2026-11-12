@@ -1,0 +1,104 @@
+@page "/popup/playground"
+
+<DocHeader Slug="popup" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner">
+                <NxButton id="playground-anchor" OnClick="() => pgVisible = !pgVisible">Toggle popup</NxButton>
+                <NxPopup Id="playground-popup" Visible="pgVisible" VisibleChanged="Closed" AnchorSelector="#playground-anchor" Placement="pgPlacement" Align="pgAlign"
+                         Offset="pgOffset" Width="@OrNull(pgWidth)" MaxHeight="@OrNull(pgMaxHeight)" CloseOnOutsideClick="pgOutside"
+                         CloseOnEscape="pgEscape" AriaLabel="@OrNull(pgAriaLabel)">
+                    <div class="demo-popup-body">
+                        @for (var i = 1; i <= pgLines; i++)
+                        {
+                            <span>Line @i of the popup's content</span>
+                        }
+                    </div>
+                </NxPopup>
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-state">@(pgVisible ? "Visible" : "Hidden")</span>
+                <span class="demo-counter" id="playground-closed">Closed itself × @pgClosed</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Place</div>
+            <label class="demo-control">
+                <span>Placement</span>
+                <select id="pg-placement" @bind="pgPlacement">
+                    @foreach (var p in Enum.GetValues<NxPopupPlacement>())
+                    {
+                        <option value="@p">@p</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control">
+                <span>Align</span>
+                <select id="pg-align" @bind="pgAlign">
+                    @foreach (var a in Enum.GetValues<NxPopupAlign>())
+                    {
+                        <option value="@a">@a</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control"><span>Offset</span><input type="number" id="pg-offset" min="0" @bind="pgOffset" /></label>
+
+            <div class="demo-controls-title">Size</div>
+            <label class="demo-control"><span>Width</span><input type="text" id="pg-width" @bind="pgWidth" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>MaxHeight</span><input type="text" id="pg-maxheight" @bind="pgMaxHeight" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>Content lines</span><input type="number" id="pg-lines" min="1" max="40" @bind="pgLines" /></label>
+
+            <div class="demo-controls-title">Behavior</div>
+            <label class="demo-control"><span>CloseOnOutsideClick</span><input type="checkbox" id="pg-outside" @bind="pgOutside" /></label>
+            <label class="demo-control"><span>CloseOnEscape</span><input type="checkbox" id="pg-escape" @bind="pgEscape" /></label>
+            <label class="demo-control"><span>AriaLabel</span><input type="text" id="pg-arialabel" @bind="pgAriaLabel" @bind:event="oninput" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="popup" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+
+    bool pgVisible;
+
+    void Closed(bool visible)
+    {
+        pgVisible = visible;
+        pgClosed++;
+    }
+
+    NxPopupPlacement pgPlacement;
+    NxPopupAlign pgAlign;
+    int pgOffset = 4, pgLines = 4, pgClosed;
+    string pgWidth = "220px", pgMaxHeight = "", pgAriaLabel = "Details";
+    bool pgOutside = true, pgEscape = true;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "@bind-Visible=\"open\"", "AnchorSelector=\"#anchor\"" };
+            if (pgPlacement != NxPopupPlacement.Bottom) attrs.Add($"Placement=\"NxPopupPlacement.{pgPlacement}\"");
+            if (pgAlign != NxPopupAlign.Start) attrs.Add($"Align=\"NxPopupAlign.{pgAlign}\"");
+            if (pgOffset != 4) attrs.Add($"Offset=\"{pgOffset}\"");
+            if (OrNull(pgWidth) is { } w) attrs.Add($"Width=\"{w}\"");
+            if (OrNull(pgMaxHeight) is { } h) attrs.Add($"MaxHeight=\"{h}\"");
+            if (!pgOutside) attrs.Add("CloseOnOutsideClick=\"false\"");
+            if (!pgEscape) attrs.Add("CloseOnEscape=\"false\"");
+            if (OrNull(pgAriaLabel) is { } label) attrs.Add($"AriaLabel=\"{label}\"");
+            return "<NxPopup " + string.Join("\n         ", attrs) + ">\n    …\n</NxPopup>";
+        }
+    }
+}

@@ -1,0 +1,56 @@
+@page "/popup/api"
+
+<DocHeader Slug="popup" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Visible</td><td>bool</td><td>false</td><td>Shows it; <code>@@bind-Visible</code> hears it close itself.</td></tr>
+                <tr><td>AnchorSelector</td><td>string</td><td>—</td><td>A CSS selector for the element it opens next to.</td></tr>
+                <tr><td>Placement</td><td>NxPopupPlacement</td><td>Bottom</td><td>Bottom, Top, Right or Left; flips when the other side has more room.</td></tr>
+                <tr><td>Align</td><td>NxPopupAlign</td><td>Start</td><td>Start, Center or End along the anchor; shifts to stay on screen.</td></tr>
+                <tr><td>Offset</td><td>int</td><td>4</td><td>Pixels between anchor and popup.</td></tr>
+                <tr><td>Width</td><td>string?</td><td>content</td><td>Any CSS width.</td></tr>
+                <tr><td>MaxHeight</td><td>string?</td><td>room on screen</td><td>The tallest; it scrolls beyond.</td></tr>
+                <tr><td>CloseOnOutsideClick</td><td>bool</td><td>true</td><td>A press outside popup and anchor closes it.</td></tr>
+                <tr><td>CloseOnEscape</td><td>bool</td><td>true</td><td>Escape closes it.</td></tr>
+                <tr><td>Role / AriaLabel</td><td>string?</td><td>dialog / —</td><td>The popup's role and accessible name.</td></tr>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>The content.</td></tr>
+                <tr><td>Id / Class</td><td>string?</td><td>—</td><td>On the popup; other attributes go there too.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events &amp; Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>VisibleChanged</td><td>EventCallback&lt;bool&gt;</td><td>It closed itself (outside press, Escape).</td></tr>
+                <tr><td>RefreshAsync()</td><td>Task</td><td>Places it again after the anchor moved without a scroll or resize.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-popup-bg</td><td>--nx-surface</td><td>The background (shared with the lists' popups).</td></tr>
+                <tr><td>--nx-popup-border</td><td>--nx-border</td><td>The border.</td></tr>
+                <tr><td>--nx-shadow-popup</td><td>theme shadow</td><td>The shadow.</td></tr>
+                <tr><td>--nx-z-popup</td><td>1000</td><td>Above windows (900).</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="popup" Page="api" />

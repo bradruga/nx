@@ -1,0 +1,52 @@
+@page "/signature"
+@page "/signature/overview"
+
+<DocHeader Slug="signature" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxSignature</code> is a pad to sign with a mouse, pen or finger. The signature binds as a PNG data URL — ready to
+        save in a text column, show in an <code>&lt;img&gt;</code> or put in a report — and is <code>null</code> while empty,
+        so <code>[Required]</code> works. A clear button starts over. Ink and paper are saved in the image, so they stay dark on
+        white in the dark theme.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column">
+        <NxSignature Id="overview-signature" @bind-Value="signature" StrokeWidth="3" />
+        <span class="demo-value" id="overview-length">@(signature is null ? "Not signed" : $"Signed: {signature.Length:N0} characters of PNG data URL")</span>
+        @if (signature is not null)
+        {
+            <img id="overview-image" class="demo-signature-image" src="@signature" alt="The saved signature" />
+        }
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Pointer</td><td>Mouse, pen or touch draws; the page does not scroll under a finger on the pad.</td></tr>
+                <tr><td>Tab / Enter</td><td>The clear button, once there is a signature.</td></tr>
+                <tr><td>Roles</td><td>A <code>group</code> named by <code>AriaLabel</code>; the pad is an image named "Signed" or "Not signed".</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="signature" Page="overview" />
+
+@code {
+    string? signature;
+
+    const string basicCode =
+        """
+        <NxSignature @bind-Value="response.SignatureSource" StrokeWidth="3" />
+        """;
+}

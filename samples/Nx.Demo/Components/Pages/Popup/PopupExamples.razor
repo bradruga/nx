@@ -1,0 +1,105 @@
+@page "/popup/examples"
+
+<DocHeader Slug="popup" Page="examples" />
+
+<div class="doc-section">
+    <h2>Column Filter Menu</h2>
+    <p class="doc-note">
+        As ERP's spreadsheet filter: below the header button, right edges lined up (<code>Align="NxPopupAlign.End"</code>),
+        sort first, then a search box over the values with a check box each.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-popup-header">
+            <span>Mix</span>
+            <button type="button" id="mix-filter" class="demo-popup-header-button" aria-label="Filter Mix" aria-expanded="@(filterOpen ? "true" : "false")"
+                    @onclick="() => filterOpen = !filterOpen"><NxIcon Icon="NxIcons.ChevronDown" /></button>
+        </div>
+        <NxPopup Id="filter-popup" @bind-Visible="filterOpen" AnchorSelector="#mix-filter" Align="NxPopupAlign.End" Width="240px" AriaLabel="Filter Mix">
+            <div class="demo-popup-body">
+                <NxButton Variant="NxButtonVariant.Ghost" Size="NxButtonSize.Small" OnClick="() => Sort(false)">Sort A to Z</NxButton>
+                <NxButton Variant="NxButtonVariant.Ghost" Size="NxButtonSize.Small" OnClick="() => Sort(true)">Sort Z to A</NxButton>
+                <NxTextBox Id="filter-search" @bind-Value="search" Immediate="true" Placeholder="Search" aria-label="Search values" />
+                @foreach (var mix in Mixes.Where(m => string.IsNullOrEmpty(search) || m.Contains(search, StringComparison.OrdinalIgnoreCase)))
+                {
+                    <NxCheckBox TValue="bool" Value="chosen.Contains(mix)" ValueChanged="v => Toggle(mix, v)" Label="@mix" />
+                }
+            </div>
+        </NxPopup>
+        <span class="demo-value" id="filter-result">@sortText · @chosen.Count of @Mixes.Length shown</span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Placement &amp; Align</h2>
+    <p class="doc-note">Each side and alignment. Near an edge it flips to the side with room and shifts along the anchor.</p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            @foreach (var placement in Enum.GetValues<NxPopupPlacement>())
+            {
+                var p = placement;
+                <NxButton id="@($"place-{p.ToString().ToLowerInvariant()}")" Size="NxButtonSize.Small"
+                          Variant="@(shown == p ? NxButtonVariant.Primary : NxButtonVariant.Secondary)" OnClick="() => Show(p)">@p</NxButton>
+            }
+        </div>
+        <div class="demo-row">
+            @foreach (var align in Enum.GetValues<NxPopupAlign>())
+            {
+                var a = align;
+                <NxButton Size="NxButtonSize.Small" Variant="@(alignment == a ? NxButtonVariant.Primary : NxButtonVariant.Secondary)" OnClick="() => alignment = a">@a</NxButton>
+            }
+        </div>
+        <div class="demo-popup-target-wrap">
+            <span id="place-target" class="demo-popup-target">Anchor</span>
+        </div>
+        <NxPopup Id="place-popup" Visible="shown is not null" VisibleChanged="v => { if (!v) shown = null; }" AnchorSelector="#place-target"
+                 Placement="shown ?? NxPopupPlacement.Bottom" Align="alignment" Offset="8">
+            <div class="demo-popup-body">@shown, @alignment</div>
+        </NxPopup>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Details Card</h2>
+    <p class="doc-note">Content that stays open while the user works elsewhere: <code>CloseOnOutsideClick="false"</code> and a close button.</p>
+    <div class="demo-stage">
+        <NxButton id="card-anchor" Variant="NxButtonVariant.Link" OnClick="() => cardOpen = true">WP-12</NxButton>
+        <NxPopup Id="card-popup" @bind-Visible="cardOpen" AnchorSelector="#card-anchor" Placement="NxPopupPlacement.Right" CloseOnOutsideClick="false"
+                 Width="260px" AriaLabel="Panel WP-12">
+            <div class="demo-popup-body">
+                <div class="demo-row" style="justify-content:space-between">
+                    <strong>Wall panel WP-12</strong>
+                    <NxButton id="card-close" Variant="NxButtonVariant.Ghost" Size="NxButtonSize.Small" AriaLabel="Close" Icon="@CloseIcon" OnClick="() => cardOpen = false" />
+                </div>
+                <span>Route 9 Bridge · 14 ft × 8 ft</span>
+                <span>Poured 11/10 · stripped 11/11</span>
+            </div>
+        </NxPopup>
+    </div>
+</div>
+
+<DocPager Slug="popup" Page="examples" />
+
+@code {
+    static readonly string[] Mixes = ["5000 psi", "6000 psi", "SCC", "Lightweight", "Grout", "Flowable fill"];
+    static readonly RenderFragment CloseIcon = @<NxIcon Icon="NxIcons.X" />;
+    bool filterOpen, cardOpen;
+    string? search;
+    string sortText = "Unsorted";
+    HashSet<string> chosen = [.. Mixes];
+    NxPopupPlacement? shown;
+    NxPopupAlign alignment;
+
+    void Toggle(string mix, bool on)
+    {
+        if (on) chosen.Add(mix);
+        else chosen.Remove(mix);
+    }
+
+    void Sort(bool descending)
+    {
+        sortText = descending ? "Z to A" : "A to Z";
+        filterOpen = false;
+    }
+
+    void Show(NxPopupPlacement placement) => shown = shown == placement ? null : placement;
+}

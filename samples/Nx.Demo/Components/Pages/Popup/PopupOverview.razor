@@ -1,0 +1,61 @@
+@page "/popup"
+@page "/popup/overview"
+
+<DocHeader Slug="popup" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxPopup</code> floats any content next to an element on the page — its anchor, found by
+        <code>AnchorSelector</code>. It opens below, above or beside the anchor, lined up at its start, center or end, and
+        flips and shifts to stay on screen as the page scrolls or resizes. A press outside or Escape closes it and sets
+        <code>@@bind-Visible</code> back to false. For a column's filter menu, a details card, a short form.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage">
+        <NxButton id="overview-anchor" Icon="@FilterIcon" OnClick="() => open = !open" aria-expanded="@(open ? "true" : "false")">Filter</NxButton>
+        <NxPopup Id="overview-popup" @bind-Visible="open" AnchorSelector="#overview-anchor" Width="240px" AriaLabel="Filter">
+            <div class="demo-popup-body">
+                <strong>Status</strong>
+                <NxCheckBox TValue="bool" @bind-Value="poured" Label="Poured" />
+                <NxCheckBox TValue="bool" @bind-Value="stripped" Label="Stripped" />
+                <NxCheckBox TValue="bool" @bind-Value="shipped" Label="Shipped" />
+                <NxButton id="overview-apply" Size="NxButtonSize.Small" Variant="NxButtonVariant.Primary" OnClick="() => open = false">Apply</NxButton>
+            </div>
+        </NxPopup>
+        <span class="demo-value" id="overview-state">@(open ? "Open" : "Closed")</span>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Escape</td><td>Closes it (with <code>CloseOnEscape</code>).</td></tr>
+                <tr><td>Tab</td><td>Focus stays where it was when it opens; the content's own fields and buttons are reachable after the anchor.</td></tr>
+                <tr><td>Roles</td><td>A <code>dialog</code> by default (<code>Role</code>), named by <code>AriaLabel</code>. Give the anchor <code>aria-expanded</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="popup" Page="overview" />
+
+@code {
+    bool open, poured = true, stripped, shipped;
+    static readonly RenderFragment FilterIcon = @<NxIcon Icon="NxIcons.Search" />;
+
+    const string basicCode =
+        """
+        <NxButton id="status-filter" OnClick="() => open = !open">Filter</NxButton>
+        <NxPopup @bind-Visible="open" AnchorSelector="#status-filter" Width="240px" AriaLabel="Filter">
+            …
+        </NxPopup>
+        """;
+}

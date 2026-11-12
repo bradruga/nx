@@ -493,3 +493,29 @@ Brad's 11/12 calls: TelerikCard is not replaced (plain Bootstrap/CSS cards), Tel
      large documents are not measured. Found and fixed while checking: Ctrl+K did not redraw the link dialog; Enter in the
      link fields was taken by NxTextBox's own key handler (now handled on the fields' wrapper); NxChat scrolled down only
      after a slow `OnSendMessage` finished, pulling a reader back to the bottom.
+
+## Pass 11 — NxPdfViewer, NxPopup, NxSignature, NxCircularGauge, from ERP's usages (read only)
+
+Brad's 11/12 calls: build all four; the PDF viewer wraps pdf.js with an Nx-themed toolbar (not pdf.js's own viewer page).
+
+161. **pdf.js is the library's one third-party dependency**: 5.4.624, the version ERP vendors, from npm's `pdfjs-dist`, copied
+     as shipped into `wwwroot/pdfjs` (~5 MB: library, worker, viewer components and CSS, fonts, cmaps, wasm decoders; no
+     source maps, no sandbox). It loads the first time a viewer opens. Upgrading = replacing the folder.
+162. **ERP never shows TelerikPdfViewer**: `NepPdfViewer` defaults to its own pdf.js iframe (with NEP's rectangle and
+     snap-point drawing); 6 pages pass `Browser`, 1 `PdfJs`, none `Telerik`. So NxPdfViewer is new ground rather than a
+     port: `Data` / `Url`, `Zoom`, `@bind-Page`, `Tools` flags (Pager, Zoom, Search, Download, Print), `OnLoad` / `OnError`.
+     Moving NepPdfJsViewer's rectangles onto NxPdfViewer is a later step, if wanted.
+163. **Print** opens the browser's own print of the file (a hidden frame), not pdf.js's page-by-page print rendering.
+     **Not built**: thumbnails, outline, rotate, annotations editing, forms, password prompt (an encrypted PDF shows the
+     error).
+164. **NxPopup flattens Telerik's four align parameters** into `Placement` (side) + `Align` (start/center/end): ERP's one
+     use (anchor right-bottom, popup right-top) is `Placement="Bottom" Align="End"`. Collision is always flip on the side,
+     fit along it. `Show()` / `Hide()` → `@bind-Visible`; `Refresh()` → `RefreshAsync()` (rarely needed: it re-places after
+     every render, scroll, resize and size change). Focus is not moved into it, as Telerik's.
+165. **NxSignature** binds a PNG data URL as Telerik's (ERP stores `SignatureSource`), exported at `ExportScale` 2. Ink and
+     paper are saved in the image, so the pad stays white in the dark theme. Not built: Telerik's maximize-to-dialog
+     button and its `Smooth` option (strokes are always smoothed).
+166. **NxCircularGauge flattens Telerik's scales/pointers** to `Value` / `Min` / `Max` / `Color` / `CenterTemplate`: ERP's one
+     use has one scale and one pointer. Not built: ranges (colored bands), labels and ticks, several pointers.
+167. **Found and fixed while checking**: a relative `Url` resolved against the page's path (pdf.js's own rule), so
+     `samples/x.pdf` 404'd on `/pdfviewer/examples`; it now resolves against `<base href>` as a link does.

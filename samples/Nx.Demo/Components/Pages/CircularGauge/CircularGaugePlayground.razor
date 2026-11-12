@@ -1,0 +1,77 @@
+@page "/circulargauge/playground"
+
+<DocHeader Slug="circulargauge" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner">
+                <NxCircularGauge Id="playground-gauge" Value="pgValue" Min="pgMin" Max="pgMax" Color="@OrNull(pgColor)" Size="@pgSize"
+                                 Transitions="pgTransitions" AriaLabel="@OrNull(pgAriaLabel)" CenterTemplate="@(pgCenter ? Center : null)" />
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Value</div>
+            <label class="demo-control"><span>Value</span><input type="range" id="pg-value" min="@pgMin" max="@pgMax" @bind="pgValue" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>Min</span><input type="number" id="pg-min" @bind="pgMin" /></label>
+            <label class="demo-control"><span>Max</span><input type="number" id="pg-max" @bind="pgMax" /></label>
+
+            <div class="demo-controls-title">Look</div>
+            <label class="demo-control">
+                <span>Size</span>
+                <select id="pg-size" @bind="pgSize">
+                    <option value="120px">120px</option>
+                    <option value="200px">200px</option>
+                    <option value="280px">280px</option>
+                </select>
+            </label>
+            <label class="demo-control">
+                <span>Color</span>
+                <select id="pg-color" @bind="pgColor">
+                    <option value="">Default (accent)</option>
+                    <option value="var(--nx-success)">Success</option>
+                    <option value="var(--nx-warning)">Warning</option>
+                    <option value="var(--nx-danger)">Danger</option>
+                </select>
+            </label>
+            <label class="demo-control"><span>CenterTemplate</span><input type="checkbox" id="pg-center" @bind="pgCenter" /></label>
+            <label class="demo-control"><span>Transitions</span><input type="checkbox" id="pg-transitions" @bind="pgTransitions" /></label>
+            <label class="demo-control"><span>AriaLabel</span><input type="text" id="pg-arialabel" @bind="pgAriaLabel" @bind:event="oninput" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="circulargauge" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+    static readonly RenderFragment<double> Center = value => @<span class="demo-gauge-value">@value.ToString("0.#")</span>;
+
+    double pgValue = 42, pgMin, pgMax = 100;
+    string pgSize = "200px", pgColor = "", pgAriaLabel = "Progress";
+    bool pgCenter = true, pgTransitions = true;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { $"Value=\"{pgValue}\"" };
+            if (pgMin != 0) attrs.Add($"Min=\"{pgMin}\"");
+            if (pgMax != 100) attrs.Add($"Max=\"{pgMax}\"");
+            if (pgSize != "200px") attrs.Add($"Size=\"{pgSize}\"");
+            if (OrNull(pgColor) is { } color) attrs.Add($"Color=\"{color}\"");
+            if (!pgTransitions) attrs.Add("Transitions=\"false\"");
+            if (OrNull(pgAriaLabel) is { } label) attrs.Add($"AriaLabel=\"{label}\"");
+            var open = "<NxCircularGauge " + string.Join(" ", attrs);
+            return pgCenter ? open + ">\n    <CenterTemplate>@context</CenterTemplate>\n</NxCircularGauge>" : open + " />";
+        }
+    }
+}

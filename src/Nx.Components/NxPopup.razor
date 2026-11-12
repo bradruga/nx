@@ -1,0 +1,9 @@
+@namespace Nx.Components
+
+@if (Visible)
+{
+    @* No style attribute: nx-anchor.js places and sizes the popup next to its anchor. *@
+    <div @ref="popup" @attributes="AdditionalAttributes" id="@PopupId" class="@CssClass" role="@Role" aria-label="@AriaLabel" tabindex="-1">
+        @ChildContent
+    </div>
+}

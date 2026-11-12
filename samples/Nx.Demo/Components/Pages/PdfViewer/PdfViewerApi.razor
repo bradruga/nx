@@ -1,0 +1,66 @@
+@page "/pdfviewer/api"
+
+<DocHeader Slug="pdfviewer" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Data</td><td>byte[]?</td><td>—</td><td>The PDF's bytes; wins over <code>Url</code>. A new array opens it again.</td></tr>
+                <tr><td>Url</td><td>string?</td><td>—</td><td>The PDF's address (same origin, or a server that allows it).</td></tr>
+                <tr><td>FileName</td><td>string?</td><td>document.pdf</td><td>The name a download is saved under; the pages' accessible name.</td></tr>
+                <tr><td>Zoom</td><td>NxPdfViewerZoom</td><td>Auto</td><td>Auto, PageWidth, PageFit or ActualSize when a document opens.</td></tr>
+                <tr><td>Page</td><td>int</td><td>1</td><td>The page in view; <code>@@bind-Page</code> follows it and jumps.</td></tr>
+                <tr><td>Tools</td><td>NxPdfViewerTools</td><td>All</td><td>Flags: Pager, Zoom, Search, Download, Print; None hides the toolbar.</td></tr>
+                <tr><td>Height / Width</td><td>string</td><td>600px / —</td><td>CSS sizes, toolbar included.</td></tr>
+                <tr><td>NoDataText</td><td>string?</td><td>No document</td><td>Shown while there is no document.</td></tr>
+                <tr><td>AriaLabel</td><td>string?</td><td>FileName</td><td>The pages' accessible name.</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>On the outer element; other attributes go there too.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events &amp; Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>OnLoad</td><td>EventCallback&lt;int&gt;</td><td>The document opened; its page count.</td></tr>
+                <tr><td>OnError</td><td>EventCallback&lt;string&gt;</td><td>It could not be opened; pdf.js's message.</td></tr>
+                <tr><td>PageChanged</td><td>EventCallback&lt;int&gt;</td><td>The page in view changed.</td></tr>
+                <tr><td>DownloadAsync()</td><td>Task</td><td>Saves the file under <code>FileName</code>.</td></tr>
+                <tr><td>PrintAsync()</td><td>Task</td><td>Opens the browser's print dialog for the file.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-pdf-bg</td><td>#e9e9ee (#0f0f12 dark)</td><td>Behind the pages.</td></tr>
+                <tr><td>--nx-pdf-page-shadow</td><td>0 1px 3px …</td><td>Each page's shadow.</td></tr>
+                <tr><td>--nx-pdf-match</td><td>amber, 45%</td><td>Find matches.</td></tr>
+                <tr><td>--nx-pdf-match-current</td><td>orange, 60%</td><td>The current match.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>pdf.js</h2>
+    <p class="doc-note">
+        pdf.js 5.4.624 (Mozilla, Apache-2.0; <code>LICENSE</code> beside it) is in <code>_content/Nx.Components/pdfjs</code>: the
+        library, its worker, the viewer components and stylesheet, and the font, color-map and image-decoder files some PDFs
+        need. It loads the first time a viewer opens.
+    </p>
+</div>
+
+<DocPager Slug="pdfviewer" Page="api" />

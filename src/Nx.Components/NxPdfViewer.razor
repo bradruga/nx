@@ -1,0 +1,78 @@
+@namespace Nx.Components
+
+@* pdf.js (vendored in wwwroot/pdfjs, Apache-2.0) draws the pages into .pdfViewer; Blazor renders it empty and draws the
+   toolbar around it. *@
+<div @ref="root" @attributes="AdditionalAttributes" id="@Id" class="@CssClass" style="@OuterStyle">
+    @if (Tools != NxPdfViewerTools.None)
+    {
+        <NxToolBar Class="nx-pdfviewer-toolbar" Overflow="NxToolBarOverflow.Wrap" AriaLabel="@(AriaLabel is null ? "Document" : $"{AriaLabel} tools")">
+            @if (Has(NxPdfViewerTools.Pager))
+            {
+                <NxToolBarButton Icon="@Icon(NxIcons.ChevronUp)" AriaLabel="Previous page" Title="Previous page" Variant="NxButtonVariant.Ghost"
+                                 Disabled="@(!Loaded || page <= 1)" OnClick="() => GoToPageAsync(page - 1)" data-nx-pdf-tool="previous" />
+                <NxToolBarButton Icon="@Icon(NxIcons.ChevronDown)" AriaLabel="Next page" Title="Next page" Variant="NxButtonVariant.Ghost"
+                                 Disabled="@(!Loaded || page >= pages)" OnClick="() => GoToPageAsync(page + 1)" data-nx-pdf-tool="next" />
+                <span class="nx-pdfviewer-pager">
+                    <NxNumericTextBox TValue="int" Value="page" ValueChanged="GoToPageAsync" Min="1" Max="@Math.Max(1, pages)" Disabled="!Loaded"
+                                      ShowSpinButtons="false" aria-label="Page" Class="nx-pdfviewer-page" />
+                    <span class="nx-pdfviewer-pages" id="@($"{BaseId}-pages")">of @pages</span>
+                </span>
+                <NxToolBarSeparator />
+            }
+            @if (Has(NxPdfViewerTools.Zoom))
+            {
+                <NxToolBarButton Icon="@Icon(NxIcons.ZoomOut)" AriaLabel="Zoom out" Title="Zoom out" Variant="NxButtonVariant.Ghost"
+                                 Disabled="!Loaded" OnClick="@(() => ZoomStepAsync(false))" data-nx-pdf-tool="zoomout" />
+                <NxToolBarButton Icon="@Icon(NxIcons.ZoomIn)" AriaLabel="Zoom in" Title="Zoom in" Variant="NxButtonVariant.Ghost"
+                                 Disabled="!Loaded" OnClick="@(() => ZoomStepAsync(true))" data-nx-pdf-tool="zoomin" />
+                <NxDropDown TItem="ZoomChoice" TValue="string" Data="ZoomChoices" ItemText="z => z.Text" ItemValue="z => z.Value"
+                            Value="@ZoomValue" ValueChanged="SetZoomAsync" Disabled="!Loaded" aria-label="Zoom" Class="nx-pdfviewer-zoom" />
+                <NxToolBarSeparator />
+            }
+            @if (Has(NxPdfViewerTools.Search))
+            {
+                <span class="nx-pdfviewer-search" @onkeydown="SearchKeyDownAsync">
+                    <NxTextBox Value="@query" ValueChanged="SearchAsync" Immediate="true" DebounceDelay="250" Placeholder="Find in document"
+                               Disabled="!Loaded" aria-label="Find in document" Class="nx-pdfviewer-find" Id="@($"{BaseId}-find")" />
+                    <span class="nx-pdfviewer-matches" aria-live="polite">@MatchText</span>
+                </span>
+                <NxToolBarButton Icon="@Icon(NxIcons.ArrowUp)" AriaLabel="Previous match" Title="Previous match" Variant="NxButtonVariant.Ghost"
+                                 Disabled="@(matchTotal == 0)" OnClick="() => FindAgainAsync(true)" data-nx-pdf-tool="findprevious" />
+                <NxToolBarButton Icon="@Icon(NxIcons.ArrowDown)" AriaLabel="Next match" Title="Next match" Variant="NxButtonVariant.Ghost"
+                                 Disabled="@(matchTotal == 0)" OnClick="() => FindAgainAsync(false)" data-nx-pdf-tool="findnext" />
+            }
+            @if (Has(NxPdfViewerTools.Download) || Has(NxPdfViewerTools.Print))
+            {
+                <NxToolBarSpacer />
+            }
+            @if (Has(NxPdfViewerTools.Download))
+            {
+                <NxToolBarButton Icon="@Icon(NxIcons.Download)" AriaLabel="Download" Title="Download" Variant="NxButtonVariant.Ghost"
+                                 Disabled="!Loaded" OnClick="DownloadAsync" data-nx-pdf-tool="download" />
+            }
+            @if (Has(NxPdfViewerTools.Print))
+            {
+                <NxToolBarButton Icon="@Icon(NxIcons.Print)" AriaLabel="Print" Title="Print" Variant="NxButtonVariant.Ghost"
+                                 Disabled="!Loaded" OnClick="PrintAsync" data-nx-pdf-tool="print" />
+            }
+        </NxToolBar>
+    }
+    <div class="nx-pdfviewer-body">
+        <div @ref="container" class="nx-pdfviewer-scroll" tabindex="0" role="document" aria-label="@(AriaLabel ?? FileName ?? "Document")"
+             aria-busy="@(status == Status.Loading ? "true" : null)">
+            <div class="pdfViewer"></div>
+        </div>
+        @if (status == Status.Loading)
+        {
+            <div class="nx-pdfviewer-message"><NxLoader /></div>
+        }
+        else if (status == Status.Failed)
+        {
+            <div class="nx-pdfviewer-message nx-pdfviewer-error" role="alert">@ErrorText</div>
+        }
+        else if (status == Status.Empty)
+        {
+            <div class="nx-pdfviewer-message">@NoDataText</div>
+        }
+    </div>
+</div>

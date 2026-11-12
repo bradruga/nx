@@ -1,0 +1,81 @@
+@page "/signature/playground"
+
+<DocHeader Slug="signature" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner">
+                <NxSignature Id="playground-signature" Value="@pgValue" ValueChanged="Changed" Width="@pgWidth" Height="@pgHeight" StrokeWidth="pgStroke"
+                             Color="@pgColor" BackgroundColor="@pgPaper" ExportScale="pgScale" Placeholder="@OrNull(pgPlaceholder)"
+                             Disabled="pgDisabled" ReadOnly="pgReadOnly" AriaLabel="@OrNull(pgAriaLabel)" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-counter" id="playground-changes">ValueChanged × @pgChanges</span>
+                <span class="demo-value" id="playground-value">@(pgValue is null ? "null" : $"{pgValue.Length:N0} characters")</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Pen &amp; paper</div>
+            <label class="demo-control"><span>StrokeWidth</span><input type="number" id="pg-stroke" min="1" max="12" step="0.5" @bind="pgStroke" /></label>
+            <label class="demo-control"><span>Color</span><input type="color" id="pg-color" @bind="pgColor" /></label>
+            <label class="demo-control"><span>BackgroundColor</span><input type="color" id="pg-paper" @bind="pgPaper" /></label>
+            <label class="demo-control"><span>ExportScale</span><input type="number" id="pg-scale" min="1" max="4" step="0.5" @bind="pgScale" /></label>
+
+            <div class="demo-controls-title">Size</div>
+            <label class="demo-control"><span>Width</span><input type="text" id="pg-width" @bind="pgWidth" @bind:event="onchange" /></label>
+            <label class="demo-control"><span>Height</span><input type="text" id="pg-height" @bind="pgHeight" @bind:event="onchange" /></label>
+
+            <div class="demo-controls-title">Behavior</div>
+            <label class="demo-control"><span>Placeholder</span><input type="text" id="pg-placeholder" @bind="pgPlaceholder" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+            <label class="demo-control"><span>ReadOnly</span><input type="checkbox" id="pg-readonly" @bind="pgReadOnly" /></label>
+            <label class="demo-control"><span>AriaLabel</span><input type="text" id="pg-arialabel" @bind="pgAriaLabel" @bind:event="oninput" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="signature" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+
+    string? pgValue;
+    string pgWidth = "300px", pgHeight = "150px", pgColor = "#000000", pgPaper = "#ffffff", pgPlaceholder = "Sign here", pgAriaLabel = "Signature";
+    double pgStroke = 2, pgScale = 2;
+    bool pgDisabled, pgReadOnly;
+    int pgChanges;
+
+    void Changed(string? value)
+    {
+        pgValue = value;
+        pgChanges++;
+    }
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "@bind-Value=\"signature\"" };
+            if (pgWidth != "300px") attrs.Add($"Width=\"{pgWidth}\"");
+            if (pgHeight != "150px") attrs.Add($"Height=\"{pgHeight}\"");
+            if (pgStroke != 2) attrs.Add($"StrokeWidth=\"{pgStroke}\"");
+            if (pgColor != "#000000") attrs.Add($"Color=\"{pgColor}\"");
+            if (pgPaper != "#ffffff") attrs.Add($"BackgroundColor=\"{pgPaper}\"");
+            if (pgScale != 2) attrs.Add($"ExportScale=\"{pgScale}\"");
+            if (pgPlaceholder != "Sign here") attrs.Add($"Placeholder=\"{pgPlaceholder}\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            if (pgReadOnly) attrs.Add("ReadOnly=\"true\"");
+            if (OrNull(pgAriaLabel) is { } label && label != "Signature") attrs.Add($"AriaLabel=\"{label}\"");
+            return "<NxSignature " + string.Join("\n             ", attrs) + " />";
+        }
+    }
+}

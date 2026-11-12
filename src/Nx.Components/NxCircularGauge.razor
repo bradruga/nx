@@ -1,0 +1,20 @@
+@namespace Nx.Components
+
+<div @attributes="AdditionalAttributes"
+     class="@CssClass"
+     style="@OuterStyle"
+     role="meter"
+     aria-label="@AriaLabel"
+     aria-valuemin="@Invariant(Min)"
+     aria-valuemax="@Invariant(Max)"
+     aria-valuenow="@Invariant(Clamped)">
+    <svg class="nx-gauge-ring" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+        <circle class="nx-gauge-track" cx="50" cy="50" r="44" pathLength="100" />
+        <circle class="nx-gauge-pointer" cx="50" cy="50" r="44" pathLength="100" stroke-dasharray="100" stroke-dashoffset="@Invariant(100 - Percent)"
+                style="@PointerStyle" />
+    </svg>
+    @if (CenterTemplate is not null)
+    {
+        <div class="nx-gauge-center">@CenterTemplate(Clamped)</div>
+    }
+</div>

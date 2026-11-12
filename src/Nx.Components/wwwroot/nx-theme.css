@@ -264,6 +264,28 @@
     --nx-chat-avatar-size:          32px;
     --nx-chat-bubble-radius:        14px;
     --nx-chat-bubble-width:         75%;
+
+    /* Signature (NxSignature): paper and its controls stay light in the dark theme, like the saved image */
+    --nx-signature-paper:           #ffffff;
+    --nx-signature-guide:           #9a9aa6;
+    --nx-signature-control:         #5f6b73;
+    --nx-signature-control-hover:   #1f1f23;
+    --nx-signature-control-hover-bg: rgba(0, 0, 0, 0.06);
+
+    /* Circular gauge (NxCircularGauge) */
+    --nx-gauge-pointer:             var(--nx-accent);
+    --nx-gauge-track:               #e6e6ea;
+    --nx-gauge-thickness:           10;
+    --nx-gauge-duration:            400ms;
+
+    /* Popup (NxPopup); its background is --nx-popup-bg above */
+    --nx-popup-border:              var(--nx-border);
+
+    /* PDF viewer (NxPdfViewer) */
+    --nx-pdf-bg:                    #e9e9ee;
+    --nx-pdf-page-shadow:           0 1px 3px rgba(0, 0, 0, 0.18);
+    --nx-pdf-match:                 rgba(255, 196, 0, 0.45);
+    --nx-pdf-match-current:         rgba(255, 120, 0, 0.6);
 }
 
 /* Dark theme: add class="nx-theme-dark" to <html> or any container. */
@@ -329,6 +351,9 @@
     --nx-editor-code-bg:            #212126;
     --nx-chat-other-bg:             #26262c;
     --nx-chat-avatar-bg:            #34343d;
+    --nx-gauge-track:               #2c2c33;
+    --nx-pdf-bg:                    #0f0f12;
+    --nx-pdf-page-shadow:           0 1px 4px rgba(0, 0, 0, 0.7);
 
     --nx-shadow-popup:       0 8px 24px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
     --nx-window-backdrop:    rgba(0, 0, 0, 0.6);

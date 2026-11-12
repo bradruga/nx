@@ -1,0 +1,52 @@
+@page "/pdfviewer"
+@page "/pdfviewer/overview"
+@inject IWebHostEnvironment Env
+
+<DocHeader Slug="pdfviewer" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxPdfViewer</code> shows a PDF from its bytes (<code>Data</code>) or an address (<code>Url</code>). pdf.js draws
+        the pages, so text can be selected and found, links work, and pages stay sharp at any zoom. The toolbar pages through
+        the document, zooms, finds text with every match highlighted, downloads and prints. pdf.js ships inside the library;
+        nothing loads from a CDN.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column">
+        <NxPdfViewer Id="overview-pdf" Data="pdf" FileName="Pour report P-14.pdf" Height="560px" Style="width:100%" />
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Tab</td><td>The toolbar (one stop for its buttons; page, zoom and find fields are their own), then the pages.</td></tr>
+                <tr><td>Arrows / Page Up / Page Down / Home / End</td><td>On the pages: scroll the document.</td></tr>
+                <tr><td>Enter / Shift+Enter in Find</td><td>Next / previous match.</td></tr>
+                <tr><td>Page field</td><td>Type a page number and press Enter or leave the field.</td></tr>
+                <tr><td>Roles</td><td>A <code>toolbar</code>; the pages are a <code>document</code> named by <code>AriaLabel</code> or <code>FileName</code>; the match count is announced.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="pdfviewer" Page="overview" />
+
+@code {
+    byte[]? pdf;
+
+    protected override void OnInitialized() => pdf = DemoPdf.Read(Env);
+
+    const string basicCode =
+        """
+        <NxPdfViewer Data="report.Bytes" FileName="Pour report P-14.pdf" Height="560px" />
+        """;
+}

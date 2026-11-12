@@ -1,0 +1,105 @@
+@page "/pdfviewer/playground"
+@inject IWebHostEnvironment Env
+
+<DocHeader Slug="pdfviewer" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-full demo-preview-inner-stretch">
+                <NxPdfViewer Id="playground-pdf" Data="@(pgSource == "data" ? pdf : null)" Url="@(pgSource == "url" ? DemoPdf.Url : null)"
+                             FileName="@OrNull(pgFileName)" Zoom="pgZoom" Tools="Tools" Height="@pgHeight" NoDataText="@OrNull(pgNoData)"
+                             AriaLabel="@OrNull(pgAriaLabel)" @bind-Page="pgPage" OnLoad="n => pgPages = n" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-page">Page @pgPage of @pgPages</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Document</div>
+            <label class="demo-control">
+                <span>Source</span>
+                <select id="pg-source" @bind="pgSource">
+                    <option value="data">Data (bytes)</option>
+                    <option value="url">Url</option>
+                    <option value="none">None</option>
+                </select>
+            </label>
+            <label class="demo-control"><span>FileName</span><input type="text" id="pg-filename" @bind="pgFileName" @bind:event="oninput" /></label>
+            <label class="demo-control">
+                <span>Zoom</span>
+                <select id="pg-zoom" @bind="pgZoom">
+                    @foreach (var zoom in Enum.GetValues<NxPdfViewerZoom>())
+                    {
+                        <option value="@zoom">@zoom</option>
+                    }
+                </select>
+            </label>
+
+            <div class="demo-controls-title">Tools</div>
+            <label class="demo-control"><span>Pager</span><input type="checkbox" id="pg-pager" @bind="pgPager" /></label>
+            <label class="demo-control"><span>Zoom</span><input type="checkbox" id="pg-zoomtools" @bind="pgZoomTools" /></label>
+            <label class="demo-control"><span>Search</span><input type="checkbox" id="pg-search" @bind="pgSearch" /></label>
+            <label class="demo-control"><span>Download</span><input type="checkbox" id="pg-download" @bind="pgDownload" /></label>
+            <label class="demo-control"><span>Print</span><input type="checkbox" id="pg-print" @bind="pgPrint" /></label>
+
+            <div class="demo-controls-title">Look</div>
+            <label class="demo-control">
+                <span>Height</span>
+                <select id="pg-height" @bind="pgHeight">
+                    <option value="400px">400px</option>
+                    <option value="600px">600px</option>
+                    <option value="800px">800px</option>
+                </select>
+            </label>
+            <label class="demo-control"><span>NoDataText</span><input type="text" id="pg-nodata" @bind="pgNoData" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>AriaLabel</span><input type="text" id="pg-arialabel" @bind="pgAriaLabel" @bind:event="oninput" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="pdfviewer" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+
+    byte[]? pdf;
+    string pgSource = "data", pgFileName = "Pour report P-14.pdf", pgHeight = "600px", pgNoData = "No document", pgAriaLabel = "";
+    NxPdfViewerZoom pgZoom;
+    bool pgPager = true, pgZoomTools = true, pgSearch = true, pgDownload = true, pgPrint = true;
+    int pgPage = 1, pgPages;
+
+    protected override void OnInitialized() => pdf = DemoPdf.Read(Env);
+
+    NxPdfViewerTools Tools =>
+        (pgPager ? NxPdfViewerTools.Pager : 0) | (pgZoomTools ? NxPdfViewerTools.Zoom : 0) | (pgSearch ? NxPdfViewerTools.Search : 0)
+        | (pgDownload ? NxPdfViewerTools.Download : 0) | (pgPrint ? NxPdfViewerTools.Print : 0);
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string>();
+            if (pgSource == "data") attrs.Add("Data=\"bytes\"");
+            if (pgSource == "url") attrs.Add($"Url=\"{DemoPdf.Url}\"");
+            if (OrNull(pgFileName) is { } name) attrs.Add($"FileName=\"{name}\"");
+            if (pgZoom != NxPdfViewerZoom.Auto) attrs.Add($"Zoom=\"NxPdfViewerZoom.{pgZoom}\"");
+            if (Tools != NxPdfViewerTools.All)
+                attrs.Add(Tools == NxPdfViewerTools.None ? "Tools=\"NxPdfViewerTools.None\""
+                    : $"Tools=\"{string.Join(" | ", Enum.GetValues<NxPdfViewerTools>().Where(t => t is not (NxPdfViewerTools.None or NxPdfViewerTools.All) && Tools.HasFlag(t)).Select(t => $"NxPdfViewerTools.{t}"))}\"");
+            if (pgHeight != "600px") attrs.Add($"Height=\"{pgHeight}\"");
+            if (OrNull(pgNoData) is { } noData && noData != "No document") attrs.Add($"NoDataText=\"{noData}\"");
+            if (OrNull(pgAriaLabel) is { } label) attrs.Add($"AriaLabel=\"{label}\"");
+            attrs.Add("@bind-Page=\"page\"");
+            return "<NxPdfViewer " + string.Join("\n             ", attrs) + " />";
+        }
+    }
+}

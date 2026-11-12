@@ -197,6 +197,10 @@
         "slider" =>@<NxSlider TValue="int" Min="0" Max="10" LargeStep="5" @bind-Value="homeSlider" aria-label="Crew size" Style="width:240px" />,
         "chiplist" => @<NxChipList Data="HomeChips" AriaLabel="Mixes" />,
         "editor" => @<NxEditor Value="@HomeEditor" Tools="HomeEditorTools" Height="112px" AriaLabel="Note" Style="width:260px" />,
+        "signature" => @<div class="home-signature" aria-hidden="true"><svg viewBox="0 0 200 60"><path d="M10 42 C30 6 46 58 66 26 S98 50 116 30 S150 40 170 22" /></svg><span>Sign here</span></div>,
+        "popup" => @<div class="home-popup" aria-hidden="true"><span class="home-popup-anchor">Filter ▾</span><span class="home-popup-box">Sort A to Z<br />5000 psi<br />SCC</span></div>,
+        "pdfviewer" => @<div class="home-pdf" aria-hidden="true"><span><b></b><i></i><i></i><i></i></span><span><b></b><i></i><i></i></span></div>,
+        "circulargauge" => @<NxCircularGauge Value="64" Size="110px" AriaLabel="Reconciled"><CenterTemplate>64%</CenterTemplate></NxCircularGauge>,
         "chat" => @<div class="home-chat" aria-hidden="true"><span>Trucks at 6:30?</span><span class="home-chat-own">Confirmed, three loads.</span></div>,
         "dateinput" => @<NxDateInput TValue="DateOnly?" Label="Ship date" @bind-Value="pourDate" Style="width:240px" />,
         "toolbar" => @<NxToolBar AriaLabel="Sheet" Overflow="NxToolBarOverflow.Wrap" Style="width:260px">

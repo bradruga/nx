@@ -1,0 +1,66 @@
+@page "/signature/examples"
+@using System.ComponentModel.DataAnnotations
+
+<DocHeader Slug="signature" Page="examples" />
+
+<div class="doc-section">
+    <h2>Safety Form</h2>
+    <p class="doc-note">As ERP's safety forms: a required signature in an <code>EditForm</code>, 300 × 150 with a 3 px pen.</p>
+    <div class="demo-stage demo-stage-column">
+        <EditForm id="signature-form" Model="form" OnValidSubmit="Submit" FormName="signature-form">
+            <DataAnnotationsValidator />
+            <div class="demo-form-field">
+                <label class="demo-form-label">Signature</label>
+                <NxSignature Id="form-signature" @bind-Value="form.Signature" StrokeWidth="3" Width="300px" Height="150px" AriaLabel="Signature" />
+                <ValidationMessage For="() => form.Signature" />
+            </div>
+            <div class="demo-row" style="margin-top:16px">
+                <NxButton id="signature-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Submit form</NxButton>
+                <span class="demo-value" id="signature-result">@result</span>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Pen, Paper &amp; Size</h2>
+    <p class="doc-note"><code>Color</code>, <code>BackgroundColor</code> and <code>StrokeWidth</code> are saved in the image; the pad can be any size.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxSignature Id="blue-signature" @bind-Value="blue" Color="#1d4ed8" BackgroundColor="#fdfbe8" StrokeWidth="2" Width="420px" Height="120px"
+                     Placeholder="Initial here" AriaLabel="Initials" Style="max-width:100%" />
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Read-Only &amp; Disabled</h2>
+    <p class="doc-note">A signature set from code is drawn on the pad; <code>ReadOnly</code> shows it without letting it change.</p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <NxButton id="load-signature" Size="NxButtonSize.Small" OnClick="() => stored = Saved">Load a saved signature</NxButton>
+            <NxButton id="clear-stored" Size="NxButtonSize.Small" OnClick="() => stored = null">Clear</NxButton>
+        </div>
+        <NxSignature Id="readonly-signature" Value="@stored" ReadOnly="true" AriaLabel="Approved by" />
+        <NxSignature Id="disabled-signature" Disabled="true" AriaLabel="Locked signature" />
+    </div>
+</div>
+
+<DocPager Slug="signature" Page="examples" />
+
+@code {
+    // A tiny scribble, as a stored signature would come back from the database.
+    static readonly string Saved = "data:image/svg+xml;base64," + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(
+        "<svg xmlns='http://www.w3.org/2000/svg' width='300' height='150'><rect width='300' height='150' fill='#fff'/>"
+        + "<path d='M30 100 C60 20 90 140 120 60 S180 120 210 70 S260 90 280 60' stroke='#000' stroke-width='3' fill='none' stroke-linecap='round'/></svg>"));
+
+    readonly SafetyForm form = new();
+    string result = "Not submitted";
+    string? blue, stored;
+
+    void Submit() => result = "Submitted";
+
+    class SafetyForm
+    {
+        [Required(ErrorMessage = "Sign the form.")]
+        public string? Signature { get; set; }
+    }
+}

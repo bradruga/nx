@@ -1402,3 +1402,29 @@ code {
 /* Chat demos: the assistant's follow-up choices */
 .demo-chat-choices { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .demo-chat-thinking { color: var(--nx-chat-meta); font-style: italic; }
+
+.home-signature { position: relative; width: 220px; height: 84px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: #fff; }
+.home-signature svg { position: absolute; inset: 6px 10px 18px; width: calc(100% - 20px); height: calc(100% - 24px); fill: none; stroke: #1f1f23; stroke-width: 2.5; stroke-linecap: round; }
+.home-signature span { position: absolute; left: 12px; right: 12px; bottom: 10px; border-top: 1px dashed #9a9aa6; font-size: 10px; color: #9a9aa6; padding-top: 2px; }
+.home-popup { position: relative; width: 200px; height: 104px; font-size: 12px; }
+.home-popup-anchor { position: absolute; right: 0; top: 0; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); }
+.home-popup-box { position: absolute; right: 0; top: 30px; width: 130px; padding: 8px 10px; line-height: 1.6; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12); }
+.home-pdf { display: flex; gap: 10px; padding: 10px 14px; border-radius: var(--radius-sm); background: var(--nx-pdf-bg); }
+.home-pdf span { display: flex; flex-direction: column; gap: 5px; width: 64px; height: 84px; padding: 8px; box-sizing: border-box; background: #fff; box-shadow: var(--nx-pdf-page-shadow); }
+.home-pdf b { height: 7px; width: 70%; background: #9a9aa6; }
+.home-pdf i { height: 4px; background: #d4d4da; }
+
+/* Popup demos */
+.demo-popup-body { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; }
+.demo-popup-header { display: inline-flex; align-items: center; gap: 24px; padding: 6px 6px 6px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); font-weight: 600; }
+.demo-popup-header-button { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: none; border-radius: var(--radius-sm); background: transparent; color: inherit; cursor: pointer; }
+.demo-popup-header-button:hover { background: var(--nx-surface-hover); }
+.demo-popup-target-wrap { display: flex; justify-content: center; padding: 72px 0; }
+.demo-popup-target { padding: 10px 18px; border: 1px dashed var(--accent); border-radius: var(--radius-sm); color: var(--accent); font-weight: 600; }
+
+/* Signature and gauge demos */
+.demo-form-field { display: flex; flex-direction: column; gap: 6px; }
+.demo-form-label { font-size: 13px; font-weight: 500; }
+.demo-signature-image { width: 150px; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.demo-gauge-value { font-size: 24px; font-weight: 600; }
+.demo-gauge-label { font-size: 12px; color: var(--fg-secondary); }
