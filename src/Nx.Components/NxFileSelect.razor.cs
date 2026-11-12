@@ -18,6 +18,7 @@ public partial class NxFileSelect
     private readonly string generatedId = $"nx-fileselect-{Guid.NewGuid():N}"[..22];
     private readonly List<NxSelectedFile> files = [];
     private IReadOnlyList<string> extensions = [];
+    private int pickCount;
 
     /// <summary>Lets several files be picked at once, and keeps adding to the list. Default: <c>true</c>.</summary>
     [Parameter] public bool Multiple { get; set; } = true;
@@ -81,9 +82,11 @@ public partial class NxFileSelect
             .ToList();
         if (!Multiple)
             picked = picked.Take(1).ToList();
+        var pick = ++pickCount;
         var args = new NxFileSelectEventArgs(picked);
         await OnSelect.InvokeAsync(args);
-        if (args.IsCancelled)
+        // A newer pick finished first while OnSelect awaited: it replaced this one.
+        if (args.IsCancelled || (!Multiple && pick != pickCount))
             return;
         if (!Multiple)
             files.Clear();

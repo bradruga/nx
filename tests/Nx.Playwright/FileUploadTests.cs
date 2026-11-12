@@ -67,6 +67,7 @@ public class FileUploadTests : PageTest
 
         var input = Page.Locator("#single-file");
         await input.SetInputFilesAsync(File("a.csv", 10));
+        await Expect(Rows("single-file")).ToContainTextAsync("a.csv");
         await input.SetInputFilesAsync(new FilePayload { Name = "b.csv", MimeType = "text/csv", Buffer = Encoding.UTF8.GetBytes("pour,yards\nP-1,14") });
 
         await Expect(Rows("single-file")).ToHaveCountAsync(1);

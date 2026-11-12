@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.Playwright;
 using Microsoft.Playwright.NUnit;
 using NUnit.Framework;
@@ -102,7 +103,12 @@ public class DateRangePickerTests : PageTest
         await Toggle("range-limits-start").ScrollIntoViewIfNeededAsync();
         await Toggle("range-limits-start").ClickAsync();
 
-        await Expect(Popup.Locator("td[data-date='2026-10-04']")).ToHaveAttributeAsync("aria-disabled", "true");
+        // The popup opens on today's month, clamped to Oct 1 – Nov 30 2026: test a Sunday inside that range.
+        await Expect(Popup.Locator("td[data-date]").First).ToBeVisibleAsync();
+        var dates = await Popup.Locator("td[data-date]").EvaluateAllAsync<string[]>("tds => tds.map(td => td.dataset.date)");
+        var sunday = dates.Select(d => DateOnly.ParseExact(d, "yyyy-MM-dd", CultureInfo.InvariantCulture))
+            .First(d => d.DayOfWeek == DayOfWeek.Sunday && d >= new DateOnly(2026, 10, 1) && d <= new DateOnly(2026, 11, 30));
+        await Expect(Popup.Locator($"td[data-date='{sunday:yyyy-MM-dd}']")).ToHaveAttributeAsync("aria-disabled", "true");
         await Expect(Popup.Locator("th.nx-calendar-week").First).ToBeVisibleAsync();
     }
 

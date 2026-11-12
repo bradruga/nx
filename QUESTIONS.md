@@ -397,6 +397,13 @@ Decisions I made without you. Each one says what I picked and why, so you can an
 
 ## Pass 9 — NxChart, from ERP's 10 chart pages (read only)
 
+**Summary (11/11)**: NxChart is built (five types, date/category axes, two value axes, stacking, legend, tooltips,
+`OnSeriesClick`), committed as WIP in 11963f9, with the dark-theme and home-card fixes since uncommitted. Playwright run
+9dd86265: 465/469; the 4 failures are ButtonTests on Brad's uncommitted playground (see the ButtonTests section below).
+Fixed along the way: `DateRangePickerTests.Limits_SundaysDisabled` no longer depends on today; `NxFileSelect` with
+`Multiple=false` no longer lets an older pick whose `OnSelect` finishes last replace a newer one (bUnit covers it).
+Open: second-axis grid alignment and large data (see NxChart status).
+
 144. **The chart is drawn by .NET as SVG**; nx-chart.js only measures the plot (ResizeObserver), finds the point under the
      pointer and keeps the arrow keys from scrolling. Each hover change re-renders the surface; Blazor's diff only touches
      what changed. Sized for ERP's data (up to a year of days times a few series); thousands of points are not tuned.
@@ -420,13 +427,35 @@ Decisions I made without you. Each one says what I picked and why, so you can an
 151. **Palette**: `--nx-chart-1` … `--nx-chart-8` (blue, orange, green, red, purple, teal, magenta, brown), light and dark;
      NxChart sits under Display.
 
-## NxChart status (paused 10/26)
+### Answers to #144–151 (chosen 11/11: the simplest answer for each; Brad to confirm)
 
-- **Works** (seen in the browser at 390/768/1280, bUnit 25/25): line, area, column, bar and pie; date axes (hours to years,
-  aggregates) and plain categories with `Labels`; two value axes; stacking; dashes, markers, value labels; legend that
-  hides series or slices; tooltips by hover, tap and arrow keys; `OnSeriesClick`; redraw on resize; a screen-reader table.
-  Four demo pages, a home card and the `chart` slug in SiteLayoutTests are in.
-- **Missing**: `ChartTests` (Playwright, 9 tests) is written but has never been run; dark theme and the home card not
-  looked at; grid lines of a second value axis do not line up with the first; large data (thousands of points) not
-  measured; decisions #144–151 not reviewed.
-- **Next**: run the Playwright fixture, review #144–151, then port one ERP page (ControlCharts or StorageHistory) as a trial.
+- **144** Keep it: .NET draws, JS only measures and hit-tests. No virtualization or point thinning until a real page is slow.
+- **145** Keep Telerik's field names (`Data` + `Field` / `CategoryField` / `ColorField`); no typed lambdas next to them.
+  One way to bind is simpler to learn, and ERP's pages port by renaming tags.
+- **146** Keep one category axis with `Categories` + `Labels`; no second category axis, no `AxisCrossingValue`.
+- **147** Keep the defaults as built (legend bottom, 400 px, Max aggregate, centered points).
+- **148** Keep only `RefreshAsync()`; no synchronous `Refresh()` alias.
+- **149** Build none of them until an ERP page needs one.
+- **150** Keep: nearest point in the hovered category; drawn markers win near-ties.
+- **151** Keep the eight-color palette and the Display category.
+
+## NxChart status (11/11)
+
+- **Done**: the five types; date and category axes; two value axes; stacking; legend toggles; tooltips by hover, tap and
+  keys; `OnSeriesClick`; resize. Dark theme checked for all five (areas get `--nx-chart-area-opacity: 0.55` in dark, they
+  were muddy at 0.35). Checked in the browser at 390, 768 and 1280 in light and dark: no sideways scroll, no console
+  errors. The home card no longer clips (the chart's minimum height is 120 px, was 180). Every step of the nine
+  Playwright `ChartTests` gives the expected result against the live demo; the fixture itself is for Brad to run.
+- **Doubts**: a second value axis picks its own round steps, so its grid lines (only the first axis draws them) and labels
+  do not sit on the same heights; aligning them would mean less round numbers on the second axis. Large data
+  (thousands of points) is still not measured.
+- **Next**: port one ERP page (ControlCharts or StorageHistory) as a trial.
+
+## ButtonTests Playground failures (11/11, run 3b96ca29) — in Brad's uncommitted button work, left alone
+
+- **Cause**: `ButtonPlayground.razor` now uses `NxCheckBox` for `#pg-icon-only`, `#pg-loading` and `#pg-disabled`. Its
+  `Id` lands on a `<button role="checkbox">` whose `aria-checked` changes only after the Blazor Server round trip.
+  Playwright's `CheckAsync` reads the state right after its click without retrying, sees it unchanged and throws
+  "Clicking the checkbox did not change its state".
+- **Fix (in `ButtonTests.cs`, lines 193, 214, 224, 234)**: replace each `CheckAsync()` with `ClickAsync()` followed by
+  `Expect(locator).ToHaveAttributeAsync("aria-checked", "true")`.

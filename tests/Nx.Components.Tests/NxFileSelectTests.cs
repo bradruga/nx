@@ -74,6 +74,38 @@ public class NxFileSelectTests : BunitContext
     }
 
     [Test]
+    public void Single_OlderPickFinishingLast_DoesNotReplaceNewer()
+    {
+        var pending = new Dictionary<string, TaskCompletionSource>
+        {
+            ["a.pdf"] = new(TaskCreationOptions.RunContinuationsAsynchronously),
+            ["b.pdf"] = new(TaskCreationOptions.RunContinuationsAsynchronously),
+        };
+        var started = new List<string>();
+        var cut = Render<NxFileSelect>(p => p
+            .Add(x => x.Multiple, false)
+            .Add(x => x.OnSelect, e =>
+            {
+                started.Add(e.Files[0].Name);
+                return pending[e.Files[0].Name].Task;
+            }));
+        var input = cut.FindComponent<InputFile>();
+
+        // UploadFiles blocks until OnSelect completes, so each pick runs off the test thread.
+        var pickA = Task.Run(() => input.UploadFiles(File("a.pdf")));
+        cut.WaitForState(() => started.Contains("a.pdf"));
+        var pickB = Task.Run(() => input.UploadFiles(File("b.pdf")));
+        cut.WaitForState(() => started.Contains("b.pdf"));
+
+        pending["b.pdf"].SetResult();
+        Assert.That(pickB.Wait(TimeSpan.FromSeconds(5)), Is.True);
+        pending["a.pdf"].SetResult();
+        Assert.That(pickA.Wait(TimeSpan.FromSeconds(5)), Is.True);
+
+        Assert.That(cut.Instance.Files.Select(f => f.Name), Is.EqualTo(new[] { "b.pdf" }));
+    }
+
+    [Test]
     public async Task Remove_RaisesOnRemove_ReadsTheStream()
     {
         NxFileSelectEventArgs? removed = null;
