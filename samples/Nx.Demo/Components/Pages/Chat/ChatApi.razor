@@ -1,0 +1,68 @@
+@page "/chat/api"
+
+<DocHeader Slug="chat" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Data</td><td>IEnumerable&lt;TItem&gt;?</td><td>—</td><td>The messages, oldest first.</td></tr>
+                <tr><td>AuthorId</td><td>string?</td><td>—</td><td>The user: messages with this author id are on the right.</td></tr>
+                <tr><td>IdField</td><td>string?</td><td>—</td><td>A message's unique id, to keep its markup through updates.</td></tr>
+                <tr><td>AuthorIdField</td><td>string?</td><td>—</td><td>A message's author id.</td></tr>
+                <tr><td>AuthorNameField</td><td>string?</td><td>—</td><td>The author's name, over their messages; also their initials.</td></tr>
+                <tr><td>AuthorImageUrlField</td><td>string?</td><td>—</td><td>The author's picture; initials or an icon without one.</td></tr>
+                <tr><td>TextField</td><td>string?</td><td>—</td><td>The text, shown as plain text with its line breaks.</td></tr>
+                <tr><td>TimestampField</td><td>string?</td><td>—</td><td>When it was sent (<code>DateTime</code> / <code>DateTimeOffset</code>): times and day lines.</td></tr>
+                <tr><td>IsTypingField</td><td>string?</td><td>—</td><td>Marks a "typing" message, shown as moving dots.</td></tr>
+                <tr><td>MessageContentTemplate</td><td>RenderFragment&lt;NxChatMessageContext&lt;TItem&gt;&gt;?</td><td>the text</td><td>A bubble's content: <code>Message</code>, <code>IsOwn</code>, <code>IsTyping</code>.</td></tr>
+                <tr><td>MessageWidthMode</td><td>NxChatMessageWidthMode</td><td>Standard</td><td>Standard (¾ of the width) or Full.</td></tr>
+                <tr><td>Height / Width</td><td>string?</td><td>500px / —</td><td>CSS sizes; <code>100%</code> fills a container with a height.</td></tr>
+                <tr><td>Placeholder</td><td>string?</td><td>Type a message…</td><td>The message box's placeholder.</td></tr>
+                <tr><td>NoDataText</td><td>string?</td><td>No messages yet</td><td>Shown while there are no messages.</td></tr>
+                <tr><td>Culture</td><td>CultureInfo?</td><td>current</td><td>Times and dates.</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>false</td><td>No sending; the messages stay readable.</td></tr>
+                <tr><td>AriaLabel</td><td>string?</td><td>Messages</td><td>The message list's accessible name.</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>On the outer element; the box is <code>{Id}-input</code>. Other attributes go there too.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events &amp; Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>OnSendMessage</td><td>EventCallback&lt;NxChatSendMessageEventArgs&gt;</td><td>The user sent <code>Message</code> (trimmed, never empty). Add it to <code>Data</code>.</td></tr>
+                <tr><td>Refresh()</td><td>void</td><td>Redraws after <code>Data</code> changed in place outside a render.</td></tr>
+                <tr><td>ScrollToBottomAsync()</td><td>Task</td><td>Back to the newest message, following new ones again.</td></tr>
+                <tr><td>FocusAsync()</td><td>ValueTask</td><td>Focuses the message box.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-chat-bg</td><td>--nx-surface</td><td>The chat's background.</td></tr>
+                <tr><td>--nx-chat-own-bg / --nx-chat-own-fg</td><td>--nx-accent / --nx-accent-fg</td><td>The user's bubbles.</td></tr>
+                <tr><td>--nx-chat-other-bg / --nx-chat-other-fg</td><td>#f0f0f3 (#26262c dark) / --nx-fg</td><td>Everyone else's bubbles.</td></tr>
+                <tr><td>--nx-chat-meta</td><td>--nx-fg-muted</td><td>Names, times, day lines.</td></tr>
+                <tr><td>--nx-chat-avatar-bg</td><td>#d9dce3 (#34343d dark)</td><td>Avatars without a picture.</td></tr>
+                <tr><td>--nx-chat-avatar-size</td><td>32px</td><td>Avatar size.</td></tr>
+                <tr><td>--nx-chat-bubble-radius</td><td>14px</td><td>Bubble corners.</td></tr>
+                <tr><td>--nx-chat-bubble-width</td><td>75%</td><td>The widest a Standard bubble grows.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="chat" Page="api" />

@@ -1,0 +1,130 @@
+@page "/chat/examples"
+@implements IDisposable
+
+<DocHeader Slug="chat" Page="examples" />
+
+<div class="doc-section">
+    <h2>Assistant</h2>
+    <p class="doc-note">
+        As ERP's meeting assistant does: full-width answers rendered from HTML by <code>MessageContentTemplate</code>, a typing
+        message while the answer is on its way (<code>IsTypingField</code>), and follow-up choices under the latest answer.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxChat Id="assistant-chat" Data="assistant" AuthorId="@DemoChat.Me" IdField="@nameof(ChatMessage.Id)"
+                AuthorIdField="@nameof(ChatMessage.AuthorId)" AuthorNameField="@nameof(ChatMessage.AuthorName)"
+                TextField="@nameof(ChatMessage.Text)" TimestampField="@nameof(ChatMessage.Sent)" IsTypingField="@nameof(ChatMessage.IsTyping)"
+                MessageWidthMode="NxChatMessageWidthMode.Full" OnSendMessage="e => AskAsync(e.Message)" Height="440px"
+                Placeholder="Ask about pours or crews…" AriaLabel="Assistant" Style="width:100%; max-width:640px">
+            <MessageContentTemplate>
+                @if (context.IsTyping)
+                {
+                    <span class="demo-chat-thinking">Thinking…</span>
+                }
+                else if (context.IsOwn)
+                {
+                    <span style="white-space:pre-wrap">@context.Message.Text</span>
+                }
+                else
+                {
+                    @((MarkupString)(context.Message.Text ?? ""))
+                    @if (context.Message.Choices.Count > 0 && context.Message == assistant.LastOrDefault())
+                    {
+                        <div class="demo-chat-choices">
+                            @foreach (var choice in context.Message.Choices)
+                            {
+                                <NxButton Size="NxButtonSize.Small" OnClick="() => AskAsync(choice)">@choice</NxButton>
+                            }
+                        </div>
+                    }
+                }
+            </MessageContentTemplate>
+        </NxChat>
+    </div>
+    <pre class="doc-code">@assistantCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Someone Is Typing</h2>
+    <p class="doc-note">Without a template, a typing message shows moving dots. Here Sam answers a moment after you send.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxChat Id="typing-chat" Data="typing" AuthorId="@DemoChat.Me" IdField="@nameof(ChatMessage.Id)"
+                AuthorIdField="@nameof(ChatMessage.AuthorId)" AuthorNameField="@nameof(ChatMessage.AuthorName)"
+                TextField="@nameof(ChatMessage.Text)" TimestampField="@nameof(ChatMessage.Sent)" IsTypingField="@nameof(ChatMessage.IsTyping)"
+                OnSendMessage="e => ReplyAsync(e.Message)" Height="320px" AriaLabel="Chat with Sam" Style="width:100%; max-width:560px" />
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>History Only</h2>
+    <p class="doc-note"><code>Disabled</code> turns the box off and keeps the messages readable — a closed ticket's thread, say.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxChat Id="disabled-chat" Data="history" AuthorId="@DemoChat.Me" AuthorIdField="@nameof(ChatMessage.AuthorId)"
+                AuthorNameField="@nameof(ChatMessage.AuthorName)" TextField="@nameof(ChatMessage.Text)"
+                TimestampField="@nameof(ChatMessage.Sent)" Disabled="true" Placeholder="This thread is closed" Height="300px"
+                AriaLabel="Closed thread" Style="width:100%; max-width:560px" />
+    </div>
+</div>
+
+<DocPager Slug="chat" Page="examples" />
+
+@code {
+    readonly CancellationTokenSource stop = new();
+    List<ChatMessage> assistant =
+    [
+        new() { AuthorId = "bot", AuthorName = "Assistant", Text = "Hi! Ask me about this week's pours.", Choices = ["When is the next pour?", "Who is on the crew?"] }
+    ];
+    List<ChatMessage> typing = [new() { AuthorId = "sam", AuthorName = "Sam Lee", Text = "Morning. Anything for the plant today?" }];
+    readonly List<ChatMessage> history = DemoChat.Crew();
+
+    async Task AskAsync(string question)
+    {
+        assistant.Add(new ChatMessage { AuthorId = DemoChat.Me, Text = question });
+        var answer = new ChatMessage { AuthorId = "bot", AuthorName = "Assistant", IsTyping = true };
+        assistant.Add(answer);
+        StateHasChanged();
+        if (!await Pause(900)) return;
+        var (text, choices) = DemoChat.Answer(question);
+        assistant.Remove(answer);
+        assistant.Add(new ChatMessage { AuthorId = "bot", AuthorName = "Assistant", Text = text, Choices = choices });
+    }
+
+    async Task ReplyAsync(string message)
+    {
+        typing.Add(new ChatMessage { AuthorId = DemoChat.Me, Text = message });
+        var dots = new ChatMessage { AuthorId = "sam", AuthorName = "Sam Lee", IsTyping = true };
+        typing.Add(dots);
+        StateHasChanged();
+        if (!await Pause(1400)) return;
+        typing.Remove(dots);
+        typing.Add(new ChatMessage { AuthorId = "sam", AuthorName = "Sam Lee", Text = "On it. I'll call when the trucks leave." });
+    }
+
+    async Task<bool> Pause(int ms)
+    {
+        try
+        {
+            await Task.Delay(ms, stop.Token);
+            return true;
+        }
+        catch (TaskCanceledException)
+        {
+            return false;
+        }
+    }
+
+    public void Dispose()
+    {
+        stop.Cancel();
+        stop.Dispose();
+    }
+
+    const string assistantCode =
+        """
+        <NxChat Data="messages" AuthorId="user" IsTypingField="@nameof(Msg.IsTyping)" … MessageWidthMode="NxChatMessageWidthMode.Full">
+            <MessageContentTemplate>
+                @if (context.IsTyping) { <span>Thinking…</span> }
+                else { @((MarkupString)context.Message.Html) }
+            </MessageContentTemplate>
+        </NxChat>
+        """;
+}

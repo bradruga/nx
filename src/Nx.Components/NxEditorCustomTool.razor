@@ -1,0 +1,20 @@
+@namespace Nx.Components
+
+@* NxEditor renders its CustomTools once per NxEditorTool.Custom slot, cascading the slot's name; each tool shows only in
+   the slot named after it. No registration: the slot renders it with the page's latest parameters. *@
+@if (Slot == Name)
+{
+    <span class="nx-editor-custom" data-nx-editor-custom="@Name">@ChildContent</span>
+}
+
+@code {
+    internal const string SlotName = "NxEditorSlot";
+
+    [CascadingParameter(Name = SlotName)] private string? Slot { get; set; }
+
+    /// <summary>The name of the <see cref="NxEditorTool.Custom"/> slot in <see cref="NxEditor.Tools"/> this tool fills.</summary>
+    [Parameter, EditorRequired] public string Name { get; set; } = "";
+
+    /// <summary>The tool: a button, a menu, anything.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

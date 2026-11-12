@@ -459,3 +459,37 @@ Open: second-axis grid alignment and large data (see NxChart status).
   "Clicking the checkbox did not change its state".
 - **Fix (in `ButtonTests.cs`, lines 193, 214, 224, 234)**: replace each `CheckAsync()` with `ClickAsync()` followed by
   `Expect(locator).ToHaveAttributeAsync("aria-checked", "true")`.
+
+## Pass 10 — NxEditor and NxChat, from ERP's usages (read only)
+
+Brad's 11/12 calls: TelerikCard is not replaced (plain Bootstrap/CSS cards), TelerikGrid goes to NxGrid; build NxEditor and NxChat.
+
+152. **NxEditor is a contenteditable div with the browser's execCommand** where it does the job (bold, lists, alignment,
+     links), DOM edits for styles (via `<font>` turned into styled spans) and tables, and its own undo history of snapshots.
+     Telerik's is ProseMirror; a document model would mean a third-party library or a large one of our own. execCommand is
+     marked deprecated but has no replacement and works in every browser.
+153. **Tools keep Telerik's names as `NxEditorTool` members in one list**, a `Separator` in place of `EditorButtonGroup`:
+     `new EditorButtonGroup(new Bold(), new Italic())` → `NxEditorTool.Bold, NxEditorTool.Italic, NxEditorTool.Separator`.
+     `new CustomTool("Upload")` → `NxEditorTool.Custom("Upload")` with `<NxEditorCustomTool Name="Upload">` in `CustomTools`.
+     Per-tool settings are gone: one `Colors` for text and highlight; titles are ERP's ("Text color", "Highlight color").
+154. **Dropped Telerik parameters**: `EditMode` (always a div; ERP passes Div), `Adaptive` (the toolbar wraps), `Plugins`
+     (ProseMirror), `EditorPasteSettings` (paste is always cleaned, as ERP's settings ask). `ExecuteAsync(new
+     HtmlCommandArgs("insertHtml", html))` → `InsertHtmlAsync(html)`.
+155. **Paste**: HTML is cleaned (scripts, comments, classes, Office styles, unsafe links and pictures; Word lists become
+     lists); plain text pastes as the browser does; a page's own paste handler that calls `preventDefault` wins. NepEditor's
+     picture-paste JS targets Telerik's DOM, so porting it means pointing it at `.nx-editor-content`.
+156. **Value**: `""` when empty, so `[Required]` works; `ValueChanged` 100 ms after typing stops (Telerik's
+     `DebounceDelay`), at once for a tool, undo or paste, and on leaving.
+157. **Inserted tables carry inline borders** (`1px solid #c8c8cc`) so they show wherever the HTML is displayed (emails,
+     reports); inside the editor, borderless tables get dashed guides.
+158. **Not built** (ERP uses none): view HTML, subscript/superscript, clear formatting, picture resize handles, font and size
+     lists as parameters, find and replace.
+159. **NxChat reads fields by name** (as #145 for the chart), with Telerik's names (`IdField`, `AuthorIdField`, `TextField`,
+     `TimestampField`, `IsTypingField`, `MessageWidthMode`, `MessageContentTemplate` whose context has `.Message`, plus
+     `IsOwn` / `IsTyping`), so ERP's two pages port by renaming. `Refresh()` kept for them. Not built (ERP uses none or
+     builds its own): attachments, speech-to-text (ERP turns it off), suggested actions, message menus. Default `Height` 500px.
+160. **Doubts**: in NxEditor the format/font/size lists and color pickers are their own tab stops (NxToolBar's roving tab
+     stop covers its buttons only); removing a text color clears it inside the selection, not from a colored span around it;
+     large documents are not measured. Found and fixed while checking: Ctrl+K did not redraw the link dialog; Enter in the
+     link fields was taken by NxTextBox's own key handler (now handled on the fields' wrapper); NxChat scrolled down only
+     after a slow `OnSendMessage` finished, pulling a reader back to the bottom.

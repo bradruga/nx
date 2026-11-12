@@ -1,0 +1,56 @@
+@page "/chat"
+@page "/chat/overview"
+
+<DocHeader Slug="chat" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxChat</code> shows a conversation from a list and sends what the user types. The user's messages sit on the
+        right; everyone else's on the left under an avatar and name, grouped while one author keeps writing, with the time
+        under each group and a line between days. Enter sends and <code>OnSendMessage</code> hands you the text: add it to
+        <code>Data</code> and it appears. The list follows new messages, unless the user scrolled up to read.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column">
+        <NxChat Id="overview-chat" Data="messages" AuthorId="@DemoChat.Me" IdField="@nameof(ChatMessage.Id)"
+                AuthorIdField="@nameof(ChatMessage.AuthorId)" AuthorNameField="@nameof(ChatMessage.AuthorName)"
+                TextField="@nameof(ChatMessage.Text)" TimestampField="@nameof(ChatMessage.Sent)"
+                OnSendMessage="Send" Height="420px" AriaLabel="Crew chat" Style="width:100%; max-width:560px" />
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Enter</td><td>Sends the message (not while composing with an input method).</td></tr>
+                <tr><td>Shift+Enter</td><td>A new line in the message.</td></tr>
+                <tr><td>Tab</td><td>The message list (scrolls with the arrows), the box, then Send.</td></tr>
+                <tr><td>Roles</td><td>The list is a <code>log</code>: new messages are announced. Each group names its author; typing dots are a <code>status</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="chat" Page="overview" />
+
+@code {
+    List<ChatMessage> messages = DemoChat.Crew();
+
+    void Send(NxChatSendMessageEventArgs e) => messages.Add(new ChatMessage { AuthorId = DemoChat.Me, Text = e.Message });
+
+    const string basicCode =
+        """
+        <NxChat Data="messages" AuthorId="@userId" IdField="@nameof(ChatMessage.Id)"
+                AuthorIdField="@nameof(ChatMessage.AuthorId)" AuthorNameField="@nameof(ChatMessage.AuthorName)"
+                TextField="@nameof(ChatMessage.Text)" TimestampField="@nameof(ChatMessage.Sent)"
+                OnSendMessage="e => messages.Add(new ChatMessage { AuthorId = userId, Text = e.Message })" />
+        """;
+}

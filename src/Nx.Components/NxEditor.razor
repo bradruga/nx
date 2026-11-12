@@ -1,0 +1,119 @@
+@namespace Nx.Components
+
+@* The content div's children belong to nx-editor.js once interactive: Blazor renders it empty (the prerender shows the
+   value as markup) and the module fills it, so a render never fights the caret. *@
+<div @ref="root" class="@CssClass" style="@OuterStyle">
+    @if (toolList.Count > 0)
+    {
+        <NxToolBar Class="nx-editor-toolbar" Overflow="NxToolBarOverflow.Wrap" AriaLabel="@ToolBarLabel">
+            @foreach (var tool in toolList)
+            {
+                switch (tool.Kind)
+                {
+                    case NxEditorToolKind.Separator:
+                        <NxToolBarSeparator />
+                        break;
+                    case NxEditorToolKind.Custom:
+                        <CascadingValue Name="@NxEditorCustomTool.SlotName" Value="tool.Name">@CustomTools</CascadingValue>
+                        break;
+                    case NxEditorToolKind.Format:
+                        <NxDropDown TItem="Choice" TValue="string" Data="Formats" ItemText="c => c.Text" ItemValue="c => c.Value"
+                                    Value="@state.Format" ValueChanged="v => ApplyAsync(tool, v)" Disabled="!Editable"
+                                    Class="nx-editor-select nx-editor-format" aria-label="@tool.Title" title="@tool.Title" />
+                        break;
+                    case NxEditorToolKind.FontSize:
+                        <NxDropDown TItem="Choice" TValue="string" Data="FontSizes" ItemText="c => c.Text" ItemValue="c => c.Value"
+                                    Value="@FontSizeValue" ValueChanged="v => ApplyAsync(tool, v)" Disabled="!Editable" Placeholder="Size"
+                                    Class="nx-editor-select nx-editor-fontsize" aria-label="@tool.Title" title="@tool.Title" />
+                        break;
+                    case NxEditorToolKind.FontFamily:
+                        <NxDropDown TItem="Choice" TValue="string" Data="FontFamilies" ItemText="c => c.Text" ItemValue="c => c.Value"
+                                    Value="@FontFamilyValue" ValueChanged="v => ApplyAsync(tool, v)" Disabled="!Editable" Placeholder="Font"
+                                    Class="nx-editor-select nx-editor-fontfamily" aria-label="@tool.Title" title="@tool.Title" />
+                        break;
+                    case NxEditorToolKind.ForeColor:
+                    case NxEditorToolKind.BackgroundColor:
+                        var fore = tool.Kind == NxEditorToolKind.ForeColor;
+                        <span class="nx-editor-color" title="@tool.Title">
+                            <NxIcon Icon="@(fore ? EditorIcons.TextColor : EditorIcons.Highlight)" />
+                            <NxColorPicker Value="@(fore ? state.ForeColor : state.BackColor)" ValueChanged="v => ApplyAsync(tool, v)"
+                                           Colors="Colors" Clearable="true" Placeholder="@(fore ? "Automatic" : "No color")"
+                                           Disabled="!Editable" AriaLabel="@tool.Title" Columns="@ColorColumns" />
+                        </span>
+                        break;
+                    default:
+                        <NxToolBarButton Icon="@IconFor(tool)" AriaLabel="@tool.Title" Title="@tool.Title" Variant="NxButtonVariant.Ghost"
+                                         Disabled="@(!IsEnabled(tool))" OnClick="() => ExecuteAsync(tool)"
+                                         AdditionalAttributes="@ButtonAttributes(tool)" />
+                        break;
+                }
+            }
+        </NxToolBar>
+    }
+
+    <div @ref="content"
+         @attributes="AdditionalAttributes"
+         id="@ContentId"
+         class="@ContentCssClass"
+         contenteditable="@(Interactive && Editable ? "true" : "false")"
+         role="textbox"
+         aria-multiline="true"
+         aria-label="@AriaLabel"
+         aria-placeholder="@Placeholder"
+         aria-readonly="@(ReadOnly ? "true" : null)"
+         aria-disabled="@(Disabled ? "true" : null)"
+         aria-invalid="@(validation.IsInvalid ? "true" : null)"
+         tabindex="@(Disabled ? "-1" : null)"
+         data-placeholder="@Placeholder"
+         data-debounce="@DebounceDelay">@if (!Interactive && !string.IsNullOrEmpty(Value)){@((MarkupString)Value)}</div>
+
+    @if (tablePickerOpen)
+    {
+        @* No style attribute: nx-popup.js places it under the Insert table button. *@
+        <div @ref="tablePicker" class="nx-editor-tablepicker" role="dialog" aria-label="Insert table" tabindex="-1">
+            <div class="nx-editor-tablepicker-grid" aria-hidden="true">
+                @for (var r = 1; r <= TablePickerSize; r++)
+                {
+                    @for (var c = 1; c <= TablePickerSize; c++)
+                    {
+                        <span class="nx-editor-tablepicker-cell" data-r="@r" data-c="@c"></span>
+                    }
+                }
+            </div>
+            <div class="nx-editor-tablepicker-label" aria-live="polite">Insert table</div>
+        </div>
+    }
+
+    <NxDialog Visible="linkOpen" VisibleChanged="v => CloseLinkAsync(v)" Title="@(link.Editing ? "Edit link" : "Insert link")" Class="nx-editor-dialog">
+        <ChildContent>
+            <div class="nx-editor-dialog-fields" @onkeydown="LinkKeyDownAsync">
+                <NxTextBox Label="Web address" @bind-Value="link.Href" Immediate="true" Placeholder="https://" AutoFocus="true"
+                           Id="@($"{ContentId}-link-href")" />
+                <NxTextBox Label="Text" @bind-Value="link.Text" Immediate="true" Id="@($"{ContentId}-link-text")" />
+                <NxCheckBox TValue="bool" @bind-Value="link.NewWindow" Label="Open in a new window" Id="@($"{ContentId}-link-new")" />
+            </div>
+        </ChildContent>
+        <Buttons>
+            <NxButton Variant="NxButtonVariant.Secondary" OnClick="() => CloseLinkAsync(false)">Cancel</NxButton>
+            <NxButton Variant="NxButtonVariant.Primary" Disabled="string.IsNullOrWhiteSpace(link.Href)" OnClick="InsertLinkAsync">@(link.Editing ? "Update" : "Insert")</NxButton>
+        </Buttons>
+    </NxDialog>
+
+    <NxDialog Visible="imageOpen" VisibleChanged="v => CloseImageAsync(v)" Title="Insert image" Class="nx-editor-dialog">
+        <ChildContent>
+            <div class="nx-editor-dialog-fields" @onkeydown="ImageKeyDownAsync">
+                <NxTextBox Label="Web address" @bind-Value="image.Src" Immediate="true" Placeholder="https://" AutoFocus="true"
+                           Id="@($"{ContentId}-image-src")" />
+                <NxTextBox Label="Alternate text" @bind-Value="image.Alt" Immediate="true" Id="@($"{ContentId}-image-alt")" />
+                <div class="nx-editor-dialog-row">
+                    <NxNumericTextBox TValue="int?" Label="Width (px)" @bind-Value="image.Width" Min="1" Id="@($"{ContentId}-image-width")" />
+                    <NxNumericTextBox TValue="int?" Label="Height (px)" @bind-Value="image.Height" Min="1" Id="@($"{ContentId}-image-height")" />
+                </div>
+            </div>
+        </ChildContent>
+        <Buttons>
+            <NxButton Variant="NxButtonVariant.Secondary" OnClick="() => CloseImageAsync(false)">Cancel</NxButton>
+            <NxButton Variant="NxButtonVariant.Primary" Disabled="string.IsNullOrWhiteSpace(image.Src)" OnClick="InsertImageAsync">Insert</NxButton>
+        </Buttons>
+    </NxDialog>
+</div>

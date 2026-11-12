@@ -1,0 +1,99 @@
+@page "/editor/api"
+
+<DocHeader Slug="editor" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Value</td><td>string?</td><td>—</td><td>The HTML; use <code>@@bind-Value</code>. An empty editor is <code>""</code>.</td></tr>
+                <tr><td>DebounceDelay</td><td>int</td><td>100</td><td>Milliseconds after typing stops before <code>ValueChanged</code>; leaving the editor sends at once.</td></tr>
+                <tr><td>Tools</td><td>IEnumerable&lt;NxEditorTool&gt;?</td><td>NxEditorTool.Default</td><td>The toolbar in order; empty hides it.</td></tr>
+                <tr><td>CustomTools</td><td>RenderFragment?</td><td>—</td><td>The <code>NxEditorCustomTool</code>s for <code>NxEditorTool.Custom</code> slots.</td></tr>
+                <tr><td>Colors</td><td>IEnumerable&lt;string&gt;?</td><td>NxColorPalettes.Office</td><td>Text and highlight colors offered.</td></tr>
+                <tr><td>Height</td><td>string</td><td>250px</td><td>The whole editor's height; the text scrolls. <code>auto</code> grows with the text.</td></tr>
+                <tr><td>Placeholder</td><td>string?</td><td>—</td><td>Shown while empty.</td></tr>
+                <tr><td>Disabled</td><td>bool</td><td>false</td><td>Greyed out, no toolbar, out of the tab order.</td></tr>
+                <tr><td>ReadOnly</td><td>bool</td><td>false</td><td>Selectable and copyable, not editable; no toolbar.</td></tr>
+                <tr><td>AriaLabel</td><td>string?</td><td>—</td><td>The text's accessible name; the toolbar is named after it.</td></tr>
+                <tr><td>Id</td><td>string?</td><td>generated</td><td>The editable area's <code>id</code>.</td></tr>
+                <tr><td>Class / Style</td><td>string?</td><td>—</td><td>On the outer element. Other attributes go to the editable area.</td></tr>
+                <tr><td>ValueExpression</td><td>Expression?</td><td>—</td><td><code>EditForm</code> validation; set by <code>@@bind-Value</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events &amp; Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>ValueChanged</td><td>EventCallback&lt;string?&gt;</td><td>The HTML after an edit: debounced while typing, at once for a tool, undo or paste.</td></tr>
+                <tr><td>InsertHtmlAsync(html)</td><td>Task</td><td>Inserts HTML at the caret (the end if it never had one) as one undo step.</td></tr>
+                <tr><td>FocusAsync()</td><td>ValueTask</td><td>Focuses the text.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxEditorTool</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Tool</th><th>Does</th></tr></thead>
+            <tbody>
+                <tr><td>Undo, Redo</td><td>The editor's own history (100 steps).</td></tr>
+                <tr><td>Bold, Italic, Underline, Strikethrough</td><td>Text styles; pressed when the caret is in them.</td></tr>
+                <tr><td>Format</td><td>Paragraph, Heading 1–6, Quotation, Preformatted.</td></tr>
+                <tr><td>FontFamily, FontSize</td><td>Nine web-safe fonts; 8–36 pt.</td></tr>
+                <tr><td>ForeColor, BackgroundColor</td><td>Text and highlight color from <code>Colors</code>, or none.</td></tr>
+                <tr><td>AlignLeft, AlignCenter, AlignRight, AlignJustify</td><td>The paragraph's alignment.</td></tr>
+                <tr><td>UnorderedList, OrderedList, Indent, Outdent</td><td>Lists; indent nests a list item.</td></tr>
+                <tr><td>CreateLink, Unlink</td><td>A dialog for address, text and new window; removes the link at the caret.</td></tr>
+                <tr><td>InsertImage</td><td>A dialog for address, alternate text and size.</td></tr>
+                <tr><td>InsertTable</td><td>A grid to size the table (up to 8 × 8).</td></tr>
+                <tr><td>AddRowBefore / After, AddColumnBefore / After, DeleteRow, DeleteColumn, DeleteTable</td><td>Table edits at the caret's cell; spans are kept.</td></tr>
+                <tr><td>MergeCells, SplitCell</td><td>Merges the selected cells (a rectangle); splits a merged one.</td></tr>
+                <tr><td>Separator</td><td>A line between groups.</td></tr>
+                <tr><td>Custom(name)</td><td>A slot for the <code>NxEditorCustomTool</code> of that name.</td></tr>
+                <tr><td>Default / All</td><td>Ready-made lists: everyday tools, or every tool.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxEditorCustomTool</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Name</td><td>string</td><td>—</td><td>The <code>NxEditorTool.Custom(name)</code> slot it fills.</td></tr>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>The tool: a button, a menu, anything.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-editor-bg</td><td>--nx-surface</td><td>The editor's background.</td></tr>
+                <tr><td>--nx-editor-min-height</td><td>120px</td><td>The text's height with <code>Height="auto"</code> while short.</td></tr>
+                <tr><td>--nx-editor-guide</td><td>#c8c8cc (#4a4a55 dark)</td><td>Dashed cell outlines while editing a table.</td></tr>
+                <tr><td>--nx-editor-code-bg</td><td>#f3f3f5 (#212126 dark)</td><td>Preformatted blocks.</td></tr>
+                <tr><td>--nx-editor-code-font</td><td>ui-monospace, Consolas…</td><td>Preformatted blocks' font.</td></tr>
+                <tr><td>--nx-editor-quote-border</td><td>--nx-border</td><td>A quotation's left rule.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="editor" Page="api" />

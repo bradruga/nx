@@ -1,0 +1,108 @@
+@page "/editor/playground"
+
+<DocHeader Slug="editor" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-full demo-preview-inner-stretch">
+                <NxEditor Id="playground-editor" Value="@pgValue" ValueChanged="Changed" Tools="ToolSet" Height="@pgHeight"
+                          Placeholder="@OrNull(pgPlaceholder)" Disabled="pgDisabled" ReadOnly="pgReadOnly" DebounceDelay="pgDebounce"
+                          Colors="@(pgBasicColors ? NxColorPalettes.Basic : null)" AriaLabel="@OrNull(pgAriaLabel)" Style="width:100%" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-counter" id="playground-changes">ValueChanged × @pgChanges</span>
+                <NxButton id="playground-set" Size="NxButtonSize.Small" OnClick="SetFromCode">Set Value from code</NxButton>
+                <NxButton id="playground-clear" Size="NxButtonSize.Small" OnClick="() => pgValue = null">Clear</NxButton>
+            </div>
+            <pre class="doc-code demo-editor-html" id="playground-html">@(string.IsNullOrEmpty(pgValue) ? "\"\"" : pgValue)</pre>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Tools</div>
+            <label class="demo-control">
+                <span>Tools</span>
+                <select id="pg-tools" @bind="pgTools">
+                    <option value="default">Default</option>
+                    <option value="all">All</option>
+                    <option value="short">Bold, italic, lists</option>
+                    <option value="none">None (no toolbar)</option>
+                </select>
+            </label>
+            <label class="demo-control"><span>Colors: Basic</span><input type="checkbox" id="pg-colors" @bind="pgBasicColors" /></label>
+
+            <div class="demo-controls-title">Look</div>
+            <label class="demo-control">
+                <span>Height</span>
+                <select id="pg-height" @bind="pgHeight">
+                    <option value="250px">250px</option>
+                    <option value="400px">400px</option>
+                    <option value="auto">auto</option>
+                </select>
+            </label>
+            <label class="demo-control"><span>Placeholder</span><input type="text" id="pg-placeholder" @bind="pgPlaceholder" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>AriaLabel</span><input type="text" id="pg-arialabel" @bind="pgAriaLabel" @bind:event="oninput" /></label>
+
+            <div class="demo-controls-title">Behavior</div>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+            <label class="demo-control"><span>ReadOnly</span><input type="checkbox" id="pg-readonly" @bind="pgReadOnly" /></label>
+            <label class="demo-control"><span>DebounceDelay</span><input type="number" id="pg-debounce" min="0" step="100" @bind="pgDebounce" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="editor" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+
+    string? pgValue = "<p>Edit me. The value below follows as you type.</p>";
+    string pgTools = "default", pgHeight = "250px", pgPlaceholder = "Write something…", pgAriaLabel = "Notes";
+    bool pgDisabled, pgReadOnly, pgBasicColors;
+    int pgDebounce = 100, pgChanges;
+
+    static readonly NxEditorTool[] ShortTools =
+        [NxEditorTool.Bold, NxEditorTool.Italic, NxEditorTool.Separator, NxEditorTool.UnorderedList, NxEditorTool.OrderedList];
+
+    IEnumerable<NxEditorTool>? ToolSet => pgTools switch
+    {
+        "all" => NxEditorTool.All,
+        "short" => ShortTools,
+        "none" => [],
+        _ => null
+    };
+
+    void Changed(string? html)
+    {
+        pgValue = html;
+        pgChanges++;
+    }
+
+    void SetFromCode() => pgValue = $"<p>Set from code at <strong>{DateTime.Now:T}</strong>.</p>";
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "@bind-Value=\"notes\"" };
+            if (pgTools == "all") attrs.Add("Tools=\"NxEditorTool.All\"");
+            else if (pgTools == "short") attrs.Add("Tools=\"[NxEditorTool.Bold, NxEditorTool.Italic, NxEditorTool.Separator, NxEditorTool.UnorderedList, NxEditorTool.OrderedList]\"");
+            else if (pgTools == "none") attrs.Add("Tools=\"[]\"");
+            if (pgBasicColors) attrs.Add("Colors=\"NxColorPalettes.Basic\"");
+            if (pgHeight != "250px") attrs.Add($"Height=\"{pgHeight}\"");
+            if (OrNull(pgPlaceholder) is { } placeholder) attrs.Add($"Placeholder=\"{placeholder}\"");
+            if (OrNull(pgAriaLabel) is { } label) attrs.Add($"AriaLabel=\"{label}\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            if (pgReadOnly) attrs.Add("ReadOnly=\"true\"");
+            if (pgDebounce != 100) attrs.Add($"DebounceDelay=\"{pgDebounce}\"");
+            return "<NxEditor " + string.Join("\n          ", attrs) + " />";
+        }
+    }
+}

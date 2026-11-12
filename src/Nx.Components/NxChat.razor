@@ -1,0 +1,79 @@
+@namespace Nx.Components
+@typeparam TItem
+
+<div @ref="root" @attributes="AdditionalAttributes" id="@Id" class="@CssClass" style="@OuterStyle">
+    <div @ref="list" class="nx-chat-messages" role="log" aria-live="polite" aria-label="@(AriaLabel ?? "Messages")" tabindex="0">
+        @if (groups.Count == 0)
+        {
+            <div class="nx-chat-empty">@NoDataText</div>
+        }
+        @foreach (var group in groups)
+        {
+            @if (group.Day is { } day)
+            {
+                <div class="nx-chat-day" role="separator"><span>@DayText(day)</span></div>
+            }
+            <div class="@(group.Own ? "nx-chat-group nx-chat-group-own" : "nx-chat-group")">
+                @if (!group.Own)
+                {
+                    <div class="nx-chat-avatar" aria-hidden="true">
+                        @if (group.ImageUrl is { Length: > 0 } url)
+                        {
+                            <img src="@url" alt="" />
+                        }
+                        else if (Initials(group.Name) is { Length: > 0 } initials)
+                        {
+                            @initials
+                        }
+                        else
+                        {
+                            <NxIcon Icon="NxIcons.User" />
+                        }
+                    </div>
+                }
+                <div class="nx-chat-group-body">
+                    @if (!group.Own && !string.IsNullOrEmpty(group.Name))
+                    {
+                        <div class="nx-chat-author">@group.Name</div>
+                    }
+                    else
+                    {
+                        <span class="nx-visually-hidden">@(group.Own ? "You" : "Message")</span>
+                    }
+                    @foreach (var message in group.Messages)
+                    {
+                        <div @key="message.Key" class="@(message.Typing ? "nx-chat-message nx-chat-message-typing" : "nx-chat-message")">
+                            @if (MessageContentTemplate is not null)
+                            {
+                                <div class="nx-chat-bubble">@MessageContentTemplate(new NxChatMessageContext<TItem>(message.Item, group.Own, message.Typing))</div>
+                            }
+                            else if (message.Typing)
+                            {
+                                <div class="nx-chat-bubble nx-chat-typing" role="status" aria-label="Typing"><i></i><i></i><i></i></div>
+                            }
+                            else
+                            {
+                                <div class="nx-chat-bubble nx-chat-text">@message.Text</div>
+                            }
+                        </div>
+                    }
+                    @if (group.Time is { } time)
+                    {
+                        <div class="nx-chat-time">@TimeText(time)</div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <form class="nx-chat-input" @onsubmit="SendAsync" @onsubmit:preventDefault="true">
+        <NxTextArea @ref="input" Id="@InputId" @bind-Value="draft" Immediate="true" AutoResize="true" Rows="1" MaxRows="5"
+                    Placeholder="@Placeholder" Disabled="Disabled" aria-label="@InputLabel" Class="nx-chat-field" />
+        <NxButton Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary" Disabled="@(Disabled || string.IsNullOrWhiteSpace(draft))"
+                  AriaLabel="Send" Title="Send" Icon="SendIcon" Class="nx-chat-send" />
+    </form>
+</div>
+
+@code {
+    private static readonly RenderFragment SendIcon = @<NxIcon Icon="NxIcons.PaperPlane" />;
+}

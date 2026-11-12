@@ -1391,3 +1391,14 @@ code {
 
 /* Chart playground: a checkbox with a number beside it */
 .demo-control .demo-control-small { width: 72px; flex: none; }
+
+.home-chat { display: flex; flex-direction: column; gap: 6px; width: 230px; font-size: 12px; }
+.home-chat span { align-self: flex-start; max-width: 80%; padding: 6px 10px; border-radius: 12px; background: var(--nx-chat-other-bg); color: var(--nx-chat-other-fg); }
+.home-chat .home-chat-own { align-self: flex-end; background: var(--nx-chat-own-bg); color: var(--nx-chat-own-fg); }
+
+/* Editor demos: the bound HTML under an editor */
+.demo-editor-html { align-self: stretch; max-height: 160px; overflow: auto; white-space: pre-wrap; word-break: break-word; }
+
+/* Chat demos: the assistant's follow-up choices */
+.demo-chat-choices { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.demo-chat-thinking { color: var(--nx-chat-meta); font-style: italic; }

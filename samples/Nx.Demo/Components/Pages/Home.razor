@@ -96,6 +96,8 @@
     bool homeToggle = true;
     int homeSlider = 4;
     static readonly string[] HomeChips = ["5000 psi", "SCC", "Grout"];
+    const string HomeEditor = "<p>Strip <strong>WP-12</strong> after <em>18 h</em>.</p>";
+    static readonly NxEditorTool[] HomeEditorTools = [NxEditorTool.Bold, NxEditorTool.Italic, NxEditorTool.Underline, NxEditorTool.Separator, NxEditorTool.UnorderedList];
     static readonly IReadOnlyList<PermissionNode> HomeExpanded = DemoTree.Permissions.Where(n => n.Id is "acc" or "acc.bills").ToList();
     static RenderFragment IconOf(NxIconData icon) => @<NxIcon Icon="icon" />;
     DateTime? gateOpens = DateTime.Today.AddDays(1).AddHours(6);
@@ -194,6 +196,8 @@
         </NxChart>,
         "slider" =>@<NxSlider TValue="int" Min="0" Max="10" LargeStep="5" @bind-Value="homeSlider" aria-label="Crew size" Style="width:240px" />,
         "chiplist" => @<NxChipList Data="HomeChips" AriaLabel="Mixes" />,
+        "editor" => @<NxEditor Value="@HomeEditor" Tools="HomeEditorTools" Height="112px" AriaLabel="Note" Style="width:260px" />,
+        "chat" => @<div class="home-chat" aria-hidden="true"><span>Trucks at 6:30?</span><span class="home-chat-own">Confirmed, three loads.</span></div>,
         "dateinput" => @<NxDateInput TValue="DateOnly?" Label="Ship date" @bind-Value="pourDate" Style="width:240px" />,
         "toolbar" => @<NxToolBar AriaLabel="Sheet" Overflow="NxToolBarOverflow.Wrap" Style="width:260px">
             <NxToolBarButton Text="New" Icon="@IconOf(NxIcons.Plus)" />

@@ -1,0 +1,122 @@
+@page "/chat/playground"
+
+<DocHeader Slug="chat" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live. Switch <code>AuthorId</code> to see the conversation from Sam's side.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-full demo-preview-inner-stretch">
+                <NxChat Id="playground-chat" Data="messages" AuthorId="@pgAuthor" IdField="@nameof(ChatMessage.Id)"
+                        AuthorIdField="@nameof(ChatMessage.AuthorId)" AuthorNameField="@(pgNames ? nameof(ChatMessage.AuthorName) : null)"
+                        TextField="@nameof(ChatMessage.Text)" TimestampField="@(pgTimes ? nameof(ChatMessage.Sent) : null)"
+                        IsTypingField="@nameof(ChatMessage.IsTyping)" MessageWidthMode="pgWidth" Height="@pgHeight"
+                        Placeholder="@OrNull(pgPlaceholder)" NoDataText="@OrNull(pgNoData)" Disabled="pgDisabled"
+                        AriaLabel="@OrNull(pgAriaLabel)" OnSendMessage="Send" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-counter" id="playground-sent">OnSendMessage × @pgSent</span>
+                <NxButton id="playground-typing" Size="NxButtonSize.Small" OnClick="ToggleTyping">@(typing is null ? "Sam starts typing" : "Sam stops typing")</NxButton>
+                <NxButton id="playground-clear" Size="NxButtonSize.Small" OnClick="() => messages = []">Clear</NxButton>
+                <NxButton id="playground-reset" Size="NxButtonSize.Small" OnClick="() => messages = DemoChat.Crew()">Reset</NxButton>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Data</div>
+            <label class="demo-control">
+                <span>AuthorId</span>
+                <select id="pg-author" @bind="pgAuthor">
+                    <option value="@DemoChat.Me">me</option>
+                    <option value="sam">sam</option>
+                    <option value="dana">dana</option>
+                </select>
+            </label>
+            <label class="demo-control"><span>AuthorNameField</span><input type="checkbox" id="pg-names" @bind="pgNames" /></label>
+            <label class="demo-control"><span>TimestampField</span><input type="checkbox" id="pg-times" @bind="pgTimes" /></label>
+
+            <div class="demo-controls-title">Look</div>
+            <label class="demo-control">
+                <span>MessageWidthMode</span>
+                <select id="pg-width" @bind="pgWidth">
+                    @foreach (var mode in Enum.GetValues<NxChatMessageWidthMode>())
+                    {
+                        <option value="@mode">@mode</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control">
+                <span>Height</span>
+                <select id="pg-height" @bind="pgHeight">
+                    <option value="300px">300px</option>
+                    <option value="420px">420px</option>
+                    <option value="560px">560px</option>
+                </select>
+            </label>
+            <label class="demo-control"><span>Placeholder</span><input type="text" id="pg-placeholder" @bind="pgPlaceholder" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>NoDataText</span><input type="text" id="pg-nodata" @bind="pgNoData" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>AriaLabel</span><input type="text" id="pg-arialabel" @bind="pgAriaLabel" @bind:event="oninput" /></label>
+
+            <div class="demo-controls-title">Behavior</div>
+            <label class="demo-control"><span>Disabled</span><input type="checkbox" id="pg-disabled" @bind="pgDisabled" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="chat" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+
+    List<ChatMessage> messages = DemoChat.Crew();
+    ChatMessage? typing;
+    string pgAuthor = DemoChat.Me, pgHeight = "420px", pgPlaceholder = "Type a message…", pgNoData = "No messages yet", pgAriaLabel = "Crew chat";
+    bool pgNames = true, pgTimes = true, pgDisabled;
+    NxChatMessageWidthMode pgWidth;
+    int pgSent;
+
+    void Send(NxChatSendMessageEventArgs e)
+    {
+        messages.Add(new ChatMessage { AuthorId = pgAuthor, AuthorName = pgAuthor == DemoChat.Me ? "Me" : pgAuthor == "sam" ? "Sam Lee" : "Dana Ortiz", Text = e.Message });
+        pgSent++;
+    }
+
+    void ToggleTyping()
+    {
+        if (typing is null)
+        {
+            typing = new ChatMessage { AuthorId = "sam", AuthorName = "Sam Lee", IsTyping = true };
+            messages.Add(typing);
+        }
+        else
+        {
+            messages.Remove(typing);
+            typing = null;
+        }
+    }
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "Data=\"messages\"", $"AuthorId=\"{pgAuthor}\"", "AuthorIdField=\"@nameof(Msg.AuthorId)\"", "TextField=\"@nameof(Msg.Text)\"" };
+            if (pgNames) attrs.Add("AuthorNameField=\"@nameof(Msg.AuthorName)\"");
+            if (pgTimes) attrs.Add("TimestampField=\"@nameof(Msg.Sent)\"");
+            attrs.Add("IsTypingField=\"@nameof(Msg.IsTyping)\"");
+            if (pgWidth != NxChatMessageWidthMode.Standard) attrs.Add($"MessageWidthMode=\"NxChatMessageWidthMode.{pgWidth}\"");
+            if (pgHeight != "500px") attrs.Add($"Height=\"{pgHeight}\"");
+            if (OrNull(pgPlaceholder) is { } placeholder && placeholder != "Type a message…") attrs.Add($"Placeholder=\"{placeholder}\"");
+            if (OrNull(pgNoData) is { } noData && noData != "No messages yet") attrs.Add($"NoDataText=\"{noData}\"");
+            if (OrNull(pgAriaLabel) is { } label) attrs.Add($"AriaLabel=\"{label}\"");
+            if (pgDisabled) attrs.Add("Disabled=\"true\"");
+            attrs.Add("OnSendMessage=\"SendAsync\"");
+            return "<NxChat " + string.Join("\n        ", attrs) + " />";
+        }
+    }
+}

@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 `NxButtonGroup`, `NxColorPicker`, `NxProgressBar`, `NxNotification`, `NxDialog` (+ `NxDialogService`, `NxDialogHost`), `NxMediaQuery`,
 `NxToggleButton`, `NxUpload`, `NxFileSelect`, `NxTreeView<TItem>`, `NxMaskedTextBox`, `NxTileLayout` (+ `NxTileLayoutItem`),
 `NxCarousel<TItem>`, `NxColorGradient`, `NxSlider<TValue>`, `NxChipList<TItem>`, `NxToolBar` (+ `NxToolBarButton`, `NxToolBarSeparator`,
-`NxToolBarSpacer`), `NxDateInput<TValue>`, `NxChart` (+ `NxChartSeries`, `NxChartCategoryAxis`, `NxChartValueAxis`). No third-party dependencies; themed by CSS custom properties.
+`NxToolBarSpacer`), `NxDateInput<TValue>`, `NxChart` (+ `NxChartSeries`, `NxChartCategoryAxis`, `NxChartValueAxis`), `NxEditor` (+ `NxEditorTool`, `NxEditorCustomTool`), `NxChat<TItem>`. No third-party dependencies; themed by CSS custom properties.
 Conventions follow the NxGrid repo (`../nxgrid`), which stays where it is.
 
 ## Build and Test Commands
@@ -43,7 +43,7 @@ src/Nx.Components/
   Nx*.cs                                    # one public enum or record per file
   FieldValidation.cs                        # internal: EditContext plumbing shared by inputs
   wwwroot/nx-theme.css                      # ALL tokens (--nx-*), dark theme, shared .nx-spinner, scroll lock
-  wwwroot/nx-popup.js, nx-combobox.js, nx-picker.js, nx-window.js, nx-tabstrip.js, nx-splitter.js, nx-tooltip.js, nx-menu.js, nx-colorpicker.js, nx-colorgradient.js, nx-mediaquery.js, nx-upload.js, nx-toolbar.js, nx-tilelayout.js, nx-chart.js, nx-input.js  # the only JS modules
+  wwwroot/nx-popup.js, nx-combobox.js, nx-picker.js, nx-window.js, nx-tabstrip.js, nx-splitter.js, nx-tooltip.js, nx-menu.js, nx-colorpicker.js, nx-colorgradient.js, nx-mediaquery.js, nx-upload.js, nx-toolbar.js, nx-tilelayout.js, nx-chart.js, nx-input.js, nx-editor.js, nx-chat.js  # the only JS modules
 samples/Nx.Demo/Data/DemoCatalog.cs          # site map: nav tree, home cards, page headers, prev/next
 samples/Nx.Demo/Components/Pages/{Component}/ # Overview, Examples, Playground, Api — routes /{slug}/{page}
 tests/Nx.Components.Tests/                  # one bUnit fixture per component
@@ -149,6 +149,10 @@ tests/Nx.Playwright/                        # one Playwright fixture per compone
   parameters in the same batch, so it rebuilds the model as it renders, never in `OnParametersSet` (that runs while
   NxChart diffs, a step too early). Layout is .NET (`ChartModel`, the surface); nx-chart.js only measures and hit-tests.
   Razor reads a bare `<text>` in a loop as its own tag, so SVG texts are built in code and styled through `::deep`.
+- **NxEditor's text belongs to nx-editor.js**: Blazor renders the contenteditable div empty (the prerender shows the value
+  as markup) and the module fills it, runs commands (execCommand, `<font>` turned into styled spans, DOM table edits), keeps
+  its own undo snapshots and cleans pastes. Custom tools: the editor renders `CustomTools` once per `NxEditorTool.Custom`
+  slot, cascading the slot name; each `NxEditorCustomTool` shows only in its own slot (no registration).
 - **NxComboBox opt-in modes** (`Multiple`, columns, mobile overlay) must never change single-select, single-column
   behavior. bUnit covers both paths.
 

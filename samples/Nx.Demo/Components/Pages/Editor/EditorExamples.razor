@@ -1,0 +1,146 @@
+@page "/editor/examples"
+@using System.ComponentModel.DataAnnotations
+
+<DocHeader Slug="editor" Page="examples" />
+
+<div class="doc-section">
+    <h2>Ticket Comment</h2>
+    <p class="doc-note">
+        ERP's ticket tools: undo, text styles, text and highlight colors, lists, links, and a custom tool in its own slot —
+        here <code>NxEditorTool.Custom("Signature")</code>, which inserts HTML at the caret with <code>InsertHtmlAsync</code>.
+        <code>Height="auto"</code> grows with the text.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxEditor @ref="comment" Id="comment-editor" @bind-Value="commentHtml" Tools="TicketTools" Height="auto"
+                  Placeholder="Write a comment…" AriaLabel="Comment" Style="width:100%">
+            <CustomTools>
+                <NxEditorCustomTool Name="Signature">
+                    <NxButton id="signature-tool" Variant="NxButtonVariant.Ghost" Icon="@SignatureIcon" OnClick="AddSignatureAsync">Sign</NxButton>
+                </NxEditorCustomTool>
+            </CustomTools>
+        </NxEditor>
+        <span class="demo-value" id="comment-length">@(string.IsNullOrEmpty(commentHtml) ? "Empty" : $"{commentHtml.Length} characters of HTML")</span>
+    </div>
+    <pre class="doc-code">@ticketCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Email Body</h2>
+    <p class="doc-note">ERP's email dialog: block formats, a highlight color, alignment, lists with indent and links.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxEditor Id="email-editor" @bind-Value="emailHtml" Tools="EmailTools" Height="300px" AriaLabel="Email body" Style="width:100%" />
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Tables &amp; Every Tool</h2>
+    <p class="doc-note">
+        <code>NxEditorTool.All</code>, as ERP's report template editor uses: fonts and sizes, pictures, and tables — insert one
+        by sizing it on the grid, add and delete rows and columns, merge the selected cells and split them again. Tab moves
+        between cells.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxEditor Id="report-editor" @bind-Value="reportHtml" Tools="NxEditorTool.All" Height="420px" AriaLabel="Report template" Style="width:100%" />
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Form Validation</h2>
+    <p class="doc-note">An empty editor is <code>""</code>, so <code>[Required]</code> works as on a text box.</p>
+    <div class="demo-stage demo-stage-column">
+        <EditForm id="editor-form" Model="hold" OnValidSubmit="PlaceHold" FormName="editor-form" style="width:100%">
+            <DataAnnotationsValidator />
+            <NxEditor Id="hold-editor" @bind-Value="hold.Reason" Tools="ShortTools" Height="160px" AriaLabel="Reason for the hold"
+                      Placeholder="Why is the pour on hold?" />
+            <ValidationMessage For="() => hold.Reason" />
+            <div class="demo-row" style="margin-top:16px">
+                <NxButton id="editor-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Place hold</NxButton>
+                <span class="demo-value" id="editor-result">@holdResult</span>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Read-Only &amp; Disabled</h2>
+    <p class="doc-note"><code>ReadOnly</code> keeps the text selectable and copyable; <code>Disabled</code> greys it out. Both turn the toolbar off.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxEditor Id="readonly-editor" Value="@ReadOnlyHtml" ReadOnly="true" Height="140px" AriaLabel="Approved notes" Style="width:100%" />
+        <NxEditor Id="disabled-editor" Value="@ReadOnlyHtml" Disabled="true" Tools="ShortTools" Height="140px" AriaLabel="Locked notes" Style="width:100%" />
+    </div>
+</div>
+
+<DocPager Slug="editor" Page="examples" />
+
+@code {
+    NxEditor? comment;
+    string? commentHtml;
+    string? emailHtml = "<p>Hi team,</p><p>The <strong>Route 9 bridge</strong> pour moved to <span style=\"background-color: #ffff00\">Thursday</span>.</p><ul><li>Forms checked Wednesday</li><li>Trucks at 6:30</li></ul><p>Thanks</p>";
+    string? reportHtml = ReportTemplate;
+    string holdResult = "No hold";
+    readonly HoldForm hold = new();
+
+    static readonly RenderFragment SignatureIcon = @<NxIcon Icon="NxIcons.Pencil" />;
+
+    static readonly NxEditorTool[] TicketTools =
+    [
+        NxEditorTool.Undo, NxEditorTool.Redo, NxEditorTool.Separator,
+        NxEditorTool.Bold, NxEditorTool.Italic, NxEditorTool.Underline, NxEditorTool.Strikethrough, NxEditorTool.Separator,
+        NxEditorTool.ForeColor, NxEditorTool.BackgroundColor, NxEditorTool.Separator,
+        NxEditorTool.OrderedList, NxEditorTool.UnorderedList, NxEditorTool.Indent, NxEditorTool.Outdent, NxEditorTool.Separator,
+        NxEditorTool.Custom("Signature"), NxEditorTool.Separator,
+        NxEditorTool.CreateLink, NxEditorTool.Unlink
+    ];
+
+    static readonly NxEditorTool[] EmailTools =
+    [
+        NxEditorTool.Bold, NxEditorTool.Italic, NxEditorTool.Underline, NxEditorTool.Separator,
+        NxEditorTool.Format, NxEditorTool.BackgroundColor, NxEditorTool.Separator,
+        NxEditorTool.AlignLeft, NxEditorTool.AlignCenter, NxEditorTool.AlignRight, NxEditorTool.AlignJustify, NxEditorTool.Separator,
+        NxEditorTool.UnorderedList, NxEditorTool.OrderedList, NxEditorTool.Indent, NxEditorTool.Outdent, NxEditorTool.Separator,
+        NxEditorTool.CreateLink, NxEditorTool.Unlink
+    ];
+
+    static readonly NxEditorTool[] ShortTools =
+        [NxEditorTool.Bold, NxEditorTool.Italic, NxEditorTool.Underline, NxEditorTool.Separator, NxEditorTool.UnorderedList, NxEditorTool.OrderedList];
+
+    const string ReadOnlyHtml = "<p>Approved by <strong>QC</strong> on 11/10. Strip after <em>18 hours</em> at 60°F or above.</p>";
+
+    const string ReportTemplate =
+        """
+        <h2 style="text-align: center">Wall Panel Inspection</h2>
+        <p>Project: <strong>Route 9 Bridge</strong> · Mark: <strong>WP-12</strong></p>
+        <table style="width:100%;border-collapse:collapse"><tbody>
+        <tr><td style="border:1px solid #c8c8cc;padding:4px 6px"><strong>Check</strong></td><td style="border:1px solid #c8c8cc;padding:4px 6px"><strong>Result</strong></td><td style="border:1px solid #c8c8cc;padding:4px 6px"><strong>By</strong></td></tr>
+        <tr><td style="border:1px solid #c8c8cc;padding:4px 6px">Dimensions</td><td style="border:1px solid #c8c8cc;padding:4px 6px">Pass</td><td style="border:1px solid #c8c8cc;padding:4px 6px">DO</td></tr>
+        <tr><td style="border:1px solid #c8c8cc;padding:4px 6px">Embeds</td><td style="border:1px solid #c8c8cc;padding:4px 6px">Pass</td><td style="border:1px solid #c8c8cc;padding:4px 6px">DO</td></tr>
+        </tbody></table>
+        <p>Notes:</p>
+        """;
+
+    void PlaceHold() => holdResult = "Hold placed";
+
+    Task AddSignatureAsync() =>
+        comment?.InsertHtmlAsync("<p>— <strong>Dana Ortiz</strong>, Quality Control</p>") ?? Task.CompletedTask;
+
+    const string ticketCode =
+        """
+        <NxEditor @ref="comment" @bind-Value="ticket.Comment" Height="auto" Placeholder="Write a comment…"
+                  Tools="[NxEditorTool.Undo, NxEditorTool.Redo, NxEditorTool.Separator, NxEditorTool.Bold, …,
+                          NxEditorTool.Custom("Signature"), NxEditorTool.CreateLink, NxEditorTool.Unlink]">
+            <CustomTools>
+                <NxEditorCustomTool Name="Signature">
+                    <NxButton Variant="NxButtonVariant.Ghost" OnClick="AddSignatureAsync">Sign</NxButton>
+                </NxEditorCustomTool>
+            </CustomTools>
+        </NxEditor>
+
+        Task AddSignatureAsync() => comment.InsertHtmlAsync("<p>— <strong>Dana Ortiz</strong></p>");
+        """;
+
+    class HoldForm
+    {
+        [Required(ErrorMessage = "Give a reason.")]
+        public string? Reason { get; set; }
+    }
+}

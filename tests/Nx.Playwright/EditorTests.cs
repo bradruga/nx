@@ -1,0 +1,191 @@
+using System.Text.RegularExpressions;
+using Microsoft.Playwright;
+using Microsoft.Playwright.NUnit;
+using NUnit.Framework;
+
+namespace Nx.Playwright;
+
+/// <summary>NxEditor: contenteditable, the selection, execCommand, paste and focus only exist in a real browser.</summary>
+[TestFixtureSource(typeof(TestConfig), nameof(TestConfig.AppUrls))]
+public class EditorTests : PageTest
+{
+    private readonly string _baseUrl;
+
+    public EditorTests(string baseUrl) => _baseUrl = baseUrl;
+
+    private async Task GoToPage(string page)
+    {
+        await Page.GotoAsync($"{_baseUrl}/editor/{page}");
+        await Expect(Page.Locator(".layout-container[data-interactive=true]")).ToBeVisibleAsync();
+    }
+
+    private ILocator Tool(string editor, string command) => Page.Locator($".nx-editor:has(#{editor}) [data-nx-editor-cmd={command}]");
+
+    private Task<string> Html(string editor) => Page.Locator($"#{editor}").InnerHTMLAsync();
+
+    [Test]
+    public async Task Type_Bold_RaisesTheValue()
+    {
+        await GoToPage("overview");
+        var editor = Page.Locator("#overview-editor");
+        await editor.ClickAsync();
+        await Page.Keyboard.PressAsync("Control+End");
+        await Page.Keyboard.PressAsync("Enter");
+        await Page.Keyboard.TypeAsync("Bring the vibrator");
+        await Page.Keyboard.PressAsync("Shift+Home");
+        await Tool("overview-editor", "bold").ClickAsync();
+
+        await Expect(Tool("overview-editor", "bold")).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(Page.Locator("#overview-html")).ToContainTextAsync("<b>Bring the vibrator</b>");
+        // The toolbar button did not take the focus from the text.
+        Assert.That(await editor.EvaluateAsync<bool>("e => document.activeElement === e"), Is.True);
+    }
+
+    [Test]
+    public async Task Undo_Redo_OwnHistory()
+    {
+        await GoToPage("examples");
+        var editor = Page.Locator("#comment-editor");
+        await editor.ClickAsync();
+        await Page.Keyboard.TypeAsync("First");
+        await Page.Keyboard.PressAsync("Control+a");
+        await Tool("comment-editor", "italic").ClickAsync();
+        Assert.That(await Html("comment-editor"), Does.Contain("<i>First</i>"));
+
+        await Page.Keyboard.PressAsync("Control+z");
+        Assert.That(await Html("comment-editor"), Is.EqualTo("<p>First</p>"));
+        await Expect(Tool("comment-editor", "redo")).ToBeEnabledAsync();
+        await Page.Keyboard.PressAsync("Control+y");
+        Assert.That(await Html("comment-editor"), Does.Contain("<i>First</i>"));
+    }
+
+    [Test]
+    public async Task Paste_Word_CleansAndMakesLists()
+    {
+        await GoToPage("examples");
+        var editor = Page.Locator("#comment-editor");
+        await editor.ClickAsync();
+        await editor.EvaluateAsync("""
+            el => {
+                const dt = new DataTransfer();
+                dt.setData('text/html', `<!--StartFragment--><p class=MsoListParagraph style='mso-list:l0 level1 lfo1'><span style='mso-list:Ignore'>1.<span>&nbsp;</span></span>Forms</p>`
+                    + `<p class=MsoListParagraph style='mso-list:l0 level1 lfo1'><span style='mso-list:Ignore'>2.</span>Rebar</p>`
+                    + `<script>window.pwned = 1</script><a href="javascript:alert(1)" onclick="x()">bad</a><img src="file:///c:/x.png">`);
+                el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+            }
+            """);
+
+        var html = await Html("comment-editor");
+        Assert.That(html, Does.Contain("<ol><li>Forms</li><li>Rebar</li></ol>"));
+        Assert.That(html, Does.Not.Contain("script").And.Not.Contain("javascript").And.Not.Contain("onclick")
+            .And.Not.Contain("Mso").And.Not.Contain("<img"));
+    }
+
+    [Test]
+    public async Task Link_CtrlK_EnterInserts()
+    {
+        await GoToPage("examples");
+        var editor = Page.Locator("#email-editor");
+        await editor.Locator("li", new() { HasText = "Trucks" }).ClickAsync();
+        await Page.Keyboard.PressAsync("End");
+        await Page.Keyboard.PressAsync("Control+k");
+        await Page.Locator("#email-editor-link-href").FillAsync("https://example.com/trucks");
+        await Page.Locator("#email-editor-link-text").FillAsync("dispatch");
+        await Page.Keyboard.PressAsync("Enter");
+
+        await Expect(Page.Locator("#email-editor-link-href")).ToHaveCountAsync(0);
+        await Expect(editor.Locator("a[href='https://example.com/trucks']")).ToHaveTextAsync("dispatch");
+        await Expect(Tool("email-editor", "unlink")).ToBeEnabledAsync();
+    }
+
+    [Test]
+    public async Task Table_Picker_InsertsAndTabMovesCells()
+    {
+        await GoToPage("examples");
+        var editor = Page.Locator("#report-editor");
+        await editor.Locator("p", new() { HasText = "Notes:" }).ClickAsync();
+        await Page.Keyboard.PressAsync("End");
+        await Tool("report-editor", "insertTable").ClickAsync();
+
+        var picker = Page.Locator(".nx-editor-tablepicker");
+        await Expect(picker).ToBeVisibleAsync();
+        await Page.Keyboard.PressAsync("ArrowRight");
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Expect(picker.Locator(".nx-editor-tablepicker-label")).ToHaveTextAsync("2 × 2 table");
+        await Page.Keyboard.PressAsync("Enter");
+
+        await Expect(picker).ToHaveCountAsync(0);
+        await Expect(editor.Locator("table")).ToHaveCountAsync(2);
+        await Page.Keyboard.TypeAsync("A");
+        await Page.Keyboard.PressAsync("Tab");
+        await Page.Keyboard.TypeAsync("B");
+        var cells = await editor.Locator("table").Nth(1).Locator("td").AllTextContentsAsync();
+        Assert.That(cells.Take(2), Is.EqualTo(new[] { "A", "B" }));
+    }
+
+    [Test]
+    public async Task Table_AddRow_Merge_Split()
+    {
+        await GoToPage("examples");
+        var editor = Page.Locator("#report-editor");
+        await editor.Locator("td", new() { HasText = "Dimensions" }).ClickAsync();
+        await Tool("report-editor", "addRowAfter").ClickAsync();
+        await Expect(editor.Locator("tr")).ToHaveCountAsync(4);
+
+        await editor.EvaluateAsync("""
+            el => {
+                const cells = [...el.querySelector('table').rows[1].cells];
+                const range = document.createRange();
+                range.setStart(cells[1].firstChild, 0);
+                range.setEnd(cells[2].firstChild, 1);
+                getSelection().removeAllRanges();
+                getSelection().addRange(range);
+            }
+            """);
+        await Tool("report-editor", "mergeCells").ClickAsync();
+        await Expect(editor.Locator("td[colspan='2']")).ToHaveCountAsync(1);
+
+        await Tool("report-editor", "splitCell").ClickAsync();
+        await Expect(editor.Locator("td[colspan]")).ToHaveCountAsync(0);
+        await Expect(editor.Locator("tr").Nth(1).Locator("td")).ToHaveCountAsync(3);
+    }
+
+    [Test]
+    public async Task Validation_EmptyIsRequired()
+    {
+        await GoToPage("examples");
+        await Page.Locator("#editor-submit").ClickAsync();
+        await Expect(Page.Locator("#hold-editor")).ToHaveAttributeAsync("aria-invalid", "true");
+        await Expect(Page.Locator(".validation-message")).ToContainTextAsync("Give a reason.");
+
+        await Page.Locator("#hold-editor").ClickAsync();
+        await Page.Keyboard.TypeAsync("Rain");
+        await Page.Locator("#editor-submit").ClickAsync();
+        await Expect(Page.Locator("#editor-result")).ToHaveTextAsync("Hold placed");
+    }
+
+    [Test]
+    public async Task Playground_SetFromCode_ReplacesTheText()
+    {
+        await GoToPage("playground");
+        await Page.Locator("#playground-set").ClickAsync();
+        await Expect(Page.Locator("#playground-editor")).ToContainTextAsync("Set from code at");
+        await Expect(Page.Locator("#playground-changes")).ToHaveTextAsync("ValueChanged × 0");
+
+        await Page.Locator("#pg-readonly").CheckAsync();
+        await Expect(Page.Locator("#playground-editor")).ToHaveAttributeAsync("contenteditable", "false");
+        await Expect(Tool("playground-editor", "bold")).ToBeDisabledAsync();
+    }
+
+    [Test]
+    public async Task Placeholder_ShowsOnlyWhileEmpty()
+    {
+        await GoToPage("examples");
+        var editor = Page.Locator("#comment-editor");
+        await Expect(editor).ToHaveAttributeAsync("data-empty", "");
+        await editor.ClickAsync();
+        await Page.Keyboard.TypeAsync("x");
+        await Expect(editor).Not.ToHaveAttributeAsync("data-empty", new Regex(".*"));
+        await Expect(Page.Locator("#comment-length")).Not.ToHaveTextAsync("Empty");
+    }
+}
