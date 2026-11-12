@@ -1,0 +1,55 @@
+@page "/filemanager/examples"
+
+<DocHeader Slug="filemanager" Page="examples" />
+
+<div class="doc-section">
+    <h2>Tiles</h2>
+    <p class="doc-note"><code>View="NxFileManagerView.Tiles"</code> starts with large icons; <code>@@bind-View</code> keeps the user's choice.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxFileManager TItem="FileEntry" Id="tiles-files" Data="DemoFiles.Project" @bind-View="tilesView" Height="380px" Style="width:100%" />
+        <span class="demo-value" id="tiles-view">View: @tilesView</span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Search</h2>
+    <p class="doc-note">
+        The search box finds names containing the text anywhere below the open folder (the whole project from the top), as
+        ERP's own search tool did; each result says which folder it is in. Opening a folder from the results leaves them.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxFileManager TItem="FileEntry" Id="search-files" Data="DemoFiles.Project" Height="360px" Style="width:100%" />
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Opening a Folder from Code</h2>
+    <p class="doc-note"><code>@@bind-Folder</code> goes both ways: these buttons open a folder; the breadcrumb and tree follow.</p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            @foreach (var name in new[] { "Shop", "Cylinder breaks", "Photos" })
+            {
+                <NxButton id="@($"go-{name.Replace(' ', '-').ToLowerInvariant()}")" Size="NxButtonSize.Small" OnClick="() => goFolder = Find(name)">@name</NxButton>
+            }
+            <NxButton id="go-top" Size="NxButtonSize.Small" OnClick="() => goFolder = null">Top</NxButton>
+        </div>
+        <NxFileManager TItem="FileEntry" Id="go-files" Data="DemoFiles.Project" @bind-Folder="goFolder" Searchable="false" RootName="Project"
+                       Height="320px" Style="width:100%" />
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Empty</h2>
+    <div class="demo-stage demo-stage-column">
+        <NxFileManager TItem="FileEntry" Id="empty-files" Data="Array.Empty<FileEntry>()" EmptyText="No files for this project yet" Height="220px" Style="width:100%" />
+    </div>
+</div>
+
+<DocPager Slug="filemanager" Page="examples" />
+
+@code {
+    NxFileManagerView tilesView = NxFileManagerView.Tiles;
+    FileEntry? goFolder;
+
+    static FileEntry? Find(string name) => DemoFiles.Project.FirstOrDefault(e => e.IsDirectory && e.Name == name);
+}

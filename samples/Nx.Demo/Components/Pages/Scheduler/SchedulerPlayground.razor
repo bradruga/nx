@@ -1,0 +1,95 @@
+@page "/scheduler/playground"
+
+<DocHeader Slug="scheduler" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-full demo-preview-inner-stretch">
+                <NxScheduler Id="playground-scheduler" Data="DemoShifts.Week(pgDate)" Date="pgDate" DateChanged="Moved" StartTime="Hour(pgStart)"
+                             EndTime="@(pgEnd >= 24 ? new TimeOnly(23, 59) : Hour(pgEnd))" WorkDayStart="Hour(pgWorkStart)" WorkDayEnd="Hour(pgWorkEnd)"
+                             SlotDuration="pgSlot" SlotDivisions="pgDivisions" Height="@pgHeight" AriaLabel="@OrNull(pgAriaLabel)"
+                             ItemTemplate="@(pgTemplate ? ShiftTemplate : null)" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-date">Date: @pgDate.ToString("ddd, MMM d")</span>
+                <span class="demo-counter" id="playground-moves">DateChanged × @pgMoves</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Hours</div>
+            <label class="demo-control"><span>StartTime (hour)</span><input type="number" id="pg-start" min="0" max="23" @bind="pgStart" /></label>
+            <label class="demo-control"><span>EndTime (hour, 24 = 23:59)</span><input type="number" id="pg-end" min="1" max="24" @bind="pgEnd" /></label>
+            <label class="demo-control"><span>WorkDayStart (hour)</span><input type="number" id="pg-workstart" min="0" max="23" @bind="pgWorkStart" /></label>
+            <label class="demo-control"><span>WorkDayEnd (hour)</span><input type="number" id="pg-workend" min="1" max="24" @bind="pgWorkEnd" /></label>
+
+            <div class="demo-controls-title">Slots</div>
+            <label class="demo-control">
+                <span>SlotDuration</span>
+                <select id="pg-slot" @bind="pgSlot">
+                    <option value="30">30</option>
+                    <option value="60">60</option>
+                    <option value="120">120</option>
+                </select>
+            </label>
+            <label class="demo-control"><span>SlotDivisions</span><input type="number" id="pg-divisions" min="1" max="4" @bind="pgDivisions" /></label>
+
+            <div class="demo-controls-title">Look</div>
+            <label class="demo-control"><span>Shift template</span><input type="checkbox" id="pg-template" @bind="pgTemplate" /></label>
+            <label class="demo-control">
+                <span>Height</span>
+                <select id="pg-height" @bind="pgHeight">
+                    <option value="420px">420px</option>
+                    <option value="600px">600px</option>
+                </select>
+            </label>
+            <label class="demo-control"><span>AriaLabel</span><input type="text" id="pg-arialabel" @bind="pgAriaLabel" @bind:event="oninput" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="scheduler" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+    static TimeOnly Hour(int hour) => new(Math.Clamp(hour, 0, 23), 0);
+    static readonly RenderFragment<ShiftAppointment> ShiftTemplate = shift =>
+        @<div class="demo-shift" style="background:@shift.Color"><div class="demo-shift-name">@shift.ShiftName</div></div>;
+
+    DateTime pgDate = DateTime.Today;
+    int pgStart, pgEnd = 24, pgWorkStart = 7, pgWorkEnd = 19, pgSlot = 60, pgDivisions = 1, pgMoves;
+    string pgHeight = "420px", pgAriaLabel = "";
+    bool pgTemplate = true;
+
+    void Moved(DateTime date)
+    {
+        pgDate = date;
+        pgMoves++;
+    }
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "Data=\"shifts\"", "@bind-Date=\"week\"" };
+            if (pgStart != 0) attrs.Add($"StartTime=\"new({pgStart}, 0)\"");
+            if (pgEnd < 24) attrs.Add($"EndTime=\"new({pgEnd}, 0)\"");
+            if (pgWorkStart != 8) attrs.Add($"WorkDayStart=\"new({pgWorkStart}, 0)\"");
+            if (pgWorkEnd != 17) attrs.Add($"WorkDayEnd=\"new({Math.Min(pgWorkEnd, 23)}, 0)\"");
+            if (pgSlot != 60) attrs.Add($"SlotDuration=\"{pgSlot}\"");
+            if (pgDivisions != 2) attrs.Add($"SlotDivisions=\"{pgDivisions}\"");
+            if (pgHeight != "600px") attrs.Add($"Height=\"{pgHeight}\"");
+            if (OrNull(pgAriaLabel) is { } label) attrs.Add($"AriaLabel=\"{label}\"");
+            var open = "<NxScheduler " + string.Join("\n             ", attrs);
+            return pgTemplate ? open + ">\n    <ItemTemplate>@context.ShiftName</ItemTemplate>\n</NxScheduler>" : open + " />";
+        }
+    }
+}

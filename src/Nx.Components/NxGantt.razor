@@ -1,0 +1,219 @@
+@namespace Nx.Components
+@typeparam TItem
+
+@{
+    var rows = Rows();
+    var rowHeight = 36.0;
+    var days = DayCount;
+    var start = RangeStart;
+    var timelineWidth = days * SlotWidth;
+}
+<div @ref="root" @attributes="AdditionalAttributes" id="@Id" class="@CssClass" style="@OuterStyle">
+    <CascadingValue Value="this" IsFixed="true">@Columns</CascadingValue>
+    @if (ToolBarTemplate is not null)
+    {
+        <div class="nx-gantt-toolbar">@ToolBarTemplate</div>
+    }
+
+    <div class="nx-gantt-panes">
+        @* ── The task list ── *@
+        <div class="nx-gantt-tree">
+            <div class="nx-gantt-head nx-gantt-tree-head" data-nx-gantt-sync="tree">
+                <div class="nx-gantt-head-row" style="width: @Px(ColumnsWidth)">
+                    @foreach (var column in Shown)
+                    {
+                        var sorted = Same(column, sortColumn);
+                        <div class="nx-gantt-th" style="width: @Px(WidthOf(column))" role="columnheader"
+                             aria-sort="@(sorted ? (sortDescending ? "descending" : "ascending") : null)">
+                            @if (Sortable && column.Field is not null)
+                            {
+                                <button type="button" class="nx-gantt-sort" @onclick="() => SortByAsync(column)">
+                                    @if (column.HeaderTemplate is not null) { @column.HeaderTemplate } else { @(column.Title ?? column.Field) }
+                                    @if (sorted) { <span aria-hidden="true">@(sortDescending ? " ↓" : " ↑")</span> }
+                                </button>
+                            }
+                            else if (column.HeaderTemplate is not null)
+                            {
+                                @column.HeaderTemplate
+                            }
+                            else
+                            {
+                                <span class="nx-gantt-th-text">@(column.Title ?? column.Field)</span>
+                            }
+                        </div>
+                    }
+                </div>
+                @if (FilterRow)
+                {
+                    <div class="nx-gantt-head-row nx-gantt-filter-row" style="width: @Px(ColumnsWidth)">
+                        @foreach (var column in Shown)
+                        {
+                            <div class="nx-gantt-th" style="width: @Px(WidthOf(column))">
+                                @if (column.Filterable && column.Field is not null)
+                                {
+                                    <NxTextBox Value="@FilterText(column)" ValueChanged="v => FilterAsync(column, v)" Immediate="true"
+                                               DebounceDelay="250" Clearable="true" aria-label="@($"Filter {column.Title ?? column.Field}")" Class="nx-gantt-filter" />
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+            <div class="nx-gantt-body nx-gantt-tree-body" data-nx-gantt-sync="tree" role="treegrid" aria-label="@(AriaLabel ?? "Tasks")"
+                 aria-rowcount="@rows.Count">
+                <div style="width: @Px(ColumnsWidth); height: @Px(rows.Count * rowHeight)">
+                    @if (rows.Count == 0)
+                    {
+                        <div class="nx-gantt-empty">@(HasFilter ? "No tasks match" : "No tasks")</div>
+                    }
+                    @foreach (var task in rows)
+                    {
+                        var isSelected = task == selected;
+                        <div @key="task.Id" id="@RowId(task)" role="row" tabindex="@(isSelected || (selected is null && task == rows[0]) ? "0" : "-1")"
+                             class="@(isSelected ? "nx-gantt-row nx-gantt-row-selected" : task == hovered ? "nx-gantt-row nx-gantt-row-hover" : "nx-gantt-row")"
+                             aria-level="@(task.Level + 1)" aria-selected="@(isSelected ? "true" : "false")"
+                             aria-expanded="@(task.Children.Count > 0 ? (IsExpanded(task) ? "true" : "false") : null)"
+                             @onmouseenter="() => hovered = task" @onmouseleave="() => hovered = null"
+                             @onfocus="() => selected = task" @ondblclick="() => OnEdit.InvokeAsync(task.Item)"
+                             @onkeydown="e => RowKeyDownAsync(e, task, rows)">
+                            @foreach (var column in Shown)
+                            {
+                                var editingThis = editing is { } e && e.Node == task && Same(e.Column, column);
+                                <div role="gridcell" class="@(editingThis ? "nx-gantt-td nx-gantt-td-editing" : "nx-gantt-td")" style="width: @Px(WidthOf(column))"
+                                     @onclick="() => CellClickAsync(task, column)">
+                                    @if (Same(column, TreeColumn))
+                                    {
+                                        <span class="nx-gantt-indent" style="width: @Px(task.Level * 18)"></span>
+                                        @if (task.Children.Count > 0)
+                                        {
+                                            <button type="button" class="nx-gantt-toggle" tabindex="-1" aria-label="@(IsExpanded(task) ? "Collapse" : "Expand")"
+                                                    @onclick="() => ToggleAsync(task)" @onclick:stopPropagation="true">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                     aria-hidden="true" class="@(IsExpanded(task) ? "nx-gantt-toggle-open" : null)"><polyline points="9 6 15 12 9 18" /></svg>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <span class="nx-gantt-toggle-space"></span>
+                                        }
+                                    }
+                                    <span class="nx-gantt-cell">
+                                        @if (editingThis)
+                                        {
+                                            @column.EditorTemplate!(task.Item)
+                                        }
+                                        else if (column.Template is not null)
+                                        {
+                                            @column.Template(task.Item)
+                                        }
+                                        else
+                                        {
+                                            @CellText(task, column)
+                                        }
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="nx-gantt-divider" role="separator" aria-orientation="vertical" aria-label="Resize the task list" tabindex="0"></div>
+
+        @* ── The timeline ── *@
+        <div class="nx-gantt-timeline">
+            <div class="nx-gantt-head nx-gantt-time-head" data-nx-gantt-sync="time" aria-hidden="true">
+                <div class="nx-gantt-head-row" style="width: @Px(timelineWidth)">
+                    @for (var w = 0; w < days; w += 7)
+                    {
+                        var weekStart = start.AddDays(w);
+                        <div class="nx-gantt-week" style="width: @Px(7 * SlotWidth)">
+                            @if (WeekHeaderTemplate is not null) { @WeekHeaderTemplate(weekStart) } else { @weekStart.ToString("MMM d, yyyy", Formats) }
+                        </div>
+                    }
+                </div>
+                <div class="nx-gantt-head-row" style="width: @Px(timelineWidth)">
+                    @for (var d = 0; d < days; d++)
+                    {
+                        var day = start.AddDays(d);
+                        <div class="@(day == DateTime.Today ? "nx-gantt-day nx-gantt-today" : "nx-gantt-day")" style="width: @Px(SlotWidth)">
+                            @if (DayHeaderTemplate is not null) { @DayHeaderTemplate(day) } else { @DayText(day) }
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="nx-gantt-body nx-gantt-time-body" data-nx-gantt-sync="time">
+                <div class="nx-gantt-canvas" style="width: @Px(timelineWidth); height: @Px(Math.Max(rows.Count, 1) * rowHeight); --nx-gantt-slot: @Px(SlotWidth)">
+                    @for (var d = 0; d < days; d++)
+                    {
+                        var day = start.AddDays(d);
+                        if (day.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+                        {
+                            <div class="nx-gantt-weekend" style="left: @Px(d * SlotWidth); width: @Px(SlotWidth)"></div>
+                        }
+                    }
+                    <div class="nx-gantt-today-line" style="left: @Px(X(DateTime.Today))"></div>
+                    @for (var i = 0; i < rows.Count; i++)
+                    {
+                        var task = rows[i];
+                        <div class="@(task == selected ? "nx-gantt-lane nx-gantt-lane-selected" : task == hovered ? "nx-gantt-lane nx-gantt-lane-hover" : "nx-gantt-lane")"
+                             style="top: @Px(i * rowHeight); height: @Px(rowHeight)"></div>
+                    }
+                    <svg class="nx-gantt-links" width="@P(timelineWidth)" height="@P(rows.Count * rowHeight)" aria-hidden="true">
+                        <defs>
+                            <marker id="@($"{BaseId}-arrow")" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                                <path d="M0,0 L10,5 L0,10 z" />
+                            </marker>
+                        </defs>
+                        @foreach (var link in Links(rows, rowHeight))
+                        {
+                            <path d="@link.Path" marker-end="@($"url(#{BaseId}-arrow)")" />
+                        }
+                    </svg>
+                    @for (var i = 0; i < rows.Count; i++)
+                    {
+                        var task = rows[i];
+                        if (Bar(task) is not { } bar)
+                        {
+                            continue;
+                        }
+                        var summary = task.Children.Count > 0;
+                        <div class="@(summary ? "nx-gantt-bar nx-gantt-bar-summary" : "nx-gantt-bar")" data-nx-gantt-task="@task.Index"
+                             style="left: @Px(bar.Left); width: @Px(bar.Width); top: @Px(i * rowHeight + 7); height: @Px(rowHeight - 14)"
+                             title="@task.Title" @onmouseenter="() => hovered = task" @onmouseleave="() => hovered = null"
+                             @onclick="() => selected = task" @ondblclick="() => OnEdit.InvokeAsync(task.Item)">
+                            @if (TaskTemplate is not null)
+                            {
+                                @TaskTemplate(task.Item)
+                            }
+                            else
+                            {
+                                <span class="nx-gantt-bar-text">@task.Title</span>
+                            }
+                            @if (OnDependencyCreate.HasDelegate)
+                            {
+                                <span class="nx-gantt-handle nx-gantt-handle-start" data-nx-gantt-handle="start"></span>
+                                <span class="nx-gantt-handle nx-gantt-handle-end" data-nx-gantt-handle="end"></span>
+                            }
+                        </div>
+                    }
+                    @if (hovered is { } tip && Bar(tip) is { } tipBar && rows.IndexOf(tip) is var tipRow and >= 0)
+                    {
+                        <div class="nx-gantt-tooltip" role="tooltip" style="left: @Px(tipBar.Left); top: @Px((tipRow + 1) * rowHeight - 4)">
+                            @if (TooltipTemplate is not null)
+                            {
+                                @TooltipTemplate(tip.Item)
+                            }
+                            else
+                            {
+                                <strong>@tip.Title</strong>
+                                <span>@tip.Start?.ToString("ddd, MMM d", Formats) – @tip.End?.ToString("ddd, MMM d", Formats)</span>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

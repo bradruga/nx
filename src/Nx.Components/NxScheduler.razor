@@ -1,0 +1,68 @@
+@namespace Nx.Components
+@typeparam TItem
+
+<div @attributes="AdditionalAttributes" id="@Id" class="@CssClass" style="@OuterStyle">
+    <div class="nx-scheduler-toolbar">
+        <NxButton Size="NxButtonSize.Small" OnClick="TodayAsync" Disabled="IsThisWeek" data-nx-scheduler="today">Today</NxButton>
+        <NxButtonGroup Size="NxButtonSize.Small">
+            <NxButton Icon="@PreviousIcon" AriaLabel="Previous week" Title="Previous week" OnClick="() => MoveAsync(-7)" data-nx-scheduler="previous" />
+            <NxButton Icon="@NextIcon" AriaLabel="Next week" Title="Next week" OnClick="() => MoveAsync(7)" data-nx-scheduler="next" />
+        </NxButtonGroup>
+        <h2 class="nx-scheduler-range" aria-live="polite">@RangeText</h2>
+    </div>
+
+    @* One scroller for the day headers (sticky) and the hours, so the columns line up both ways. *@
+    <div @ref="body" class="nx-scheduler-grid" style="@GridStyle" tabindex="0" role="region" aria-label="@(AriaLabel ?? RangeText)">
+        <div class="nx-scheduler-head" aria-hidden="true">
+            <div class="nx-scheduler-corner"></div>
+            @foreach (var day in Days)
+            {
+                <div class="@(day == Today ? "nx-scheduler-day-head nx-scheduler-today" : "nx-scheduler-day-head")">
+                    <span class="nx-scheduler-weekday">@day.ToString("ddd", Formats)</span>
+                    <span class="nx-scheduler-date">@day.ToString("%d", Formats)</span>
+                </div>
+            }
+        </div>
+
+        <div class="nx-scheduler-columns">
+            <div class="nx-scheduler-times" aria-hidden="true">
+                @for (var slot = 0; slot < SlotCount; slot++)
+                {
+                    <div class="nx-scheduler-time">@(slot % SlotDivisionsOrOne == 0 ? SlotTime(slot).ToString(TimeFormat, Formats) : "")</div>
+                }
+            </div>
+            @foreach (var day in Days)
+            {
+                <div class="@(day == Today ? "nx-scheduler-day nx-scheduler-today" : "nx-scheduler-day")" role="list"
+                     aria-label="@day.ToString("D", Formats)">
+                    @for (var slot = 0; slot < SlotCount; slot++)
+                    {
+                        <div class="@SlotClass(slot)" aria-hidden="true"></div>
+                    }
+                    @foreach (var placed in PlaceDay(day))
+                    {
+                        <div class="nx-scheduler-event" role="listitem" style="@placed.Style" title="@placed.Tooltip">
+                            <span class="nx-visually-hidden">@placed.Tooltip</span>
+                            <div class="nx-scheduler-event-content" aria-hidden="true">
+                                @if (ItemTemplate is not null)
+                                {
+                                    @ItemTemplate(placed.Item)
+                                }
+                                else
+                                {
+                                    <span class="nx-scheduler-event-title">@placed.Title</span>
+                                    <span class="nx-scheduler-event-time">@placed.TimeText</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private static readonly RenderFragment PreviousIcon = @<NxIcon Icon="NxIcons.ChevronLeft" />;
+    private static readonly RenderFragment NextIcon = @<NxIcon Icon="NxIcons.ChevronRight" />;
+}

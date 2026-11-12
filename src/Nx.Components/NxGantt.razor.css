@@ -1,0 +1,322 @@
+.nx-gantt {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 0;
+    max-width: 100%;
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius);
+    background: var(--nx-surface);
+    overflow: hidden;
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+    color: var(--nx-fg);
+}
+
+.nx-gantt-toolbar {
+    display: flex;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--nx-border);
+}
+
+.nx-gantt-panes {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+.nx-gantt-tree {
+    display: flex;
+    flex: 0 0 var(--nx-gantt-tree-width);
+    flex-direction: column;
+    min-width: 0;
+    max-width: calc(100% - 120px);
+}
+
+.nx-gantt-timeline {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.nx-gantt-divider {
+    flex: 0 0 6px;
+    background: var(--nx-border);
+    cursor: col-resize;
+    touch-action: none;
+    outline: none;
+}
+
+.nx-gantt-divider:hover,
+.nx-gantt-resizing .nx-gantt-divider { background: var(--nx-accent); }
+.nx-gantt-divider:focus-visible { background: var(--nx-focus-ring-color); }
+.nx-gantt-resizing { cursor: col-resize; user-select: none; }
+
+/* ── Headers (scrolled by their body) and bodies ─────────────────────────── */
+
+.nx-gantt-head {
+    flex-shrink: 0;
+    overflow: hidden;
+    border-bottom: 1px solid var(--nx-border);
+    background: var(--nx-gantt-head-bg);
+}
+
+.nx-gantt-head-row {
+    display: flex;
+    min-height: calc(var(--nx-gantt-head-height) / 2);
+}
+
+/* The task list's header is as tall as the timeline's two rows; with a filter row it grows, and so does the timeline's. */
+.nx-gantt-tree-head .nx-gantt-head-row:first-child { min-height: var(--nx-gantt-head-height); }
+.nx-gantt-tree-head:has(.nx-gantt-filter-row) .nx-gantt-head-row:first-child { min-height: calc(var(--nx-gantt-head-height) / 2); }
+.nx-gantt:has(.nx-gantt-filter-row) .nx-gantt-time-head .nx-gantt-head-row:last-child { min-height: calc(var(--nx-gantt-head-height) / 2 + var(--nx-gantt-filter-height)); align-items: flex-start; }
+.nx-gantt-filter-row { min-height: var(--nx-gantt-filter-height); align-items: center; }
+
+.nx-gantt-th {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 0 8px;
+    border-right: 1px solid var(--nx-gantt-line);
+    color: var(--nx-fg-muted);
+    font-size: var(--nx-font-size-sm);
+    font-weight: var(--nx-font-weight-medium);
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.nx-gantt-filter-row .nx-gantt-th { padding: 3px 4px; }
+.nx-gantt ::deep .nx-gantt-filter { width: 100%; }
+
+.nx-gantt-sort {
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.nx-gantt-sort:hover { color: var(--nx-fg); }
+.nx-gantt-sort:focus-visible { outline: 2px solid var(--nx-focus-ring-color); outline-offset: 2px; }
+
+.nx-gantt-body {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+.nx-gantt-empty { padding: 16px; color: var(--nx-fg-muted); }
+
+/* ── Task rows ───────────────────────────────────────────────────────────── */
+
+.nx-gantt-row {
+    display: flex;
+    box-sizing: border-box;
+    height: var(--nx-gantt-row-height);
+    border-bottom: 1px solid var(--nx-gantt-line);
+    outline: none;
+}
+
+.nx-gantt-row-hover { background: var(--nx-item-hover-bg); }
+.nx-gantt-row-selected { background: var(--nx-accent-subtle); }
+.nx-gantt-row:focus-visible { box-shadow: inset 0 0 0 2px var(--nx-focus-ring-color); }
+
+.nx-gantt-td {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 0 8px;
+    border-right: 1px solid var(--nx-gantt-line);
+    overflow: hidden;
+}
+
+.nx-gantt-td-editing { padding: 0 2px; overflow: visible; background: var(--nx-surface); box-shadow: inset 0 0 0 1px var(--nx-accent); }
+
+.nx-gantt-cell {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.nx-gantt-td-editing .nx-gantt-cell { overflow: visible; }
+
+.nx-gantt-indent { flex-shrink: 0; }
+.nx-gantt-toggle-space { flex: 0 0 22px; }
+
+.nx-gantt-toggle {
+    display: inline-flex;
+    flex: 0 0 22px;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: var(--nx-radius-sm);
+    background: none;
+    color: var(--nx-fg-muted);
+    cursor: pointer;
+}
+
+.nx-gantt-toggle:hover { background: var(--nx-surface-active); color: var(--nx-fg); }
+.nx-gantt-toggle svg { transition: transform 0.15s ease; }
+.nx-gantt-toggle svg.nx-gantt-toggle-open { transform: rotate(90deg); }
+
+/* ── Timeline ────────────────────────────────────────────────────────────── */
+
+.nx-gantt-week,
+.nx-gantt-day {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border-right: 1px solid var(--nx-gantt-line);
+    color: var(--nx-fg-muted);
+    font-size: var(--nx-font-size-sm);
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.nx-gantt-week { justify-content: flex-start; padding: 0 6px; font-weight: var(--nx-font-weight-medium); border-bottom: 1px solid var(--nx-gantt-line); }
+.nx-gantt-today { color: var(--nx-accent); font-weight: 700; }
+
+.nx-gantt-canvas {
+    position: relative;
+    min-height: 100%;
+    background-image: linear-gradient(to right, var(--nx-gantt-line) 1px, transparent 1px);
+    background-size: var(--nx-gantt-slot) 100%;
+}
+
+.nx-gantt-weekend {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: var(--nx-gantt-weekend-bg);
+}
+
+.nx-gantt-today-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--nx-gantt-today);
+    opacity: 0.6;
+}
+
+.nx-gantt-lane {
+    position: absolute;
+    left: 0;
+    right: 0;
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--nx-gantt-line);
+}
+
+.nx-gantt-lane-hover { background: var(--nx-item-hover-bg); }
+.nx-gantt-lane-selected { background: var(--nx-accent-subtle); }
+
+.nx-gantt-links {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: visible;
+    pointer-events: none;
+}
+
+.nx-gantt-links path {
+    fill: none;
+    stroke: var(--nx-gantt-link);
+    stroke-width: 1.5;
+}
+
+.nx-gantt-links marker path { fill: var(--nx-gantt-link); stroke: none; }
+
+.nx-gantt-bar {
+    position: absolute;
+    box-sizing: border-box;
+    border-radius: var(--nx-radius-sm);
+    background: var(--nx-gantt-bar-bg);
+    color: var(--nx-gantt-bar-fg);
+    font-size: var(--nx-font-size-sm);
+    cursor: default;
+    user-select: none;
+}
+
+.nx-gantt-bar-summary { background: var(--nx-gantt-summary-bg); }
+
+.nx-gantt-bar-text {
+    display: block;
+    padding: 0 6px;
+    line-height: calc(var(--nx-gantt-row-height) - 14px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Dependency handles: dots at each end while the pointer is on the bar. */
+.nx-gantt-handle {
+    position: absolute;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    margin-top: -5px;
+    border: 2px solid var(--nx-gantt-bar-bg);
+    border-radius: 50%;
+    background: var(--nx-surface);
+    cursor: crosshair;
+    opacity: 0;
+    transition: opacity var(--nx-transition);
+}
+
+.nx-gantt-handle-start { left: -7px; }
+.nx-gantt-handle-end { right: -7px; }
+.nx-gantt-bar:hover .nx-gantt-handle,
+.nx-gantt-linking .nx-gantt-handle { opacity: 1; }
+
+.nx-gantt-drag-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.nx-gantt-drag-line line { stroke: var(--nx-accent); stroke-width: 2; stroke-dasharray: 4 3; }
+
+.nx-gantt-tooltip {
+    position: absolute;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-width: 280px;
+    padding: 6px 10px;
+    border-radius: var(--nx-radius);
+    background: var(--nx-tooltip-bg);
+    color: var(--nx-tooltip-fg);
+    box-shadow: var(--nx-shadow-popup);
+    font-size: var(--nx-font-size-sm);
+    pointer-events: none;
+}
+
+@media (pointer: coarse) {
+    .nx-gantt-divider { flex-basis: 14px; }
+    .nx-gantt-handle { width: 18px; height: 18px; margin-top: -9px; opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nx-gantt-toggle svg { transition: none; }
+}

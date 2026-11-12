@@ -22,7 +22,7 @@ public class SiteLayoutTests : PageTest
                                                           "form", "icon", "loader", "datetimepicker", "autocomplete",
                                                           "buttongroup", "colorpicker", "progressbar", "notification",
                                                           "dialog", "mediaquery", "togglebutton", "upload", "fileselect", "treeview", "maskedtextbox",
-                                                          "tilelayout", "carousel", "colorgradient", "slider", "chiplist", "toolbar", "dateinput", "chart", "editor", "chat", "pdfviewer", "popup", "signature", "circulargauge", "treelist"];
+                                                          "tilelayout", "carousel", "colorgradient", "slider", "chiplist", "toolbar", "dateinput", "chart", "editor", "chat", "pdfviewer", "popup", "signature", "circulargauge", "treelist", "scheduler", "filemanager", "gantt"];
     private static readonly string[] SubPages = ["overview", "examples", "playground", "api"];
 
     private static IEnumerable<string> AllPaths() =>

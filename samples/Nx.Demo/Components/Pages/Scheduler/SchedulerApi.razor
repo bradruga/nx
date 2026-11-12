@@ -1,0 +1,59 @@
+@page "/scheduler/api"
+
+<DocHeader Slug="scheduler" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Data</td><td>IEnumerable&lt;TItem&gt;?</td><td>—</td><td>The items; each needs a start and an end.</td></tr>
+                <tr><td>StartField / EndField / TitleField</td><td>string</td><td>Start / End / Title</td><td>Properties read by name (<code>DateTime</code> or <code>DateTimeOffset</code> for the times).</td></tr>
+                <tr><td>ItemTemplate</td><td>RenderFragment&lt;TItem&gt;?</td><td>title + time</td><td>An item's content; it fills the item's box.</td></tr>
+                <tr><td>Date</td><td>DateTime</td><td>today</td><td>A day of the week shown; <code>@@bind-Date</code>.</td></tr>
+                <tr><td>StartTime / EndTime</td><td>TimeOnly</td><td>00:00 / 23:59</td><td>The hours shown each day; the end rounds up to a whole row.</td></tr>
+                <tr><td>WorkDayStart / WorkDayEnd</td><td>TimeOnly</td><td>08:00 / 17:00</td><td>Hours outside are shaded; the calendar opens scrolled to the start.</td></tr>
+                <tr><td>SlotDuration</td><td>int</td><td>60</td><td>Minutes per labelled slot.</td></tr>
+                <tr><td>SlotDivisions</td><td>int</td><td>2</td><td>Rows per slot.</td></tr>
+                <tr><td>Culture</td><td>CultureInfo?</td><td>current</td><td>Formats and the first day of the week.</td></tr>
+                <tr><td>Height</td><td>string?</td><td>600px</td><td>The calendar's height; the hours scroll.</td></tr>
+                <tr><td>AriaLabel</td><td>string?</td><td>the week's dates</td><td>The hours' accessible name.</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>On the outer element; other attributes go there too.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Event</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>DateChanged</td><td>EventCallback&lt;DateTime&gt;</td><td>Today or an arrow moved to another week.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-scheduler-slot-height</td><td>40px</td><td>Each row.</td></tr>
+                <tr><td>--nx-scheduler-gutter</td><td>64px</td><td>The time labels' column.</td></tr>
+                <tr><td>--nx-scheduler-day-min-width</td><td>96px</td><td>A day's least width; narrower scrolls sideways.</td></tr>
+                <tr><td>--nx-scheduler-line</td><td>#e6e6ea (#2c2c33 dark)</td><td>Grid lines.</td></tr>
+                <tr><td>--nx-scheduler-off-bg</td><td>#f6f6f8 (#121215 dark)</td><td>Hours outside the work day.</td></tr>
+                <tr><td>--nx-scheduler-today-bg</td><td>accent, 4%</td><td>Today's column.</td></tr>
+                <tr><td>--nx-scheduler-head-bg</td><td>--nx-surface</td><td>The day headers.</td></tr>
+                <tr><td>--nx-scheduler-event-bg / -fg</td><td>--nx-accent / --nx-accent-fg</td><td>An item without a template.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="scheduler" Page="api" />

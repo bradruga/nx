@@ -1,0 +1,60 @@
+@page "/filemanager/api"
+
+<DocHeader Slug="filemanager" Page="api" />
+
+<div class="doc-section">
+    <h2>Parameters</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Data</td><td>IEnumerable&lt;TItem&gt;?</td><td>—</td><td>Every folder and file, flat; each names its parent by id.</td></tr>
+                <tr><td>IdField / ParentIdField</td><td>string</td><td>Id / ParentId</td><td>An entry's id and its folder's (<code>null</code> at the top).</td></tr>
+                <tr><td>NameField / ExtensionField</td><td>string</td><td>Name / Extension</td><td>The name (without extension for a file) and the extension (<code>.pdf</code>).</td></tr>
+                <tr><td>IsDirectoryField</td><td>string</td><td>IsDirectory</td><td>Folder or file.</td></tr>
+                <tr><td>SizeField / DateModifiedField / DateCreatedField</td><td>string</td><td>Size / DateModified / DateCreated</td><td>Optional; missing properties show nothing.</td></tr>
+                <tr><td>Folder</td><td>TItem?</td><td>top</td><td>The open folder; <code>@@bind-Folder</code>.</td></tr>
+                <tr><td>SelectedItem</td><td>TItem?</td><td>—</td><td>The selected entry; <code>@@bind-SelectedItem</code>.</td></tr>
+                <tr><td>View</td><td>NxFileManagerView</td><td>Grid</td><td>Grid or Tiles at first; <code>@@bind-View</code> keeps the user's choice.</td></tr>
+                <tr><td>Searchable</td><td>bool</td><td>true</td><td>The search box: names containing the text, below the open folder.</td></tr>
+                <tr><td>RootName</td><td>string</td><td>Files</td><td>The top folder's name in the breadcrumb.</td></tr>
+                <tr><td>EmptyText / NoResultsText</td><td>string</td><td>This folder is empty / No files match</td><td>Shown with nothing to list.</td></tr>
+                <tr><td>Culture</td><td>CultureInfo?</td><td>current</td><td>Date formats.</td></tr>
+                <tr><td>Height</td><td>string?</td><td>500px</td><td>The file manager's height.</td></tr>
+                <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>On the outer element; other attributes go there too.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Event</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>OnOpen</td><td>EventCallback&lt;TItem&gt;</td><td>A file opened: double-click, Enter, or a tap on a touch screen. Folders navigate.</td></tr>
+                <tr><td>OnDownload</td><td>EventCallback&lt;TItem&gt;</td><td>A Download button (toolbar, details pane); without a handler they are hidden.</td></tr>
+                <tr><td>FolderChanged / SelectedItemChanged / ViewChanged</td><td>EventCallback</td><td>The user opened a folder, selected an entry, switched the view.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-filemanager-tree-width / -details-width</td><td>220px / 220px</td><td>The side panes (hidden under 520 / 720 px of the component's width).</td></tr>
+                <tr><td>--nx-filemanager-row-height</td><td>34px</td><td>A grid row.</td></tr>
+                <tr><td>--nx-filemanager-date-width / -type-width / -size-width</td><td>150 / 100 / 80px</td><td>Grid columns (date and type hidden under 640 px).</td></tr>
+                <tr><td>--nx-filemanager-tile-width</td><td>110px</td><td>A tile's least width.</td></tr>
+                <tr><td>--nx-filemanager-folder</td><td>#d9a520</td><td>Folder icons.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="filemanager" Page="api" />

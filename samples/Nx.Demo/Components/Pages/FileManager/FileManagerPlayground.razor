@@ -1,0 +1,84 @@
+@page "/filemanager/playground"
+
+<DocHeader Slug="filemanager" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-full demo-preview-inner-stretch">
+                <NxFileManager TItem="FileEntry" Id="playground-files" Data="DemoFiles.Project" @bind-Folder="pgFolder" @bind-SelectedItem="pgSelected"
+                               View="pgView" ViewChanged="v => pgView = v" Searchable="pgSearchable" RootName="@pgRoot" EmptyText="@pgEmpty"
+                               NoResultsText="@pgNoResults" Height="@pgHeight" OnOpen="e => pgOpens++"
+                               OnDownload="@(pgDownload ? EventCallback.Factory.Create<FileEntry>(this, () => pgDownloads++) : default)" />
+            </div>
+            <div class="demo-row">
+                <span class="demo-counter" id="playground-opens">OnOpen × @pgOpens</span>
+                <span class="demo-counter" id="playground-downloads">OnDownload × @pgDownloads</span>
+                <span class="demo-value" id="playground-selected">@(pgSelected is null ? "Nothing selected" : pgSelected.Name + pgSelected.Extension)</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Behavior</div>
+            <label class="demo-control">
+                <span>View</span>
+                <select id="pg-view" @bind="pgView">
+                    @foreach (var v in Enum.GetValues<NxFileManagerView>())
+                    {
+                        <option value="@v">@v</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control"><span>Searchable</span><input type="checkbox" id="pg-searchable" @bind="pgSearchable" /></label>
+            <label class="demo-control"><span>OnDownload handler</span><input type="checkbox" id="pg-download" @bind="pgDownload" /></label>
+
+            <div class="demo-controls-title">Text</div>
+            <label class="demo-control"><span>RootName</span><input type="text" id="pg-root" @bind="pgRoot" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>EmptyText</span><input type="text" id="pg-empty" @bind="pgEmpty" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>NoResultsText</span><input type="text" id="pg-noresults" @bind="pgNoResults" @bind:event="oninput" /></label>
+
+            <div class="demo-controls-title">Look</div>
+            <label class="demo-control">
+                <span>Height</span>
+                <select id="pg-height" @bind="pgHeight">
+                    <option value="380px">380px</option>
+                    <option value="500px">500px</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="filemanager" Page="playground" />
+
+@code {
+    FileEntry? pgFolder, pgSelected;
+    NxFileManagerView pgView;
+    bool pgSearchable = true, pgDownload = true;
+    string pgRoot = "Files", pgEmpty = "This folder is empty", pgNoResults = "No files match", pgHeight = "500px";
+    int pgOpens, pgDownloads;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "Data=\"entries\"", "@bind-Folder=\"folder\"", "@bind-SelectedItem=\"selected\"" };
+            if (pgView != NxFileManagerView.Grid) attrs.Add($"View=\"NxFileManagerView.{pgView}\"");
+            if (!pgSearchable) attrs.Add("Searchable=\"false\"");
+            if (pgRoot != "Files") attrs.Add($"RootName=\"{pgRoot}\"");
+            if (pgEmpty != "This folder is empty") attrs.Add($"EmptyText=\"{pgEmpty}\"");
+            if (pgNoResults != "No files match") attrs.Add($"NoResultsText=\"{pgNoResults}\"");
+            if (pgHeight != "500px") attrs.Add($"Height=\"{pgHeight}\"");
+            attrs.Add("OnOpen=\"OpenAsync\"");
+            if (pgDownload) attrs.Add("OnDownload=\"DownloadAsync\"");
+            return "<NxFileManager " + string.Join("\n               ", attrs) + " />";
+        }
+    }
+}

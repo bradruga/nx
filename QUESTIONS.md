@@ -578,3 +578,34 @@ Brad's 11/12 calls: build all four; the PDF viewer wraps pdf.js with an Nx-theme
 171. **Found and fixed while checking**: columns were looked up by record equality (two columns with equal values were
      confused); deeper rows pushed the other columns right in a narrow tree (the tree column's least width now subtracts
      the row's indent); the screen-reader column titles escaped the scroller and widened the page at 390 px.
+
+## Pass 13 — NxScheduler, NxFileManager, NxGantt, from ERP's usages (read only)
+
+Brad's 11/12 call: build all three.
+
+172. **NxScheduler is what the shift schedule uses**: read-only (`AllowCreate/Update/Delete` were all false), one week
+     view, fields by name with Telerik's defaults (`Start`, `End`, `Title`), `ItemTemplate`, `@bind-Date`. Telerik's
+     `SchedulerWeekView` parameters moved onto the component; its `DateTime` times are `TimeOnly`
+     (`StartTime="TimeOnly.FromDateTime(vm.SchedulerDayStart)"`). Overnight shifts split at midnight, as the page's
+     previous-week spillover needs. Not built: day, month and timeline views, all-day row, creating, dragging or editing
+     items, resources.
+173. **NxFileManager builds in what the project files page worked around**: folders before files (the page reflected into
+     Telerik's sort member), a read-only Download in place of Rename/Delete (hidden there with CSS), `OnOpen` for a file
+     (Telerik has no open event; the page caught double-clicks on a wrapper and taps by pointer type), a search that
+     matches anywhere below the open folder (the page's own tool), and a tree that stays open to the folder shown. Bound to
+     the flat list with Telerik's field names; `Path` / `PathChanged` became `@bind-Folder` (the folder item). Not built:
+     upload, rename, delete, move, new folder, multi-select, context menu.
+174. **NxGantt covers the project schedule page except two things**: column resizing (`ColumnResizable`) and multi-column
+     sort (`SortMode.Multiple`: one column at a time here). Telerik's popup edit form became `OnEdit`: the page opens its own
+     `ProjectSchedulePopupForm` in an NxDialog, as it already supplies one. `GetState`/`SetState` became parameters and
+     members: `@bind-TreeListWidth`, `@bind-ExpandedItems`, `HasSort` / `HasFilter`, `ClearSortAsync` /
+     `ClearFilterAsync`, `OnStateChanged`. `OnCreate` / `OnDelete` stay the page's (its Add button and row menu).
+     Dependencies are drawn, and created by dragging between bar handles (`OnDependencyCreate`).
+175. **Cell editing commits on leaving**: a press outside the cell, Enter, Tab or Escape ends it and raises `OnUpdate`; the
+     editor template has already written the item (as ERP's templates bind directly). There is no cancel that restores
+     the old value.
+176. **Found and fixed while checking**: (a) NxGantt's columns were matched by record, and the records are replaced after
+     each render, so a click never opened its editor; (b) typing in an editor re-renders the page, which rebuilt the tasks
+     and dropped the open edit: selected, hovered and edited tasks are now re-found by id; (c) NxFileManager's grid scrolled
+     sideways with both side panes open: its columns now answer to the list's own width; (d) NxScheduler's overnight times
+     read "Thu A" (`"ddd t"` is a custom format where `t` is the AM/PM letter).

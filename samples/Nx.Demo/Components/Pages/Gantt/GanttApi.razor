@@ -1,0 +1,87 @@
+@page "/gantt/api"
+
+<DocHeader Slug="gantt" Page="api" />
+
+<div class="doc-section">
+    <h2>NxGantt</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Data</td><td>IEnumerable&lt;TItem&gt;?</td><td>—</td><td>Every task, flat.</td></tr>
+                <tr><td>IdField / ParentIdField</td><td>string</td><td>Id / ParentId</td><td>A task's id and its parent's.</td></tr>
+                <tr><td>TitleField / StartField / EndField</td><td>string</td><td>Title / Start / End</td><td>The bar's text and times (<code>DateTime</code>, <code>DateTimeOffset</code> or <code>DateOnly</code>; the end is where the bar stops).</td></tr>
+                <tr><td>Columns</td><td>RenderFragment?</td><td>—</td><td>The <code>NxGanttColumn</code>s.</td></tr>
+                <tr><td>Dependencies</td><td>IEnumerable?</td><td>—</td><td>Links, drawn as arrows; fields <code>PredecessorIdField</code>, <code>SuccessorIdField</code>, <code>TypeField</code> (defaults PredecessorId, SuccessorId, Type).</td></tr>
+                <tr><td>SlotWidth</td><td>double</td><td>30</td><td>Pixels per day: the zoom.</td></tr>
+                <tr><td>DayHeaderDateFormat</td><td>string</td><td>{0:%d}</td><td>A day's header.</td></tr>
+                <tr><td>WeekHeaderTemplate / DayHeaderTemplate</td><td>RenderFragment&lt;DateTime&gt;?</td><td>—</td><td>The timeline's header cells.</td></tr>
+                <tr><td>TaskTemplate</td><td>RenderFragment&lt;TItem&gt;?</td><td>title</td><td>A bar's content; it fills the bar.</td></tr>
+                <tr><td>TooltipTemplate</td><td>RenderFragment&lt;TItem&gt;?</td><td>title + dates</td><td>Under a bar while the pointer is on it.</td></tr>
+                <tr><td>TreeListWidth</td><td>string?</td><td>40%</td><td>The task list's width; <code>@@bind-TreeListWidth</code> hears the divider (<code>"420px"</code>).</td></tr>
+                <tr><td>Sortable</td><td>bool</td><td>false</td><td>Header clicks sort among siblings: ascending, descending, off.</td></tr>
+                <tr><td>FilterRow</td><td>bool</td><td>false</td><td>Filter boxes: tasks containing the text, with their parents.</td></tr>
+                <tr><td>ExpandedItems</td><td>IEnumerable&lt;TItem&gt;?</td><td>all</td><td><code>@@bind-ExpandedItems</code>; <code>null</code> expands every task.</td></tr>
+                <tr><td>ToolBarTemplate</td><td>RenderFragment?</td><td>—</td><td>A toolbar over the Gantt.</td></tr>
+                <tr><td>Height / Width</td><td>string?</td><td>600px / —</td><td>CSS sizes.</td></tr>
+                <tr><td>Culture / AriaLabel / Id / Class / Style</td><td></td><td>—</td><td>Dates, the task list's name ("Tasks"), the outer element.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxGanttColumn</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Field / Title</td><td>string?</td><td>—</td><td>The property by name; the header (default: the field).</td></tr>
+                <tr><td>Width</td><td>string?</td><td>120px</td><td>Pixels.</td></tr>
+                <tr><td>DisplayFormat</td><td>string?</td><td>—</td><td><code>{0:MM/dd/yy}</code> or <code>MM/dd/yy</code>.</td></tr>
+                <tr><td>Expandable</td><td>bool</td><td>false</td><td>Holds the tree's arrows and indent.</td></tr>
+                <tr><td>Visible / Editable / Filterable</td><td>bool</td><td>true</td><td>Shown; edited in place (with an <code>EditorTemplate</code>); a filter box.</td></tr>
+                <tr><td>Template / EditorTemplate</td><td>RenderFragment&lt;TItem&gt;?</td><td>—</td><td>The cell, and the cell while edited.</td></tr>
+                <tr><td>HeaderTemplate</td><td>RenderFragment?</td><td>—</td><td>The header's content.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events &amp; Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>OnEdit</td><td>EventCallback&lt;TItem&gt;</td><td>Double-click on a row or bar, Enter on a row: open your form.</td></tr>
+                <tr><td>OnUpdate</td><td>EventCallback&lt;TItem&gt;</td><td>A cell edited in place was left; the editor already wrote the item.</td></tr>
+                <tr><td>OnDependencyCreate</td><td>EventCallback&lt;NxGanttDependencyCreateEventArgs&lt;TItem&gt;&gt;</td><td>A link drawn from one bar to another: <code>Predecessor</code>, <code>Successor</code>, <code>Type</code>.</td></tr>
+                <tr><td>OnStateChanged</td><td>EventCallback</td><td>The sort or a filter changed.</td></tr>
+                <tr><td>TreeListWidthChanged / ExpandedItemsChanged</td><td>EventCallback</td><td>The divider moved; a task opened or closed.</td></tr>
+                <tr><td>HasSort / HasFilter</td><td>bool</td><td>A sort or a filter is on.</td></tr>
+                <tr><td>ClearSortAsync() / ClearFilterAsync()</td><td>Task</td><td>Back to the data's order; empty the filters.</td></tr>
+                <tr><td>Rebind()</td><td>void</td><td>Draws again after the data changed in place outside a render.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-gantt-row-height</td><td>36px</td><td>A task row.</td></tr>
+                <tr><td>--nx-gantt-head-height / -filter-height</td><td>56px / 40px</td><td>The headers and the filter row.</td></tr>
+                <tr><td>--nx-gantt-head-bg / -line</td><td>--nx-surface-hover / #e6e6ea</td><td>Headers; grid lines.</td></tr>
+                <tr><td>--nx-gantt-weekend-bg / -today</td><td>#f6f6f8 / --nx-danger</td><td>Weekend days; today's line.</td></tr>
+                <tr><td>--nx-gantt-bar-bg / -bar-fg / -summary-bg</td><td>accent / accent-fg / #5f6b73</td><td>Bars without a template; summary (parent) bars.</td></tr>
+                <tr><td>--nx-gantt-link</td><td>#6b6b78</td><td>Dependency arrows.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="gantt" Page="api" />

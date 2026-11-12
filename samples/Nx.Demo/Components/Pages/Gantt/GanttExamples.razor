@@ -1,0 +1,93 @@
+@page "/gantt/examples"
+
+<DocHeader Slug="gantt" Page="examples" />
+
+<div class="doc-section">
+    <h2>Drawing Dependencies</h2>
+    <p class="doc-note">
+        With <code>OnDependencyCreate</code> each bar shows a handle at both ends: drag from one to another bar to link them
+        (end to start is finish-to-start). Add the link to <code>Dependencies</code> and its arrow appears.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxGantt TItem="ScheduleTask" Id="links-gantt" Data="linkTasks" Dependencies="drawn" OnDependencyCreate="Link" TreeListWidth="260px"
+                 Height="360px" Style="width:100%">
+            <Columns>
+                <NxGanttColumn Field="@nameof(ScheduleTask.Title)" Title="Task" Width="200px" Expandable="true" />
+            </Columns>
+        </NxGantt>
+        <span class="demo-value" id="links-count">@drawn.Count links@(lastLink is null ? "" : $" · last: {lastLink}")</span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Sorting &amp; the Filter Row</h2>
+    <p class="doc-note">
+        <code>Sortable</code>: a header click sorts tasks among their siblings (again for descending, a third time for the
+        data's order). <code>FilterRow</code>: tasks containing the text, with their parents. <code>HasSort</code> and
+        <code>HasFilter</code> drive the Clear buttons, as ERP's toolbar does.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxGantt @ref="filtered" TItem="ScheduleTask" Id="filter-gantt" Data="filterTasks" Sortable="true" FilterRow="true" OnStateChanged="StateHasChanged"
+                 TreeListWidth="420px" Height="380px" Style="width:100%">
+            <ToolBarTemplate>
+                @if (filtered?.HasFilter == true)
+                {
+                    <NxButton id="clear-filter" Size="NxButtonSize.Small" Variant="NxButtonVariant.Danger" OnClick="() => filtered.ClearFilterAsync()">Clear Filter</NxButton>
+                }
+                @if (filtered?.HasSort == true)
+                {
+                    <NxButton id="clear-sort" Size="NxButtonSize.Small" Variant="NxButtonVariant.Danger" OnClick="() => filtered.ClearSortAsync()">Clear Sort</NxButton>
+                }
+                <span class="demo-value">Sort or filter to see the Clear buttons</span>
+            </ToolBarTemplate>
+            <Columns>
+                <NxGanttColumn Field="@nameof(ScheduleTask.Title)" Title="Task" Width="200px" Expandable="true" />
+                <NxGanttColumn Field="@nameof(ScheduleTask.Resources)" Width="130px" />
+                <NxGanttColumn Field="@nameof(ScheduleTask.Days)" Width="80px" />
+            </Columns>
+        </NxGantt>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Templates</h2>
+    <p class="doc-note">
+        <code>TaskTemplate</code> draws each bar (here in the task's color, with its days), <code>TooltipTemplate</code> what
+        shows under it, and <code>WeekHeaderTemplate</code> / <code>DayHeaderTemplate</code> the timeline's headers — ERP shows
+        one letter per day.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxGantt TItem="ScheduleTask" Id="template-gantt" Data="templateTasks" Dependencies="templateLinks" SlotWidth="22" TreeListWidth="240px"
+                 Height="360px" Style="width:100%">
+            <TaskTemplate>
+                <div class="demo-gantt-bar" style="background:@(string.IsNullOrEmpty(context.Color) ? "#5f6b73" : context.Color)">@context.Title · @context.Days d</div>
+            </TaskTemplate>
+            <TooltipTemplate>
+                <strong>@context.Title</strong>
+                <span>Start: @context.Start.ToString("ddd, MMM d")</span>
+                <span>End: @context.End.AddDays(-1).ToString("ddd, MMM d")</span>
+            </TooltipTemplate>
+            <WeekHeaderTemplate>@context.ToString("MMM d, yy")</WeekHeaderTemplate>
+            <DayHeaderTemplate><span title="@context.ToString("dddd, MMMM d, yyyy")">@context.ToString("ddd")[..1]</span></DayHeaderTemplate>
+            <Columns>
+                <NxGanttColumn Field="@nameof(ScheduleTask.Title)" Title="Task" Width="200px" Expandable="true" />
+            </Columns>
+        </NxGantt>
+    </div>
+</div>
+
+<DocPager Slug="gantt" Page="examples" />
+
+@code {
+    readonly List<ScheduleTask> linkTasks = DemoGantt.Tasks(), filterTasks = DemoGantt.Tasks(), templateTasks = DemoGantt.Tasks();
+    readonly List<ScheduleLink> templateLinks = DemoGantt.Links();
+    readonly List<ScheduleLink> drawn = [];
+    NxGantt<ScheduleTask>? filtered;
+    string? lastLink;
+
+    void Link(NxGanttDependencyCreateEventArgs<ScheduleTask> e)
+    {
+        drawn.Add(new ScheduleLink(e.Predecessor.Id, e.Successor.Id, e.Type));
+        lastLink = $"{e.Predecessor.Title} → {e.Successor.Title} ({e.Type})";
+    }
+}

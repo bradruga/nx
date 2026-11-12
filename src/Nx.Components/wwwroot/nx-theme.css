@@ -204,6 +204,34 @@
     --nx-treeview-indent:           18px;
     --nx-treelist-header-height:    34px;
     --nx-treelist-header-bg:        var(--nx-surface-hover);
+    --nx-scheduler-slot-height:     40px;
+    --nx-scheduler-gutter:          64px;
+    --nx-scheduler-day-min-width:   96px;
+    --nx-scheduler-head-bg:         var(--nx-surface);
+    --nx-scheduler-line:            #e6e6ea;
+    --nx-scheduler-off-bg:          #f6f6f8;
+    --nx-scheduler-today-bg:        rgba(0, 120, 212, 0.04);
+    --nx-scheduler-event-bg:        var(--nx-accent);
+    --nx-scheduler-event-fg:        var(--nx-accent-fg);
+    --nx-filemanager-tree-width:    220px;
+    --nx-filemanager-details-width: 220px;
+    --nx-filemanager-row-height:    34px;
+    --nx-filemanager-date-width:    150px;
+    --nx-filemanager-type-width:    100px;
+    --nx-filemanager-size-width:    80px;
+    --nx-filemanager-tile-width:    110px;
+    --nx-filemanager-folder:        #d9a520;
+    --nx-gantt-row-height:          36px;
+    --nx-gantt-head-height:         56px;
+    --nx-gantt-filter-height:       40px;
+    --nx-gantt-head-bg:             var(--nx-surface-hover);
+    --nx-gantt-line:                #e6e6ea;
+    --nx-gantt-weekend-bg:          #f6f6f8;
+    --nx-gantt-today:               var(--nx-danger);
+    --nx-gantt-bar-bg:              var(--nx-accent);
+    --nx-gantt-bar-fg:              var(--nx-accent-fg);
+    --nx-gantt-summary-bg:          #5f6b73;
+    --nx-gantt-link:                #6b6b78;
 
     /* Slider (NxSlider) */
     --nx-slider-track-height:       4px;
@@ -354,6 +382,13 @@
     --nx-chat-other-bg:             #26262c;
     --nx-chat-avatar-bg:            #34343d;
     --nx-gauge-track:               #2c2c33;
+    --nx-scheduler-line:            #2c2c33;
+    --nx-scheduler-off-bg:          #121215;
+    --nx-scheduler-today-bg:        rgba(76, 163, 255, 0.06);
+    --nx-gantt-line:                #2c2c33;
+    --nx-gantt-weekend-bg:          #121215;
+    --nx-gantt-summary-bg:          #8a929a;
+    --nx-gantt-link:                #9a9aab;
     --nx-pdf-bg:                    #0f0f12;
     --nx-pdf-page-shadow:           0 1px 4px rgba(0, 0, 0, 0.7);
 

@@ -1,0 +1,233 @@
+.nx-filemanager {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 0;
+    max-width: 100%;
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius);
+    background: var(--nx-surface);
+    overflow: hidden;
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+    color: var(--nx-fg);
+    /* Narrow: the tree and the details pane give way to the list. */
+    container-type: inline-size;
+}
+
+.nx-filemanager ::deep .nx-filemanager-toolbar {
+    flex-shrink: 0;
+    border: none;
+    border-bottom: 1px solid var(--nx-border);
+    border-radius: 0;
+}
+
+.nx-filemanager ::deep .nx-filemanager-sort { width: 150px; flex-shrink: 0; }
+.nx-filemanager ::deep .nx-filemanager-search { width: 240px; max-width: 100%; }
+
+/* ── Breadcrumb ──────────────────────────────────────────────────────────── */
+
+.nx-filemanager-crumbs {
+    flex-shrink: 0;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--nx-border);
+    overflow-x: auto;
+}
+
+.nx-filemanager-crumbs ol {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    white-space: nowrap;
+}
+
+.nx-filemanager-crumbs li { display: inline-flex; align-items: center; }
+.nx-filemanager-crumb-sep { padding: 0 2px; color: var(--nx-fg-muted); }
+.nx-filemanager-crumb-search { padding: 4px 6px; color: var(--nx-fg-muted); font-style: italic; }
+
+.nx-filemanager-crumb {
+    padding: 4px 6px;
+    border: none;
+    border-radius: var(--nx-radius-sm);
+    background: none;
+    color: var(--nx-accent);
+    font: inherit;
+    cursor: pointer;
+}
+
+.nx-filemanager-crumb:hover { background: var(--nx-item-hover-bg); }
+.nx-filemanager-crumb[aria-current=page] { color: var(--nx-fg); font-weight: var(--nx-font-weight-medium); cursor: default; }
+.nx-filemanager-crumb:focus-visible { outline: 2px solid var(--nx-focus-ring-color); outline-offset: -2px; }
+
+/* ── Tree | list | details ───────────────────────────────────────────────── */
+
+.nx-filemanager-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+.nx-filemanager-tree {
+    flex: 0 0 var(--nx-filemanager-tree-width);
+    min-width: 0;
+    overflow: auto;
+    border-right: 1px solid var(--nx-border);
+}
+
+.nx-filemanager-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    /* The grid's columns answer to the list's own width, with or without the side panes. */
+    container-type: inline-size;
+}
+
+.nx-filemanager-details {
+    display: flex;
+    flex: 0 0 var(--nx-filemanager-details-width);
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 16px 12px;
+    overflow: auto;
+    border-left: 1px solid var(--nx-border);
+    text-align: center;
+}
+
+.nx-filemanager-details-name { font-weight: var(--nx-font-weight-medium); overflow-wrap: anywhere; }
+.nx-filemanager-details-none { margin-top: 24px; font-weight: var(--nx-font-weight-medium); }
+.nx-filemanager-details-none span { color: var(--nx-fg-muted); font-weight: normal; font-size: var(--nx-font-size-sm); }
+
+.nx-filemanager-details dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 10px;
+    width: 100%;
+    margin: 4px 0;
+    font-size: var(--nx-font-size-sm);
+    text-align: left;
+}
+
+.nx-filemanager-details dt { color: var(--nx-fg-muted); }
+.nx-filemanager-details dd { margin: 0; overflow-wrap: anywhere; }
+
+@container (max-width: 720px) {
+    .nx-filemanager-details { display: none; }
+}
+
+@container (max-width: 520px) {
+    .nx-filemanager-tree { display: none; }
+}
+
+/* ── The list: grid rows or tiles ────────────────────────────────────────── */
+
+.nx-filemanager-head,
+.nx-filemanager-grid .nx-filemanager-item {
+    display: grid;
+    grid-template-columns: minmax(120px, 1fr) var(--nx-filemanager-date-width) var(--nx-filemanager-type-width) var(--nx-filemanager-size-width);
+    align-items: center;
+}
+
+.nx-filemanager-head {
+    flex-shrink: 0;
+    padding: 0 6px;
+    border-bottom: 1px solid var(--nx-border);
+    background: var(--nx-surface-hover);
+}
+
+.nx-filemanager-th {
+    padding: 7px 8px;
+    border: none;
+    background: none;
+    color: var(--nx-fg-muted);
+    font: inherit;
+    font-size: var(--nx-font-size-sm);
+    font-weight: var(--nx-font-weight-medium);
+    text-align: left;
+    cursor: pointer;
+}
+
+.nx-filemanager-th:hover { color: var(--nx-fg); }
+.nx-filemanager-th:focus-visible { outline: 2px solid var(--nx-focus-ring-color); outline-offset: -2px; }
+
+.nx-filemanager-list {
+    flex: 1;
+    min-height: 0;
+    padding: 4px 6px;
+    overflow: auto;
+    outline: none;
+}
+
+.nx-filemanager-list:focus-visible { box-shadow: inset 0 0 0 2px var(--nx-focus-ring-color); }
+
+.nx-filemanager-empty { padding: 24px; color: var(--nx-fg-muted); text-align: center; }
+
+.nx-filemanager-item {
+    box-sizing: border-box;
+    border-radius: var(--nx-radius-sm);
+    cursor: default;
+    user-select: none;
+}
+
+.nx-filemanager-item:hover { background: var(--nx-item-hover-bg); }
+.nx-filemanager-item-selected,
+.nx-filemanager-item-selected:hover { background: var(--nx-accent-subtle); }
+.nx-filemanager-list:focus-visible .nx-filemanager-item-selected { box-shadow: inset 0 0 0 1px var(--nx-accent); }
+
+.nx-filemanager-grid .nx-filemanager-item { min-height: var(--nx-filemanager-row-height); }
+
+.nx-filemanager-grid .nx-filemanager-item > span {
+    min-width: 0;
+    padding: 0 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.nx-filemanager-grid .nx-filemanager-col-date,
+.nx-filemanager-grid .nx-filemanager-col-type,
+.nx-filemanager-grid .nx-filemanager-col-size { color: var(--nx-fg-muted); font-size: var(--nx-font-size-sm); }
+
+.nx-filemanager-col-name { display: flex; align-items: center; gap: 8px; }
+.nx-filemanager-name { display: flex; flex-direction: column; min-width: 0; }
+.nx-filemanager-name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nx-filemanager-location { color: var(--nx-fg-muted); font-size: var(--nx-font-size-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.nx-filemanager ::deep .nx-filemanager-icon { flex-shrink: 0; color: var(--nx-fg-muted); }
+.nx-filemanager ::deep .nx-filemanager-icon-folder { color: var(--nx-filemanager-folder); }
+
+/* A narrower list drops the type, then the date: the name and size always show. */
+@container (max-width: 520px) {
+    .nx-filemanager-head,
+    .nx-filemanager-grid .nx-filemanager-item { grid-template-columns: minmax(0, 1fr) var(--nx-filemanager-date-width) var(--nx-filemanager-size-width); }
+    .nx-filemanager-col-type { display: none; }
+}
+
+@container (max-width: 400px) {
+    .nx-filemanager-head,
+    .nx-filemanager-grid .nx-filemanager-item { grid-template-columns: minmax(0, 1fr) var(--nx-filemanager-size-width); }
+    .nx-filemanager-col-date { display: none; }
+}
+
+.nx-filemanager-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--nx-filemanager-tile-width), 1fr));
+    align-content: start;
+    gap: 4px;
+}
+
+.nx-filemanager-tiles .nx-filemanager-item { padding: 10px 6px; }
+.nx-filemanager-tiles .nx-filemanager-col-name { flex-direction: column; gap: 6px; text-align: center; }
+.nx-filemanager-tiles .nx-filemanager-name { align-items: center; max-width: 100%; }
+.nx-filemanager-tiles .nx-filemanager-name-text { white-space: normal; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.nx-filemanager-tiles ::deep .nx-filemanager-icon { width: 40px; height: 40px; }
+
+@media (pointer: coarse) {
+    .nx-filemanager-grid .nx-filemanager-item { min-height: 44px; }
+}

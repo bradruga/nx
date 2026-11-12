@@ -1,0 +1,100 @@
+@page "/gantt/playground"
+
+<DocHeader Slug="gantt" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-full demo-preview-inner-stretch">
+                <NxGantt TItem="ScheduleTask" Id="playground-gantt" Data="tasks" Dependencies="@(pgLinks ? links : null)" SlotWidth="pgSlot"
+                         TreeListWidth="@pgTreeWidth" TreeListWidthChanged="w => pgTreeWidth = w" Sortable="pgSortable" FilterRow="pgFilterRow"
+                         DayHeaderDateFormat="@pgDayFormat" Height="@pgHeight" AriaLabel="@OrNull(pgAriaLabel)"
+                         OnEdit="t => pgEdits++" OnUpdate="t => pgUpdates++">
+                    <Columns>
+                        <NxGanttColumn Field="@nameof(ScheduleTask.Title)" Title="Task" Width="200px" Expandable="true">
+                            <EditorTemplate><NxTextBox @bind-Value="context.Title" Immediate="true" aria-label="Task" /></EditorTemplate>
+                        </NxGanttColumn>
+                        @if (pgResources)
+                        {
+                            <NxGanttColumn Field="@nameof(ScheduleTask.Resources)" Width="130px" />
+                        }
+                        <NxGanttColumn Field="@nameof(ScheduleTask.Start)" Width="100px" DisplayFormat="{0:MM/dd/yy}" />
+                    </Columns>
+                </NxGantt>
+            </div>
+            <div class="demo-row">
+                <span class="demo-counter" id="playground-edits">OnEdit × @pgEdits</span>
+                <span class="demo-counter" id="playground-updates">OnUpdate × @pgUpdates</span>
+                <span class="demo-value" id="playground-width">TreeListWidth: @pgTreeWidth</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Timeline</div>
+            <label class="demo-control"><span>SlotWidth</span><input type="number" id="pg-slot" min="10" max="100" step="5" @bind="pgSlot" /></label>
+            <label class="demo-control">
+                <span>DayHeaderDateFormat</span>
+                <select id="pg-dayformat" @bind="pgDayFormat">
+                    <option value="{0:%d}">{0:%d}</option>
+                    <option value="{0:ddd}">{0:ddd}</option>
+                    <option value="{0:dd}">{0:dd}</option>
+                </select>
+            </label>
+            <label class="demo-control"><span>Dependencies</span><input type="checkbox" id="pg-links" @bind="pgLinks" /></label>
+
+            <div class="demo-controls-title">Task list</div>
+            <label class="demo-control"><span>TreeListWidth</span><input type="text" id="pg-treewidth" @bind="pgTreeWidth" /></label>
+            <label class="demo-control"><span>Sortable</span><input type="checkbox" id="pg-sortable" @bind="pgSortable" /></label>
+            <label class="demo-control"><span>FilterRow</span><input type="checkbox" id="pg-filterrow" @bind="pgFilterRow" /></label>
+            <label class="demo-control"><span>Resources column</span><input type="checkbox" id="pg-resources" @bind="pgResources" /></label>
+
+            <div class="demo-controls-title">Look</div>
+            <label class="demo-control">
+                <span>Height</span>
+                <select id="pg-height" @bind="pgHeight">
+                    <option value="360px">360px</option>
+                    <option value="520px">520px</option>
+                </select>
+            </label>
+            <label class="demo-control"><span>AriaLabel</span><input type="text" id="pg-arialabel" @bind="pgAriaLabel" @bind:event="oninput" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="gantt" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+
+    readonly List<ScheduleTask> tasks = DemoGantt.Tasks();
+    readonly List<ScheduleLink> links = DemoGantt.Links();
+    double pgSlot = 30;
+    string pgTreeWidth = "40%", pgDayFormat = "{0:%d}", pgHeight = "520px", pgAriaLabel = "";
+    bool pgLinks = true, pgSortable, pgFilterRow, pgResources = true;
+    int pgEdits, pgUpdates;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "Data=\"tasks\"" };
+            if (pgLinks) attrs.Add("Dependencies=\"links\"");
+            if (pgSlot != 30) attrs.Add($"SlotWidth=\"{pgSlot}\"");
+            attrs.Add($"@bind-TreeListWidth=\"treeWidth\" (now {pgTreeWidth})");
+            if (pgSortable) attrs.Add("Sortable=\"true\"");
+            if (pgFilterRow) attrs.Add("FilterRow=\"true\"");
+            if (pgDayFormat != "{0:%d}") attrs.Add($"DayHeaderDateFormat=\"{pgDayFormat}\"");
+            if (pgHeight != "600px") attrs.Add($"Height=\"{pgHeight}\"");
+            if (OrNull(pgAriaLabel) is { } label) attrs.Add($"AriaLabel=\"{label}\"");
+            attrs.Add("OnEdit=\"OpenForm\" OnUpdate=\"SaveAsync\"");
+            return "<NxGantt " + string.Join("\n         ", attrs) + ">\n    <Columns>…</Columns>\n</NxGantt>";
+        }
+    }
+}

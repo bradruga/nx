@@ -1,0 +1,62 @@
+@namespace Nx.Components
+@typeparam TItem
+@implements IDisposable
+
+@* A column of an NxGantt's task list. It renders nothing itself: it registers with the Gantt, which draws it. *@
+
+@code {
+    private NxGantt<TItem>.Column? registered;
+
+    [CascadingParameter] private NxGantt<TItem>? Gantt { get; set; }
+
+    /// <summary>The property shown, by name (<c>nameof</c>); also what the column sorts and filters on.</summary>
+    [Parameter] public string? Field { get; set; }
+
+    /// <summary>The header text. Default: <see cref="Field"/>.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>The column's width in pixels (<c>"120px"</c>). Default: <c>120px</c>.</summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>A .NET format for the value, as <c>{0:MM/dd/yy}</c> or <c>MM/dd/yy</c>.</summary>
+    [Parameter] public string? DisplayFormat { get; set; }
+
+    /// <summary>Holds the tree's arrows and indent. Default: none; only one column can.</summary>
+    [Parameter] public bool Expandable { get; set; }
+
+    /// <summary>Shows the column. Default: <c>true</c>.</summary>
+    [Parameter] public bool Visible { get; set; } = true;
+
+    /// <summary>A click on the cell opens <see cref="EditorTemplate"/> (needs one). Default: <c>true</c>.</summary>
+    [Parameter] public bool Editable { get; set; } = true;
+
+    /// <summary>A filter box for the column in the filter row. Default: <c>true</c>.</summary>
+    [Parameter] public bool Filterable { get; set; } = true;
+
+    /// <summary>The cell's content in place of the field's value.</summary>
+    [Parameter] public RenderFragment<TItem>? Template { get; set; }
+
+    /// <summary>The cell while it is edited; bind it to the item, the Gantt raises <c>OnUpdate</c> when the cell is left.</summary>
+    [Parameter] public RenderFragment<TItem>? EditorTemplate { get; set; }
+
+    /// <summary>The header's content in place of <see cref="Title"/>.</summary>
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (Gantt is null)
+            throw new InvalidOperationException("NxGanttColumn must be placed inside an NxGantt's Columns.");
+        var column = new NxGantt<TItem>.Column(this, Field, Title, Width, DisplayFormat, Expandable, Visible, Editable, Filterable,
+            Template, EditorTemplate, HeaderTemplate);
+        Gantt.SetColumn(registered, column);
+        registered = column;
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        if (registered is not null)
+            Gantt?.RemoveColumn(registered);
+    }
+}

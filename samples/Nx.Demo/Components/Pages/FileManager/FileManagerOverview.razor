@@ -1,0 +1,61 @@
+@page "/filemanager"
+@page "/filemanager/overview"
+
+<DocHeader Slug="filemanager" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxFileManager</code> browses a read-only tree of folders and files: a folder tree, a breadcrumb, the open folder
+        as a grid or tiles, sorting with folders first as Explorer does, a details pane, and a search that matches anywhere in
+        a name below the open folder. Double-click, Enter or a tap on a touch screen opens: a folder navigates, a file raises
+        <code>OnOpen</code>. It reads a flat list with Telerik's field names, so ERP's project files bind as they are.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <div class="demo-stage demo-stage-column">
+        <NxFileManager TItem="FileEntry" Id="overview-files" Data="DemoFiles.Project" @bind-Folder="folder" @bind-SelectedItem="selected"
+                       OnOpen="Open" OnDownload="Download"
+                       RootName="Route 9 Bridge" Height="460px" Style="width:100%" />
+        <div class="demo-row">
+            <span class="demo-value" id="overview-folder">Folder: @(folder?.Name ?? "Route 9 Bridge")</span>
+            <span class="demo-value" id="overview-selected">Selected: @(selected is null ? "nothing" : selected.Name + selected.Extension)</span>
+            <span class="demo-value" id="overview-opened">@opened</span>
+        </div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Tab</td><td>Toolbar, breadcrumb, folder tree, column headers, the list.</td></tr>
+                <tr><td>↑ ↓ ← → / Home / End</td><td>In the list: select the previous or next entry, the first or last.</td></tr>
+                <tr><td>Enter</td><td>Open: into a folder, or <code>OnOpen</code> for a file.</td></tr>
+                <tr><td>Backspace / Alt+↑</td><td>Up to the parent folder.</td></tr>
+                <tr><td>Roles</td><td>The list is a <code>listbox</code> of entries that read their date, type and size; the breadcrumb is a <code>nav</code> with the open folder as the current page; the tree is NxTreeView.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="filemanager" Page="overview" />
+
+@code {
+    FileEntry? folder, selected;
+    string? opened;
+
+    void Open(FileEntry e) => opened = $"Opened {e.Name}{e.Extension}";
+    void Download(FileEntry e) => opened = $"Downloaded {e.Name}{e.Extension}";
+
+    const string basicCode =
+        """
+        <NxFileManager Data="entries" @bind-Folder="folder" @bind-SelectedItem="selected"
+                       OnOpen="OpenFileAsync" OnDownload="DownloadAsync" RootName="@ProjectName" Height="100%" />
+        """;
+}

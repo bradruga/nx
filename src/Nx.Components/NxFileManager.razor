@@ -1,0 +1,142 @@
+@namespace Nx.Components
+@typeparam TItem
+
+<div @attributes="AdditionalAttributes" id="@Id" class="@CssClass" style="@OuterStyle">
+    <NxToolBar Class="nx-filemanager-toolbar" Overflow="NxToolBarOverflow.Wrap" AriaLabel="Files">
+        <NxDropDown TItem="NxFileManagerSort" TValue="NxFileManagerSort" Data="SortChoices" ItemText="SortName" Value="sort" ValueChanged="SetSort"
+                    aria-label="Sort by" Class="nx-filemanager-sort" />
+        <NxToolBarButton Icon="@Icon(descending ? NxIcons.SortDesc : NxIcons.SortAsc)" AriaLabel="@(descending ? "Descending" : "Ascending")"
+                         Title="@(descending ? "Descending" : "Ascending")" Variant="NxButtonVariant.Ghost" OnClick="ToggleDirection"
+                         data-nx-filemanager="direction" />
+        <NxToolBarSeparator />
+        <NxToolBarButton Icon="@Icon(NxIcons.Rows)" AriaLabel="Grid" Title="Grid" Variant="NxButtonVariant.Ghost" OnClick="() => SetViewAsync(NxFileManagerView.Grid)"
+                         aria-pressed="@(view == NxFileManagerView.Grid ? "true" : "false")" data-nx-filemanager="grid" />
+        <NxToolBarButton Icon="@Icon(NxIcons.Group)" AriaLabel="Tiles" Title="Tiles" Variant="NxButtonVariant.Ghost" OnClick="() => SetViewAsync(NxFileManagerView.Tiles)"
+                         aria-pressed="@(view == NxFileManagerView.Tiles ? "true" : "false")" data-nx-filemanager="tiles" />
+        <NxToolBarButton Icon="@Icon(NxIcons.InfoCircle)" AriaLabel="Details" Title="Details" Variant="NxButtonVariant.Ghost" OnClick="() => showDetails = !showDetails"
+                         aria-pressed="@(showDetails ? "true" : "false")" data-nx-filemanager="details" />
+        @if (OnDownload.HasDelegate)
+        {
+            <NxToolBarButton Icon="@Icon(NxIcons.Download)" Text="Download" Variant="NxButtonVariant.Ghost" Disabled="@(selected is null || selected.IsDirectory)"
+                             OnClick="() => DownloadAsync(selected)" data-nx-filemanager="download" />
+        }
+        <NxToolBarSpacer />
+        @if (Searchable)
+        {
+            <NxTextBox Value="@query" ValueChanged="SearchAsync" Immediate="true" DebounceDelay="300" Clearable="true"
+                       Placeholder="@SearchPlaceholder" aria-label="@SearchPlaceholder" Class="nx-filemanager-search" Id="@($"{BaseId}-search")" />
+        }
+    </NxToolBar>
+
+    <nav class="nx-filemanager-crumbs" aria-label="Folder path">
+        <ol>
+            <li><button type="button" class="nx-filemanager-crumb" aria-current="@(current is null ? "page" : null)" @onclick="() => NavigateAsync(null)">@RootName</button></li>
+            @foreach (var folder in Ancestors(current, includeSelf: true))
+            {
+                <li>
+                    <span class="nx-filemanager-crumb-sep" aria-hidden="true">›</span>
+                    <button type="button" class="nx-filemanager-crumb" aria-current="@(folder == current ? "page" : null)" @onclick="() => NavigateAsync(folder)">@folder.Name</button>
+                </li>
+            }
+            @if (Searching)
+            {
+                <li><span class="nx-filemanager-crumb-sep" aria-hidden="true">›</span><span class="nx-filemanager-crumb-search">Search results</span></li>
+            }
+        </ol>
+    </nav>
+
+    <div class="nx-filemanager-body">
+        <div class="nx-filemanager-tree">
+            <NxTreeView TItem="TItem" Data="FolderItems" ItemId="IdOf" ParentId="ParentOf" ItemText="NameOf" AriaLabel="Folders"
+                        SelectedItem="CurrentItem" SelectedItemChanged="TreeSelectAsync"
+                        ExpandedItems="ExpandedFolderItems" ExpandedItemsChanged="TreeExpanded" NoDataText="No folders" />
+        </div>
+
+        <div class="nx-filemanager-main">
+            @if (view == NxFileManagerView.Grid)
+            {
+                <div class="nx-filemanager-head">
+                    <button type="button" class="nx-filemanager-th nx-filemanager-col-name" @onclick="() => SetSort(NxFileManagerSort.Name)">Name@(SortMark(NxFileManagerSort.Name))</button>
+                    <button type="button" class="nx-filemanager-th nx-filemanager-col-date" @onclick="() => SetSort(NxFileManagerSort.DateModified)">Date modified@(SortMark(NxFileManagerSort.DateModified))</button>
+                    <button type="button" class="nx-filemanager-th nx-filemanager-col-type" @onclick="() => SetSort(NxFileManagerSort.Type)">Type@(SortMark(NxFileManagerSort.Type))</button>
+                    <button type="button" class="nx-filemanager-th nx-filemanager-col-size" @onclick="() => SetSort(NxFileManagerSort.Size)">Size@(SortMark(NxFileManagerSort.Size))</button>
+                </div>
+            }
+            @{ var shown = Shown(); }
+            <div @ref="list" class="@(view == NxFileManagerView.Grid ? "nx-filemanager-list nx-filemanager-grid" : "nx-filemanager-list nx-filemanager-tiles")"
+                 role="listbox" tabindex="0" aria-label="@ListLabel" aria-activedescendant="@(selected is null ? null : OptionId(selected))"
+                 @onkeydown="e => KeyDownAsync(e, shown)">
+                @if (shown.Count == 0)
+                {
+                    <div class="nx-filemanager-empty">@(Searching ? NoResultsText : EmptyText)</div>
+                }
+                @foreach (var node in shown)
+                {
+                    var isSelected = node == selected;
+                    <div id="@OptionId(node)" role="option" aria-selected="@(isSelected ? "true" : "false")"
+                         class="@(isSelected ? "nx-filemanager-item nx-filemanager-item-selected" : "nx-filemanager-item")"
+                         @onpointerdown="e => pointerType = e.PointerType" @onclick="() => ClickAsync(node)" @ondblclick="() => OpenAsync(node)">
+                        <span class="nx-filemanager-col-name">
+                            <NxIcon Icon="IconFor(node)" Class="@(node.IsDirectory ? "nx-filemanager-icon nx-filemanager-icon-folder" : "nx-filemanager-icon")" />
+                            <span class="nx-filemanager-name">
+                                <span class="nx-filemanager-name-text">@node.DisplayName</span>
+                                @if (Searching && node.Parent != current)
+                                {
+                                    <span class="nx-filemanager-location">in @LocationOf(node)</span>
+                                }
+                            </span>
+                        </span>
+                        @if (view == NxFileManagerView.Grid)
+                        {
+                            <span class="nx-filemanager-col-date"><span class="nx-visually-hidden">, modified </span>@DateText(node.Modified)</span>
+                            <span class="nx-filemanager-col-type"><span class="nx-visually-hidden">, </span>@TypeText(node)</span>
+                            <span class="nx-filemanager-col-size"><span class="nx-visually-hidden">, </span>@(node.IsDirectory ? "" : SizeText(node.Size))</span>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (showDetails)
+        {
+            <aside class="nx-filemanager-details" aria-label="Details">
+                @if (selected is { } item)
+                {
+                    <NxIcon Icon="IconFor(item)" Size="NxIconSize.XXLarge" Class="@(item.IsDirectory ? "nx-filemanager-icon nx-filemanager-icon-folder" : "nx-filemanager-icon")" />
+                    <div class="nx-filemanager-details-name">@item.DisplayName</div>
+                    <dl>
+                        <dt>Type</dt><dd>@TypeText(item)</dd>
+                        @if (!item.IsDirectory)
+                        {
+                            <dt>Size</dt><dd>@SizeText(item.Size)</dd>
+                        }
+                        @if (item.Modified is not null)
+                        {
+                            <dt>Modified</dt><dd>@DateText(item.Modified)</dd>
+                        }
+                        @if (item.Created is not null)
+                        {
+                            <dt>Created</dt><dd>@DateText(item.Created)</dd>
+                        }
+                        @if (item.IsDirectory)
+                        {
+                            <dt>Contains</dt><dd>@CountText(item)</dd>
+                        }
+                        else
+                        {
+                            <dt>Location</dt><dd>@LocationOf(item)</dd>
+                        }
+                    </dl>
+                    @if (!item.IsDirectory && OnDownload.HasDelegate)
+                    {
+                        <NxButton Size="NxButtonSize.Small" Icon="@Icon(NxIcons.Download)" OnClick="() => DownloadAsync(item)">Download</NxButton>
+                    }
+                }
+                else
+                {
+                    <div class="nx-filemanager-details-none">@(current is null ? RootName : current.Name)<br /><span>@CountText(current)</span></div>
+                }
+            </aside>
+        }
+    </div>
+</div>

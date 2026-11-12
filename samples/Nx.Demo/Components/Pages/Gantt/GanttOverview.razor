@@ -1,0 +1,125 @@
+@page "/gantt"
+@page "/gantt/overview"
+
+<DocHeader Slug="gantt" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxGantt</code> shows a project schedule: a task list (tree columns, cells edited in place, sorting, a filter row)
+        beside a week timeline of bars, with dependency arrows between them and a divider to share the width. It binds a flat
+        list by field name, as Telerik's Gantt does. Editing a whole task is your own form: <code>OnEdit</code> asks for it on
+        a double-click or Enter. Cells with an <code>EditorTemplate</code> edit in place and raise <code>OnUpdate</code> when
+        left.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <p class="doc-note">Double-click a row or bar to edit the task; click a title or date to edit it in place; drag the divider; zoom with the buttons.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxGantt TItem="ScheduleTask" Id="overview-gantt" Data="tasks" Dependencies="links" SlotWidth="slot" @bind-TreeListWidth="treeWidth"
+                 OnEdit="Edit" OnUpdate="t => updated = t.Title" Height="440px" Style="width:100%">
+            <ToolBarTemplate>
+                <strong>Route 9 Bridge</strong>
+                <NxButtonGroup Size="NxButtonSize.Small">
+                    <NxButton id="overview-zoom-out" Icon="@ZoomOutIcon" AriaLabel="Zoom out" OnClick="() => slot = Math.Max(12, slot - 8)" />
+                    <NxButton id="overview-zoom-in" Icon="@ZoomInIcon" AriaLabel="Zoom in" OnClick="() => slot = Math.Min(80, slot + 8)" />
+                </NxButtonGroup>
+            </ToolBarTemplate>
+            <Columns>
+                <NxGanttColumn Field="@nameof(ScheduleTask.Title)" Title="Task" Width="220px" Expandable="true">
+                    <EditorTemplate><NxTextBox @bind-Value="context.Title" Immediate="true" aria-label="Task" AutoFocus="true" /></EditorTemplate>
+                </NxGanttColumn>
+                <NxGanttColumn Field="@nameof(ScheduleTask.Start)" Width="100px" DisplayFormat="{0:MM/dd/yy}">
+                    <EditorTemplate><NxDatePicker TValue="DateTime" @bind-Value="context.Start" Format="MM/dd/yy" aria-label="Start" /></EditorTemplate>
+                </NxGanttColumn>
+                <NxGanttColumn Field="@nameof(ScheduleTask.End)" Width="100px" DisplayFormat="{0:MM/dd/yy}">
+                    <EditorTemplate><NxDatePicker TValue="DateTime" @bind-Value="context.End" Format="MM/dd/yy" aria-label="End" /></EditorTemplate>
+                </NxGanttColumn>
+                <NxGanttColumn Field="@nameof(ScheduleTask.Resources)" Width="130px" />
+            </Columns>
+        </NxGantt>
+        <div class="demo-row">
+            <span class="demo-value" id="overview-width">Task list: @treeWidth</span>
+            <span class="demo-value" id="overview-updated">@(updated is null ? "No cell edited" : $"Updated: {updated}")</span>
+        </div>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<NxDialog Id="task-dialog" Visible="editing is not null" VisibleChanged="v => { if (!v) editing = null; }" Title="Edit task">
+    <ChildContent>
+        @if (editing is not null)
+        {
+            <div class="demo-gantt-form">
+                <NxTextBox Id="task-title" Label="Task" @bind-Value="editTitle" />
+                <NxTextBox Id="task-resources" Label="Resources" @bind-Value="editResources" />
+            </div>
+        }
+    </ChildContent>
+    <Buttons>
+        <NxButton OnClick="() => editing = null">Cancel</NxButton>
+        <NxButton id="task-save" Variant="NxButtonVariant.Primary" OnClick="Save">Save</NxButton>
+    </Buttons>
+</NxDialog>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Tab</td><td>The toolbar, header buttons and filters, then the selected task row.</td></tr>
+                <tr><td>↑ ↓</td><td>The previous or next task.</td></tr>
+                <tr><td>→ / ←</td><td>Expand, or collapse and then move to the parent.</td></tr>
+                <tr><td>Enter</td><td>On a row: <code>OnEdit</code>. In a cell editor: done (also Tab, Escape or a press outside).</td></tr>
+                <tr><td>← → on the divider</td><td>Narrow or widen the task list.</td></tr>
+                <tr><td>Roles</td><td>The task list is a <code>treegrid</code> of rows with levels; the timeline repeats it visually and is hidden from screen readers.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="gantt" Page="overview" />
+
+@code {
+    static readonly RenderFragment ZoomInIcon = @<NxIcon Icon="NxIcons.ZoomIn" />;
+    static readonly RenderFragment ZoomOutIcon = @<NxIcon Icon="NxIcons.ZoomOut" />;
+
+    readonly List<ScheduleTask> tasks = DemoGantt.Tasks();
+    readonly List<ScheduleLink> links = DemoGantt.Links();
+    double slot = 30;
+    string? treeWidth = "45%", updated;
+    ScheduleTask? editing;
+    string? editTitle, editResources;
+
+    void Edit(ScheduleTask task)
+    {
+        editing = task;
+        editTitle = task.Title;
+        editResources = task.Resources;
+    }
+
+    void Save()
+    {
+        if (editing is null) return;
+        editing.Title = editTitle ?? "";
+        editing.Resources = editResources ?? "";
+        editing = null;
+    }
+
+    const string basicCode =
+        """
+        <NxGantt Data="tasks" Dependencies="links" SlotWidth="slot" @bind-TreeListWidth="treeWidth"
+                 OnEdit="OpenTaskForm" OnUpdate="SaveTaskAsync" Height="100%">
+            <ToolBarTemplate>…</ToolBarTemplate>
+            <Columns>
+                <NxGanttColumn Field="@nameof(Task.Title)" Title="Task" Width="220px" Expandable="true">
+                    <EditorTemplate><NxTextBox @bind-Value="context.Title" /></EditorTemplate>
+                </NxGanttColumn>
+                <NxGanttColumn Field="@nameof(Task.Start)" Width="100px" DisplayFormat="{0:MM/dd/yy}" />
+            </Columns>
+        </NxGantt>
+        """;
+}
