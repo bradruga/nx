@@ -3,6 +3,49 @@
 Decisions I made without you. Each one says what I picked and why, so you can answer by number.
 1–23 are from the first pass (all accepted); 24 onward are new.
 
+## For Brad: the decisions that change code if you disagree (11/12)
+
+Only the entries below would mean code changes; everything else in this file is naming, nav placement, demo layout or
+already answered. Answer by number: "keep" or "change". **Rec** is what I'd do.
+
+**Cheaper to settle before ERP adopts the library (renames and defaults that every page would carry):**
+
+- **#5 Default accent color** is NxGrid's blue `#0078d4`. Rec: keep blue in the library; ERP sets its own brand color
+  once in its theme override (one `--nx-accent` line), so the library stays neutral.
+- **#34 `NxSize` vs `NxButtonSize`**: two enums with the same three values. Rec: **change**: merge into `NxSize` now; it is
+  a breaking rename, free today, costly once ERP pages use it.
+- **#49 `NxComboBoxMobileMode` vs `NxMobileMode`**: same values. Rec: **change**: keep only `NxMobileMode`, for the same reason.
+- **#15 + #145/#159/#170 How lists bind.** Combo box, dropdown and tree view take lambdas (`ItemText="p => p.Name"`); chart,
+  chat, form items and tree-list columns take Telerik's property names (`Field="@nameof(…)"`) so ERP ports by renaming tags.
+  Rec: keep the split (lambdas where a typed value comes back, names where Telerik's markup ports line for line). If you
+  want one rule, say which; changing either side touches every component on it.
+- **#27 Combo boxes open a full-screen sheet on phones** (below 600 px) by default. Rec: keep; `MobileMode="Never"` opts out.
+- **#8 `AutoLoading`** (spinner while an async click runs) is off; `PreventDoubleClick` is on. Rec: keep.
+- **#37 Numeric `SelectOnFocus`** is off. Rec: keep off globally; turn it on in the quantity grids that want it.
+- **#11 Clearing a text box sets `""`**, not `null`. Rec: keep, unless ERP models treat null and empty differently.
+
+**Behavior I'd change if you agree (small, contained):**
+
+- **#59 Escape in a clearable text box inside a window** clears the text *and* closes the window. Rec: **change**: the
+  text box marks Escape as used when it clears (one line in NxTextBox; windows already respect a used key).
+- **#112 Date and date-time pickers** swap display text for edit text from .NET on focus, which can land on text typed
+  right after the focus. The numeric box moved that swap into the browser. Rec: **change**: do the same for the pickers.
+
+**Built on purpose; changing them is real work:**
+
+- **#152 NxEditor uses the browser's `execCommand`** (deprecated, no replacement, works everywhere) plus its own undo.
+  The alternative is ProseMirror (a second third-party library) or our own document model. Rec: keep.
+- **#124 Dialog messages are plain text**: ERP's factory renders `message` as markup, and callers put server error text
+  in it (an XSS hole). Rec: keep; ERP's wrapper turns `<br/>` into `\n`, and `Content` takes markup when truly needed.
+- **#161 pdf.js 5.4.624 is vendored** (~5 MB in `wwwroot/pdfjs`), the library's one third-party dependency. Rec: keep.
+- **#16 / #17 `DataProvider`** returns the whole filtered list (no paging), and a `Value` alone shows no text until the
+  list loads. Rec: keep both until an ERP lookup is slow or a page needs `ItemByValue`.
+- **#89 / #92 / #93 NxForm**: items render where written (no `FormItemRenderer` by index), `Field` is a string, no
+  default Submit button. Rec: keep. Each is a migration step per form, not a library gap.
+
+**Open doubts (no code change now):** the chart's second value axis does not line up with the first axis's grid lines
+(aligning them means less round numbers); large charts and long editor documents are not measured.
+
 ## Blocking
 
 1. **Playwright tests can't run under Treeline.** While a watch is live, the Treeline hook blocks every
