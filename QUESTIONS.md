@@ -451,7 +451,7 @@ Open: second-axis grid alignment and large data (see NxChart status).
   (thousands of points) is still not measured.
 - **Next**: port one ERP page (ControlCharts or StorageHistory) as a trial.
 
-## ButtonTests Playground failures (11/11, run 3b96ca29) — in Brad's uncommitted button work, left alone
+## ButtonTests Playground failures (11/11, run 3b96ca29) — fixed 11/12 (the change below, made in `ButtonTests.cs`)
 
 - **Cause**: `ButtonPlayground.razor` now uses `NxCheckBox` for `#pg-icon-only`, `#pg-loading` and `#pg-disabled`. Its
   `Id` lands on a `<button role="checkbox">` whose `aria-checked` changes only after the Blazor Server round trip.
@@ -519,3 +519,19 @@ Brad's 11/12 calls: build all four; the PDF viewer wraps pdf.js with an Nx-theme
      use has one scale and one pointer. Not built: ranges (colored bands), labels and ticks, several pointers.
 167. **Found and fixed while checking**: a relative `Url` resolved against the page's path (pdf.js's own rule), so
      `samples/x.pdf` 404'd on `/pdfviewer/examples`; it now resolves against `<base href>` as a link does.
+
+## Pass 12 — NxTreeList, from ERP's yard page (read only)
+
+168. **NxGrid cannot show parent/child rows**: it has one level of `GroupBy` and no tree, so the yard page could not move to
+     it. NxTreeList is new, scoped to that page: flat data, two columns, single selection, two yards open at the start,
+     `Height="100%"`. No sorting, filtering, paging, editing, resizing or reordering of columns.
+169. **It is NxTreeView, not a copy**: NxTreeList renders NxTreeView (expand, select, keyboard, two-way bindings) with an
+     `ItemTemplate` of cells, so NxTreeView did not change. It stays an ARIA `tree`, not a `treegrid`: each cell reads with
+     its column title ("# Pieces: 18"); the visual header is hidden from screen readers.
+170. **API**: ids are NxTreeView's lambdas (`ItemId="l => l.ResourceId" ParentId="l => l.CurrentContainerId"`), columns use
+     Telerik's `Field` by name, `Title`, `Width`, `Expandable`, plus `Template`. Telerik's `OnStateInit` with `ExpandedItems`
+     becomes `ExpandedItems="startExpanded"`. The yard page ports as: `TelerikTreeList` → `NxTreeList`, `IdField` /
+     `ParentIdField` → the two lambdas, `TreeListColumn` → `NxTreeListColumn` inside `<Columns>`, `OnStateInit` → `ExpandedItems`.
+171. **Found and fixed while checking**: columns were looked up by record equality (two columns with equal values were
+     confused); deeper rows pushed the other columns right in a narrow tree (the tree column's least width now subtracts
+     the row's indent); the screen-reader column titles escaped the scroller and widened the page at 390 px.

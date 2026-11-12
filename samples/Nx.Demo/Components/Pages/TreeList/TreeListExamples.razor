@@ -1,0 +1,95 @@
+@page "/treelist/examples"
+
+<DocHeader Slug="treelist" Page="examples" />
+
+<div class="doc-section">
+    <h2>Master &amp; Detail</h2>
+    <p class="doc-note">As ERP's yard page: the tree fills its column (<code>Height="100%"</code>) and the selected location drives the panel beside it.</p>
+    <div class="demo-stage">
+        <div class="demo-treelist-split">
+            <NxTreeList Id="detail-tree" TItem="YardLocation" Data="DemoYard.Locations" ItemId="l => l.ResourceId" ParentId="l => l.CurrentContainerId"
+                        @bind-SelectedItem="picked" Height="100%" AriaLabel="Locations">
+                <Columns>
+                    <NxTreeListColumn Field="@nameof(YardLocation.Name)" Title="Location" Width="160px" />
+                    <NxTreeListColumn Field="@nameof(YardLocation.AggregatePieceCount)" Title="# Pieces" Width="90px" />
+                </Columns>
+            </NxTreeList>
+            <div class="demo-treelist-detail" id="detail-panel">
+                @if (picked is null)
+                {
+                    <span>Click on a location to see pieces</span>
+                }
+                else
+                {
+                    <strong>@picked.Name pieces</strong>
+                    <span>@picked.Kind · @picked.AggregatePieceCount pieces</span>
+                    <span>@DemoYard.Locations.Count(l => l.CurrentContainerId == picked.ResourceId) places inside</span>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Templates &amp; Several Columns</h2>
+    <p class="doc-note">A column's <code>Template</code> renders anything; columns keep their widths, the tree column takes the rest. Expand all, collapse all.</p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row">
+            <NxButton id="expand-all" Size="NxButtonSize.Small" OnClick="() => templated!.ExpandAllAsync()">Expand all</NxButton>
+            <NxButton id="collapse-all" Size="NxButtonSize.Small" OnClick="() => templated!.CollapseAllAsync()">Collapse all</NxButton>
+        </div>
+        <NxTreeList @ref="templated" Id="template-tree" Data="DemoYard.Locations" ItemId="l => l.ResourceId" ParentId="l => l.CurrentContainerId"
+                    SelectionMode="NxTreeSelectionMode.None" Height="300px" AriaLabel="Yard capacity" Style="width:100%">
+            <Columns>
+                <NxTreeListColumn Field="@nameof(YardLocation.Name)" Title="Location" Width="180px" />
+                <NxTreeListColumn Field="@nameof(YardLocation.Kind)" Title="Kind" Width="80px" />
+                <NxTreeListColumn Title="Fill" Width="140px">
+                    <Template>
+                        <NxProgressBar Value="@Math.Min(100, context.AggregatePieceCount * 100.0 / Capacity(context))" Thin="true" AriaLabel="@($"{context.Name} fill")" />
+                    </Template>
+                </NxTreeListColumn>
+                <NxTreeListColumn Field="@nameof(YardLocation.AggregatePieceCount)" Title="# Pieces" Width="80px" />
+            </Columns>
+        </NxTreeList>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Several Selected</h2>
+    <p class="doc-note"><code>SelectionMode="Multiple"</code>: click rows to add or remove them; the selection comes back in tree order.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxTreeList Id="multi-tree" Data="DemoYard.Locations" ItemId="l => l.ResourceId" ParentId="l => l.CurrentContainerId"
+                    SelectionMode="NxTreeSelectionMode.Multiple" @bind-SelectedItems="several" ExpandedItems="openYard"
+                    Height="260px" AriaLabel="Bays to clear" Style="width:100%; max-width:440px">
+            <Columns>
+                <NxTreeListColumn Field="@nameof(YardLocation.Name)" Title="Location" Width="200px" />
+                <NxTreeListColumn Field="@nameof(YardLocation.AggregatePieceCount)" Title="# Pieces" Width="100px" />
+            </Columns>
+        </NxTreeList>
+        <span class="demo-value" id="multi-value">@(several.Any() ? string.Join(", ", several.Select(l => l.Name)) : "Nothing selected")</span>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>No Data</h2>
+    <div class="demo-stage">
+        <NxTreeList Id="empty-tree" TItem="YardLocation" Data="Array.Empty<YardLocation>()" ItemId="l => l.ResourceId" ParentId="l => l.CurrentContainerId"
+                    NoDataText="No locations in this yard" Height="120px" Style="width:100%; max-width:440px">
+            <Columns>
+                <NxTreeListColumn Field="@nameof(YardLocation.Name)" Title="Location" Width="200px" />
+                <NxTreeListColumn Field="@nameof(YardLocation.AggregatePieceCount)" Title="# Pieces" Width="100px" />
+            </Columns>
+        </NxTreeList>
+    </div>
+</div>
+
+<DocPager Slug="treelist" Page="examples" />
+
+@code {
+    NxTreeList<YardLocation>? templated;
+    YardLocation? picked;
+    IEnumerable<YardLocation> several = [];
+    readonly IEnumerable<YardLocation> openYard = DemoYard.Named("Lincoln Ave", "A", "B").ToList();
+
+    static double Capacity(YardLocation l) => l.Kind switch { "Bay" => 12, "Row" => 40, _ => 120 };
+}

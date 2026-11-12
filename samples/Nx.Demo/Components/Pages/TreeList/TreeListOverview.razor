@@ -1,0 +1,65 @@
+@page "/treelist"
+@page "/treelist/overview"
+
+<DocHeader Slug="treelist" Page="overview" />
+
+<div class="doc-section">
+    <h2>What It Is</h2>
+    <p class="doc-note">
+        <code>NxTreeList</code> is a tree with columns: <code>NxTreeView</code>'s expand, select and keyboard, with each row
+        laid out as cells under a header. It takes a flat list as ERP's data comes — an id and a parent id per item — and
+        each column shows a property by name or a template. The tree column takes the room the others leave, so every row
+        lines up however deep it sits. It has no sorting, filtering, paging or editing: for those, use NxGrid.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Basic Usage</h2>
+    <p class="doc-note">ERP's yard: locations and the pieces in them, two yards open at the start, one selected at a time.</p>
+    <div class="demo-stage demo-stage-column">
+        <NxTreeList Id="overview-tree" Data="DemoYard.Locations" ItemId="l => l.ResourceId" ParentId="l => l.CurrentContainerId"
+                    @bind-SelectedItems="selected" ExpandedItems="startExpanded" Height="320px" AriaLabel="Yard locations"
+                    Style="width:100%; max-width:440px">
+            <Columns>
+                <NxTreeListColumn Field="@nameof(YardLocation.Name)" Title="Location" Width="200px" Expandable="true" />
+                <NxTreeListColumn Field="@nameof(YardLocation.AggregatePieceCount)" Title="# Pieces" Width="100px" />
+            </Columns>
+        </NxTreeList>
+        <span class="demo-value" id="overview-selected">@(selected.FirstOrDefault() is { } l ? $"{l.Name}: {l.AggregatePieceCount} pieces" : "Click on a location to see pieces")</span>
+    </div>
+    <pre class="doc-code">@basicCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Keyboard &amp; Accessibility</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th>Key</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Tab</td><td>Into the tree once, on the selected row.</td></tr>
+                <tr><td>↑ ↓ / Home / End</td><td>Move between the rows shown.</td></tr>
+                <tr><td>→ / ←</td><td>Expand, or move to the first child / collapse, or move to the parent.</td></tr>
+                <tr><td>Enter / Space</td><td>Select the row.</td></tr>
+                <tr><td>Roles</td><td>An ARIA <code>tree</code>; each row reads its cells with their column titles ("# Pieces: 18").</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="treelist" Page="overview" />
+
+@code {
+    IEnumerable<YardLocation> selected = [];
+    readonly IEnumerable<YardLocation> startExpanded = DemoYard.Named("Lincoln Ave", "Stockyards").ToList();
+
+    const string basicCode =
+        """
+        <NxTreeList Data="locations" ItemId="l => l.ResourceId" ParentId="l => l.CurrentContainerId"
+                    @bind-SelectedItems="selected" ExpandedItems="startExpanded" Height="100%">
+            <Columns>
+                <NxTreeListColumn Field="@nameof(Location.Name)" Title="Location" Width="200px" Expandable="true" />
+                <NxTreeListColumn Field="@nameof(Location.AggregatePieceCount)" Title="# Pieces" Width="100px" />
+            </Columns>
+        </NxTreeList>
+        """;
+}

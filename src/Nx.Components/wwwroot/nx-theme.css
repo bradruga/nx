@@ -202,6 +202,8 @@
     /* Tree (NxTreeView) */
     --nx-treeview-row-height:       32px;
     --nx-treeview-indent:           18px;
+    --nx-treelist-header-height:    34px;
+    --nx-treelist-header-bg:        var(--nx-surface-hover);
 
     /* Slider (NxSlider) */
     --nx-slider-track-height:       4px;

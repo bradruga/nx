@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 `NxButtonGroup`, `NxColorPicker`, `NxProgressBar`, `NxNotification`, `NxDialog` (+ `NxDialogService`, `NxDialogHost`), `NxMediaQuery`,
 `NxToggleButton`, `NxUpload`, `NxFileSelect`, `NxTreeView<TItem>`, `NxMaskedTextBox`, `NxTileLayout` (+ `NxTileLayoutItem`),
 `NxCarousel<TItem>`, `NxColorGradient`, `NxSlider<TValue>`, `NxChipList<TItem>`, `NxToolBar` (+ `NxToolBarButton`, `NxToolBarSeparator`,
-`NxToolBarSpacer`), `NxDateInput<TValue>`, `NxChart` (+ `NxChartSeries`, `NxChartCategoryAxis`, `NxChartValueAxis`), `NxEditor` (+ `NxEditorTool`, `NxEditorCustomTool`), `NxChat<TItem>`, `NxPdfViewer`, `NxPopup`, `NxSignature`, `NxCircularGauge`. No third-party dependencies except pdf.js
+`NxToolBarSpacer`), `NxDateInput<TValue>`, `NxChart` (+ `NxChartSeries`, `NxChartCategoryAxis`, `NxChartValueAxis`), `NxEditor` (+ `NxEditorTool`, `NxEditorCustomTool`), `NxChat<TItem>`, `NxPdfViewer`, `NxPopup`, `NxSignature`, `NxCircularGauge`, `NxTreeList<TItem>` (+ `NxTreeListColumn`). No third-party dependencies except pdf.js
 (Apache-2.0, vendored in `wwwroot/pdfjs`, used only by NxPdfViewer); themed by CSS custom properties.
 Conventions follow the NxGrid repo (`../nxgrid`), which stays where it is.
 
@@ -158,6 +158,8 @@ tests/Nx.Playwright/                        # one Playwright fixture per compone
 - **NxPdfViewer loads pdf.js on first use** (nx-pdfviewer.js imports `pdfjs/pdf.min.mjs`, sets `globalThis.pdfjsLib` for
   `pdf_viewer.mjs`, injects `pdf_viewer.css`); bytes go over a `DotNetStreamReference`, a `Url` resolves against `<base href>`.
 - **NxPopup is keyed by its id in nx-anchor.js** (as NxWindow is): it renders only while visible and is placed after every render.
+- **NxTreeList is an NxTreeView** whose `ItemTemplate` lays out the cells: the tree column stretches (its least width
+  minus each row's indent, from the inherited `--nx-treeview-level`), the other columns keep fixed widths, so rows align.
 - **NxComboBox opt-in modes** (`Multiple`, columns, mobile overlay) must never change single-select, single-column
   behavior. bUnit covers both paths.
 

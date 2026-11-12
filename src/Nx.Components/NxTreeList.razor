@@ -1,0 +1,47 @@
+@namespace Nx.Components
+@typeparam TItem
+
+@* An NxTreeView whose items are rows of cells: the tree column stretches and takes the indent, the other columns keep
+   their widths at the right, so every row lines up under the header. *@
+<div @attributes="AdditionalAttributes" class="@CssClass" style="@OuterStyle">
+    <CascadingValue Value="this" IsFixed="true">@Columns</CascadingValue>
+    <div class="nx-treelist-scroll">
+        <div class="nx-treelist-table" style="@TableStyle">
+            <div class="nx-treelist-header" aria-hidden="true">
+                @foreach (var column in Ordered)
+                {
+                    <div class="@(ReferenceEquals(column, TreeColumn) ? "nx-treelist-th nx-treelist-th-tree" : "nx-treelist-th")" style="@CellStyle(column)">@column.Title</div>
+                }
+            </div>
+            <NxTreeView @ref="tree" TItem="TItem" Data="Data" ItemId="ItemId" ParentId="ParentId" ItemText="TextOf"
+                        SelectionMode="SelectionMode" SelectedItems="SelectedItems" SelectedItemsChanged="SelectedItemsChanged"
+                        SelectedItem="SelectedItem" SelectedItemChanged="SelectedItemChanged"
+                        ExpandedItems="ExpandedItems" ExpandedItemsChanged="ExpandedItemsChanged"
+                        NoDataText="@NoDataText" AriaLabel="@AriaLabel" Id="@Id" Class="nx-treelist-tree" ItemTemplate="Row" />
+        </div>
+    </div>
+</div>
+
+@code {
+    private RenderFragment<TItem> Row => item => __builder =>
+    {
+        foreach (var column in Ordered)
+        {
+            var tree = ReferenceEquals(column, TreeColumn);
+            <span class="@(tree ? "nx-treelist-td nx-treelist-td-tree" : "nx-treelist-td")" style="@CellStyle(column)">
+                @if (!tree && !string.IsNullOrEmpty(column.Title))
+                {
+                    <span class="nx-visually-hidden">@column.Title: </span>
+                }
+                @if (column.Template is not null)
+                {
+                    @column.Template(item)
+                }
+                else
+                {
+                    @ValueOf(item, column)
+                }
+            </span>
+        }
+    };
+}

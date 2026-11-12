@@ -190,7 +190,8 @@ public class ButtonTests : PageTest
         await GoToPage("playground");
         await SetHandlerDelay(0);
 
-        await Page.Locator("#pg-loading").CheckAsync();
+        await Page.Locator("#pg-loading").ClickAsync();
+        await Expect(Page.Locator("#pg-loading")).ToHaveAttributeAsync("aria-checked", "true");
         await Expect(PlaygroundButton).ToHaveAttributeAsync("aria-busy", "true");
         await Expect(PlaygroundButton).ToHaveAttributeAsync("aria-disabled", "true");
         await Expect(PlaygroundButton.Locator(".nx-spinner")).ToBeVisibleAsync();
@@ -211,7 +212,8 @@ public class ButtonTests : PageTest
         await GoToPage("playground");
 
         await Control("LoadingText").Locator("input").FillAsync("Saving…");
-        await Page.Locator("#pg-loading").CheckAsync();
+        await Page.Locator("#pg-loading").ClickAsync();
+        await Expect(Page.Locator("#pg-loading")).ToHaveAttributeAsync("aria-checked", "true");
 
         await Expect(PlaygroundButton.Locator(".nx-button-label")).ToHaveTextAsync("Saving…");
     }
@@ -221,7 +223,8 @@ public class ButtonTests : PageTest
     {
         await GoToPage("playground");
 
-        await Page.Locator("#pg-disabled").CheckAsync();
+        await Page.Locator("#pg-disabled").ClickAsync();
+        await Expect(Page.Locator("#pg-disabled")).ToHaveAttributeAsync("aria-checked", "true");
 
         await Expect(PlaygroundButton).ToBeDisabledAsync();
     }
@@ -231,7 +234,8 @@ public class ButtonTests : PageTest
     {
         await GoToPage("playground");
 
-        await Page.Locator("#pg-icon-only").CheckAsync();
+        await Page.Locator("#pg-icon-only").ClickAsync();
+        await Expect(Page.Locator("#pg-icon-only")).ToHaveAttributeAsync("aria-checked", "true");
 
         await Expect(PlaygroundButton).ToHaveAttributeAsync("aria-label", "Save changes");
         await Expect(PlaygroundButton.Locator(".nx-button-label")).ToHaveCountAsync(0);

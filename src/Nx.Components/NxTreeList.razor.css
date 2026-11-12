@@ -1,0 +1,71 @@
+.nx-treelist {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 0;
+    max-width: 100%;
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius);
+    background: var(--nx-surface);
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+    color: var(--nx-fg);
+    /* The tree's own room left of the first column's text: root padding, row padding, arrow and gap. */
+    --nx-treelist-lead: 30px;
+    /* Everything around the columns: the lead plus the row's right padding and the root's. */
+    --nx-treelist-chrome: 40px;
+}
+
+/* One scroller for header and rows, so they move together sideways; the header sticks on top. */
+.nx-treelist-scroll {
+    /* Positioned: the screen-reader column titles are absolute, and only a containing block clips them. */
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+.nx-treelist-table { min-height: 100%; }
+
+.nx-treelist-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-height: var(--nx-treelist-header-height);
+    padding: 0 10px 0 var(--nx-treelist-lead);
+    border-bottom: 1px solid var(--nx-border);
+    background: var(--nx-treelist-header-bg);
+    color: var(--nx-fg-muted);
+    font-size: var(--nx-font-size-sm);
+    font-weight: var(--nx-font-weight-medium);
+}
+
+.nx-treelist-th,
+.nx-treelist ::deep .nx-treelist-td {
+    box-sizing: border-box;
+    flex-shrink: 0;
+    padding: 0 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The tree column takes what the fixed columns leave; its cells also lose the indent. */
+.nx-treelist-th-tree,
+.nx-treelist ::deep .nx-treelist-td-tree {
+    flex: 1;
+    flex-shrink: 1;
+    padding-left: 0;
+}
+
+.nx-treelist ::deep .nx-treelist-tree { overflow: visible; }
+.nx-treelist ::deep .nx-treelist-tree .nx-treeview-content { gap: 0; }
+
+@media (pointer: coarse) {
+    /* NxTreeView's arrows grow to 36px for touch. */
+    .nx-treelist { --nx-treelist-lead: 44px; --nx-treelist-chrome: 54px; }
+}

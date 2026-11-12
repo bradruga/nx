@@ -1,0 +1,73 @@
+@page "/treelist/api"
+
+<DocHeader Slug="treelist" Page="api" />
+
+<div class="doc-section">
+    <h2>NxTreeList</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Data</td><td>IEnumerable&lt;TItem&gt;?</td><td>—</td><td>Every item, flat.</td></tr>
+                <tr><td>ItemId</td><td>Func&lt;TItem, object&gt;</td><td>—</td><td>An item's unique id.</td></tr>
+                <tr><td>ParentId</td><td>Func&lt;TItem, object?&gt;</td><td>—</td><td>Its parent's id; <code>null</code> or unknown for a top item.</td></tr>
+                <tr><td>Columns</td><td>RenderFragment?</td><td>—</td><td>The <code>NxTreeListColumn</code>s.</td></tr>
+                <tr><td>SelectionMode</td><td>NxTreeSelectionMode</td><td>Single</td><td>None, Single or Multiple.</td></tr>
+                <tr><td>SelectedItems / SelectedItem</td><td>IEnumerable&lt;TItem&gt;? / TItem?</td><td>—</td><td><code>@@bind-SelectedItems</code> or, for one, <code>@@bind-SelectedItem</code>.</td></tr>
+                <tr><td>ExpandedItems</td><td>IEnumerable&lt;TItem&gt;?</td><td>—</td><td>Open rows: pass a list to start with some open; <code>@@bind-ExpandedItems</code> follows them.</td></tr>
+                <tr><td>Height</td><td>string?</td><td>—</td><td>Rows scroll under the header; <code>100%</code> fills a container with a height.</td></tr>
+                <tr><td>NoDataText</td><td>string</td><td>No items</td><td>Shown with no items.</td></tr>
+                <tr><td>AriaLabel</td><td>string?</td><td>—</td><td>The tree's accessible name.</td></tr>
+                <tr><td>Id</td><td>string?</td><td>generated</td><td>The tree's <code>id</code>; rows are <code>{Id}-{n}</code>.</td></tr>
+                <tr><td>Class / Style</td><td>string?</td><td>—</td><td>On the outer element; other attributes go there too.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxTreeListColumn</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>Field</td><td>string?</td><td>—</td><td>The property shown, by name (<code>nameof</code>).</td></tr>
+                <tr><td>Title</td><td>string?</td><td>—</td><td>The header; also read before the cell's value.</td></tr>
+                <tr><td>Width</td><td>string?</td><td>—</td><td>Fixed width; for the tree column, its least width (it takes the rest).</td></tr>
+                <tr><td>Expandable</td><td>bool</td><td>first column</td><td>Holds the tree's arrows and indent; it is drawn first.</td></tr>
+                <tr><td>Template</td><td>RenderFragment&lt;TItem&gt;?</td><td>—</td><td>The cell's content in place of the field.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Events &amp; Methods</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>SelectedItemsChanged / SelectedItemChanged</td><td>EventCallback</td><td>The selection changed (in tree order).</td></tr>
+                <tr><td>ExpandedItemsChanged</td><td>EventCallback&lt;IEnumerable&lt;TItem&gt;&gt;</td><td>A row opened or closed; every open item.</td></tr>
+                <tr><td>ExpandAllAsync() / CollapseAllAsync()</td><td>Task</td><td>Open or close every row.</td></tr>
+                <tr><td>FocusAsync()</td><td>ValueTask</td><td>Focuses the tree.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS Variables</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table doc-api-table">
+            <thead><tr><th>Variable</th><th>Default</th><th>Used for</th></tr></thead>
+            <tbody>
+                <tr><td>--nx-treelist-header-height</td><td>34px</td><td>The header row.</td></tr>
+                <tr><td>--nx-treelist-header-bg</td><td>--nx-surface-hover</td><td>The header's background.</td></tr>
+                <tr><td>--nx-treeview-row-height / -indent</td><td>32px / 18px</td><td>Rows and indent, shared with NxTreeView.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<DocPager Slug="treelist" Page="api" />

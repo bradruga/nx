@@ -52,6 +52,7 @@ Blazor UI components for the Northeast Precast ERP portal, built to replace Tele
 | `NxPopup` | Any content floated next to an anchor (`AnchorSelector`): four placements, start/center/end alignment, flips to the side with room and shifts to stay on screen, follows scrolling, closes on an outside press or Escape (`@bind-Visible`). |
 | `NxSignature` | A pad to sign with mouse, pen or touch, bound as a PNG data URL (`null` when empty), clear button, pen and paper colors saved in the image, read-only, validation. |
 | `NxCircularGauge` | One value on a ring filling from the top between `Min` and `Max`, a `CenterTemplate`, color, size, animated, an ARIA meter. |
+| `NxTreeList<TItem>` | A tree with columns on NxTreeView: flat data by `ItemId` / `ParentId`, `NxTreeListColumn` by property name or template under a sticky header, columns aligned at every depth, single or multiple selection, start-expanded rows, ARIA tree keys. No sort, filter, paging or editing (NxGrid's job). |
 | `NxNotification` | Toasts stacked in a corner: `` + `Show(model)` with Info/Success/Warning/Error/Neutral, `CloseAfter` held by hover or focus, close button, six positions, `MaxVisible`, a live region (errors as alerts); full width on phones. |
 | `NxCheckBox<TValue>` | Check box for `bool` or `bool?` (indeterminate), three-state cycling, label on either side, read-only, validation. |
 | `NxToggleSwitch` | `role="switch"` on/off toggle: on/off text inside or beside, three sizes, loading state, validation. |

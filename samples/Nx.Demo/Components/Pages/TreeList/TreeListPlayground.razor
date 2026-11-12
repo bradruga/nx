@@ -1,0 +1,95 @@
+@page "/treelist/playground"
+
+<DocHeader Slug="treelist" Page="playground" />
+
+<div class="doc-section">
+    <h2>Playground</h2>
+    <p class="doc-note">Every parameter, live.</p>
+
+    <div class="demo-playground">
+        <div class="demo-preview">
+            <div class="demo-preview-inner demo-preview-inner-stretch">
+                <NxTreeList Id="playground-tree" Data="@(pgEmpty ? [] : DemoYard.Locations)" ItemId="l => l.ResourceId" ParentId="l => l.CurrentContainerId"
+                            SelectionMode="pgMode" @bind-SelectedItems="pgSelected" @bind-ExpandedItems="pgExpanded" Height="@pgHeight"
+                            NoDataText="@pgNoData" AriaLabel="@OrNull(pgAriaLabel)">
+                    <Columns>
+                        <NxTreeListColumn Field="@nameof(YardLocation.Name)" Title="@pgTitle" Width="@pgWidth" />
+                        @if (pgKind)
+                        {
+                            <NxTreeListColumn Field="@nameof(YardLocation.Kind)" Title="Kind" Width="70px" />
+                        }
+                        <NxTreeListColumn Field="@nameof(YardLocation.AggregatePieceCount)" Title="# Pieces" Width="90px" />
+                    </Columns>
+                </NxTreeList>
+            </div>
+            <div class="demo-row">
+                <span class="demo-value" id="playground-selected">Selected: @(pgSelected.Any() ? string.Join(", ", pgSelected.Select(l => l.Name)) : "none")</span>
+                <span class="demo-value" id="playground-expanded">Expanded: @pgExpanded.Count()</span>
+            </div>
+        </div>
+
+        <div class="demo-controls">
+            <div class="demo-controls-title">Behavior</div>
+            <label class="demo-control">
+                <span>SelectionMode</span>
+                <select id="pg-mode" @bind="pgMode">
+                    @foreach (var mode in Enum.GetValues<NxTreeSelectionMode>())
+                    {
+                        <option value="@mode">@mode</option>
+                    }
+                </select>
+            </label>
+            <label class="demo-control"><span>No data</span><input type="checkbox" id="pg-empty" @bind="pgEmpty" /></label>
+            <label class="demo-control"><span>NoDataText</span><input type="text" id="pg-nodata" @bind="pgNoData" @bind:event="oninput" /></label>
+
+            <div class="demo-controls-title">Columns</div>
+            <label class="demo-control"><span>Tree column Title</span><input type="text" id="pg-title" @bind="pgTitle" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>Tree column Width</span><input type="text" id="pg-width" @bind="pgWidth" @bind:event="onchange" /></label>
+            <label class="demo-control"><span>Kind column</span><input type="checkbox" id="pg-kind" @bind="pgKind" /></label>
+
+            <div class="demo-controls-title">Look</div>
+            <label class="demo-control">
+                <span>Height</span>
+                <select id="pg-height" @bind="pgHeight">
+                    <option value="240px">240px</option>
+                    <option value="360px">360px</option>
+                </select>
+            </label>
+            <label class="demo-control"><span>AriaLabel</span><input type="text" id="pg-arialabel" @bind="pgAriaLabel" @bind:event="oninput" /></label>
+        </div>
+
+        <div class="demo-playground-code">
+            <pre class="doc-code">@PlaygroundCode</pre>
+        </div>
+    </div>
+</div>
+
+<DocPager Slug="treelist" Page="playground" />
+
+@code {
+    static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
+
+    NxTreeSelectionMode pgMode = NxTreeSelectionMode.Single;
+    IEnumerable<YardLocation> pgSelected = [];
+    IEnumerable<YardLocation> pgExpanded = DemoYard.Named("Lincoln Ave").ToList();
+    string pgHeight = "360px", pgNoData = "No items", pgTitle = "Location", pgWidth = "200px", pgAriaLabel = "Yard locations";
+    bool pgEmpty, pgKind;
+
+    string PlaygroundCode
+    {
+        get
+        {
+            var attrs = new List<string> { "Data=\"locations\"", "ItemId=\"l => l.ResourceId\"", "ParentId=\"l => l.CurrentContainerId\"" };
+            if (pgMode != NxTreeSelectionMode.Single) attrs.Add($"SelectionMode=\"NxTreeSelectionMode.{pgMode}\"");
+            attrs.Add("@bind-SelectedItems=\"selected\" @bind-ExpandedItems=\"expanded\"");
+            attrs.Add($"Height=\"{pgHeight}\"");
+            if (pgNoData != "No items") attrs.Add($"NoDataText=\"{pgNoData}\"");
+            if (OrNull(pgAriaLabel) is { } label) attrs.Add($"AriaLabel=\"{label}\"");
+            var columns = new List<string> { $"<NxTreeListColumn Field=\"@nameof(Location.Name)\" Title=\"{pgTitle}\" Width=\"{pgWidth}\" />" };
+            if (pgKind) columns.Add("<NxTreeListColumn Field=\"@nameof(Location.Kind)\" Title=\"Kind\" Width=\"70px\" />");
+            columns.Add("<NxTreeListColumn Field=\"@nameof(Location.AggregatePieceCount)\" Title=\"# Pieces\" Width=\"90px\" />");
+            return "<NxTreeList " + string.Join("\n            ", attrs) + ">\n    <Columns>\n        "
+                + string.Join("\n        ", columns) + "\n    </Columns>\n</NxTreeList>";
+        }
+    }
+}
