@@ -221,6 +221,153 @@ public class NxEditorTests : BunitContext
     }
 
     [Test]
+    public async Task Image_WidthAndHeight_GoWithThePicture()
+    {
+        var cut = Render<NxEditor>(p => p.Add(x => x.Id, "ed").Add(x => x.Tools, [NxEditorTool.InsertImage]));
+        await cut.Find("[data-nx-editor-cmd=insertImage]").ClickAsync(new MouseEventArgs());
+
+        cut.Find("#ed-image-src").Input("https://nep.example/wp12.png");
+        foreach (var (id, text) in new[] { ("#ed-image-width", "320"), ("#ed-image-height", "240") })
+        {
+            await cut.Find(id).TriggerEventAsync("oninput", new ChangeEventArgs { Value = text });
+            await cut.Find(id).TriggerEventAsync("onchange", new ChangeEventArgs { Value = text });
+        }
+        await cut.FindAll(".nx-editor-dialog button").First(b => b.TextContent.Trim() == "Insert").ClickAsync(new MouseEventArgs());
+
+        var insert = module.Invocations.Single(i => i.Identifier == "insertImage");
+        Assert.That(insert.Arguments, Is.EqualTo(new object?[] { "ed", "https://nep.example/wp12.png", "", 320, 240 }));
+    }
+
+    [Test]
+    public async Task Image_EnterInTheFields_Inserts()
+    {
+        var cut = Render<NxEditor>(p => p.Add(x => x.Id, "ed").Add(x => x.Tools, [NxEditorTool.InsertImage]));
+        await cut.Find("[data-nx-editor-cmd=insertImage]").ClickAsync(new MouseEventArgs());
+        cut.Find("#ed-image-src").Input("  https://nep.example/a.png ");
+
+        await cut.Find("#ed-image-src").KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.That(module.Invocations.Single(i => i.Identifier == "insertImage").Arguments[1], Is.EqualTo("https://nep.example/a.png"));
+        Assert.That(cut.FindAll("#ed-image-src"), Is.Empty);
+    }
+
+    [Test]
+    public async Task Image_NoAddress_InsertDisabled_CancelRestoresTheCaret()
+    {
+        var cut = Render<NxEditor>(p => p.Add(x => x.Id, "ed").Add(x => x.Tools, [NxEditorTool.InsertImage]));
+        await cut.Find("[data-nx-editor-cmd=insertImage]").ClickAsync(new MouseEventArgs());
+
+        Assert.That(cut.FindAll(".nx-editor-dialog button").First(b => b.TextContent.Trim() == "Insert").HasAttribute("disabled"), Is.True);
+        await cut.FindAll(".nx-editor-dialog button").First(b => b.TextContent.Trim() == "Cancel").ClickAsync(new MouseEventArgs());
+
+        Assert.That(cut.FindAll("#ed-image-src"), Is.Empty);
+        Assert.That(Calls("insertImage"), Is.Zero);
+        Assert.That(module.Invocations.Single(i => i.Identifier == "restoreSelection").Arguments[0], Is.EqualTo("ed"));
+    }
+
+    [Test]
+    public async Task Link_NewWindow_EnterInserts()
+    {
+        var cut = Render<NxEditor>(p => p.Add(x => x.Id, "ed"));
+        await cut.Find("[data-nx-editor-cmd=createLink]").ClickAsync(new MouseEventArgs());
+        cut.Find("#ed-link-href").Input("https://nep.example");
+        await cut.Find("#ed-link-new").ClickAsync(new MouseEventArgs());
+
+        await cut.Find("#ed-link-href").KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.That(module.Invocations.Single(i => i.Identifier == "createLink").Arguments, Is.EqualTo(new object?[] { "ed", "https://nep.example", "", true }));
+    }
+
+    [Test]
+    public async Task TablePicker_SecondClickDismisses_RestoresTheCaret()
+    {
+        var cut = Render<NxEditor>(p => p.Add(x => x.Id, "ed").Add(x => x.Tools, [NxEditorTool.InsertTable]));
+
+        await cut.Find("[data-nx-editor-cmd=insertTable]").ClickAsync(new MouseEventArgs());
+        await cut.Find("[data-nx-editor-cmd=insertTable]").ClickAsync(new MouseEventArgs());
+
+        Assert.That(cut.FindAll(".nx-editor-tablepicker"), Is.Empty);
+        Assert.That(Calls("closeTablePicker"), Is.EqualTo(1));
+        Assert.That(Calls("restoreSelection"), Is.EqualTo(1));
+        Assert.That(Calls("insertTable"), Is.Zero);
+    }
+
+    [Test]
+    public async Task TablePicker_Dismissed_FromTheBrowser()
+    {
+        var cut = Render<NxEditor>(p => p.Add(x => x.Id, "ed").Add(x => x.Tools, [NxEditorTool.InsertTable]));
+        await cut.Find("[data-nx-editor-cmd=insertTable]").ClickAsync(new MouseEventArgs());
+
+        await cut.InvokeAsync(cut.Instance.OnTablePickerDismissed);
+
+        Assert.That(cut.FindAll(".nx-editor-tablepicker"), Is.Empty);
+        Assert.That(Calls("restoreSelection"), Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task TablePicker_SizeClampedToTheGrid()
+    {
+        var cut = Render<NxEditor>(p => p.Add(x => x.Id, "ed").Add(x => x.Tools, [NxEditorTool.InsertTable]));
+        await cut.Find("[data-nx-editor-cmd=insertTable]").ClickAsync(new MouseEventArgs());
+
+        await cut.InvokeAsync(() => cut.Instance.OnTablePicked(20, 0));
+
+        Assert.That(module.Invocations.Single(i => i.Identifier == "insertTable").Arguments, Is.EqualTo(new object?[] { "ed", 8, 1 }));
+    }
+
+    [Test]
+    public async Task Shortcut_Ignored_WhenReadOnly()
+    {
+        var cut = Render<NxEditor>(p => p.Add(x => x.Id, "ed").Add(x => x.ReadOnly, true));
+
+        await cut.InvokeAsync(() => cut.Instance.OnShortcut("createLink"));
+
+        Assert.That(cut.FindAll("#ed-link-href"), Is.Empty);
+        Assert.That(Calls("linkInfo"), Is.Zero);
+    }
+
+    [Test]
+    public async Task State_FontAndSize_ShowInTheirLists()
+    {
+        var cut = Render<NxEditor>(p => p.Add(x => x.Tools, NxEditorTool.All));
+
+        await cut.InvokeAsync(() => cut.Instance.OnStateChanged(State(new { fontSize = 14, fontFamily = "courier new" })));
+
+        var selects = cut.FindAll(".nx-editor-select input").Select(i => i.GetAttribute("value")).ToList();
+        Assert.That(selects, Does.Contain("14 pt").And.Contain("Courier New"));
+    }
+
+    [Test]
+    public async Task ContentChanged_MarksTheFieldModified()
+    {
+        var model = new Note();
+        var context = new EditContext(model);
+        var cut = Render<CascadingValue<EditContext>>(p => p
+            .Add(x => x.Value, context)
+            .Add(x => x.IsFixed, true)
+            .AddChildContent<NxEditor>(e => e
+                .Add(x => x.Id, "ed")
+                .Add(x => x.Value, model.Text)
+                .Add(x => x.ValueChanged, (string? v) => model.Text = v)
+                .Add(x => x.ValueExpression, () => model.Text)));
+
+        await cut.InvokeAsync(() => cut.FindComponent<NxEditor>().Instance.OnContentChanged("<p>x</p>"));
+
+        Assert.That(context.IsModified(new FieldIdentifier(model, nameof(Note.Text))), Is.True);
+        Assert.That(model.Text, Is.EqualTo("<p>x</p>"));
+    }
+
+    [Test]
+    public async Task Dispose_ReleasesTheModule()
+    {
+        var cut = Render<NxEditor>(p => p.Add(x => x.Id, "ed"));
+
+        await cut.InvokeAsync(() => cut.Instance.DisposeAsync().AsTask());
+
+        Assert.That(module.Invocations.Single(i => i.Identifier == "dispose").Arguments, Is.EqualTo(new object?[] { "ed" }));
+    }
+
+    [Test]
     public async Task TablePicker_OpensAndInsertsTheSize()
     {
         var cut = Render<NxEditor>(p => p.Add(x => x.Id, "ed").Add(x => x.Tools, [NxEditorTool.InsertTable]));

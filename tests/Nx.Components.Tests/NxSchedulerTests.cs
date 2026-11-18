@@ -180,6 +180,126 @@ public class NxSchedulerTests : BunitContext
     }
 
     [Test]
+    public async Task Today_MovesToThisWeek_DisabledThere()
+    {
+        var dates = new List<DateTime>();
+        var cut = Render<NxScheduler<Item>>(p => p
+            .Add(x => x.Date, DateTime.Today.AddDays(-30))
+            .Add(x => x.Culture, Us)
+            .Add(x => x.DateChanged, (DateTime d) => dates.Add(d)));
+        Assert.That(cut.Find("[data-nx-scheduler=today]").HasAttribute("disabled"), Is.False);
+        Assert.That(cut.FindAll(".nx-scheduler-day.nx-scheduler-today"), Is.Empty);
+
+        await cut.Find("[data-nx-scheduler=today]").ClickAsync(new MouseEventArgs());
+
+        Assert.That(dates, Is.EqualTo(new[] { DateTime.Today }));
+        Assert.That(cut.Find("[data-nx-scheduler=today]").HasAttribute("disabled"), Is.True);
+        Assert.That(cut.Find(".nx-scheduler-day.nx-scheduler-today").GetAttribute("aria-label"), Is.EqualTo(DateTime.Today.ToString("D", Us)));
+    }
+
+    [Test]
+    public void Date_FromOutside_ShowsItsWeek()
+    {
+        var cut = RenderWeek([]);
+
+        cut.Render(p => p.Add(x => x.Date, new DateTime(2026, 12, 2)));
+
+        Assert.That(cut.Find(".nx-scheduler-range").TextContent, Is.EqualTo("Nov 29 – Dec 5, 2026"));
+    }
+
+    [Test]
+    public void Range_AcrossAYear_NamesBothYears()
+    {
+        var cut = RenderWeek([]);
+
+        cut.Render(p => p.Add(x => x.Date, new DateTime(2026, 12, 31)));
+
+        Assert.That(cut.Find(".nx-scheduler-range").TextContent, Is.EqualTo("Dec 27, 2026 – Jan 2, 2027"));
+    }
+
+    [Test]
+    public void SlotDivisions_SplitTheHour_LabelOnlyTheHour()
+    {
+        var cut = RenderWeek([]);
+
+        cut.Render(p => p.Add(x => x.SlotDivisions, 2));
+
+        var slots = cut.FindAll(".nx-scheduler-day")[0].QuerySelectorAll(".nx-scheduler-slot");
+        Assert.That(slots, Has.Length.EqualTo(48));
+        Assert.That(slots[2].ClassList, Does.Contain("nx-scheduler-slot-major"));
+        Assert.That(slots[3].ClassList, Does.Not.Contain("nx-scheduler-slot-major"));
+        var times = cut.FindAll(".nx-scheduler-time");
+        Assert.That((times[2].TextContent, times[3].TextContent), Is.EqualTo(("1 AM", "")));
+    }
+
+    [Test]
+    public void StartAndEndTime_LimitTheRows()
+    {
+        var cut = RenderWeek([], p => p.Add(x => x.StartTime, new TimeOnly(6, 0)).Add(x => x.EndTime, new TimeOnly(18, 30)));
+
+        // 6:00 to 18:30 rounds up to whole one-hour rows: 13.
+        Assert.That(cut.FindAll(".nx-scheduler-day")[0].QuerySelectorAll(".nx-scheduler-slot"), Has.Length.EqualTo(13));
+        Assert.That(cut.FindAll(".nx-scheduler-time")[0].TextContent, Is.EqualTo("6 AM"));
+        Assert.That(cut.Find(".nx-scheduler-grid").GetAttribute("style"), Is.EqualTo("--nx-scheduler-rows: 13"));
+    }
+
+    [Test]
+    public void Opens_ScrolledToTheWorkDay_CountingFromStartTimeInRows()
+    {
+        // Half-hour rows (the default SlotDivisions of 2) from 6:00: 8:00 is the fifth row.
+        Render<NxScheduler<Item>>(p => p
+            .Add(x => x.Date, Wednesday)
+            .Add(x => x.StartTime, new TimeOnly(6, 0))
+            .Add(x => x.WorkDayStart, new TimeOnly(8, 0)));
+
+        Assert.That(module.Invocations.Single(i => i.Identifier == "scrollToRow").Arguments[1], Is.EqualTo(4.0));
+    }
+
+    private sealed class Shift
+    {
+        public string Name { get; init; } = "";
+        public DateTimeOffset From { get; init; }
+        public DateTimeOffset To { get; init; }
+    }
+
+    [Test]
+    public void Fields_ByName_DateTimeOffsetTimes()
+    {
+        var shift = new Shift { Name = "Days", From = new DateTimeOffset(Wednesday.AddHours(6)), To = new DateTimeOffset(Wednesday.AddHours(12)) };
+        var cut = Render<NxScheduler<Shift>>(p => p
+            .Add(x => x.Data, new[] { shift })
+            .Add(x => x.Date, Wednesday)
+            .Add(x => x.Culture, Us)
+            .Add(x => x.StartField, nameof(Shift.From))
+            .Add(x => x.EndField, nameof(Shift.To))
+            .Add(x => x.TitleField, nameof(Shift.Name)));
+
+        var placed = cut.FindAll(".nx-scheduler-day")[3].QuerySelector(".nx-scheduler-event")!;
+        Assert.That(placed.QuerySelector(".nx-scheduler-event-title")!.TextContent, Is.EqualTo("Days"));
+        Assert.That(StyleOf(placed)["top"], Is.EqualTo(25));
+    }
+
+    private sealed record Untitled(DateTime Start, DateTime End);
+
+    [Test]
+    public void NoTitleProperty_ShowsTheTimeOnly()
+    {
+        var cut = Render<NxScheduler<Untitled>>(p => p
+            .Add(x => x.Data, new[] { new Untitled(Wednesday.AddHours(6), Wednesday.AddHours(8)) })
+            .Add(x => x.Date, Wednesday)
+            .Add(x => x.Culture, Us));
+
+        Assert.That(cut.Find(".nx-scheduler-event .nx-visually-hidden").TextContent, Is.EqualTo("Wed 6:00 AM – 8:00 AM"));
+    }
+
+    [Test]
+    public void AriaLabel_NamesTheGrid_DefaultTheRange()
+    {
+        Assert.That(RenderWeek([]).Find(".nx-scheduler-grid").GetAttribute("aria-label"), Is.EqualTo("November 8 – 14, 2026"));
+        Assert.That(RenderWeek([], p => p.Add(x => x.AriaLabel, "Shifts")).Find(".nx-scheduler-grid").GetAttribute("aria-label"), Is.EqualTo("Shifts"));
+    }
+
+    [Test]
     public void MissingStartField_Throws()
     {
         Assert.Throws<InvalidOperationException>(() => RenderWeek([new("A", Wednesday, Wednesday.AddHours(1))],

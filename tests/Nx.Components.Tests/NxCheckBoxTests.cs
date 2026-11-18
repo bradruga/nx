@@ -234,4 +234,36 @@ public class NxCheckBoxTests : BunitContext
         Assert.That(cut.Find("button").GetAttribute("aria-invalid"), Is.EqualTo("true"));
         Assert.That(cut.Find(".nx-checkbox").ClassList, Does.Contain("nx-checkbox-invalid"));
     }
+
+    [Test]
+    public async Task Validation_MessagesCleared_NoLongerInvalid()
+    {
+        var model = new Model();
+        var context = new EditContext(model);
+        var store = new ValidationMessageStore(context);
+        store.Add(context.Field(nameof(Model.Accepted)), "Accept the terms.");
+        var host = Render<CascadingValue<EditContext>>(p => p
+            .Add(x => x.Value, context)
+            .AddChildContent<NxCheckBox<bool>>(c => c
+                .Add(x => x.Value, model.Accepted)
+                .Add(x => x.ValueExpression, () => model.Accepted)));
+        var cut = host.FindComponent<NxCheckBox<bool>>();
+        Assert.That(cut.Find("button").GetAttribute("aria-invalid"), Is.EqualTo("true"));
+
+        store.Clear();
+        await cut.InvokeAsync(context.NotifyValidationStateChanged);
+
+        Assert.That(cut.Find("button").HasAttribute("aria-invalid"), Is.False);
+        Assert.That(cut.Find(".nx-checkbox").ClassList, Does.Not.Contain("nx-checkbox-invalid"));
+    }
+
+    [Test]
+    public void ExternalValueChange_UpdatesTheBox()
+    {
+        var cut = Render<NxCheckBox<bool?>>(p => p.Add(x => x.Value, (bool?)true));
+
+        cut.Render(p => p.Add(x => x.Value, (bool?)null));
+
+        Assert.That(cut.Find("button").GetAttribute("aria-checked"), Is.EqualTo("mixed"));
+    }
 }

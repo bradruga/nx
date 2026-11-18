@@ -329,6 +329,64 @@ public class NxNumericTextBoxTests : BunitContext
     }
 
     [Test]
+    public async Task Long_BeyondIntRange_RoundTrips()
+    {
+        var raised = new List<long>();
+        var cut = RenderBound(raised, 0L);
+
+        await TypeAndCommitAsync(cut, "5000000000");
+
+        Assert.That(raised, Is.EqualTo(new[] { 5_000_000_000L }));
+    }
+
+    [Test]
+    public async Task Short_ClampsToTheTypesRange()
+    {
+        var raised = new List<short>();
+        var cut = RenderBound(raised, (short)0);
+
+        await TypeAndCommitAsync(cut, "99999");
+
+        Assert.That(raised, Is.EqualTo(new[] { short.MaxValue }));
+    }
+
+    [Test]
+    public async Task Float_RoundTrips()
+    {
+        var raised = new List<float>();
+        var cut = RenderBound(raised, 0f);
+
+        await TypeAndCommitAsync(cut, "2.5");
+
+        Assert.That(raised, Is.EqualTo(new[] { 2.5f }));
+    }
+
+    [Test]
+    public async Task Focused_ParentRerenderWithSameValue_KeepsTypedText()
+    {
+        var cut = RenderBound<int>([], 5);
+
+        await cut.Find("input").FocusAsync(new FocusEventArgs());
+        await cut.Find("input").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "7" });
+        cut.Render(p => p.Add(x => x.Value, 5));
+
+        Assert.That(Text(cut), Is.EqualTo("7"));
+    }
+
+    [Test]
+    public async Task Spin_DecreaseClickStepsDownByStep()
+    {
+        var raised = new List<decimal>();
+        var cut = RenderBound(raised, 1m, p => p.Add(x => x.Step, 0.25m));
+
+        var press = cut.InvokeAsync(() => cut.Find(".nx-numeric-decrease").TriggerEventAsync("onpointerdown", new PointerEventArgs()));
+        await cut.Find(".nx-numeric-decrease").TriggerEventAsync("onpointerup", new PointerEventArgs());
+        await press;
+
+        Assert.That(raised, Is.EqualTo(new[] { 0.75m }));
+    }
+
+    [Test]
     public void ExternalValueChange_UpdatesText()
     {
         var cut = RenderBound<int>([], 1);

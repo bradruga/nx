@@ -287,4 +287,98 @@ public class NxAutoCompleteTests : BunitContext
         Assert.That(cut.Find("input").GetAttribute("aria-invalid"), Is.EqualTo("true"));
         Assert.That(cut.Find(".nx-combobox").ClassList, Does.Contain("nx-combobox-invalid"));
     }
+
+    [Test]
+    public async Task Validation_CommitUpdatesModelAndMarksModified()
+    {
+        var site = new Site();
+        var context = new EditContext(site);
+        var cut = Render<NxAutoComplete<string>>(p => p
+            .AddCascadingValue(context)
+            .Add(x => x.Data, Cities)
+            .Add(x => x.Value, site.City)
+            .Add(x => x.ValueChanged, (string? v) => site.City = v)
+            .Add(x => x.ValueExpression, () => site.City));
+
+        await TypeAsync(cut, "Lowell");
+        await KeyAsync(cut, "Enter");
+
+        Assert.That(site.City, Is.EqualTo("Lowell"));
+        Assert.That(context.IsModified(context.Field(nameof(Site.City))), Is.True);
+    }
+
+    // ── Hardening ─────────────────────────────────────────────────────────────
+
+    [Test]
+    public async Task CustomFilter_ReplacesFilter()
+    {
+        var cut = Render<NxAutoComplete<Place>>(p => p
+            .Add(x => x.Data, Places)
+            .Add(x => x.ItemText, c => c.City)
+            .Add(x => x.CustomFilter, (c, text) => c.County.StartsWith(text, StringComparison.OrdinalIgnoreCase)));
+
+        await TypeAsync(cut, "pen");
+
+        Assert.That(Options(cut), Is.EqualTo(new[] { "Bangor" }));
+    }
+
+    [Test]
+    public async Task Virtualize_RendersAWindow()
+    {
+        var cut = Render<NxAutoComplete<string>>(p => p
+            .Add(x => x.Data, Enumerable.Range(1, 10_000).Select(i => $"Part {i}"))
+            .Add(x => x.Virtualize, true));
+
+        await TypeAsync(cut, "part");
+
+        var options = cut.FindAll("[role=option]");
+        Assert.That(options.Count, Is.GreaterThan(0).And.LessThan(200));
+        Assert.That(options[0].GetAttribute("aria-setsize"), Is.EqualTo("10000"));
+    }
+
+    [Test]
+    public async Task NarrowViewport_StillSuggestsInAPopup()
+    {
+        var cut = RenderBound([]);
+
+        await cut.InvokeAsync(() => cut.FindComponent<NxComboBox<string, string>>().Instance.OnViewportChanged(true));
+        await TypeAsync(cut, "port");
+
+        Assert.That(cut.Find("input").HasAttribute("readonly"), Is.False);
+        Assert.That(cut.FindAll(".nx-combobox-overlay"), Is.Empty);
+        Assert.That(Options(cut), Is.EqualTo(new[] { "Portland", "Portsmouth" }));
+    }
+
+    [Test]
+    public async Task ParentRerender_SameValue_KeepsTypedText()
+    {
+        var cut = RenderBound([], "Salem");
+
+        await TypeAsync(cut, "Port");
+        cut.Render(p => p.Add(x => x.Value, "Salem").Add(x => x.Placeholder, "City"));
+
+        Assert.That(cut.Find("input").GetAttribute("value"), Is.EqualTo("Port"));
+    }
+
+    [Test]
+    public void OutsideValueChange_ReplacesText()
+    {
+        var cut = RenderBound([], "Salem");
+
+        cut.Render(p => p.Add(x => x.Value, "Albany"));
+
+        Assert.That(cut.Find("input").GetAttribute("value"), Is.EqualTo("Albany"));
+    }
+
+    [Test]
+    public async Task Blur_ExactTextInOtherCase_TakesTheItemText()
+    {
+        var raised = new List<string?>();
+        var cut = RenderBound(raised);
+
+        await TypeAsync(cut, "salem");
+        await cut.Find("input").BlurAsync(new FocusEventArgs());
+
+        Assert.That(raised, Is.EqualTo(new[] { "Salem" }));
+    }
 }

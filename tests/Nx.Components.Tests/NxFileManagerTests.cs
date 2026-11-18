@@ -127,14 +127,14 @@ public class NxFileManagerTests : BunitContext
     public void Search_FindsBelowTheOpenFolder_WithLocation()
     {
         var cut = RenderFiles();
-        cut.Find("#fm-search").Input("wp");
+        cut.InvokeAsync(() => cut.Find("#fm-search").Input("wp"));
         cut.WaitForState(() => Names(cut).Length == 2, TimeSpan.FromSeconds(2));
 
         Assert.That(Names(cut), Is.EqualTo(new[] { "WP-2.pdf", "WP-12.pdf" }));
         Assert.That(cut.Find(".nx-filemanager-location").TextContent, Is.EqualTo("in Drawings › Shop"));
         Assert.That(cut.Find(".nx-filemanager-crumb-search").TextContent, Is.EqualTo("Search results"));
 
-        cut.Find("#fm-search").Input("nothing like it");
+        cut.InvokeAsync(() => cut.Find("#fm-search").Input("nothing like it"));
         cut.WaitForState(() => cut.FindAll(".nx-filemanager-empty").Count == 1, TimeSpan.FromSeconds(2));
         Assert.That(cut.Find(".nx-filemanager-empty").TextContent, Is.EqualTo("No files match"));
     }
@@ -187,6 +187,277 @@ public class NxFileManagerTests : BunitContext
         Assert.That(views, Is.EqualTo(new[] { NxFileManagerView.Tiles }));
         Assert.That(cut.FindAll(".nx-filemanager-tiles"), Has.Count.EqualTo(1));
         Assert.That(cut.FindAll(".nx-filemanager-head"), Is.Empty);
+    }
+
+    [Test]
+    public async Task Tap_OnATouchScreen_Opens()
+    {
+        Entry? folder = null;
+        var cut = RenderFiles(p => p.Add(x => x.FolderChanged, (Entry? f) => folder = f));
+
+        await cut.FindAll("[role=option]")[1].PointerDownAsync(new PointerEventArgs { PointerType = "touch" });
+        await cut.FindAll("[role=option]")[1].ClickAsync(new MouseEventArgs());
+
+        Assert.That(folder!.Name, Is.EqualTo("Drawings"));
+        Assert.That(Names(cut), Is.EqualTo(new[] { "Shop", "Plan.pdf" }));
+    }
+
+    [Test]
+    public async Task Click_WithAMouse_OnlySelects()
+    {
+        var cut = RenderFiles();
+
+        await cut.FindAll("[role=option]")[1].PointerDownAsync(new PointerEventArgs { PointerType = "mouse" });
+        await cut.FindAll("[role=option]")[1].ClickAsync(new MouseEventArgs());
+
+        Assert.That(Names(cut), Is.EqualTo(new[] { "Archive", "Drawings", "Contract.docx" }));
+        Assert.That(cut.FindAll("[role=option]")[1].GetAttribute("aria-selected"), Is.EqualTo("true"));
+    }
+
+    [Test]
+    public async Task Breadcrumb_Click_GoesUp()
+    {
+        Entry? folder = Files[1];
+        var cut = RenderFiles(p => p.Add(x => x.Folder, Files[1]).Add(x => x.FolderChanged, (Entry? f) => folder = f));
+
+        await cut.FindAll(".nx-filemanager-crumb")[1].ClickAsync(new MouseEventArgs());
+        Assert.That(folder!.Name, Is.EqualTo("Drawings"));
+        Assert.That(Names(cut), Is.EqualTo(new[] { "Shop", "Plan.pdf" }));
+
+        await cut.FindAll(".nx-filemanager-crumb")[0].ClickAsync(new MouseEventArgs());
+        Assert.That(folder, Is.Null);
+        Assert.That(Names(cut), Is.EqualTo(new[] { "Archive", "Drawings", "Contract.docx" }));
+    }
+
+    [Test]
+    public async Task FolderTree_Click_OpensTheFolder()
+    {
+        var cut = RenderFiles();
+
+        var drawings = cut.FindAll(".nx-filemanager-tree [role=treeitem] > div").Single(d => d.TextContent.Trim() == "Drawings");
+        await drawings.ClickAsync(new MouseEventArgs());
+
+        Assert.That(Names(cut), Is.EqualTo(new[] { "Shop", "Plan.pdf" }));
+        Assert.That(cut.FindAll(".nx-filemanager-crumb").Select(c => c.TextContent), Is.EqualTo(new[] { "Files", "Drawings" }));
+    }
+
+    [Test]
+    public void FolderTree_ShowsOnlyFolders_ExpandedDownToTheOpenOne()
+    {
+        var cut = RenderFiles(p => p.Add(x => x.Folder, Files[1]));
+
+        var items = cut.FindAll(".nx-filemanager-tree [role=treeitem]");
+        Assert.That(items.Select(i => i.QuerySelector(".nx-treeview-content")!.TextContent), Is.EqualTo(new[] { "Drawings", "Shop", "Archive" }));
+        Assert.That(items[0].GetAttribute("aria-expanded"), Is.EqualTo("true"));
+        Assert.That(items[1].GetAttribute("aria-selected"), Is.EqualTo("true"));
+    }
+
+    [Test]
+    public async Task AltArrowUp_GoesUp_AtTheTopDoesNothing()
+    {
+        var folders = new List<Entry?>();
+        var cut = RenderFiles(p => p.Add(x => x.Folder, Files[1]).Add(x => x.FolderChanged, (Entry? f) => folders.Add(f)));
+
+        await cut.Find("[role=listbox]").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+        await cut.Find("[role=listbox]").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+        await cut.Find("[role=listbox]").KeyDownAsync(new KeyboardEventArgs { Key = "Backspace" });
+
+        Assert.That(folders.Select(f => f?.Name), Is.EqualTo(new[] { "Drawings", null }));
+        Assert.That(Names(cut), Is.EqualTo(new[] { "Archive", "Drawings", "Contract.docx" }));
+    }
+
+    [Test]
+    public async Task Keys_HomeAndArrowUp_StopAtTheFirst()
+    {
+        var cut = RenderFiles();
+        var list = () => cut.Find("[role=listbox]");
+
+        await list().KeyDownAsync(new KeyboardEventArgs { Key = "End" });
+        Assert.That(cut.Find("[aria-selected=true] .nx-filemanager-name-text").TextContent, Is.EqualTo("Contract.docx"));
+        await list().KeyDownAsync(new KeyboardEventArgs { Key = "Home" });
+        await list().KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp" });
+
+        Assert.That(cut.Find("[aria-selected=true] .nx-filemanager-name-text").TextContent, Is.EqualTo("Archive"));
+    }
+
+    [Test]
+    public async Task Selection_ScrollsTheSelectedEntryIntoView()
+    {
+        var module = JSInterop.SetupModule("./_content/Nx.Components/nx-input.js");
+        module.Mode = JSRuntimeMode.Loose;
+        var cut = RenderFiles();
+
+        await cut.Find("[role=listbox]").KeyDownAsync(new KeyboardEventArgs { Key = "End" });
+
+        var reveal = module.Invocations.Where(i => i.Identifier == "reveal").ToList();
+        Assert.That(reveal, Has.Count.EqualTo(1));
+        Assert.That(reveal[0].Arguments[1], Is.EqualTo(".nx-filemanager-item-selected"));
+    }
+
+    [Test]
+    public void Search_OnlyBelowTheOpenFolder()
+    {
+        // Plan.pdf sits in Drawings, above Shop.
+        var cut = RenderFiles(p => p.Add(x => x.Folder, Files[1]));
+        Assert.That(cut.Find("#fm-search").GetAttribute("placeholder"), Is.EqualTo("Search in Shop"));
+
+        cut.InvokeAsync(() => cut.Find("#fm-search").Input("plan"));
+        cut.WaitForState(() => cut.FindAll(".nx-filemanager-empty").Count == 1, TimeSpan.FromSeconds(2));
+
+        Assert.That(cut.Find(".nx-filemanager-empty").TextContent, Is.EqualTo("No files match"));
+    }
+
+    [Test]
+    public async Task Search_NavigatingClearsIt()
+    {
+        var cut = RenderFiles();
+        await cut.InvokeAsync(() => cut.Find("#fm-search").Input("wp"));
+        cut.WaitForState(() => Names(cut).Length == 2, TimeSpan.FromSeconds(2));
+
+        await cut.Find(".nx-filemanager-crumb").ClickAsync(new MouseEventArgs());
+
+        Assert.That(Names(cut), Is.EqualTo(new[] { "Archive", "Drawings", "Contract.docx" }));
+        Assert.That(cut.FindAll(".nx-filemanager-crumb-search"), Is.Empty);
+    }
+
+    [Test]
+    public void Searchable_False_NoSearchBox()
+    {
+        var cut = RenderFiles(p => p.Add(x => x.Searchable, false));
+
+        Assert.That(cut.FindAll("#fm-search"), Is.Empty);
+    }
+
+    [Test]
+    public async Task Sort_ByDateModified_AndTheDirectionButton()
+    {
+        var cut = RenderFiles(p => p.Add(x => x.Folder, Files[1]));
+
+        await cut.FindAll(".nx-filemanager-th")[1].ClickAsync(new MouseEventArgs());
+        Assert.That(Names(cut), Is.EqualTo(new[] { "WP-2.pdf", "WP-12.pdf" }));
+        Assert.That(cut.FindAll(".nx-filemanager-th")[1].TextContent, Is.EqualTo("Date modified ↑"));
+
+        await cut.Find("[data-nx-filemanager=direction]").ClickAsync(new MouseEventArgs());
+        Assert.That(Names(cut), Is.EqualTo(new[] { "WP-12.pdf", "WP-2.pdf" }));
+    }
+
+    [Test]
+    public async Task Sort_ByName_Descending_FoldersStayFirst()
+    {
+        var cut = RenderFiles();
+
+        await cut.FindAll(".nx-filemanager-th")[0].ClickAsync(new MouseEventArgs());
+
+        Assert.That(Names(cut), Is.EqualTo(new[] { "Drawings", "Archive", "Contract.docx" }));
+    }
+
+    [Test]
+    public async Task Details_Folder_CountsWhatItContains()
+    {
+        var cut = RenderFiles();
+
+        await cut.FindAll("[role=option]")[1].ClickAsync(new MouseEventArgs());
+
+        Assert.That(cut.Find(".nx-filemanager-details dl").TextContent, Does.Contain("Folder").And.Contain("1 folder, 1 file"));
+    }
+
+    [Test]
+    public void Details_NothingSelected_ShowsTheOpenFolder()
+    {
+        var cut = RenderFiles(p => p.Add(x => x.Folder, Files[0]));
+
+        Assert.That(cut.Find(".nx-filemanager-details-none").TextContent, Is.EqualTo("Drawings1 folder, 1 file"));
+    }
+
+    [Test]
+    public void RootName_NamesTheTop()
+    {
+        var cut = RenderFiles(p => p.Add(x => x.RootName, "Project"));
+
+        Assert.That(cut.Find(".nx-filemanager-crumb").TextContent, Is.EqualTo("Project"));
+        Assert.That(cut.Find("[role=listbox]").GetAttribute("aria-label"), Is.EqualTo("Project"));
+        Assert.That(cut.Find(".nx-filemanager-details-none").TextContent, Does.StartWith("Project"));
+    }
+
+    [Test]
+    public void Details_NothingSelected_AtTheTop_CountsTheTop()
+    {
+        var cut = RenderFiles();
+
+        Assert.That(cut.Find(".nx-filemanager-details-none").TextContent, Is.EqualTo("Files2 folders, 1 file"));
+    }
+
+    [Test]
+    public async Task Details_File_ShowsItsLocation_DownloadButtonRaises()
+    {
+        Entry? downloaded = null;
+        var cut = RenderFiles(p => p.Add(x => x.Folder, Files[1]).Add(x => x.OnDownload, (Entry e) => downloaded = e));
+
+        await cut.FindAll("[role=option]")[0].ClickAsync(new MouseEventArgs());
+        Assert.That(cut.Find(".nx-filemanager-details dl").TextContent, Does.Contain("Drawings › Shop").And.Contain("4 KB"));
+
+        await cut.Find(".nx-filemanager-details button").ClickAsync(new MouseEventArgs());
+        Assert.That(downloaded!.Name, Is.EqualTo("WP-2"));
+    }
+
+    [Test]
+    public async Task Details_Toggle_HidesThePane()
+    {
+        var cut = RenderFiles();
+
+        await cut.Find("[data-nx-filemanager=details]").ClickAsync(new MouseEventArgs());
+
+        Assert.That(cut.FindAll(".nx-filemanager-details"), Is.Empty);
+        Assert.That(cut.Find("[data-nx-filemanager=details]").GetAttribute("aria-pressed"), Is.EqualTo("false"));
+    }
+
+    [Test]
+    public void View_Tiles_FromTheParameter()
+    {
+        var cut = RenderFiles(p => p.Add(x => x.View, NxFileManagerView.Tiles));
+
+        Assert.That(cut.FindAll(".nx-filemanager-tiles"), Has.Count.EqualTo(1));
+        Assert.That(cut.Find("[data-nx-filemanager=tiles]").GetAttribute("aria-pressed"), Is.EqualTo("true"));
+    }
+
+    [Test]
+    public void SelectedItem_FromOutside_SelectsIt()
+    {
+        var cut = RenderFiles(p => p.Add(x => x.SelectedItem, Files[5]));
+
+        Assert.That(cut.Find("[aria-selected=true] .nx-filemanager-name-text").TextContent, Is.EqualTo("Contract.docx"));
+    }
+
+    private static Entry[] Reloaded() => [.. Files.Select(f => new Entry { Id = f.Id, ParentId = f.ParentId, Name = f.Name,
+        Extension = f.Extension, IsDirectory = f.IsDirectory, Size = f.Size, DateModified = f.DateModified })];
+
+    [Test]
+    public async Task ParentRender_WithoutBind_KeepsTheUsersFolderAndSelection()
+    {
+        var cut = RenderFiles();
+        await cut.FindAll("[role=option]")[1].DoubleClickAsync(new MouseEventArgs());
+        await cut.FindAll("[role=option]")[1].ClickAsync(new MouseEventArgs());
+
+        cut.Render(p => p.Add(x => x.Data, Reloaded()));
+
+        Assert.That(Names(cut), Is.EqualTo(new[] { "Shop", "Plan.pdf" }));
+        Assert.That(cut.Find("[aria-selected=true] .nx-filemanager-name-text").TextContent, Is.EqualTo("Plan.pdf"));
+    }
+
+    [Test]
+    public async Task DataReloaded_KeepsTheOpenFolderAndSelection()
+    {
+        IRenderedComponent<NxFileManager<Entry>>? cut = null;
+        cut = RenderFiles(p => p
+            .Add(x => x.Folder, Files[1])
+            .Add(x => x.SelectedItemChanged, (Entry? e) => cut?.Render(q => q.Add(x => x.SelectedItem, e))));
+        await cut.FindAll("[role=option]")[1].ClickAsync(new MouseEventArgs());
+
+        // ERP reloads the list: new objects, same ids.
+        cut.Render(p => p.Add(x => x.Data, Reloaded()));
+
+        Assert.That(Names(cut), Is.EqualTo(new[] { "WP-2.pdf", "WP-12.pdf" }));
+        Assert.That(cut.Find("[aria-selected=true] .nx-filemanager-name-text").TextContent, Is.EqualTo("WP-12.pdf"));
     }
 
     [Test]

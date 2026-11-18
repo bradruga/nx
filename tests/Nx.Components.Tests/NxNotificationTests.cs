@@ -107,6 +107,20 @@ public class NxNotificationTests : BunitContext
     }
 
     [Test]
+    public void Focus_HoldsItOpen_LeavingCountsAgain()
+    {
+        var cut = Render<NxNotification>();
+        cut.InvokeAsync(() => cut.Instance.Show(new NxNotificationModel { Text = "Held", CloseAfter = 150 }));
+
+        cut.Find(".nx-notification").FocusIn();
+        Thread.Sleep(400);
+        Assert.That(Texts(cut), Is.EqualTo(new[] { "Held" }));
+
+        cut.Find(".nx-notification").FocusOut();
+        cut.WaitForState(() => Texts(cut).Count == 0, TimeSpan.FromSeconds(3));
+    }
+
+    [Test]
     public void MaxVisible_ClosesTheOldest()
     {
         var cut = Render<NxNotification>(p => p.Add(x => x.MaxVisible, 2));

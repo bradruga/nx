@@ -283,7 +283,179 @@ public class NxDateTimePickerTests : BunitContext
         Assert.That(cut.Find(".nx-datetimepicker-toggle").HasAttribute("disabled"), Is.True);
     }
 
+    [Test]
+    public void Disabled_InputAndToggleOff()
+    {
+        var cut = RenderBound<DateTime?>([], March5, p => p.Add(x => x.Disabled, true));
+
+        Assert.That(cut.Find("input").HasAttribute("disabled"), Is.True);
+        Assert.That(cut.Find(".nx-datetimepicker-toggle").HasAttribute("disabled"), Is.True);
+    }
+
+    [Test]
+    public async Task ReadOnly_ArrowDownDoesNotOpen()
+    {
+        var cut = RenderBound<DateTime?>([], March5, p => p.Add(x => x.ReadOnly, true));
+
+        await KeyAsync(cut, "ArrowDown");
+
+        Assert.That(cut.FindAll(".nx-datetimepicker-popup"), Is.Empty);
+    }
+
+    [Test]
+    public async Task Typing_DisabledDay_Reverts()
+    {
+        var raised = new List<DateTime?>();
+        var cut = RenderBound(raised, March5, p => p.Add(x => x.IsDateDisabled, d => d.DayOfWeek == DayOfWeek.Sunday));
+
+        await TypeAndCommitAsync(cut, "3/8/2026 9:00 AM");     // a Sunday
+
+        Assert.That(raised, Is.Empty);
+        Assert.That(Text(cut), Is.EqualTo("3/5/2026 2:30 PM"));
+    }
+
+    [Test]
+    public async Task Popup_DisabledDaysNotPickable()
+    {
+        var raised = new List<DateTime?>();
+        var cut = RenderBound(raised, March5, p => p.Add(x => x.IsDateDisabled, d => d.DayOfWeek == DayOfWeek.Sunday));
+        await KeyAsync(cut, "ArrowDown");
+
+        Assert.That(cut.Find("[data-date='2026-03-08']").GetAttribute("aria-disabled"), Is.EqualTo("true"));
+        await cut.Find("[data-date='2026-03-08']").ClickAsync(new MouseEventArgs());
+
+        Assert.That(raised, Is.Empty);
+    }
+
+    [Test]
+    public async Task PickDay_WithNoValue_IsMidnight()
+    {
+        var raised = new List<DateTime?>();
+        var cut = RenderBound<DateTime?>(raised);
+        await KeyAsync(cut, "ArrowDown");
+
+        var first = cut.Find(".nx-calendar td[data-date]:not(.nx-calendar-other)").GetAttribute("data-date")!;
+        await cut.Find($"[data-date='{first}']").ClickAsync(new MouseEventArgs());
+
+        Assert.That(raised.Single(), Is.EqualTo(DateTime.ParseExact(first, "yyyy-MM-dd", CultureInfo.InvariantCulture)));
+    }
+
+    [Test]
+    public async Task PickDay_BeforeMinTimeOnMinDay_MovesToMin()
+    {
+        var raised = new List<DateTime?>();
+        var cut = RenderBound(raised, new DateTime(2026, 3, 6, 7, 0, 0), p => p.Add(x => x.Min, new DateTime(2026, 3, 5, 8, 0, 0)));
+        await KeyAsync(cut, "ArrowDown");
+
+        await cut.Find("[data-date='2026-03-05']").ClickAsync(new MouseEventArgs());
+
+        Assert.That(raised.Single(), Is.EqualTo(new DateTime(2026, 3, 5, 8, 0, 0)));
+    }
+
+    [Test]
+    public async Task TypingWhileOpen_MovesCalendar()
+    {
+        var cut = RenderBound<DateTime?>([], March5);
+        await KeyAsync(cut, "ArrowDown");
+
+        await cut.Find("input").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "7/4/2027 9:10 AM" });
+
+        Assert.That(cut.Find(".nx-calendar-title").TextContent.Trim(), Is.EqualTo("July 2027"));
+        Assert.That(cut.Find("input").GetAttribute("aria-activedescendant"), Is.EqualTo("dt-calendar-d20270704"));
+    }
+
+    [Test]
+    public async Task TimeList_PageDownMovesSix_AltUpCloses()
+    {
+        var cut = RenderBound<DateTime?>([], March5);
+        await KeyAsync(cut, "ArrowDown");
+        await KeyAsync(cut, "Enter");                 // day picked: keys go to the times, 2:30 PM active
+
+        await KeyAsync(cut, "PageDown");
+        Assert.That(cut.Find(".nx-timepicker-item-active").TextContent.Trim(), Is.EqualTo("5:30 PM"));
+
+        await cut.Find("input").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+        Assert.That(cut.FindAll(".nx-datetimepicker-popup"), Is.Empty);
+    }
+
+    [Test]
+    public async Task Blur_ClosesAndCommitsTypedText_RaisesFocusAndBlur()
+    {
+        var raised = new List<DateTime?>();
+        var events = new List<string>();
+        var cut = RenderBound(raised, March5, p => p
+            .Add(x => x.OnFocus, (FocusEventArgs _) => events.Add("focus"))
+            .Add(x => x.OnBlur, (FocusEventArgs _) => events.Add($"blur {raised.Count}")));
+
+        await cut.Find("input").FocusAsync(new FocusEventArgs());
+        await KeyAsync(cut, "ArrowDown");
+        await cut.Find("input").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "3/9/2026 8:00 AM" });
+        await cut.Find("input").BlurAsync(new FocusEventArgs());
+
+        Assert.That(raised, Is.EqualTo(new DateTime?[] { new DateTime(2026, 3, 9, 8, 0, 0) }));
+        Assert.That(cut.FindAll(".nx-datetimepicker-popup"), Is.Empty);
+        Assert.That(events, Is.EqualTo(new[] { "focus", "blur 1" }));
+    }
+
+    [Test]
+    public async Task OwnRender_KeepsTypedText_OutsideChangeReplacesIt()
+    {
+        var cut = RenderBound<DateTime?>([], March5);
+        await cut.Find("input").FocusAsync(new FocusEventArgs());
+        await cut.Find("input").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "3/9/20" });
+
+        cut.Render(p => p.Add(x => x.Value, March5));
+        Assert.That(Text(cut), Is.EqualTo("3/9/20"));
+
+        cut.Render(p => p.Add(x => x.Value, new DateTime(2026, 4, 1, 9, 0, 0)));
+        Assert.That(Text(cut), Is.EqualTo("4/1/2026 9:00 AM"));
+    }
+
+    [Test]
+    public async Task ShowTodayButtonOff_AndWeekNumbers()
+    {
+        var cut = RenderBound<DateTime?>([], March5, p => p.Add(x => x.ShowTodayButton, false).Add(x => x.ShowWeekNumbers, true));
+        await KeyAsync(cut, "ArrowDown");
+
+        Assert.That(cut.FindAll(".nx-calendar-today-button"), Is.Empty);
+        Assert.That(cut.FindAll(".nx-datetimepicker-popup th.nx-calendar-week"), Is.Not.Empty);
+    }
+
+    [Test]
+    public void ExtraAttributes_GoToTheInput()
+    {
+        var cut = RenderBound<DateTime?>([], March5, p => p.AddUnmatched("name", "starts"));
+
+        Assert.That(cut.Find("input").GetAttribute("name"), Is.EqualTo("starts"));
+    }
+
     // ── Phone sheet ───────────────────────────────────────────────────────────
+
+    [Test]
+    public async Task Sheet_Clear_EmptiesAndCloses()
+    {
+        var raised = new List<DateTime?>();
+        var cut = RenderBound(raised, March5, p => p.Add(x => x.MobileMode, NxMobileMode.Always).Add(x => x.Clearable, true));
+
+        await cut.Find(".nx-datetimepicker-toggle").ClickAsync(new MouseEventArgs());
+        await cut.Find(".nx-datetimepicker-sheet-clear").ClickAsync(new MouseEventArgs());
+
+        Assert.That(raised, Is.EqualTo(new DateTime?[] { null }));
+        Assert.That(cut.FindAll(".nx-sheet"), Is.Empty);
+    }
+
+    [Test]
+    public async Task Sheet_TimeTab_ShowsTheList()
+    {
+        var cut = RenderBound<DateTime?>([], March5, p => p.Add(x => x.MobileMode, NxMobileMode.Always).Add(x => x.TimeStep, 60));
+
+        await cut.Find(".nx-datetimepicker-toggle").ClickAsync(new MouseEventArgs());
+        await cut.FindAll(".nx-datetimepicker-sheet-tab")[1].ClickAsync(new MouseEventArgs());
+
+        Assert.That(cut.FindAll(".nx-datetimepicker-sheet-list button.nx-timepicker-item"), Has.Count.EqualTo(24));
+        Assert.That(cut.FindAll(".nx-sheet .nx-calendar"), Is.Empty);
+        Assert.That(module.Invocations.Any(i => i.Identifier == "lockScroll" && (bool)i.Arguments[0]!), Is.True);
+    }
 
     [Test]
     public async Task Sheet_DateAndTimeTabs()

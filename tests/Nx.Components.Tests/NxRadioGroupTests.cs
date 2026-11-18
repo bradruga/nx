@@ -143,6 +143,41 @@ public class NxRadioGroupTests : BunitContext
     }
 
     [Test]
+    public async Task Declared_Change_RaisesItsValue()
+    {
+        var raised = new List<string?>();
+        var cut = Render<NxRadioGroup<string>>(p => p
+            .Add(x => x.Value, "a")
+            .Add(x => x.ValueChanged, (string? v) => raised.Add(v))
+            .Add(x => x.ChildContent, Declared(("a", "Alpha", false), ("b", "Beta", false))));
+
+        await cut.FindAll("input")[1].ChangeAsync(new ChangeEventArgs { Value = "on" });
+
+        Assert.That(raised, Is.EqualTo(new[] { "b" }));
+    }
+
+    [Test]
+    public async Task Change_OnCheckedItem_RaisesNothing()
+    {
+        var raised = new List<Shift>();
+        var cut = RenderData(raised, Shift.Swing);
+
+        await cut.FindAll("input")[1].ChangeAsync(new ChangeEventArgs { Value = "on" });
+
+        Assert.That(raised, Is.Empty);
+    }
+
+    [Test]
+    public void DataAndDeclared_DeclaredRenderAfterData()
+    {
+        var cut = Render<NxRadioGroup<string>>(p => p
+            .Add(x => x.Data, new[] { "a" })
+            .Add(x => x.ChildContent, Declared(("z", "Other", false))));
+
+        Assert.That(cut.FindAll(".nx-radio-label").Select(l => l.TextContent), Is.EqualTo(new[] { "a", "Other" }));
+    }
+
+    [Test]
     public void ExternalValueChange_MovesTheCheck_EvenForDeclaredItems()
     {
         var cut = Render<NxRadioGroup<string>>(p => p
@@ -217,5 +252,30 @@ public class NxRadioGroupTests : BunitContext
 
         Assert.That(cut.Find("[role=radiogroup]").GetAttribute("aria-invalid"), Is.EqualTo("true"));
         Assert.That(cut.FindAll(".nx-radio-invalid"), Has.Count.EqualTo(2));
+    }
+
+    [Test]
+    public async Task Validation_ReachesDeclaredButtons()
+    {
+        var model = new Model();
+        var context = new EditContext(model);
+        var host = Render<CascadingValue<EditContext>>(p => p
+            .Add(x => x.Value, context)
+            .AddChildContent<NxRadioGroup<Shift?>>(c => c
+                .Add(x => x.Value, model.Shift)
+                .Add(x => x.ValueExpression, () => model.Shift)
+                .Add(x => x.ChildContent, b =>
+                {
+                    b.OpenComponent<NxRadioButton<Shift?>>(0);
+                    b.AddAttribute(1, nameof(NxRadioButton<Shift?>.Value), (Shift?)Shift.Day);
+                    b.CloseComponent();
+                })));
+        var cut = host.FindComponent<NxRadioGroup<Shift?>>();
+
+        var store = new ValidationMessageStore(context);
+        store.Add(context.Field(nameof(Model.Shift)), "Pick a shift.");
+        await cut.InvokeAsync(context.NotifyValidationStateChanged);
+
+        Assert.That(cut.FindAll(".nx-radio-invalid"), Has.Count.EqualTo(1));
     }
 }

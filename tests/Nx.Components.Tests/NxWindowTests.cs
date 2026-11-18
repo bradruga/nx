@@ -334,4 +334,65 @@ public class NxWindowTests : BunitContext
         Assert.That(cut.Find("#w").GetAttribute("data-test"), Is.EqualTo("x"));
         Assert.That(cut.Find("#w").ClassList, Does.Contain("mine"));
     }
+
+    private static string? Option(object options, string name) => options.GetType().GetProperty(name)!.GetValue(options)?.ToString();
+
+    [Test]
+    public void Open_PassesDragHeightAndMinimums_TrapsFocusWhenModal()
+    {
+        RenderBound([], configure: p => p.Add(x => x.Draggable, false).Add(x => x.Height, "500px").Add(x => x.MinWidth, 320).Add(x => x.MinHeight, 200));
+
+        var options = module.Invocations.Single(i => i.Identifier == "open").Arguments[4]!;
+        Assert.That(Option(options, "draggable"), Is.EqualTo("False"));
+        Assert.That(Option(options, "height"), Is.EqualTo("500px"));
+        Assert.That(Option(options, "minWidth"), Is.EqualTo("320"));
+        Assert.That(Option(options, "minHeight"), Is.EqualTo("200"));
+        Assert.That(Option(options, "trapFocus"), Is.EqualTo("True"));
+    }
+
+    [Test]
+    public void NonModal_DoesNotTrapFocus_NoBackdropToJs()
+    {
+        RenderBound([], configure: p => p.Add(x => x.Modal, false));
+
+        var open = module.Invocations.Single(i => i.Identifier == "open");
+        Assert.That(open.Arguments[2], Is.Null);
+        Assert.That(Option(open.Arguments[4]!, "trapFocus"), Is.EqualTo("False"));
+    }
+
+    [Test]
+    public async Task Minimized_ReleasesTheFocusTrapAndModality_InJs()
+    {
+        var cut = RenderBound([], configure: p => p.Add(x => x.Minimizable, true));
+
+        await cut.Find(".nx-window-minimize").ClickAsync(new MouseEventArgs());
+
+        var update = module.Invocations.Last(i => i.Identifier == "update");
+        Assert.That(update.Arguments[0], Is.EqualTo("w"));
+        Assert.That(Option(update.Arguments[1]!, "modal"), Is.EqualTo("False"));
+        Assert.That(Option(update.Arguments[1]!, "trapFocus"), Is.EqualTo("False"));
+    }
+
+    [Test]
+    public void ModalChangedWhileOpen_RebindsInJs()
+    {
+        var cut = RenderBound([]);
+
+        cut.Render(p => p.Add(x => x.Modal, false));
+
+        var rebind = module.Invocations.Single(i => i.Identifier == "rebind");
+        Assert.That(rebind.Arguments[0], Is.EqualTo("w"));
+        Assert.That(rebind.Arguments[2], Is.Null);
+        Assert.That(cut.FindAll(".nx-window-backdrop"), Is.Empty);
+    }
+
+    [Test]
+    public void RerenderWithSameOptions_SendsNoUpdate()
+    {
+        var cut = RenderBound([]);
+
+        cut.Render(p => p.Add(x => x.ChildContent, Text("Other body")));
+
+        Assert.That(module.Invocations.Any(i => i.Identifier == "update"), Is.False);
+    }
 }

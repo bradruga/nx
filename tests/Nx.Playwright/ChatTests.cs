@@ -57,11 +57,14 @@ public class ChatTests : PageTest
         await GoToPage("examples");
         var list = Page.Locator("#typing-chat .nx-chat-messages");
         var reply = "On it. I'll call when the trucks leave.";
+        var answers = Page.Locator("#typing-chat .nx-chat-text").Filter(new() { HasTextString = reply });
+        var before = await answers.CountAsync();
         for (var i = 0; i < 3; i++)
         {
             await Page.Locator("#typing-chat-input").FillAsync($"Message {i}");
             await Page.Keyboard.PressAsync("Enter");
-            await Expect(Page.Locator("#typing-chat .nx-chat-text").Last).ToHaveTextAsync(reply);
+            // Every answer has the same text: count them, or the next message goes out before this answer came.
+            await Expect(answers).ToHaveCountAsync(before + i + 1);
         }
 
         await Page.Locator("#typing-chat-input").FillAsync("While I read");

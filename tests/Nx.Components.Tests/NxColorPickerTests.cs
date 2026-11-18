@@ -198,6 +198,37 @@ public class NxColorPickerTests : BunitContext
     }
 
     [Test]
+    public async Task ViewGradient_EscapeDropsTheDraft_ReopenShowsTheValue()
+    {
+        var raised = new List<string?>();
+        var cut = RenderBound(raised, "#4371c4", p => p.Add(x => x.View, NxColorPickerView.Gradient));
+        await OpenAsync(cut);
+
+        await cut.InvokeAsync(() => cut.FindComponent<NxColorGradient>().Instance.OnAreaPick(1, 1));
+        Assert.That(cut.Find("#cp-gradient-hex").GetAttribute("value"), Is.Not.EqualTo("#4371c4"));
+        await cut.Find(".nx-colorpicker-popup").KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
+        await OpenAsync(cut);
+
+        Assert.That(raised, Is.Empty);
+        Assert.That(cut.Find("#cp-gradient-hex").GetAttribute("value"), Is.EqualTo("#4371c4"));
+    }
+
+    [Test]
+    public async Task ArrowUp_OnButton_Opens()
+    {
+        var cut = RenderBound([]);
+        await cut.Find("#cp").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp" });
+        Assert.That(cut.FindAll(".nx-colorpicker-popup"), Has.Count.EqualTo(1));
+    }
+
+    [Test]
+    public void ExtraAttributes_GoToTheButton()
+    {
+        var cut = RenderBound([], null, p => p.AddUnmatched("name", "crew-color"));
+        Assert.That(cut.Find("button#cp").GetAttribute("name"), Is.EqualTo("crew-color"));
+    }
+
+    [Test]
     public async Task ArrowDown_OnButton_Opens()
     {
         var cut = RenderBound([]);

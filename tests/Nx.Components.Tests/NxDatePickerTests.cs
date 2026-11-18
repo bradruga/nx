@@ -390,6 +390,125 @@ public class NxDatePickerTests : BunitContext
         Assert.That(cut.Find(".nx-datepicker-toggle").HasAttribute("disabled"), Is.True);
     }
 
+    [Test]
+    public void Disabled_InputAndToggleOff()
+    {
+        var cut = RenderBound<DateOnly?>([], Oct23, p => p.Add(x => x.Disabled, true));
+
+        Assert.That(cut.Find("input").HasAttribute("disabled"), Is.True);
+        Assert.That(cut.Find(".nx-datepicker-toggle").HasAttribute("disabled"), Is.True);
+    }
+
+    [Test]
+    public async Task Popup_TodayButton_PicksTodayAndCloses()
+    {
+        var raised = new List<DateOnly?>();
+        var cut = RenderBound<DateOnly?>(raised, new DateOnly(2020, 1, 1));
+
+        await KeyAsync(cut, "ArrowDown", alt: true);
+        await cut.Find(".nx-datepicker-popup .nx-calendar-today-button").ClickAsync(new MouseEventArgs());
+
+        Assert.That(raised, Is.EqualTo(new DateOnly?[] { DateOnly.FromDateTime(DateTime.Today) }));
+        Assert.That(cut.FindAll(".nx-datepicker-popup"), Is.Empty);
+    }
+
+    [Test]
+    public async Task ShowTodayButtonOff_NoTodayInPopup()
+    {
+        var cut = RenderBound<DateOnly?>([], Oct23, p => p.Add(x => x.ShowTodayButton, false));
+
+        await KeyAsync(cut, "ArrowDown", alt: true);
+
+        Assert.That(cut.FindAll(".nx-calendar-today-button"), Is.Empty);
+    }
+
+    [Test]
+    public async Task Popup_WeekNumbersAndFirstDayOfWeek()
+    {
+        var cut = RenderBound<DateOnly?>([], Oct23, p => p
+            .Add(x => x.ShowWeekNumbers, true)
+            .Add(x => x.FirstDayOfWeek, DayOfWeek.Monday));
+
+        await KeyAsync(cut, "ArrowDown", alt: true);
+
+        Assert.That(cut.FindAll(".nx-datepicker-popup th.nx-calendar-week"), Has.Count.EqualTo(6));
+        Assert.That(cut.FindAll(".nx-datepicker-popup td[role=gridcell]")[0].GetAttribute("data-date"), Is.EqualTo("2026-09-28"));
+    }
+
+    [Test]
+    public async Task Popup_LimitsAndDisabledDates_NotPickable()
+    {
+        var raised = new List<DateOnly?>();
+        var cut = RenderBound<DateOnly?>(raised, Oct23, p => p
+            .Add(x => x.Min, new DateOnly(2026, 10, 10))
+            .Add(x => x.IsDateDisabled, d => d.DayOfWeek == DayOfWeek.Sunday));
+
+        await KeyAsync(cut, "ArrowDown", alt: true);
+        Assert.That(cut.Find("td[data-date='2026-10-09']").GetAttribute("aria-disabled"), Is.EqualTo("true"));
+        Assert.That(cut.Find("td[data-date='2026-10-25']").GetAttribute("aria-disabled"), Is.EqualTo("true"));
+        await cut.Find("td[data-date='2026-10-09']").ClickAsync(new MouseEventArgs());
+        await cut.Find("td[data-date='2026-10-25']").ClickAsync(new MouseEventArgs());
+
+        Assert.That(raised, Is.Empty);
+        Assert.That(cut.FindAll(".nx-datepicker-popup"), Has.Count.EqualTo(1));
+    }
+
+    [Test]
+    public async Task Popup_CtrlUpFromTheInput_MonthYearDecadeViews()
+    {
+        var raised = new List<DateOnly?>();
+        var cut = RenderBound<DateOnly?>(raised, Oct23);
+
+        await KeyAsync(cut, "ArrowDown", alt: true);
+        await cut.Find("input").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp", CtrlKey = true });
+        Assert.That(cut.Find(".nx-calendar-title").TextContent.Trim(), Is.EqualTo("2026"));
+        Assert.That(cut.Find("input").GetAttribute("aria-activedescendant"), Is.EqualTo("dp-calendar-m202610"));
+        await cut.Find("input").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp", CtrlKey = true });
+        Assert.That(cut.Find(".nx-calendar-title").TextContent.Trim(), Is.EqualTo("2020–2029"));
+
+        await KeyAsync(cut, "Enter");       // 2026 → months
+        await KeyAsync(cut, "ArrowRight");  // November
+        await KeyAsync(cut, "Enter");       // → days
+
+        Assert.That(cut.Find(".nx-calendar-title").TextContent.Trim(), Is.EqualTo("November 2026"));
+        Assert.That(raised, Is.Empty);
+        Assert.That(cut.FindAll(".nx-datepicker-popup"), Has.Count.EqualTo(1));
+    }
+
+    // ── Two-way binding ───────────────────────────────────────────────────────
+
+    [Test]
+    public async Task OwnRender_KeepsTypedText_OutsideChangeReplacesIt()
+    {
+        var cut = RenderBound<DateOnly?>([], Oct23);
+        await cut.Find("input").FocusAsync(new FocusEventArgs());
+        await cut.Find("input").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "11/0" });
+
+        cut.Render(p => p.Add(x => x.Value, Oct23));
+        Assert.That(Text(cut), Is.EqualTo("11/0"));
+
+        cut.Render(p => p.Add(x => x.Value, new DateOnly(2026, 12, 1)));
+        Assert.That(Text(cut), Is.EqualTo("12/01/2026"));
+    }
+
+    [Test]
+    public async Task Blur_CommitsTypedText_RaisesFocusAndBlur()
+    {
+        var raised = new List<DateOnly?>();
+        var events = new List<string>();
+        var cut = RenderBound<DateOnly?>(raised, null, p => p
+            .Add(x => x.OnFocus, (FocusEventArgs _) => events.Add("focus"))
+            .Add(x => x.OnBlur, (FocusEventArgs _) => events.Add($"blur {raised.Count}")));
+
+        await cut.Find("input").FocusAsync(new FocusEventArgs());
+        await cut.Find("input").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "12052026" });
+        await cut.Find("input").BlurAsync(new FocusEventArgs());
+
+        Assert.That(raised, Is.EqualTo(new DateOnly?[] { new DateOnly(2026, 12, 5) }));
+        Assert.That(events, Is.EqualTo(new[] { "focus", "blur 1" }));
+        Assert.That(Text(cut), Is.EqualTo("12/5/2026"));
+    }
+
     // ── Clear ─────────────────────────────────────────────────────────────────
 
     [Test]

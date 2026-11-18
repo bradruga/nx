@@ -48,13 +48,16 @@ already answered. Answer by number: "keep" or "change". **Rec** is what I'd do.
 
 ## Blocking
 
-1. **Playwright tests can't run under Treeline.** While a watch is live, the Treeline hook blocks every
-   `dotnet test tests/Nx.Playwright`, including `--no-build` and the bare DLL: it classifies the project as one that
-   builds the watched app. It references nothing. With the watch stopped there's no site to test. I did not work
-   around the hook. All 76 Playwright tests compile, and I checked each scenario by hand in the Playwright browser
-   against the live demo, but **none has gone through `dotnet test`**. Options:
-   - (a) Treeline lists `Nx.Playwright` as a free test project (recommended).
-   - (b) You run `dotnet test tests/Nx.Playwright` with the demo up and paste the output.
+1. **Playwright under Treeline.** While a watch is live, the Treeline hook still blocks `dotnet test tests/Nx.Playwright`
+   (it references nothing). Workaround used 11/18: stop the watch, build, `dotnet run` the demo, run the suite.
+   Rec: Treeline lists `Nx.Playwright` as a free test project.
+
+## Reliability pass (11/18)
+
+177. **A body-less `NxTab` inserted at runtime between other body-less tabs lands first.** A tab reports its markup
+     position only when it re-renders, and a tab whose parameters are all unchanged strings is skipped by Blazor.
+     Tabs with content (the normal case) always re-render, so they land beside their neighbour. Fixing it means a
+     marker element per tab or JS reading the markup order; not done.
 
 ## Conventions
 

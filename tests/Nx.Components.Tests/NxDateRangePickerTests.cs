@@ -269,6 +269,285 @@ public class NxDateRangePickerTests : BunitContext
         Assert.That(cut.FindAll(".nx-sheet"), Is.Empty);
     }
 
+    [Test]
+    public async Task Sheet_SummaryShowsTheRange_ClearEmptiesBoth()
+    {
+        var bound = new Bound { Start = new(2026, 10, 19), End = new(2026, 10, 23) };
+        var cut = RenderBound(bound, p => p.Add(x => x.MobileMode, NxMobileMode.Always).Add(x => x.Clearable, true));
+
+        await cut.Find(".nx-daterange-start .nx-daterange-toggle").ClickAsync(new MouseEventArgs());
+        Assert.That(cut.FindAll(".nx-daterange-sheet-summary span").Select(s => s.TextContent),
+            Is.EqualTo(new[] { "10/19/2026", "–", "10/23/2026" }));
+
+        await cut.Find(".nx-daterange-sheet-clear").ClickAsync(new MouseEventArgs());
+
+        Assert.That(bound.Start, Is.Null);
+        Assert.That(bound.End, Is.Null);
+        Assert.That(cut.FindAll(".nx-daterange-sheet-summary span").Select(s => s.TextContent),
+            Is.EqualTo(new[] { "Start", "–", "End" }));
+    }
+
+    [Test]
+    public async Task Sheet_Done_ClosesWithoutChange()
+    {
+        var bound = new Bound { Start = new(2026, 10, 19) };
+        var cut = RenderBound(bound, p => p.Add(x => x.MobileMode, NxMobileMode.Always));
+
+        await cut.Find(".nx-daterange-start .nx-daterange-toggle").ClickAsync(new MouseEventArgs());
+        await cut.Find(".nx-daterange-sheet-done").ClickAsync(new MouseEventArgs());
+
+        Assert.That(cut.FindAll(".nx-sheet"), Is.Empty);
+        Assert.That(bound.Log, Is.Empty);
+        Assert.That(module.Invocations.Any(i => i.Identifier == "lockScroll" && !(bool)i.Arguments[0]!), Is.True);
+    }
+
+    [Test]
+    public void ViewportChange_SwitchesToSheet()
+    {
+        var cut = RenderBound(new Bound());
+
+        cut.Instance.OnViewportChanged(true);
+
+        cut.WaitForState(() => cut.Find("#r-start").GetAttribute("aria-haspopup") == "dialog");
+    }
+
+    // ── Typing (more) ─────────────────────────────────────────────────────────
+
+    [Test]
+    public async Task Typed_EndBeforeStart_Swaps()
+    {
+        var bound = new Bound { Start = new(2026, 10, 19), End = new(2026, 10, 23) };
+        var cut = RenderBound(bound);
+
+        await TypeAndCommitAsync(cut, "r-end", "10/10/2026");
+
+        Assert.That(bound.Start, Is.EqualTo(new DateOnly(2026, 10, 10)));
+        Assert.That(bound.End, Is.EqualTo(new DateOnly(2026, 10, 19)));
+        Assert.That(cut.Find("#r-end").GetAttribute("value"), Is.EqualTo("10/19/2026"));
+    }
+
+    [Test]
+    public async Task Typed_ShortForm_IsThisYear()
+    {
+        var bound = new Bound();
+        var cut = RenderBound(bound);
+
+        await TypeAndCommitAsync(cut, "r-start", "12/5");
+
+        Assert.That(bound.Start, Is.EqualTo(new DateOnly(DateTime.Today.Year, 12, 5)));
+    }
+
+    [Test]
+    public async Task Typed_OutsideMinMax_MovesToLimit()
+    {
+        var bound = new Bound();
+        var cut = RenderBound(bound, p => p
+            .Add(x => x.Min, new DateOnly(2026, 10, 5))
+            .Add(x => x.Max, new DateOnly(2026, 11, 20)));
+
+        await TypeAndCommitAsync(cut, "r-start", "01/01/2026");
+        await TypeAndCommitAsync(cut, "r-end", "12/31/2026");
+
+        Assert.That(bound.Start, Is.EqualTo(new DateOnly(2026, 10, 5)));
+        Assert.That(bound.End, Is.EqualTo(new DateOnly(2026, 11, 20)));
+    }
+
+    [Test]
+    public async Task Typed_DisabledDate_Reverts()
+    {
+        var bound = new Bound { Start = new(2026, 10, 19) };
+        var cut = RenderBound(bound, p => p.Add(x => x.IsDateDisabled, d => d.DayOfWeek == DayOfWeek.Sunday));
+
+        await TypeAndCommitAsync(cut, "r-start", "10/25/2026");     // a Sunday
+
+        Assert.That(bound.Log, Is.Empty);
+        Assert.That(cut.Find("#r-start").GetAttribute("value"), Is.EqualTo("10/19/2026"));
+    }
+
+    [Test]
+    public async Task Typed_Garbage_Reverts()
+    {
+        var bound = new Bound { Start = new(2026, 10, 19) };
+        var cut = RenderBound(bound);
+
+        await TypeAndCommitAsync(cut, "r-start", "13/45/20");
+
+        Assert.That(bound.Log, Is.Empty);
+        Assert.That(cut.Find("#r-start").GetAttribute("value"), Is.EqualTo("10/19/2026"));
+    }
+
+    [Test]
+    public async Task Typed_Empty_RevertsForNonNullable()
+    {
+        var raised = new List<DateOnly>();
+        var cut = Render<NxDateRangePicker<DateOnly>>(p => p
+            .Add(x => x.StartValue, new DateOnly(2026, 10, 19))
+            .Add(x => x.EndValue, new DateOnly(2026, 10, 23))
+            .Add(x => x.Culture, EnUs)
+            .Add(x => x.Id, "n")
+            .Add(x => x.StartValueChanged, (DateOnly v) => raised.Add(v)));
+
+        await cut.Find("#n-start").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "" });
+        await cut.Find("#n-start").TriggerEventAsync("onchange", new ChangeEventArgs { Value = "" });
+
+        Assert.That(raised, Is.Empty);
+        Assert.That(cut.Find("#n-start").GetAttribute("value"), Is.EqualTo("10/19/2026"));
+    }
+
+    [Test]
+    public async Task DateTime_EachEndKeepsItsTimeOfDay()
+    {
+        var ends = new List<DateTime>();
+        var cut = Render<NxDateRangePicker<DateTime>>(p => p
+            .Add(x => x.StartValue, new DateTime(2026, 10, 19, 8, 0, 0))
+            .Add(x => x.EndValue, new DateTime(2026, 10, 23, 17, 30, 0))
+            .Add(x => x.Culture, EnUs)
+            .Add(x => x.Id, "dt")
+            .Add(x => x.EndValueChanged, (DateTime v) => ends.Add(v)));
+
+        await cut.Find("#dt-end").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "10/25/2026" });
+        await cut.Find("#dt-end").TriggerEventAsync("onchange", new ChangeEventArgs { Value = "10/25/2026" });
+
+        Assert.That(ends, Is.EqualTo(new[] { new DateTime(2026, 10, 25, 17, 30, 0) }));
+    }
+
+    [Test]
+    public void StartAndEndLabels()
+    {
+        var cut = RenderBound(new Bound(), p => p.Add(x => x.StartLabel, "Check in").Add(x => x.EndLabel, "Check out"));
+
+        Assert.That(cut.Find("label[for=r-start]").TextContent, Is.EqualTo("Check in"));
+        Assert.That(cut.Find("label[for=r-end]").TextContent, Is.EqualTo("Check out"));
+        Assert.That(cut.Find("#r-start").GetAttribute("placeholder"), Is.EqualTo("mm/dd/yyyy"));
+    }
+
+    [Test]
+    public async Task Format_ShowsWhileNotFocused_EditTextWhileFocused()
+    {
+        var cut = RenderBound(new Bound { Start = new(2026, 10, 19) }, p => p.Add(x => x.Format, "MMM d, yyyy"));
+        Assert.That(cut.Find("#r-start").GetAttribute("value"), Is.EqualTo("Oct 19, 2026"));
+
+        await cut.Find("#r-start").FocusAsync(new FocusEventArgs());
+        Assert.That(cut.Find("#r-start").GetAttribute("value"), Is.EqualTo("10/19/2026"));
+
+        await cut.Find("#r-start").BlurAsync(new FocusEventArgs());
+        Assert.That(cut.Find("#r-start").GetAttribute("value"), Is.EqualTo("Oct 19, 2026"));
+    }
+
+    [Test]
+    public async Task OutsideChange_ReplacesText_OwnRenderKeepsTyping()
+    {
+        var cut = RenderBound(new Bound { Start = new(2026, 10, 19) });
+        await cut.Find("#r-start").FocusAsync(new FocusEventArgs());
+        await cut.Find("#r-start").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "11/0" });
+
+        cut.Render(p => p.Add(x => x.StartValue, new DateOnly(2026, 10, 19)));
+        Assert.That(cut.Find("#r-start").GetAttribute("value"), Is.EqualTo("11/0"));
+
+        cut.Render(p => p.Add(x => x.StartValue, new DateOnly(2026, 12, 1)));
+        Assert.That(cut.Find("#r-start").GetAttribute("value"), Is.EqualTo("12/01/2026"));
+    }
+
+    [Test]
+    public async Task Typing_WhileOpen_MovesCalendar()
+    {
+        var cut = RenderBound(new Bound { Start = new(2026, 10, 19) });
+
+        await KeyAsync(cut, "r-start", "ArrowDown");
+        await cut.Find("#r-start").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "03/15/2027" });
+
+        Assert.That(cut.Find("#r-start").GetAttribute("aria-activedescendant"), Is.EqualTo("r-calendar-d20270315"));
+        Assert.That(cut.FindAll("caption").Select(c => c.TextContent), Does.Contain("March 2027"));
+    }
+
+    [Test]
+    public async Task Escape_WhenClearable_ClearsThatEnd()
+    {
+        var bound = new Bound { Start = new(2026, 10, 19), End = new(2026, 10, 23) };
+        var cut = RenderBound(bound, p => p.Add(x => x.Clearable, true));
+
+        await KeyAsync(cut, "r-start", "Escape");
+
+        Assert.That(bound.Log, Is.EqualTo(new[] { "start " }));
+        Assert.That(bound.End, Is.EqualTo(new DateOnly(2026, 10, 23)));
+    }
+
+    // ── Popup (more) ──────────────────────────────────────────────────────────
+
+    [Test]
+    public async Task EscapeAndAltUp_ClosePopup_KeepValues()
+    {
+        var bound = new Bound { Start = new(2026, 10, 19) };
+        var cut = RenderBound(bound);
+
+        await KeyAsync(cut, "r-start", "ArrowDown");
+        await KeyAsync(cut, "r-start", "Escape");
+        Assert.That(cut.FindAll(".nx-daterange-popup"), Is.Empty);
+
+        await KeyAsync(cut, "r-start", "ArrowDown");
+        await cut.Find("#r-start").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+        Assert.That(cut.FindAll(".nx-daterange-popup"), Is.Empty);
+        Assert.That(bound.Log, Is.Empty);
+    }
+
+    [Test]
+    public async Task Calendar_LimitsDisableDays_NotPickable()
+    {
+        var bound = new Bound { Start = new(2026, 10, 19) };
+        var cut = RenderBound(bound, p => p
+            .Add(x => x.Min, new DateOnly(2026, 10, 10))
+            .Add(x => x.IsDateDisabled, d => d.DayOfWeek == DayOfWeek.Sunday));
+
+        await KeyAsync(cut, "r-start", "ArrowDown");
+        Assert.That(cut.Find("td[data-date='2026-10-09']").GetAttribute("aria-disabled"), Is.EqualTo("true"));
+        Assert.That(cut.Find("td[data-date='2026-10-25']").GetAttribute("aria-disabled"), Is.EqualTo("true"));
+        await PickAsync(cut, "2026-10-09");
+        await PickAsync(cut, "2026-10-25");
+
+        Assert.That(bound.Log, Is.Empty);
+    }
+
+    [Test]
+    public async Task WeekNumbersAndFirstDayOfWeek_ReachTheCalendar()
+    {
+        var cut = RenderBound(new Bound { Start = new(2026, 10, 19) }, p => p
+            .Add(x => x.ShowWeekNumbers, true)
+            .Add(x => x.FirstDayOfWeek, DayOfWeek.Monday));
+
+        await KeyAsync(cut, "r-start", "ArrowDown");
+
+        Assert.That(cut.FindAll(".nx-daterange-popup th.nx-calendar-week"), Is.Not.Empty);
+        Assert.That(cut.FindAll(".nx-daterange-popup th.nx-calendar-weekday:not(.nx-calendar-week-header)")[0].GetAttribute("abbr"), Is.EqualTo("Monday"));
+    }
+
+    [Test]
+    public async Task ReadOnly_DoesNotOpen()
+    {
+        var cut = RenderBound(new Bound(), p => p.Add(x => x.ReadOnly, true));
+
+        await KeyAsync(cut, "r-start", "ArrowDown");
+
+        Assert.That(cut.FindAll(".nx-daterange-popup"), Is.Empty);
+        Assert.That(cut.Find("#r-start").HasAttribute("readonly"), Is.True);
+        Assert.That(cut.FindAll(".nx-daterange-toggle").All(t => t.HasAttribute("disabled")), Is.True);
+    }
+
+    [Test]
+    public void Disabled_BothFieldsAndToggles()
+    {
+        var cut = RenderBound(new Bound(), p => p.Add(x => x.Disabled, true));
+
+        Assert.That(cut.Find("#r-start").HasAttribute("disabled"), Is.True);
+        Assert.That(cut.Find("#r-end").HasAttribute("disabled"), Is.True);
+        Assert.That(cut.FindAll(".nx-daterange-toggle").All(t => t.HasAttribute("disabled")), Is.True);
+    }
+
+    [Test]
+    public void Unsupported_Type_Throws()
+    {
+        Assert.Throws<InvalidOperationException>(() => Render<NxDateRangePicker<string>>());
+    }
+
     // ── Validation ────────────────────────────────────────────────────────────
 
     private class Model

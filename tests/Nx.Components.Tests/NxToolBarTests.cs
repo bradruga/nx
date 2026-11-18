@@ -117,6 +117,21 @@ public class NxToolBarTests : BunitContext
     }
 
     [Test]
+    public async Task Overflow_Scroll_HasNoMenu_JsDoesNotCollapse()
+    {
+        var cut = Render<NxToolBar>(p => p
+            .Add(x => x.Overflow, NxToolBarOverflow.Scroll)
+            .Add(x => x.ChildContent, Button("a", "A")));
+
+        await cut.InvokeAsync(() => cut.Instance.OnOverflow(["a"]));
+
+        Assert.That(cut.Find(".nx-toolbar").ClassList, Does.Contain("nx-toolbar-scroll"));
+        Assert.That(cut.FindAll(".nx-toolbar-more"), Is.Empty);
+        Assert.That(cut.Find("#a").ClassList, Does.Not.Contain("nx-toolbar-item-overflow"));
+        Assert.That(module.Invocations.Single(i => i.Identifier == "init").Arguments[1], Is.EqualTo(false));
+    }
+
+    [Test]
     public void ToolbarSize_ReachesButtons_UnlessTheirOwn()
     {
         var cut = Render<NxToolBar>(p => p

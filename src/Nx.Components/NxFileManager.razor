@@ -65,7 +65,7 @@
             @{ var shown = Shown(); }
             <div @ref="list" class="@(view == NxFileManagerView.Grid ? "nx-filemanager-list nx-filemanager-grid" : "nx-filemanager-list nx-filemanager-tiles")"
                  role="listbox" tabindex="0" aria-label="@ListLabel" aria-activedescendant="@(selected is null ? null : OptionId(selected))"
-                 @onkeydown="e => KeyDownAsync(e, shown)">
+                 @onkeydown="KeyDownAsync">
                 @if (shown.Count == 0)
                 {
                     <div class="nx-filemanager-empty">@(Searching ? NoResultsText : EmptyText)</div>

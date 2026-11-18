@@ -365,10 +365,11 @@ public partial class NxComboBox<TItem, TValue> : IAsyncDisposable
         if (notifying)
             return;
 
+        // An outside change replaces what the user is typing, even with the list open.
         if (Multiple)
             SyncMultipleFromParameters(dataChanged);
-        else
-            SyncSingleFromParameters();
+        else if (SyncSingleFromParameters() && isOpen)
+            Close();
 
         initialized = true;
 

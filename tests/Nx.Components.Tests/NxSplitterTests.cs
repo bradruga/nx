@@ -132,8 +132,7 @@ public class NxSplitterTests : BunitContext
         var cut = RenderSplitter([Pane("a", "30%", "Jobs"), Pane("b")]);
 
         Assert.That(cut.Find("#a .nx-splitter-pane-header .nx-splitter-pane-title").TextContent, Is.EqualTo("Jobs"));
-        Assert.That(cut.Find("#a .nx-splitter-pane-header").HasAttribute("disabled"), Is.True);
-    }
+        Assert.That(cut.Find("#a .nx-splitter-pane-header").TagName, Is.EqualTo("DIV"));    }
 
     [Test]
     public void Js_InitCalled()
@@ -210,6 +209,106 @@ public class NxSplitterTests : BunitContext
         var cut = RenderSplitter([a, Pane("b")]);
 
         Assert.That(cut.Find("#a").ClassList, Does.Contain("nx-splitter-pane-collapsed"));
+    }
+
+    [Test]
+    public void CollapsedChangedFromOutside_CollapsesAndExpands_SizeKept()
+    {
+        var a = Pane("a", "200px");
+        var cut = RenderSplitter([a, Pane("b")]);
+
+        a.Collapsed = true;
+        cut.Render(_ => { });
+        cut.WaitForState(() => cut.Find("#a").ClassList.Contains("nx-splitter-pane-collapsed"));
+        Assert.That(cut.Find("#a .nx-splitter-pane-content").HasAttribute("hidden"), Is.True);
+        cut.WaitForState(() => cut.Find(".nx-splitter-bar").ClassList.Contains("nx-splitter-bar-hidden"));
+
+        a.Collapsed = false;
+        cut.Render(_ => { });
+        cut.WaitForState(() => !cut.Find("#a").ClassList.Contains("nx-splitter-pane-collapsed"));
+        Assert.That(cut.Find("#a").GetAttribute("style"), Is.EqualTo("flex: 0 0 200px"));
+        cut.WaitForState(() => !cut.Find(".nx-splitter-bar").ClassList.Contains("nx-splitter-bar-hidden"));
+        Assert.That(a.CollapseLog, Is.Empty, "an outside change is not raised back");
+    }
+
+    [Test]
+    public void CollapsedLastPane_HidesTheBarBeforeIt()
+    {
+        var c = Pane("c", "180px");
+        c.Collapsed = true;
+        var cut = RenderSplitter([Pane("a", "200px"), Pane("b"), c]);
+
+        cut.WaitForState(() => cut.FindAll(".nx-splitter-bar")[1].ClassList.Contains("nx-splitter-bar-hidden"));
+        Assert.That(cut.FindAll(".nx-splitter-bar")[1].GetAttribute("aria-disabled"), Is.EqualTo("true"));
+        Assert.That(cut.FindAll(".nx-splitter-bar")[0].ClassList, Does.Not.Contain("nx-splitter-bar-hidden"));
+    }
+
+    [Test]
+    public void CollapsedMiddlePane_HidesBothBars()
+    {
+        var b = Pane("b", "200px");
+        b.Collapsed = true;
+        var cut = RenderSplitter([Pane("a", "200px"), b, Pane("c")]);
+
+        cut.WaitForState(() => cut.FindAll(".nx-splitter-bar").All(x => x.ClassList.Contains("nx-splitter-bar-hidden")));
+    }
+
+    [Test]
+    public void CollapsedPane_KeepsMinOutOfItsStyle()
+    {
+        var a = Pane("a", "200px");
+        a.Min = "120px";
+        a.Collapsed = true;
+        var cut = RenderSplitter([a, Pane("b")]);
+
+        Assert.That(cut.Find("#a").GetAttribute("style"), Is.EqualTo("flex: 0 0 0px"));
+        Assert.That(cut.Find("#a").GetAttribute("data-collapsed"), Is.EqualTo("true"));
+    }
+
+    [Test]
+    public async Task OutsideSizeChange_ReplacesTheDraggedSize()
+    {
+        var a = Pane("a", "30%");
+        var cut = RenderSplitter([a, Pane("b")]);
+        await cut.Instance.OnPaneResized(0, "42%");
+
+        a.Size = "25%";
+        cut.Render(_ => { });
+
+        cut.WaitForState(() => cut.Find("#a").GetAttribute("style") == "flex: 0 0 25%");
+    }
+
+    [Test]
+    public async Task JsResize_KeepsTheUnitItReports()
+    {
+        var a = Pane("a", "240px");
+        var cut = RenderSplitter([a, Pane("b")]);
+
+        await cut.Instance.OnPaneResized(0, "300px");
+
+        cut.WaitForState(() => cut.Find("#a").GetAttribute("data-unit") == "px");
+        Assert.That(cut.Find("#a").GetAttribute("data-size"), Is.EqualTo("300px"));
+    }
+
+    [Test]
+    public void ResizableFalse_OnTheFlexiblePaneOnly_BarStillMovesTheSizedOne()
+    {
+        var b = Pane("b");
+        b.Resizable = false;
+        var cut = RenderSplitter([Pane("a", "30%"), b]);
+
+        Assert.That(cut.Find(".nx-splitter-bar").GetAttribute("tabindex"), Is.EqualTo("0"));
+        Assert.That(cut.Find(".nx-splitter-bar").HasAttribute("aria-disabled"), Is.False);
+    }
+
+    [Test]
+    public void ClassAndStyle_OnTheSplitter()
+    {
+        var cut = Render<NxSplitter>(p => p.Add(x => x.Class, "mine").Add(x => x.Style, "height: 300px"));
+
+        var root = cut.Find(".nx-splitter");
+        Assert.That(root.ClassList, Does.Contain("mine"));
+        Assert.That(root.GetAttribute("style"), Is.EqualTo("height: 300px"));
     }
 
     [Test]

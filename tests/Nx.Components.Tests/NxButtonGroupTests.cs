@@ -114,6 +114,34 @@ public class NxButtonGroupTests : BunitContext
         Assert.That(cut.Find(".nx-buttongroup").ClassList, Does.Contain("nx-buttongroup-full-width"));
     }
 
+    private static RenderFragment MenuButton(params (string Name, object Value)[] parameters) => b =>
+    {
+        b.OpenComponent<NxDropDownButton>(0);
+        b.AddComponentParameter(1, nameof(NxDropDownButton.Items), new List<NxMenuItem> { new("Hold") });
+        b.AddComponentParameter(2, nameof(NxDropDownButton.ChildContent), (RenderFragment)(t => t.AddContent(0, "More")));
+        var seq = 3;
+        foreach (var (name, value) in parameters)
+            b.AddComponentParameter(seq++, name, value);
+        b.CloseComponent();
+    };
+
+    [Test]
+    public void Disabled_DisablesAMenuButtonInTheGroup()
+    {
+        var cut = Render<NxButtonGroup>(p => p.Add(x => x.Disabled, true).Add(x => x.ChildContent, MenuButton()));
+
+        Assert.That(cut.Find(".nx-dropdownbutton button").HasAttribute("disabled"), Is.True);
+    }
+
+    [Test]
+    public void VariantAndSize_DoNotReachAMenuButton_ItKeepsItsOwn()
+    {
+        // QUESTIONS #114: menu buttons pass their own Variant and Size; only Disabled comes from the group.
+        var cut = Render<NxButtonGroup>(p => p.Add(x => x.Variant, NxButtonVariant.Ghost).Add(x => x.Size, NxButtonSize.Small).Add(x => x.ChildContent, MenuButton()));
+
+        Assert.That(cut.Find(".nx-dropdownbutton button").ClassList, Does.Contain("nx-button-secondary").And.Contain("nx-button-md"));
+    }
+
     [Test]
     public void ButtonOutsideAGroup_Unchanged()
     {

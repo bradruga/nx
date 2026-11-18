@@ -206,11 +206,9 @@ public partial class NxFileManager<TItem> : IAsyncDisposable
     private string DateText(DateTime? date) => date?.ToString("g", Formats) ?? "";
     private static string SizeText(long? size) => size is { } bytes ? FileRules.Size(bytes) : "";
 
-    private static string CountText(Node? folder)
+    private string CountText(Node? folder)
     {
-        var children = folder?.Children;
-        if (children is null)
-            return "";
+        var children = folder is null ? roots : folder.Children;
         var folders = children.Count(c => c.IsDirectory);
         var files = children.Count - folders;
         return $"{folders} folder{(folders == 1 ? "" : "s")}, {files} file{(files == 1 ? "" : "s")}";
@@ -417,7 +415,9 @@ public partial class NxFileManager<TItem> : IAsyncDisposable
         current = folder;
         Reveal(folder);
         await SelectAsync(null);
-        lastFolder = folder?.Id;
+        // Unbound, the parameter stays as it was: remembering the raised id would make it look like an outside change.
+        if (FolderChanged.HasDelegate)
+            lastFolder = folder?.Id;
         await FolderChanged.InvokeAsync(folder is null ? default : folder.Item);
     }
 
@@ -426,7 +426,8 @@ public partial class NxFileManager<TItem> : IAsyncDisposable
         if (node == selected)
             return;
         selected = node;
-        lastSelected = node?.Id;
+        if (SelectedItemChanged.HasDelegate)
+            lastSelected = node?.Id;
         revealPending = true;
         await SelectedItemChanged.InvokeAsync(node is null ? default : node.Item);
     }
@@ -477,8 +478,10 @@ public partial class NxFileManager<TItem> : IAsyncDisposable
         await SelectAsync(null);
     }
 
-    private async Task KeyDownAsync(KeyboardEventArgs e, List<Node> shown)
+    private async Task KeyDownAsync(KeyboardEventArgs e)
     {
+        // Read the list now: a key that arrives before the last one's render must not see the nodes it replaced.
+        var shown = Shown();
         if (e.Key == "Backspace" || (e.AltKey && e.Key == "ArrowUp"))
         {
             if (current is not null)

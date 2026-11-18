@@ -43,6 +43,15 @@ public class NxCircularGaugeTests : BunitContext
     }
 
     [Test]
+    public void Range_FromANonZeroMin()
+    {
+        var cut = Render<NxCircularGauge>(p => p.Add(x => x.Value, 75).Add(x => x.Min, 50).Add(x => x.Max, 150));
+
+        Assert.That(cut.Find(".nx-gauge-pointer").GetAttribute("stroke-dashoffset"), Is.EqualTo("75"));
+        Assert.That(cut.Find(".nx-gauge").GetAttribute("aria-valuemin"), Is.EqualTo("50"));
+    }
+
+    [Test]
     public void Center_GetsTheClampedValue()
     {
         var cut = Render<NxCircularGauge>(p => p

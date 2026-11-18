@@ -97,6 +97,71 @@ public class NxSliderTests : BunitContext
     }
 
     [Test]
+    public void Ticks_LabelledWithFormattedValues()
+    {
+        var cut = Render<NxSlider<decimal>>(p => p
+            .Add(x => x.Min, 0m).Add(x => x.Max, 0.1m).Add(x => x.LargeStep, 0.05m).Add(x => x.Format, "P0"));
+
+        Assert.That(cut.FindAll(".nx-slider-tick").Select(t => t.TextContent),
+            Is.EqualTo(new[] { 0m.ToString("P0"), 0.05m.ToString("P0"), 0.1m.ToString("P0") }));
+    }
+
+    [Test]
+    public void NoLargeStep_NoTicks()
+    {
+        var cut = RenderBound([]);
+
+        Assert.That(cut.FindAll(".nx-slider-tick"), Is.Empty);
+    }
+
+    [Test]
+    public async Task DecreaseButton_StepsBySmallStep_AndDisablesAtMin()
+    {
+        var raised = new List<int>();
+        var cut = RenderBound(raised, 4, p => p.Add(x => x.ShowButtons, true).Add(x => x.SmallStep, 2));
+
+        await cut.FindAll(".nx-slider-button")[0].ClickAsync(new MouseEventArgs());
+        await cut.FindAll(".nx-slider-button")[0].ClickAsync(new MouseEventArgs());
+
+        Assert.That(raised, Is.EqualTo(new[] { 2, 0 }));
+        Assert.That(cut.FindAll(".nx-slider-button")[0].HasAttribute("disabled"), Is.True);
+        Assert.That(cut.Find("input").GetAttribute("step"), Is.EqualTo("2"));
+    }
+
+    [Test]
+    public async Task Input_PastMax_RaisesMax()
+    {
+        var raised = new List<int>();
+        var cut = RenderBound(raised);
+
+        await cut.Find("input").InputAsync(new ChangeEventArgs { Value = "15" });
+
+        Assert.That(raised, Is.EqualTo(new[] { 10 }));
+    }
+
+    [Test]
+    public async Task NotImmediate_ValueShownWhileDragging()
+    {
+        var cut = RenderBound([], configure: p => p.Add(x => x.Immediate, false).Add(x => x.ShowValue, true));
+
+        await cut.Find("input").InputAsync(new ChangeEventArgs { Value = "6" });
+
+        Assert.That(cut.Find(".nx-slider-value").TextContent, Is.EqualTo("6"));
+        Assert.That(cut.Find(".nx-slider").GetAttribute("style"), Does.Contain("--nx-slider-percent: 60%"));
+    }
+
+    [Test]
+    public void AttributesToInput_ClassStyleToOuter()
+    {
+        var cut = RenderBound([], configure: p => p
+            .Add(x => x.Class, "wide").Add(x => x.Style, "width: 300px").AddUnmatched("aria-label", "Crew"));
+
+        Assert.That(cut.Find("input").GetAttribute("aria-label"), Is.EqualTo("Crew"));
+        Assert.That(cut.Find(".nx-slider").ClassList, Does.Contain("wide"));
+        Assert.That(cut.Find(".nx-slider").GetAttribute("style"), Does.EndWith("width: 300px"));
+    }
+
+    [Test]
     public void OutsideValue_Clamped_AndWins()
     {
         var cut = RenderBound([], 30);

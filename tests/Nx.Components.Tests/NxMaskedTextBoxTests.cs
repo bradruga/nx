@@ -141,6 +141,67 @@ public class NxMaskedTextBoxTests : BunitContext
     }
 
     [Test]
+    public async Task Blur_CommitsTypedValue()
+    {
+        var raised = new List<string?>();
+        var cut = RenderBound(raised, "00-0000", configure: p => p.Add(x => x.IncludeLiterals, true));
+
+        await cut.Find("input").FocusAsync(new FocusEventArgs());
+        await cut.Find("input").InputAsync(new ChangeEventArgs { Value = "26-0412" });
+        Assert.That(raised, Is.Empty);
+        await cut.Find("input").BlurAsync(new FocusEventArgs());
+
+        Assert.That(raised, Is.EqualTo(new[] { "26-0412" }));
+    }
+
+    [Test]
+    public void Prompt_FillsEmptySlots()
+    {
+        var cut = RenderBound([], "000-000", "12", p => p.Add(x => x.Prompt, '·'));
+
+        Assert.That(Text(cut), Is.EqualTo("12·-···"));
+        Assert.That(module.Invocations.Single(i => i.Identifier == "editMask").Arguments[2], Is.EqualTo("·"));
+    }
+
+    [Test]
+    public void OutsideValueChange_ReplacesText()
+    {
+        var cut = RenderBound([], "00-0000", "260412");
+
+        cut.Render(p => p.Add(x => x.Value, "270101"));
+
+        Assert.That(Text(cut), Is.EqualTo("27-0101"));
+    }
+
+    [Test]
+    public async Task Focused_ParentRerenderWithSameValue_KeepsTypedText()
+    {
+        var cut = RenderBound([], "00-0000", "260412");
+
+        await cut.Find("input").FocusAsync(new FocusEventArgs());
+        await cut.Find("input").InputAsync(new ChangeEventArgs { Value = "27-____" });
+        cut.Render(p => p.Add(x => x.Value, "260412"));
+
+        Assert.That(Text(cut), Is.EqualTo("27-____"));
+    }
+
+    [TestCase(true, false)]
+    [TestCase(false, true)]
+    public async Task DisabledOrReadOnly_NoClear_EnterAndEscapeDoNothing(bool disabled, bool readOnly)
+    {
+        var raised = new List<string?>();
+        var cut = RenderBound(raised, "00-0000", "260412", p => p
+            .Add(x => x.Clearable, true).Add(x => x.Disabled, disabled).Add(x => x.ReadOnly, readOnly));
+
+        Assert.That(cut.FindAll(".nx-field-clear"), Is.Empty);
+        Assert.That(cut.Find("input").HasAttribute(disabled ? "disabled" : "readonly"), Is.True);
+        await cut.Find("input").KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
+        await cut.Find("input").KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.That(raised, Is.Empty);
+    }
+
+    [Test]
     public async Task Blur_MaskOnFocus_EmptyGoesBackToPlaceholder()
     {
         var cut = RenderBound([], "00-0000", configure: p => p.Add(x => x.MaskOnFocus, true));

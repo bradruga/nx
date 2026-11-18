@@ -167,12 +167,19 @@ public class SliderChipDateInputTests : PageTest
         await GoToPage("/datepicker/examples");
         var input = Page.Locator("#calendar-input");
 
-        await input.FocusAsync();
-        await Page.Keyboard.PressAsync("ControlOrMeta+a");
-        await input.PressSequentiallyAsync("3/9/26");
-        await Expect(input).ToHaveValueAsync("3/9/26");
-        // The caret is at the end, in the year.
-        await Page.Keyboard.PressAsync("ArrowUp");
+        // The stepper attaches one round trip after the page turns interactive; retry the setup until it answers.
+        for (var attempt = 0; attempt < 20; attempt++)
+        {
+            await input.FocusAsync();
+            await Page.Keyboard.PressAsync("ControlOrMeta+a");
+            await input.PressSequentiallyAsync("3/9/26");
+            await Expect(input).ToHaveValueAsync("3/9/26");
+            // The caret is at the end, in the year.
+            await Page.Keyboard.PressAsync("ArrowUp");
+            if (await input.InputValueAsync() != "3/9/26")
+                break;
+            await Page.WaitForTimeoutAsync(100);
+        }
 
         await Expect(input).ToHaveValueAsync("03/09/2027");
         await Expect(Page.Locator("#calendar-value")).ToHaveTextAsync("Tuesday, March 9, 2027");

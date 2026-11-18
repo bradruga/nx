@@ -169,6 +169,109 @@ public class NxUploadTests : BunitContext
     }
 
     [Test]
+    public async Task NoAutoUpload_Clear_EmptiesWithoutOnRemove()
+    {
+        var removed = 0;
+        var cut = Render<NxUpload>(p => p
+            .Add(x => x.SaveUrl, "api/files").Add(x => x.Id, "u").Add(x => x.AutoUpload, false)
+            .Add(x => x.OnRemove, _ => removed++));
+        await cut.Instance.OnFilesAdded([Pick("1", "a.pdf"), Pick("2", "b.pdf")]);
+
+        await cut.Find("#u-clear").ClickAsync(new MouseEventArgs());
+
+        Assert.That(cut.FindAll(".nx-filerow"), Is.Empty);
+        Assert.That(Calls("forget").Select(c => c.Arguments[1]), Is.EqualTo(new[] { "1", "2" }));
+        Assert.That(Calls("upload"), Is.Empty);
+        Assert.That(removed, Is.Zero);
+    }
+
+    [Test]
+    public async Task NoAnswer_FailureSaysSo()
+    {
+        var cut = Render<NxUpload>(p => p.Add(x => x.SaveUrl, "api/files"));
+        await cut.Instance.OnFilesAdded([Pick("1", "pour.pdf")]);
+
+        await cut.Instance.OnUploadDone("1", 0, "");
+
+        Assert.That(cut.Instance.Files[0].Status, Is.EqualTo(NxUploadStatus.Failed));
+        Assert.That(cut.Find(".nx-filerow-error").TextContent, Is.EqualTo("Upload failed: no answer from the server."));
+    }
+
+    [Test]
+    public async Task Cancelled_CanBeRetried()
+    {
+        var cut = Render<NxUpload>(p => p.Add(x => x.SaveUrl, "api/files"));
+        await cut.Instance.OnFilesAdded([Pick("1", "pour.pdf")]);
+        await cut.Find("button[aria-label='Cancel pour.pdf']").ClickAsync(new MouseEventArgs());
+
+        await cut.Find("button[aria-label='Retry pour.pdf']").ClickAsync(new MouseEventArgs());
+
+        Assert.That(Calls("upload").Count(), Is.EqualTo(2));
+        Assert.That(cut.Instance.Files[0].Status, Is.EqualTo(NxUploadStatus.Uploading));
+    }
+
+    [Test]
+    public async Task SaveFieldAndCredentials_SentToJs()
+    {
+        var cut = Render<NxUpload>(p => p
+            .Add(x => x.SaveUrl, "api/photos")
+            .Add(x => x.SaveField, "photo")
+            .Add(x => x.WithCredentials, false));
+
+        await cut.Instance.OnFilesAdded([Pick("1", "site.jpg")]);
+
+        var upload = Calls("upload").Single();
+        Assert.That(upload.Arguments[2], Is.EqualTo("api/photos"));
+        Assert.That(upload.Arguments[3], Is.EqualTo("photo"));
+        Assert.That(upload.Arguments[4], Is.EqualTo(false));
+        Assert.That(upload.Arguments[5], Is.EqualTo(0));
+    }
+
+    [Test]
+    public async Task SizeLimits_NotSent_MessageNamesTheLimit()
+    {
+        var cut = Render<NxUpload>(p => p.Add(x => x.SaveUrl, "api/files").Add(x => x.MaxFileSize, 1024L).Add(x => x.MinFileSize, 10L));
+
+        await cut.Instance.OnFilesAdded([Pick("1", "big.pdf", 5000), Pick("2", "empty.pdf", 0)]);
+
+        Assert.That(Calls("upload"), Is.Empty);
+        Assert.That(cut.Instance.Files.Select(f => f.Status), Is.EqualTo(new[] { NxUploadStatus.Invalid, NxUploadStatus.Invalid }));
+        Assert.That(cut.FindAll(".nx-filerow-error").Select(e => e.TextContent),
+            Is.EqualTo(new[] { "Larger than the 1 KB limit.", "Smaller than the 10 B minimum." }));
+        Assert.That(cut.Find(".nx-filezone-hint").TextContent, Is.EqualTo("up to 1 KB"));
+    }
+
+    [Test]
+    public async Task Single_NewPick_RaisesOnRemoveForTheOldFile()
+    {
+        var removed = new List<string>();
+        var cut = Render<NxUpload>(p => p
+            .Add(x => x.SaveUrl, "api/files").Add(x => x.Multiple, false)
+            .Add(x => x.OnRemove, e => removed.Add(e.File.Name)));
+        await cut.Instance.OnFilesAdded([Pick("1", "a.pdf")]);
+        await cut.Instance.OnUploadDone("1", 200, "tmp-a");
+
+        await cut.Instance.OnFilesAdded([Pick("2", "b.pdf")]);
+
+        Assert.That(removed, Is.EqualTo(new[] { "a.pdf" }));
+    }
+
+    [Test]
+    public async Task ProgressAndAnswer_ForUnknownOrFinishedFile_Ignored()
+    {
+        var success = 0;
+        var cut = Render<NxUpload>(p => p.Add(x => x.SaveUrl, "api/files").Add(x => x.OnSuccess, _ => success++));
+        await cut.Instance.OnFilesAdded([Pick("1", "a.pdf")]);
+        await cut.Instance.OnUploadDone("1", 200, "ok");
+
+        await cut.Instance.OnUploadDone("1", 500, "late");
+        await cut.Instance.OnUploadDone("nope", 200, "");
+
+        Assert.That(success, Is.EqualTo(1));
+        Assert.That(cut.Instance.Files[0].Status, Is.EqualTo(NxUploadStatus.Uploaded));
+    }
+
+    [Test]
     public async Task Disabled_IgnoresPicks()
     {
         var cut = Render<NxUpload>(p => p.Add(x => x.SaveUrl, "api/files").Add(x => x.Disabled, true));

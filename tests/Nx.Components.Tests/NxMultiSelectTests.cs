@@ -293,4 +293,138 @@ public class NxMultiSelectTests : BunitContext
     {
         public IEnumerable<string>? States { get; set; } = [];
     }
+
+    // ── Hardening: forwarded engine features ──────────────────────────────────
+
+    private sealed record Person(int Id, string Name, string Dept);
+
+    private static readonly Person[] People = [new(1, "Ann Lee", "Ops"), new(2, "Bo Diaz", "Sales"), new(3, "Cy Park", "Ops"), new(4, "Di Moss", "Sales")];
+
+    private IRenderedComponent<NxMultiSelect<Person, int>> RenderPeople(IEnumerable<int> values,
+        Action<ComponentParameterCollectionBuilder<NxMultiSelect<Person, int>>>? configure = null) =>
+        Render<NxMultiSelect<Person, int>>(p =>
+        {
+            p.Add(x => x.Data, People);
+            p.Add(x => x.ItemText, e => e.Name);
+            p.Add(x => x.ItemValue, e => e.Id);
+            p.Add(x => x.Values, values);
+            configure?.Invoke(p);
+        });
+
+    [Test]
+    public async Task Grouping_And_ItemTemplate()
+    {
+        var cut = RenderPeople([], p => p
+            .Add(x => x.ItemGroup, e => e.Dept)
+            .Add(x => x.ItemTemplate, e => b => b.AddMarkupContent(0, $"<b>{e.Name}</b>")));
+
+        await KeyAsync(cut, "ArrowDown");
+
+        Assert.That(cut.FindAll(".nx-combobox-group").Select(g => g.TextContent.Trim()), Is.EqualTo(new[] { "Ops", "Sales" }));
+        Assert.That(cut.FindAll("[role=option] b").Select(b => b.TextContent), Is.EqualTo(new[] { "Ann Lee", "Cy Park", "Bo Diaz", "Di Moss" }));
+    }
+
+    [Test]
+    public void ChipTemplate_And_MaxVisibleChips()
+    {
+        var cut = RenderPeople([1, 2, 3], p => p
+            .Add(x => x.MaxVisibleChips, 2)
+            .Add(x => x.ChipTemplate, e => b => b.AddMarkupContent(0, $"<i>{e.Name.Split(' ')[0]}</i>")));
+
+        Assert.That(cut.FindAll(".nx-combobox-chip i").Select(i => i.TextContent), Is.EqualTo(new[] { "Ann", "Bo" }));
+        Assert.That(cut.Find(".nx-combobox-chip-more").TextContent.Trim(), Is.EqualTo("+1 more"));
+    }
+
+    [Test]
+    public async Task Columns_WithVirtualize_GridRowsWithCheckColumn()
+    {
+        var cut = RenderPeople([2], p => p
+            .Add(x => x.Virtualize, true)
+            .Add(x => x.ColumnDefinitions, new List<NxComboBoxColumnDefinition<Person>>
+            {
+                new() { Field = e => e.Name, Header = "Name" },
+                new() { Field = e => e.Dept, Header = "Dept" },
+            }));
+
+        await KeyAsync(cut, "ArrowDown");
+
+        Assert.That(cut.FindAll(".nx-combobox-columns-header"), Has.Count.EqualTo(1));
+        var rows = cut.FindAll("[role=option].nx-combobox-item-grid");
+        Assert.That(rows, Has.Count.EqualTo(4));
+        Assert.That(rows[0].GetAttribute("style"), Does.Contain("height: 34px"));
+        Assert.That(cut.FindAll("[role=option] .nx-combobox-check-cell .nx-combobox-check"), Has.Count.EqualTo(1));
+    }
+
+    [Test]
+    public async Task Clearable_ClearsEveryChip()
+    {
+        var log = new List<string[]>();
+        var cut = RenderBound(log, ["Maine", "Vermont"], p => p.Add(x => x.Clearable, true));
+
+        await cut.Find(".nx-combobox-clear").ClickAsync(new MouseEventArgs());
+
+        Assert.That(log.Last(), Is.Empty);
+        Assert.That(cut.FindAll(".nx-combobox-chip-text"), Is.Empty);
+    }
+
+    [Test]
+    public async Task SelectedItems_Binds()
+    {
+        var picked = new List<Person[]>();
+        var cut = Render<NxMultiSelect<Person, int>>(p => p
+            .Add(x => x.Data, People)
+            .Add(x => x.ItemText, e => e.Name)
+            .Add(x => x.ItemValue, e => e.Id)
+            .Add(x => x.SelectedItems, new[] { People[0] })
+            .Add(x => x.SelectedItemsChanged, (IEnumerable<Person> v) => picked.Add(v.ToArray())));
+
+        Assert.That(cut.FindAll(".nx-combobox-chip-text").Select(c => c.TextContent.Trim()), Is.EqualTo(new[] { "Ann Lee" }));
+        await KeyAsync(cut, "ArrowDown");
+        await cut.FindAll("[role=option]")[3].ClickAsync(new MouseEventArgs());
+
+        Assert.That(picked.Last(), Is.EqualTo(new[] { People[0], People[3] }));
+    }
+
+    [Test]
+    public async Task CustomFilter_ReplacesFilter()
+    {
+        var cut = RenderPeople([], p => p.Add(x => x.CustomFilter, (e, text) => e.Dept.Equals(text, StringComparison.OrdinalIgnoreCase)));
+
+        await TypeAsync(cut, "sales");
+
+        Assert.That(Options(cut), Is.EqualTo(new[] { "Bo Diaz", "Di Moss" }));
+    }
+
+    [Test]
+    public async Task MaxSelections_EnterCannotExceedTheCap()
+    {
+        var log = new List<string[]>();
+        var cut = RenderBound(log, ["Maine"], p => p.Add(x => x.MaxSelections, 1));
+
+        await KeyAsync(cut, "ArrowDown");      // opens at Maine
+        await KeyAsync(cut, "ArrowDown");      // Maryland
+        await KeyAsync(cut, "Enter");
+
+        Assert.That(log, Is.Empty);
+    }
+
+    [Test]
+    public async Task Validation_MessagesMarkInvalid()
+    {
+        var model = new Holder();
+        var context = new EditContext(model);
+        var host = Render<CascadingValue<EditContext>>(p => p
+            .Add(x => x.Value, context)
+            .AddChildContent<NxMultiSelect<string, string>>(c => c
+                .Add(x => x.Data, States)
+                .Add(x => x.Values, model.States)
+                .Add(x => x.ValuesExpression, () => model.States)));
+        var cut = host.FindComponent<NxMultiSelect<string, string>>();
+
+        new ValidationMessageStore(context).Add(context.Field(nameof(Holder.States)), "Pick two.");
+        await cut.InvokeAsync(context.NotifyValidationStateChanged);
+
+        Assert.That(cut.Find("input").GetAttribute("aria-invalid"), Is.EqualTo("true"));
+        Assert.That(cut.Find(".nx-combobox").ClassList, Does.Contain("nx-combobox-invalid"));
+    }
 }

@@ -195,6 +195,94 @@ public class NxChatTests : BunitContext
     }
 
     [Test]
+    public void SameAuthor_NextDay_StartsANewGroup()
+    {
+        var cut = RenderChat(
+        [
+            new() { Id = 1, Author = "sam", Name = "Sam Lee", Text = "a", Sent = Today.AddDays(-1).AddHours(9) },
+            new() { Id = 2, Author = "sam", Name = "Sam Lee", Text = "b", Sent = Today.AddHours(9) },
+        ]);
+
+        Assert.That(cut.FindAll(".nx-chat-group"), Has.Count.EqualTo(2));
+        Assert.That(cut.FindAll(".nx-chat-day").Select(d => d.TextContent), Is.EqualTo(new[] { "Yesterday", "Today" }));
+    }
+
+    [Test]
+    public void OlderDays_NamedByDate()
+    {
+        var earlier = Today.AddDays(-5);
+        var cut = RenderChat([new() { Id = 1, Author = "sam", Text = "a", Sent = earlier.AddHours(9) }]);
+
+        var expected = earlier.ToString(earlier.Year == Today.Year ? "dddd, MMMM d" : "D", CultureInfo.GetCultureInfo("en-US"));
+        Assert.That(cut.Find(".nx-chat-day").TextContent, Is.EqualTo(expected));
+    }
+
+    private sealed class OffsetMsg
+    {
+        public string Author { get; init; } = "";
+        public string? Text { get; init; }
+        public DateTimeOffset Sent { get; init; }
+    }
+
+    [Test]
+    public void DateTimeOffsetTimestamps_ShowLocalTime()
+    {
+        var sent = new DateTimeOffset(Today.AddHours(14).AddMinutes(5));
+        var cut = Render<NxChat<OffsetMsg>>(p => p
+            .Add(x => x.Data, new[] { new OffsetMsg { Author = "sam", Text = "Hi", Sent = sent } })
+            .Add(x => x.AuthorIdField, nameof(OffsetMsg.Author))
+            .Add(x => x.TextField, nameof(OffsetMsg.Text))
+            .Add(x => x.TimestampField, nameof(OffsetMsg.Sent))
+            .Add(x => x.Culture, CultureInfo.GetCultureInfo("en-US")));
+
+        Assert.That(cut.Find(".nx-chat-time").TextContent, Is.EqualTo("2:05 PM"));
+        Assert.That(cut.Find(".nx-chat-day").TextContent, Is.EqualTo("Today"));
+    }
+
+    [Test]
+    public void Avatar_OneWordName_OneInitial()
+    {
+        var cut = RenderChat([new() { Id = 1, Author = "a", Name = "dispatch", Text = "1" }]);
+
+        Assert.That(cut.Find(".nx-chat-avatar").TextContent.Trim(), Is.EqualTo("D"));
+    }
+
+    [Test]
+    public void TypingMessage_KeepsTheGroupsLastTime()
+    {
+        var cut = RenderChat(
+        [
+            new() { Id = 1, Author = "sam", Name = "Sam Lee", Text = "a", Sent = Today.AddHours(9) },
+            new() { Id = 2, Author = "sam", Name = "Sam Lee", Typing = true, Sent = Today.AddHours(10) },
+        ]);
+
+        Assert.That(cut.Find(".nx-chat-time").TextContent, Is.EqualTo("9:00 AM"));
+    }
+
+    [Test]
+    public void NewData_Shown()
+    {
+        var cut = RenderChat(Conversation());
+
+        cut.Render(p => p.Add(x => x.Data, [.. Conversation(), new Msg { Id = 5, Author = "me", Text = "Late", Sent = Today.AddHours(8) }]));
+
+        Assert.That(cut.FindAll(".nx-chat-text")[^1].TextContent, Is.EqualTo("Late"));
+        Assert.That(cut.FindAll(".nx-chat-group")[^1].ClassList, Does.Contain("nx-chat-group-own"));
+    }
+
+    [Test]
+    public async Task ScrollToBottomAsync_AndDispose_UseTheModule()
+    {
+        var cut = RenderChat(Conversation());
+
+        await cut.InvokeAsync(cut.Instance.ScrollToBottomAsync);
+        await cut.InvokeAsync(() => cut.Instance.DisposeAsync().AsTask());
+
+        Assert.That(module.Invocations.Count(i => i.Identifier == "scrollToBottom"), Is.EqualTo(1));
+        Assert.That(module.Invocations.Count(i => i.Identifier == "dispose"), Is.EqualTo(1));
+    }
+
+    [Test]
     public void UnknownField_Throws()
     {
         Assert.Throws<InvalidOperationException>(() => Render<NxChat<Msg>>(p => p

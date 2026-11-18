@@ -358,4 +358,293 @@ public class NxGanttTests : BunitContext
     {
         Assert.Throws<InvalidOperationException>(() => RenderGantt(p => p.Add(x => x.StartField, "From")));
     }
+
+    // ── Dates in other types ──────────────────────────────────────────────────
+
+    private sealed class Plan
+    {
+        public int Id { get; init; }
+        public int? ParentId { get; init; }
+        public string Title { get; set; } = "";
+        public DateOnly Start { get; set; }
+        public DateTimeOffset? End { get; set; }
+    }
+
+    [Test]
+    public async Task BarDrop_DateOnlyAndOffsetFields_ChangesKeepThePropertyType()
+    {
+        var plan = new Plan { Id = 1, Title = "Pour", Start = DateOnly.FromDateTime(Monday), End = new DateTimeOffset(Monday.AddDays(5)) };
+        NxGanttUpdateArgs<Plan>? args = null;
+        var cut = Render<NxGantt<Plan>>(p => p
+            .Add(x => x.Data, new[] { plan })
+            .Add(x => x.OnUpdate, (NxGanttUpdateArgs<Plan> a) => args = a));
+
+        await cut.InvokeAsync(() => cut.Instance.OnBarDrop(0, "move", 2));
+
+        Assert.That(args!.Changes.Select(c => c.NewValue),
+            Is.EqualTo(new object?[] { DateOnly.FromDateTime(Monday.AddDays(2)), new DateTimeOffset(Monday.AddDays(7)) }));
+        args.Apply();
+        Assert.That(plan.Start, Is.EqualTo(DateOnly.FromDateTime(Monday.AddDays(2))));
+        Assert.That(plan.End, Is.EqualTo(new DateTimeOffset(Monday.AddDays(7))));
+    }
+
+    // ── Dependencies ──────────────────────────────────────────────────────────
+
+    [Test]
+    public void Dependencies_PathRunsBetweenTheEndsTheTypeNames()
+    {
+        // SlotWidth 20: Drawings is 160–280px on row 1, Pour 360–460px on row 3; rows are 36px.
+        var cut = RenderGantt(p => p.Add(x => x.SlotWidth, 20).Add(x => x.Dependencies, new object[]
+        {
+            new Link(2, 4),
+            new { PredecessorId = 2, SuccessorId = 4, Type = 3 },
+            new Link(2, 4, NxGanttDependencyType.FinishFinish),
+        }));
+
+        Assert.That(cut.FindAll(".nx-gantt-links > path").Select(p => p.GetAttribute("d")), Is.EqualTo(new[]
+        {
+            "M280,54 H320 V126 H360",
+            "M160,54 H152 V108 H352 V126 H360",
+            "M280,54 H288 V108 H468 V126 H460",
+        }));
+    }
+
+    [Test]
+    public void Dependencies_ToACollapsedTask_NotDrawn()
+    {
+        var cut = RenderGantt(p => p
+            .Add(x => x.ExpandedItems, new List<Job>())
+            .Add(x => x.Dependencies, new[] { new Link(2, 4), new Link(1, 4) }));
+
+        Assert.That(cut.FindAll(".nx-gantt-links > path"), Has.Count.EqualTo(1));
+    }
+
+    [Test]
+    public async Task LinkDrop_TypeFromTheEnds_SameBarIgnored()
+    {
+        var created = new List<NxGanttDependencyType>();
+        var cut = RenderGantt(p => p.Add(x => x.OnDependencyCreate, (NxGanttDependencyCreateEventArgs<Job> e) => created.Add(e.Type)));
+
+        await cut.InvokeAsync(() => cut.Instance.OnLinkDrop(1, true, 2, true));
+        await cut.InvokeAsync(() => cut.Instance.OnLinkDrop(1, false, 2, false));
+        await cut.InvokeAsync(() => cut.Instance.OnLinkDrop(1, false, 2, true));
+        await cut.InvokeAsync(() => cut.Instance.OnLinkDrop(2, true, 2, false));
+
+        Assert.That(created, Is.EqualTo(new[] { NxGanttDependencyType.FinishFinish, NxGanttDependencyType.StartStart, NxGanttDependencyType.StartFinish }));
+    }
+
+    // ── Expanding ─────────────────────────────────────────────────────────────
+
+    [Test]
+    public void ExpandedItems_FromOutside_CollapsesTheOthers()
+    {
+        var jobs = Jobs();
+        var cut = RenderGantt(p => p.Add(x => x.ExpandedItems, new List<Job>()), jobs);
+
+        Assert.That(Titles(cut), Is.EqualTo(new[] { "Design", "Pour" }));
+        Assert.That(cut.FindAll("[role=row]")[0].GetAttribute("aria-expanded"), Is.EqualTo("false"));
+
+        cut.Render(p => p.Add(x => x.ExpandedItems, new List<Job> { jobs[0] }));
+        Assert.That(Titles(cut), Has.Length.EqualTo(4));
+    }
+
+    [Test]
+    public async Task ExpandedItems_SameListAgain_KeepsWhatTheUserCollapsed()
+    {
+        var jobs = Jobs();
+        var expanded = new List<Job> { jobs[0] };
+        var cut = RenderGantt(p => p.Add(x => x.ExpandedItems, expanded), jobs);
+
+        await cut.Find(".nx-gantt-toggle").ClickAsync(new MouseEventArgs());
+        cut.Render(p => p.Add(x => x.Data, jobs));
+
+        Assert.That(Titles(cut), Is.EqualTo(new[] { "Design", "Pour" }));
+    }
+
+    [Test]
+    public async Task ArrowLeft_CollapsesAParent_ArrowRightExpandsIt()
+    {
+        var cut = RenderGantt();
+
+        await cut.FindAll("[role=row]")[0].KeyDownAsync(new KeyboardEventArgs { Key = "ArrowLeft" });
+        Assert.That(Titles(cut), Is.EqualTo(new[] { "Design", "Pour" }));
+
+        await cut.FindAll("[role=row]")[0].KeyDownAsync(new KeyboardEventArgs { Key = "ArrowRight" });
+        Assert.That(Titles(cut), Has.Length.EqualTo(4));
+    }
+
+    [Test]
+    public async Task ArrowLeft_OnAChild_SelectsItsParent_FocusesItsRow()
+    {
+        var cut = RenderGantt();
+
+        await cut.FindAll("[role=row]")[2].KeyDownAsync(new KeyboardEventArgs { Key = "ArrowLeft" });
+
+        Assert.That(cut.Find("[aria-selected=true] .nx-gantt-cell").TextContent, Is.EqualTo("Design"));
+        Assert.That(module.Invocations.Last(i => i.Identifier == "focusRow").Arguments[1], Is.EqualTo("g-r0"));
+    }
+
+    [Test]
+    public async Task ArrowUp_SelectsTheRowAbove()
+    {
+        var cut = RenderGantt();
+
+        await cut.FindAll("[role=row]")[3].KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp" });
+
+        Assert.That(cut.Find("[aria-selected=true] .nx-gantt-cell").TextContent, Is.EqualTo("Review"));
+    }
+
+    // ── Filtering and sorting ─────────────────────────────────────────────────
+
+    [Test]
+    public async Task Filter_ShowsMatchesUnderACollapsedParent()
+    {
+        var cut = RenderGantt(p => p.Add(x => x.FilterRow, true));
+        await cut.Find(".nx-gantt-toggle").ClickAsync(new MouseEventArgs());
+
+        await cut.InvokeAsync(() => cut.Find("input[aria-label='Filter Crew']").Input("pe"));
+        cut.WaitForState(() => Titles(cut).Contains("Review"), TimeSpan.FromSeconds(2));
+
+        Assert.That(Titles(cut), Is.EqualTo(new[] { "Design", "Review" }));
+    }
+
+    [Test]
+    public async Task Filter_NothingMatches_SaysSo()
+    {
+        var cut = RenderGantt(p => p.Add(x => x.FilterRow, true));
+
+        await cut.InvokeAsync(() => cut.Find("input[aria-label='Filter Task']").Input("zzz"));
+        cut.WaitForState(() => cut.FindAll(".nx-gantt-empty").Count == 1, TimeSpan.FromSeconds(2));
+
+        Assert.That(cut.Find(".nx-gantt-empty").TextContent, Is.EqualTo("No tasks match"));
+    }
+
+    [Test]
+    public void NoData_SaysNoTasks()
+    {
+        var cut = RenderGantt(jobs: []);
+
+        Assert.That(cut.Find(".nx-gantt-empty").TextContent, Is.EqualTo("No tasks"));
+    }
+
+    [Test]
+    public async Task ClearSort_BackToDataOrder_RaisesOnStateChanged()
+    {
+        var changed = 0;
+        var cut = RenderGantt(p => p.Add(x => x.Sortable, true).Add(x => x.OnStateChanged, () => changed++));
+        await cut.FindAll(".nx-gantt-sort")[0].ClickAsync(new MouseEventArgs());
+        await cut.FindAll(".nx-gantt-sort")[0].ClickAsync(new MouseEventArgs());
+
+        await cut.InvokeAsync(cut.Instance.ClearSortAsync);
+
+        Assert.That(Titles(cut), Is.EqualTo(new[] { "Design", "Drawings", "Review", "Pour" }));
+        Assert.That(cut.Instance.HasSort, Is.False);
+        Assert.That(changed, Is.EqualTo(3));
+    }
+
+    // ── Cell editing ──────────────────────────────────────────────────────────
+
+    [Test]
+    public async Task CellEdit_EscapeEnds_UnchangedRaisesNoChanges()
+    {
+        NxGanttUpdateArgs<Job>? last = null;
+        var cut = RenderGantt(p => p.Add(x => x.OnUpdate, (NxGanttUpdateArgs<Job> a) => last = a), editor: true);
+        await cut.FindAll("[role=gridcell]")[0].ClickAsync(new MouseEventArgs());
+
+        await cut.FindAll("[role=row]")[0].KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.That(cut.FindAll(".ed"), Is.Empty);
+        Assert.That(last!.Kind, Is.EqualTo(NxGanttUpdateKind.Edit));
+        Assert.That(last.Changes, Is.Empty);
+        Assert.That(module.Invocations.Count(i => i.Identifier == "unwatchEdit"), Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task CellEdit_ArrowKeysStayInTheEditor()
+    {
+        var cut = RenderGantt(p => p.Add(x => x.OnUpdate, (NxGanttUpdateArgs<Job> _) => { }), editor: true);
+        await cut.FindAll("[role=gridcell]")[0].ClickAsync(new MouseEventArgs());
+
+        await cut.FindAll("[role=row]")[0].KeyDownAsync(new KeyboardEventArgs { Key = "ArrowDown" });
+
+        Assert.That(cut.FindAll(".ed"), Has.Count.EqualTo(1));
+        Assert.That(cut.Find("[aria-selected=true] .nx-gantt-cell .ed"), Is.Not.Null);
+    }
+
+    [Test]
+    public async Task CellEdit_ClickAnotherRow_EndsTheFirstEdit_OpensTheNext()
+    {
+        var jobs = Jobs();
+        var updated = new List<string>();
+        IRenderedComponent<NxGantt<Job>>? cut = null;
+        // As a page does: its OnUpdate handler re-renders it, which passes the Gantt its parameters again.
+        cut = RenderGantt(p => p.Add(x => x.OnUpdate, (NxGanttUpdateArgs<Job> a) =>
+        {
+            updated.Add(a.Item.Title);
+            cut?.Render(q => q.Add(x => x.Data, jobs));
+        }), jobs, editor: true);
+        await cut.FindAll("[role=gridcell]")[0].ClickAsync(new MouseEventArgs());
+
+        // Three cells a row: the second row's first cell.
+        await cut.FindAll("[role=gridcell]")[3].ClickAsync(new MouseEventArgs());
+
+        Assert.That(updated, Is.EqualTo(new[] { "Design" }));
+        Assert.That(cut.FindAll("[role=row]")[1].QuerySelectorAll(".ed"), Has.Length.EqualTo(1));
+        Assert.That(cut.FindAll(".ed"), Has.Count.EqualTo(1));
+    }
+
+    // ── Bars ──────────────────────────────────────────────────────────────────
+
+    [Test]
+    public async Task Bar_DoubleClick_RaisesOnEdit()
+    {
+        Job? edited = null;
+        var cut = RenderGantt(p => p.Add(x => x.OnEdit, (Job j) => edited = j));
+
+        await cut.FindAll(".nx-gantt-bar")[2].DoubleClickAsync(new MouseEventArgs());
+
+        Assert.That(edited!.Title, Is.EqualTo("Review"));
+    }
+
+    [Test]
+    public async Task Bar_Hover_ShowsTitleAndDates_LeaveHides()
+    {
+        var cut = RenderGantt();
+
+        await cut.FindAll(".nx-gantt-bar")[3].MouseEnterAsync(new MouseEventArgs());
+        Assert.That(cut.Find(".nx-gantt-tooltip").TextContent, Does.Contain("Pour").And.Contain("Thu, Nov 19").And.Contain("Tue, Nov 24"));
+
+        await cut.FindAll(".nx-gantt-bar")[3].MouseLeaveAsync(new MouseEventArgs());
+        Assert.That(cut.FindAll(".nx-gantt-tooltip"), Is.Empty);
+    }
+
+    [Test]
+    public async Task TooltipTemplate_ReplacesTheDefault()
+    {
+        var cut = RenderGantt(p => p.Add(x => x.TooltipTemplate, j => b => b.AddMarkupContent(0, $"<b class=\"tip\">{j.Crew}</b>")));
+
+        await cut.FindAll(".nx-gantt-bar")[3].MouseEnterAsync(new MouseEventArgs());
+
+        Assert.That(cut.Find(".nx-gantt-tooltip .tip").TextContent, Is.EqualTo("Crew A"));
+    }
+
+    [Test]
+    public void DayHeaderDateFormat_FormatsTheDays()
+    {
+        var cut = RenderGantt(p => p.Add(x => x.DayHeaderDateFormat, "ddd"));
+
+        Assert.That(cut.FindAll(".nx-gantt-day").Take(2).Select(d => d.TextContent), Is.EqualTo(new[] { "Sun", "Mon" }));
+    }
+
+    [Test]
+    public async Task Rebind_RedrawsAfterAnInPlaceChange()
+    {
+        var jobs = Jobs();
+        var cut = RenderGantt(p => p.Add(x => x.SlotWidth, 20), jobs);
+        jobs[3].Start = Monday.AddDays(12);
+
+        await cut.InvokeAsync(cut.Instance.Rebind);
+
+        Assert.That(cut.FindAll(".nx-gantt-bar")[3].GetAttribute("style"), Does.StartWith("left: 400px; width: 60px;"));
+    }
 }

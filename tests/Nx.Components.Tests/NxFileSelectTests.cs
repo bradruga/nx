@@ -142,6 +142,49 @@ public class NxFileSelectTests : BunitContext
         Assert.That(cut.FindAll(".nx-filerow"), Is.Empty);
     }
 
+    [Test]
+    public void MinAndMaxSize_ListedWithTheLimit()
+    {
+        var cut = Render<NxFileSelect>(p => p.Add(x => x.MinFileSize, 5L).Add(x => x.MaxFileSize, 2048L));
+
+        cut.FindComponent<InputFile>().UploadFiles(File("tiny.txt", 2), File("ok.txt", 100), File("huge.txt", 4096));
+
+        Assert.That(cut.Instance.Files.Select(f => f.Error), Is.EqualTo(new NxFileError?[] { NxFileError.TooSmall, null, NxFileError.TooLarge }));
+        var errors = cut.FindAll(".nx-filerow-error").Select(e => e.TextContent).ToList();
+        Assert.That(errors, Is.EqualTo(new[] { "Smaller than the 5 B minimum.", "Larger than the 2 KB limit." }));
+    }
+
+    [Test]
+    public void Multiple_KeepsAddingAcrossPicks()
+    {
+        var cut = Render<NxFileSelect>();
+
+        cut.FindComponent<InputFile>().UploadFiles(File("a.pdf"));
+        cut.FindComponent<InputFile>().UploadFiles(File("b.pdf"), File("c.pdf"));
+
+        Assert.That(cut.Instance.Files.Select(f => f.Name), Is.EqualTo(new[] { "a.pdf", "b.pdf", "c.pdf" }));
+        Assert.That(cut.FindAll(".nx-filerow"), Has.Count.EqualTo(3));
+    }
+
+    [Test]
+    public void Single_ManyPicked_KeepsTheFirst()
+    {
+        NxFileSelectEventArgs? args = null;
+        var cut = Render<NxFileSelect>(p => p.Add(x => x.Multiple, false).Add(x => x.OnSelect, e => args = e));
+
+        cut.FindComponent<InputFile>().UploadFiles(File("a.pdf"), File("b.pdf"));
+
+        Assert.That(args!.Files.Select(f => f.Name), Is.EqualTo(new[] { "a.pdf" }));
+        Assert.That(cut.Instance.Files.Select(f => f.Name), Is.EqualTo(new[] { "a.pdf" }));
+    }
+
+    [Test]
+    public void AriaLabel_OnTheInput()
+    {
+        var cut = Render<NxFileSelect>(p => p.Add(x => x.AriaLabel, "Attach drawings"));
+        Assert.That(cut.Find("input[type=file]").GetAttribute("aria-label"), Is.EqualTo("Attach drawings"));
+    }
+
     [TestCase(512, "512 B")]
     [TestCase(14 * 1024, "14 KB")]
     [TestCase(2_516_582, "2.4 MB")]

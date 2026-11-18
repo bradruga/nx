@@ -2,7 +2,8 @@ namespace Nx.Components;
 
 public partial class NxComboBox<TItem, TValue>
 {
-    private void SyncSingleFromParameters()
+    /// <summary>Returns whether Value or SelectedItem changed from outside.</summary>
+    private bool SyncSingleFromParameters()
     {
         var hadSelection = hasSelection;
         var previousItem = selectedItem;
@@ -28,6 +29,7 @@ public partial class NxComboBox<TItem, TValue>
         syncPending = selectionChanged && hasSelection && (
             (SelectedItemChanged.HasDelegate && !EqualityComparer<TItem>.Default.Equals(SelectedItem, selectedItem)) ||
             (ValueChanged.HasDelegate && !EqualityComparer<TValue>.Default.Equals(Value, ValueOf(selectedItem!))));
+        return initialized && (valueChanged || selectedItemChanged);
     }
 
     private void ResolveValue(TValue? value)

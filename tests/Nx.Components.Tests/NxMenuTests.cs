@@ -313,4 +313,346 @@ public class NxMenuTests : BunitContext
 
         Assert.That(picked, Is.EqualTo(new[] { "edit" }));
     }
+
+    [Test]
+    public async Task SplitButton_Disabled_DisablesBothHalves_DownDoesNotOpen()
+    {
+        var cut = Render<NxSplitButton>(p => p.Add(x => x.Id, "sb").Add(x => x.Items, Items()).Add(x => x.Disabled, true).Add(x => x.ChildContent, Text("Save")));
+
+        await cut.Find(".nx-splitbutton").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowDown" });
+
+        Assert.That(cut.Find("button#sb").HasAttribute("disabled"), Is.True);
+        Assert.That(cut.Find("button#sb-toggle").HasAttribute("disabled"), Is.True);
+        Assert.That(cut.Instance.IsOpen, Is.False);
+    }
+
+    [Test]
+    public async Task SplitButton_Down_OpensTheMenuAlignedToTheEnd()
+    {
+        var cut = Render<NxSplitButton>(p => p.Add(x => x.Id, "sb").Add(x => x.Items, Items()).Add(x => x.ChildContent, Text("Save")));
+
+        await cut.Find(".nx-splitbutton").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowDown" });
+
+        Assert.That(cut.Instance.IsOpen, Is.True);
+        Assert.That(cut.Find("#sb-menu .nx-menu-list"), Is.Not.Null);
+        var how = module.Invocations.Single(i => i.Identifier == "open").Arguments[3]!;
+        Assert.That(how.GetType().GetProperty("alignEnd")!.GetValue(how), Is.EqualTo(true));
+    }
+
+    [Test]
+    public async Task SplitButton_MenuDisabled_DownDoesNotOpen()
+    {
+        var cut = Render<NxSplitButton>(p => p.Add(x => x.Items, Items()).Add(x => x.MenuDisabled, true).Add(x => x.ChildContent, Text("Save")));
+
+        await cut.Find(".nx-splitbutton").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowDown" });
+
+        Assert.That(cut.Instance.IsOpen, Is.False);
+    }
+
+    [Test]
+    public async Task SplitButton_OtherKeys_DoNotOpen()
+    {
+        var cut = Render<NxSplitButton>(p => p.Add(x => x.Items, Items()).Add(x => x.ChildContent, Text("Save")));
+
+        await cut.Find(".nx-splitbutton").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp" });
+        await cut.Find(".nx-splitbutton").KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.That(cut.Instance.IsOpen, Is.False);
+    }
+
+    [Test]
+    public void SplitButton_VariantAndSize_ReachBothHalves()
+    {
+        var cut = Render<NxSplitButton>(p => p.Add(x => x.Id, "sb").Add(x => x.Items, Items())
+            .Add(x => x.Variant, NxButtonVariant.Primary).Add(x => x.Size, NxButtonSize.Small).Add(x => x.ChildContent, Text("Save")));
+
+        foreach (var id in new[] { "sb", "sb-toggle" })
+            Assert.That(cut.Find($"button#{id}").ClassList, Does.Contain("nx-button-primary").And.Contain("nx-button-sm"), id);
+    }
+
+    [Test]
+    public async Task SplitButton_MenuAriaLabel_NamesTheArrowAndTheMenu()
+    {
+        var cut = Render<NxSplitButton>(p => p.Add(x => x.Id, "sb").Add(x => x.Items, Items()).Add(x => x.MenuAriaLabel, "Save options").Add(x => x.ChildContent, Text("Save")));
+
+        await cut.InvokeAsync(cut.Instance.OpenAsync);
+
+        Assert.That(cut.Find("button#sb-toggle").GetAttribute("aria-label"), Is.EqualTo("Save options"));
+        Assert.That(cut.Find("button#sb-toggle").GetAttribute("aria-controls"), Is.EqualTo("sb-menu"));
+        Assert.That(cut.Find("#sb-menu > ul").GetAttribute("aria-label"), Is.EqualTo("Save options"));
+    }
+
+    [Test]
+    public void SplitButton_AriaLabel_NamesTheGroupAndTheMainAction()
+    {
+        var cut = Render<NxSplitButton>(p => p.Add(x => x.Id, "sb").Add(x => x.Items, Items()).Add(x => x.AriaLabel, "Save").Add(x => x.Icon, Text("S")));
+
+        Assert.That(cut.Find(".nx-splitbutton").GetAttribute("aria-label"), Is.EqualTo("Save"));
+        Assert.That(cut.Find("button#sb").GetAttribute("aria-label"), Is.EqualTo("Save"));
+    }
+
+    [Test]
+    public async Task SplitButton_ArrowClickWhileOpen_Closes()
+    {
+        var cut = Render<NxSplitButton>(p => p.Add(x => x.Id, "sb").Add(x => x.Items, Items()).Add(x => x.ChildContent, Text("Save")));
+
+        await cut.Find("button#sb-toggle").ClickAsync(new MouseEventArgs());
+        await cut.Find("button#sb-toggle").ClickAsync(new MouseEventArgs());
+
+        Assert.That(cut.Instance.IsOpen, Is.False);
+        Assert.That(cut.Find("button#sb-toggle").GetAttribute("aria-expanded"), Is.EqualTo("false"));
+        Assert.That(cut.FindAll(".nx-menu-list"), Is.Empty);
+    }
+
+    [Test]
+    public async Task SplitButton_Pick_ClosesTheMenu()
+    {
+        var cut = Render<NxSplitButton>(p => p.Add(x => x.Id, "sb").Add(x => x.Items, Items()).Add(x => x.ChildContent, Text("Save")));
+        await cut.Find("button#sb-toggle").ClickAsync(new MouseEventArgs());
+
+        await cut.FindAll(".nx-menu-item")[1].ClickAsync(new MouseEventArgs());
+
+        Assert.That(cut.Instance.IsOpen, Is.False);
+        Assert.That(cut.Find("button#sb-toggle").GetAttribute("aria-expanded"), Is.EqualTo("false"));
+    }
+
+    [Test]
+    public void SplitButton_Loading_OnlyOnTheMainAction()
+    {
+        var cut = Render<NxSplitButton>(p => p.Add(x => x.Id, "sb").Add(x => x.Items, Items()).Add(x => x.Loading, true).Add(x => x.ChildContent, Text("Save")));
+
+        Assert.That(cut.Find("button#sb").GetAttribute("aria-busy"), Is.EqualTo("true"));
+        Assert.That(cut.Find("button#sb-toggle").HasAttribute("aria-busy"), Is.False);
+        Assert.That(cut.Find("button#sb-toggle").HasAttribute("disabled"), Is.False);
+    }
+
+    [Test]
+    public void SplitButton_StopsDownFromScrollingThePage()
+    {
+        var input = JSInterop.SetupModule("./_content/Nx.Components/nx-input.js");
+        input.Mode = JSRuntimeMode.Loose;
+
+        Render<NxSplitButton>(p => p.Add(x => x.Items, Items()).Add(x => x.ChildContent, Text("Save")));
+
+        var prevent = input.Invocations.Single(i => i.Identifier == "preventKeys");
+        Assert.That(prevent.Arguments[1], Is.EqualTo(new[] { "ArrowDown" }));
+    }
+
+    [Test]
+    public void SplitButton_ClassAndStyle_OnTheOuterElement()
+    {
+        var cut = Render<NxSplitButton>(p => p.Add(x => x.Items, Items()).Add(x => x.Class, "mine").Add(x => x.Style, "margin: 4px").Add(x => x.ChildContent, Text("Save")));
+
+        var outer = cut.Find(".nx-splitbutton");
+        Assert.That(outer.ClassList, Does.Contain("mine"));
+        Assert.That(outer.GetAttribute("style"), Is.EqualTo("margin: 4px"));
+    }
+
+    // ── NxDropDownButton, more ────────────────────────────────────────────────
+
+    [Test]
+    public async Task DropDownButton_UpOpens()
+    {
+        var cut = Render<NxDropDownButton>(p => p.Add(x => x.Items, Items()).Add(x => x.ChildContent, Text("Export")));
+
+        await cut.Find(".nx-dropdownbutton").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp" });
+
+        Assert.That(cut.Instance.IsOpen, Is.True);
+    }
+
+    [Test]
+    public async Task DropDownButton_OtherKeys_DoNotOpen()
+    {
+        var cut = Render<NxDropDownButton>(p => p.Add(x => x.Items, Items()).Add(x => x.ChildContent, Text("Export")));
+
+        await cut.Find(".nx-dropdownbutton").KeyDownAsync(new KeyboardEventArgs { Key = "a" });
+
+        Assert.That(cut.Instance.IsOpen, Is.False);
+    }
+
+    [Test]
+    public async Task DropDownButton_OpensStartAlignedByDefault()
+    {
+        var cut = Render<NxDropDownButton>(p => p.Add(x => x.Items, Items()).Add(x => x.ChildContent, Text("Export")));
+
+        await cut.Find("button").ClickAsync(new MouseEventArgs());
+
+        var how = module.Invocations.Single(i => i.Identifier == "open").Arguments[3]!;
+        Assert.That(how.GetType().GetProperty("alignEnd")!.GetValue(how), Is.EqualTo(false));
+    }
+
+    [Test]
+    public void DropDownButton_ShowArrowFalse_NoArrow()
+    {
+        var cut = Render<NxDropDownButton>(p => p.Add(x => x.Items, Items()).Add(x => x.ShowArrow, false).Add(x => x.ChildContent, Text("Export")));
+
+        Assert.That(cut.FindAll(".nx-dropdownbutton-arrow"), Is.Empty);
+        Assert.That(cut.Find("button").TextContent.Trim(), Is.EqualTo("Export"));
+    }
+
+    [Test]
+    public void DropDownButton_VariantSizeAndFullWidth_ReachTheButton()
+    {
+        var cut = Render<NxDropDownButton>(p => p.Add(x => x.Items, Items())
+            .Add(x => x.Variant, NxButtonVariant.Danger).Add(x => x.Size, NxButtonSize.Large).Add(x => x.FullWidth, true).Add(x => x.ChildContent, Text("Export")));
+
+        Assert.That(cut.Find("button").ClassList, Does.Contain("nx-button-danger").And.Contain("nx-button-lg").And.Contain("nx-button-full-width"));
+    }
+
+    [Test]
+    public async Task DropDownButton_MenuIsNamedByAriaLabel_UnlessMenuAriaLabel()
+    {
+        var plain = Render<NxDropDownButton>(p => p.Add(x => x.Id, "a").Add(x => x.Items, Items()).Add(x => x.AriaLabel, "Export"));
+        await plain.InvokeAsync(plain.Instance.OpenAsync);
+        Assert.That(plain.Find("#a-menu > ul").GetAttribute("aria-label"), Is.EqualTo("Export"));
+
+        var named = Render<NxDropDownButton>(p => p.Add(x => x.Id, "b").Add(x => x.Items, Items()).Add(x => x.AriaLabel, "Export").Add(x => x.MenuAriaLabel, "Formats"));
+        await named.InvokeAsync(named.Instance.OpenAsync);
+        Assert.That(named.Find("#b-menu > ul").GetAttribute("aria-label"), Is.EqualTo("Formats"));
+    }
+
+    [Test]
+    public async Task DropDownButton_Pick_RaisesItemClick_AndCloses()
+    {
+        var picked = new List<string?>();
+        var cut = Render<NxDropDownButton>(p => p.Add(x => x.Id, "ddb").Add(x => x.Items, Items())
+            .Add(x => x.OnItemClick, (NxMenuItemClickEventArgs e) => picked.Add(e.Item.Id)).Add(x => x.ChildContent, Text("Export")));
+        await cut.Find("button#ddb").ClickAsync(new MouseEventArgs());
+
+        await cut.FindAll(".nx-menu-item")[1].ClickAsync(new MouseEventArgs());
+
+        Assert.That(picked, Is.EqualTo(new[] { "copy" }));
+        Assert.That(cut.Instance.IsOpen, Is.False);
+        Assert.That(cut.Find("button#ddb").GetAttribute("aria-expanded"), Is.EqualTo("false"));
+    }
+
+    [Test]
+    public void DropDownButton_StopsUpAndDownFromScrollingThePage()
+    {
+        var input = JSInterop.SetupModule("./_content/Nx.Components/nx-input.js");
+        input.Mode = JSRuntimeMode.Loose;
+
+        Render<NxDropDownButton>(p => p.Add(x => x.Items, Items()).Add(x => x.ChildContent, Text("Export")));
+
+        var prevent = input.Invocations.Single(i => i.Identifier == "preventKeys");
+        Assert.That(prevent.Arguments[1], Is.EqualTo(new[] { "ArrowDown", "ArrowUp" }));
+    }
+
+    // ── NxContextMenu, more ───────────────────────────────────────────────────
+
+    [Test]
+    public async Task ContextMenu_OpenAtFromCode_OpensAtThePoint_WithoutOpening_ContextReachesThePick()
+    {
+        var opening = 0;
+        var picked = new List<string?>();
+        var cut = Render<NxContextMenu>(p => p
+            .Add(x => x.Items, Items())
+            .Add(x => x.Target, "#t")
+            .Add(x => x.OnOpening, (NxContextMenuOpeningEventArgs _) => opening++)
+            .Add(x => x.OnItemClick, (NxMenuItemClickEventArgs e) => picked.Add(e.Context)));
+
+        await cut.InvokeAsync(() => cut.Instance.OpenAtAsync(12, 34, "row-3"));
+
+        Assert.That(cut.Instance.IsOpen, Is.True);
+        Assert.That(opening, Is.Zero);
+        var how = module.Invocations.Single(i => i.Identifier == "open").Arguments[3]!;
+        Assert.That((how.GetType().GetProperty("x")!.GetValue(how), how.GetType().GetProperty("y")!.GetValue(how)), Is.EqualTo((12d, 34d)));
+        await cut.FindAll(".nx-menu-item")[0].ClickAsync(new MouseEventArgs());
+        Assert.That(picked, Is.EqualTo(new[] { "row-3" }));
+    }
+
+    [Test]
+    public async Task ContextMenu_CloseAsync_Closes()
+    {
+        var cut = Render<NxContextMenu>(p => p.Add(x => x.Items, Items()).Add(x => x.Target, "#t"));
+        await cut.InvokeAsync(() => cut.Instance.OpenAtAsync(0, 0));
+
+        await cut.InvokeAsync(cut.Instance.CloseAsync);
+
+        Assert.That(cut.Instance.IsOpen, Is.False);
+        Assert.That(cut.FindAll(".nx-menu-list"), Is.Empty);
+    }
+
+    [Test]
+    public async Task ContextMenu_Opening_ChangesTheItemsForThePressedRow()
+    {
+        var host = Render<ContextHost>();
+        var menu = host.FindComponent<NxContextMenu>();
+
+        await menu.Instance.OnContextRequested(0, 0, "locked");
+
+        host.WaitForState(() => host.FindAll(".nx-menu-item").Count > 0);
+        Assert.That(host.FindAll(".nx-menu-text").Select(t => t.TextContent), Is.EqualTo(new[] { "Unlock" }));
+    }
+
+    [Test]
+    public void ContextMenu_ReEnabled_WatchesAgain()
+    {
+        var cut = Render<NxContextMenu>(p => p.Add(x => x.Items, Items()).Add(x => x.Target, "#chip").Add(x => x.Disabled, true));
+        Assert.That(module.Invocations.Count(i => i.Identifier == "watchContext"), Is.Zero);
+
+        cut.Render(p => p.Add(x => x.Disabled, false));
+
+        Assert.That(module.Invocations.Single(i => i.Identifier == "watchContext").Arguments[3], Is.EqualTo("#chip"));
+    }
+
+    [Test]
+    public void ContextMenu_NewTarget_WatchesTheNewSelector_UnderTheSameKey()
+    {
+        var cut = Render<NxContextMenu>(p => p.Add(x => x.Items, Items()).Add(x => x.Target, "#one"));
+
+        cut.Render(p => p.Add(x => x.Target, "#two"));
+
+        var watches = module.Invocations.Where(i => i.Identifier == "watchContext").ToList();
+        Assert.That(watches.Select(w => w.Arguments[3]), Is.EqualTo(new[] { "#one", "#two" }));
+        Assert.That(watches[1].Arguments[0], Is.EqualTo(watches[0].Arguments[0]));
+    }
+
+    [Test]
+    public void ContextMenu_RerenderWithSameTarget_DoesNotWatchAgain()
+    {
+        var cut = Render<NxContextMenu>(p => p.Add(x => x.Items, Items()).Add(x => x.Target, "#one"));
+
+        cut.Render(p => p.Add(x => x.AriaLabel, "Row"));
+
+        Assert.That(module.Invocations.Count(i => i.Identifier == "watchContext"), Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task ContextMenu_IdClassAndAriaLabel_ReachTheMenu()
+    {
+        var cut = Render<NxContextMenu>(p => p.Add(x => x.Items, Items()).Add(x => x.Target, "#t").Add(x => x.Id, "cm").Add(x => x.Class, "mine").Add(x => x.AriaLabel, "Row actions"));
+
+        await cut.InvokeAsync(() => cut.Instance.OpenAtAsync(0, 0));
+
+        Assert.That(cut.Find("#cm").ClassList, Does.Contain("nx-context-menu").And.Contain("mine"));
+        Assert.That(cut.Find("#cm > ul").GetAttribute("aria-label"), Is.EqualTo("Row actions"));
+    }
+
+    [Test]
+    public async Task ContextMenu_Dispose_Unwatches()
+    {
+        var cut = Render<NxContextMenu>(p => p.Add(x => x.Items, Items()).Add(x => x.Target, "#t"));
+        var key = module.Invocations.Single(i => i.Identifier == "watchContext").Arguments[0];
+
+        await cut.Instance.DisposeAsync();
+
+        Assert.That(module.Invocations.Single(i => i.Identifier == "unwatchContext").Arguments[0], Is.EqualTo(key));
+    }
+
+    /// <summary>A page whose OnOpening picks the items for the pressed row, as the demo's rows do.</summary>
+    private sealed class ContextHost : ComponentBase
+    {
+        private IReadOnlyList<NxMenuItem> items = [new("Lock")];
+
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder b)
+        {
+            b.OpenComponent<NxContextMenu>(0);
+            b.AddComponentParameter(1, nameof(NxContextMenu.Items), items);
+            b.AddComponentParameter(2, nameof(NxContextMenu.Target), "#rows");
+            b.AddComponentParameter(3, nameof(NxContextMenu.OnOpening), EventCallback.Factory.Create<NxContextMenuOpeningEventArgs>(this,
+                e => items = e.Context == "locked" ? [new("Unlock")] : [new("Lock")]));
+            b.CloseComponent();
+        }
+    }
 }

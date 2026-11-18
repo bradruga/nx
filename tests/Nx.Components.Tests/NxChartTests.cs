@@ -323,6 +323,217 @@ public class NxChartTests : BunitContext
     [Test]
     public void SeriesOutsideAChart_Throws() => Assert.Throws<InvalidOperationException>(() => Render<NxChartSeries>());
 
+    // ── The model, read from the screen-reader table (one row per category) ──
+
+    private sealed record Reading(DateTime At, double Value);
+    private sealed record Shipped(DateOnly On, double Tons);
+
+    private static List<string[]> Table(IRenderedComponent<NxChart> cut) =>
+        [.. cut.FindAll(".nx-chart-sr tbody tr").Select(r => r.Children.Select(c => c.TextContent).ToArray())];
+
+    private static RenderFragment Readings(Reading[] items, params (string, object?)[] more) =>
+        Child<NxChartSeries>([("Data", items), ("Field", "Value"), ("CategoryField", "At"), .. more]);
+
+    private static double[] ValueTicks(IRenderedComponent<NxChart> cut) =>
+        [.. cut.FindAll(".nx-chart-labels text").Where(t => t.GetAttribute("text-anchor") == "end")
+            .Select(t => double.Parse(t.TextContent, NumberStyles.Any, Us))];
+
+    [TestCase(NxChartAggregate.Max, "6", "5")]
+    [TestCase(NxChartAggregate.Min, "2", "5")]
+    [TestCase(NxChartAggregate.Sum, "12", "5")]
+    [TestCase(NxChartAggregate.Average, "4", "5")]
+    [TestCase(NxChartAggregate.Count, "3", "1")]
+    [TestCase(NxChartAggregate.First, "4", "5")]
+    public void DateAxis_Aggregate_CombinesADaysItems(NxChartAggregate aggregate, string first, string second)
+    {
+        var day = new DateTime(2026, 10, 1);
+        var cut = RenderChart(Readings([new(day, 4), new(day, 6), new(day, 2), new(day.AddDays(1), 5)], ("Aggregate", aggregate)));
+
+        Assert.That(Table(cut).Select(r => r[1]), Is.EqualTo(new[] { first, second }));
+    }
+
+    [Test]
+    public void DateAxis_TimesWithinThreeDays_HourSteps()
+    {
+        var day = new DateTime(2026, 10, 1);
+        var cut = RenderChart(Readings([new(day.AddHours(8), 1), new(day.AddHours(10.5), 2)]));
+
+        Assert.That(Table(cut).Select(r => r[0]), Is.EqualTo(new[] { "08:00", "09:00", "10:00" }));
+    }
+
+    [Test]
+    public void DateAxis_HoursAcrossMidnight_LabelsCarryTheDate()
+    {
+        var day = new DateTime(2026, 10, 1);
+        var cut = RenderChart(Readings([new(day.AddHours(23), 1), new(day.AddHours(25), 2)]));
+
+        Assert.That(Table(cut).Select(r => r[0]), Is.EqualTo(new[] { "10/1 23:00", "10/2 00:00", "10/2 01:00" }));
+    }
+
+    [Test]
+    public void DateAxis_FirstsOfMonths_MonthSteps()
+    {
+        var cut = RenderChart(Readings([new(new DateTime(2026, 5, 1), 1), new(new DateTime(2026, 8, 1), 2)]));
+
+        Assert.That(Table(cut).Select(r => r[0]), Is.EqualTo(new[] { "May 26", "Jun 26", "Jul 26", "Aug 26" }));
+    }
+
+    [Test]
+    public void DateAxis_Weeks_StartOnTheCulturesFirstDay()
+    {
+        // Wed 10/7 and Mon 10/12: the US weeks of Sun 10/4 and Sun 10/11.
+        var cut = RenderChart(All(
+            Readings([new(new DateTime(2026, 10, 7), 3), new(new DateTime(2026, 10, 12), 4)]),
+            Child<NxChartCategoryAxis>(("BaseUnit", NxChartBaseUnit.Weeks))));
+
+        Assert.That(Table(cut), Is.EqualTo(new[] { new[] { "10/4", "3" }, new[] { "10/11", "4" } }));
+    }
+
+    [Test]
+    public void DateAxis_Years()
+    {
+        var cut = RenderChart(All(
+            Readings([new(new DateTime(2024, 3, 9), 3), new(new DateTime(2026, 7, 1), 4)]),
+            Child<NxChartCategoryAxis>(("BaseUnit", NxChartBaseUnit.Years))));
+
+        Assert.That(Table(cut).Select(r => r[0]), Is.EqualTo(new[] { "2024", "2025", "2026" }));
+    }
+
+    [Test]
+    public void DateAxis_DateOnlyCategories_AreDates()
+    {
+        var items = new[] { new Shipped(new DateOnly(2026, 10, 1), 3), new Shipped(new DateOnly(2026, 10, 3), 4) };
+        var cut = RenderChart(Child<NxChartSeries>(("Data", items), ("Field", "Tons"), ("CategoryField", "On")));
+
+        Assert.That(Table(cut).Select(r => r[0]), Is.EqualTo(new[] { "10/1", "10/2", "10/3" }));
+    }
+
+    [Test]
+    public void CategoryAxis_TypeCategory_DatesNotFilledIn()
+    {
+        var cut = RenderChart(All(LoadsLine(), Child<NxChartCategoryAxis>(("Type", NxChartAxisType.Category), ("LabelFormat", "M/d"))));
+
+        Assert.That(Table(cut).Select(r => r[0]), Is.EqualTo(new[] { "10/1", "10/2", "10/4" }));
+    }
+
+    [Test]
+    public void Categories_MergedAcrossSeries_InTheOrderMet()
+    {
+        var a = new[] { new Slice("Rebar", 1), new Slice("Strand", 2) };
+        var b = new[] { new Slice("Mesh", 3), new Slice("Rebar", 4) };
+        var cut = RenderChart(All(
+            Child<NxChartSeries>(("Type", NxChartSeriesType.Column), ("Data", a), ("Field", "Count"), ("CategoryField", "Name")),
+            Child<NxChartSeries>(("Type", NxChartSeriesType.Column), ("Data", b), ("Field", "Count"), ("CategoryField", "Name"))));
+
+        Assert.That(Table(cut), Is.EqualTo(new[] { new[] { "Rebar", "1", "4" }, new[] { "Strand", "2", "" }, new[] { "Mesh", "", "3" } }));
+    }
+
+    [Test]
+    public void PlainNumbers_NoCategories_NumberedFromOne_NaNIsAGap()
+    {
+        var cut = RenderChart(Child<NxChartSeries>(("Data", new[] { 1.5, double.NaN, 3 })));
+
+        Assert.That(Table(cut), Is.EqualTo(new[] { new[] { "1", "1.5" }, new[] { "2", "" }, new[] { "3", "3" } }));
+    }
+
+    [Test]
+    public async Task Legend_HidingASeries_RescalesTheAxis()
+    {
+        var cats = Child<NxChartCategoryAxis>(("Categories", new[] { "x", "y" }));
+        var cut = RenderChart(All(
+            Child<NxChartSeries>(("Name", "Small"), ("Data", new[] { 8, 10 })),
+            Child<NxChartSeries>(("Name", "Big"), ("Data", new[] { 90, 100 })), cats));
+        Assert.That(ValueTicks(cut).Max(), Is.EqualTo(100));
+
+        await cut.FindAll(".nx-chart-legend-item")[1].ClickAsync(new MouseEventArgs());
+
+        Assert.That(ValueTicks(cut).Max(), Is.EqualTo(10));
+    }
+
+    [Test]
+    public void Legend_VisibleInLegendFalse_LeftOut()
+    {
+        var cut = RenderChart(All(LoadsLine(), Child<NxChartSeries>(("Name", "Target"), ("Data", Days), ("Field", "Loads"), ("CategoryField", "Date"), ("VisibleInLegend", false))));
+
+        Assert.That(Texts(cut, ".nx-chart-legend-text"), Is.EqualTo(new[] { "Loads" }));
+        Assert.That(cut.FindAll(".nx-chart-sr thead th"), Has.Count.EqualTo(3), "still drawn and in the table");
+    }
+
+    [Test]
+    public void Palette_GoesRoundAfterEight()
+    {
+        var series = Enumerable.Range(0, 9).Select(i => Child<NxChartSeries>(("Name", $"S{i}"), ("Data", new[] { i }))).ToArray();
+        var cut = RenderChart(All(series));
+
+        var swatches = cut.FindAll(".nx-chart-swatch").Select(s => s.GetAttribute("style")).ToList();
+        Assert.That(swatches[0], Is.EqualTo("background: var(--nx-chart-1)"));
+        Assert.That(swatches[7], Is.EqualTo("background: var(--nx-chart-8)"));
+        Assert.That(swatches[8], Is.EqualTo("background: var(--nx-chart-1)"));
+    }
+
+    [Test]
+    public void Columns_StackedNegative_HangsBelowZero()
+    {
+        var cut = RenderChart(All(
+            Child<NxChartSeries>(("Type", NxChartSeriesType.Column), ("Data", new[] { 10 }), ("Stacked", true)),
+            Child<NxChartSeries>(("Type", NxChartSeriesType.Column), ("Data", new[] { -5 }), ("Stacked", true))));
+
+        var rects = cut.FindAll("rect.nx-chart-bar");
+        Assert.That(Num(rects[1], "y"), Is.EqualTo(Num(rects[0], "y") + Num(rects[0], "height")).Within(0.01), "both meet at zero");
+        Assert.That(Num(rects[1], "height") / Num(rects[0], "height"), Is.EqualTo(0.5).Within(0.01));
+    }
+
+    [Test]
+    public void Columns_ColorField_ColorsEachColumn()
+    {
+        var data = new[] { new Slice("Rebar", 2, "#aa0000"), new Slice("Strand", 1) };
+        var cut = RenderChart(Child<NxChartSeries>(("Type", NxChartSeriesType.Column), ("Data", data), ("Field", "Count"), ("CategoryField", "Name"),
+            ("ColorField", "Color"), ("Color", "green")));
+
+        var rects = cut.FindAll("rect.nx-chart-bar");
+        Assert.That(rects[0].GetAttribute("style"), Is.EqualTo("fill: #aa0000"));
+        Assert.That(rects[1].GetAttribute("style"), Is.EqualTo("fill: green"));
+    }
+
+    [Test]
+    public void ValueAxis_Hidden_TheNextTakesTheLeft()
+    {
+        var cut = RenderChart(All(
+            LoadsLine(("Axis", "count")),
+            Child<NxChartSeries>(("Name", "Hours"), ("Data", Days), ("Field", "Hours"), ("CategoryField", "Date"), ("Axis", "hours")),
+            Child<NxChartValueAxis>(("Name", "count"), ("Visible", false)),
+            Child<NxChartValueAxis>(("Name", "hours"), ("LabelFormat", "0.0"))));
+
+        var labels = cut.FindAll(".nx-chart-labels text");
+        Assert.That(labels.Where(t => t.GetAttribute("text-anchor") == "start"), Is.Empty);
+        Assert.That(labels.Where(t => t.GetAttribute("text-anchor") == "end").Select(t => t.TextContent), Does.Contain("4.0"));
+    }
+
+    [Test]
+    public void Pie_CategoriesFromTheAxis_PaletteColors()
+    {
+        var cut = RenderChart(All(
+            Child<NxChartSeries>(("Type", NxChartSeriesType.Pie), ("Data", new[] { 3, 1 })),
+            Child<NxChartCategoryAxis>(("Categories", new[] { "Open", "Closed" }))));
+
+        Assert.That(Texts(cut, ".nx-chart-legend-text"), Is.EqualTo(new[] { "Open", "Closed" }));
+        Assert.That(cut.FindAll("path.nx-chart-slice").Select(s => s.GetAttribute("style")!.Split(';')[0]),
+            Is.EqualTo(new[] { "fill: var(--nx-chart-1)", "fill: var(--nx-chart-2)" }));
+    }
+
+    [Test]
+    public async Task Pie_LegendHidesASlice_ShareOfTheRest()
+    {
+        var data = new[] { new Slice("North", 300), new Slice("South", 100) };
+        var cut = RenderChart(Child<NxChartSeries>(("Type", NxChartSeriesType.Pie), ("Data", data), ("Field", "Count"), ("CategoryField", "Name")));
+
+        await cut.FindAll(".nx-chart-legend-item")[0].ClickAsync(new MouseEventArgs());
+        await cut.FindComponent<NxChartSurface>().Instance.OnHover(0, 1);
+
+        Assert.That(cut.FindAll("path.nx-chart-slice"), Has.Count.EqualTo(1));
+        Assert.That(cut.Find(".nx-chart-tooltip").TextContent, Is.EqualTo("South: 100 (100.0%)"));
+    }
+
     // ── ChartMath ─────────────────────────────────────────────────────────────
 
     [TestCase(0.8, 1)]

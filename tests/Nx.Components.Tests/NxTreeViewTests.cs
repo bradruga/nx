@@ -166,6 +166,71 @@ public class NxTreeViewTests : BunitContext
         Assert.That(none.Find("#t-0").HasAttribute("aria-selected"), Is.False);
     }
 
+    [Test]
+    public async Task ExpandedItems_SameListAgain_KeepsWhatTheUserToggled()
+    {
+        var expanded = new List<Perm> { Perms[0] };
+        var cut = RenderFlat(p => p.Add(x => x.ExpandedItems, expanded));
+
+        await cut.Find("#t-0 .nx-treeview-toggle").ClickAsync(new MouseEventArgs());
+        cut.Render(p => p.Add(x => x.AriaLabel, "Again"));
+
+        Assert.That(Shown(cut), Is.EqualTo(new[] { "Portal", "Admin" }));
+    }
+
+    [Test]
+    public async Task DataReloaded_SameIds_KeepsExpandedAndSelected()
+    {
+        var cut = RenderFlat(p => p.Add(x => x.ExpandedItems, new[] { Perms[0] }));
+        await cut.Find("#t-3 > .nx-treeview-row").ClickAsync(new MouseEventArgs());
+
+        cut.Render(p => p.Add(x => x.Data, Perms.Select(n => n with { Text = n.Text + "!" }).ToList()));
+
+        Assert.That(Shown(cut), Is.EqualTo(new[] { "Portal!", "Projects!", "Yard!", "Admin!" }));
+        Assert.That(cut.Find("#t-3").GetAttribute("aria-selected"), Is.EqualTo("true"));
+    }
+
+    [Test]
+    public async Task NoneMode_EnterToggles_NothingSelected()
+    {
+        var raised = 0;
+        var cut = RenderFlat(p => p.Add(x => x.SelectionMode, NxTreeSelectionMode.None).Add(x => x.SelectedItemsChanged, _ => raised++));
+
+        await cut.Find("[role=tree]").KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.That(cut.Find("#t-0").GetAttribute("aria-expanded"), Is.EqualTo("true"));
+        Assert.That(raised, Is.Zero);
+    }
+
+    [Test]
+    public async Task Multiple_SpaceTogglesTheActiveItem()
+    {
+        IEnumerable<Perm>? items = null;
+        var cut = RenderFlat(p => p.Add(x => x.SelectionMode, NxTreeSelectionMode.Multiple).Add(x => x.SelectedItemsChanged, v => items = v));
+        var tree = () => cut.Find("[role=tree]");
+
+        await tree().KeyDownAsync(new KeyboardEventArgs { Key = " " });
+        await tree().KeyDownAsync(new KeyboardEventArgs { Key = "ArrowDown" });
+        await tree().KeyDownAsync(new KeyboardEventArgs { Key = " " });
+        Assert.That(items!.Select(n => n.Id), Is.EqualTo(new[] { 1, 5 }));
+
+        await tree().KeyDownAsync(new KeyboardEventArgs { Key = " " });
+        Assert.That(items!.Select(n => n.Id), Is.EqualTo(new[] { 1 }));
+    }
+
+    [Test]
+    public void ParentCycle_DoesNotHang_OneBecomesTop()
+    {
+        var cut = Render<NxTreeView<Perm>>(p => p
+            .Add(x => x.Data, new[] { new Perm(1, 2, "A"), new Perm(2, 1, "B") })
+            .Add(x => x.ItemId, n => n.Id)
+            .Add(x => x.ParentId, n => n.ParentId)
+            .Add(x => x.ItemText, n => n.Text));
+
+        Assert.That(Shown(cut), Is.EqualTo(new[] { "B" }));
+        Assert.That(cut.Find("[role=treeitem]").GetAttribute("aria-expanded"), Is.EqualTo("false"));
+    }
+
     // ── Keyboard ──────────────────────────────────────────────────────────────
 
     [Test]

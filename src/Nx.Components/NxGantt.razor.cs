@@ -694,6 +694,9 @@ public partial class NxGantt<TItem> : IAsyncDisposable
         if (editing is { } e && e.Node == task && Same(e.Column, column))
             return;
         await EndEditAsync();
+        // Ending the last edit rebuilt the tasks: edit the new node, not the one this click captured.
+        if (byId.GetValueOrDefault(task.Id) is { } current)
+            task = current;
         if (Editable && column.Editable && column.EditorTemplate is not null)
         {
             editing = (task, column);

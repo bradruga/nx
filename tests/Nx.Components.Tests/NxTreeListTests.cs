@@ -171,6 +171,82 @@ public class NxTreeListTests : BunitContext
     }
 
     [Test]
+    public void Cells_AlignWithTheHeader_AtEveryDepth()
+    {
+        var cut = RenderList(p => p.Add(x => x.ExpandedItems, [Yard[0], Yard[1]]));
+
+        var headers = cut.FindAll(".nx-treelist-th").Select(h => h.GetAttribute("style")).ToList();
+        var deep = cut.FindAll(".nx-treeview-row")[2];
+        Assert.That(deep.GetAttribute("style"), Is.EqualTo("--nx-treeview-level: 2"));
+        Assert.That(deep.QuerySelectorAll(".nx-treelist-td").Select(td => td.GetAttribute("style")), Is.EqualTo(headers));
+    }
+
+    [Test]
+    public void NoExpandableColumn_TheFirstHoldsTheTree()
+    {
+        RenderFragment columns = b =>
+        {
+            b.OpenComponent<NxTreeListColumn<Spot>>(0);
+            b.AddComponentParameter(1, nameof(NxTreeListColumn<Spot>.Field), nameof(Spot.Pieces));
+            b.AddComponentParameter(2, nameof(NxTreeListColumn<Spot>.Title), "# Pieces");
+            b.CloseComponent();
+            b.OpenComponent<NxTreeListColumn<Spot>>(10);
+            b.AddComponentParameter(11, nameof(NxTreeListColumn<Spot>.Field), nameof(Spot.Name));
+            b.AddComponentParameter(12, nameof(NxTreeListColumn<Spot>.Title), "Location");
+            b.CloseComponent();
+        };
+        var cut = RenderList(columns: columns);
+
+        Assert.That(cut.Find(".nx-treelist-th-tree").TextContent, Is.EqualTo("# Pieces"));
+        Assert.That(Row(cut, 0), Is.EqualTo(new[] { "18", "Location: Lincoln Ave" }));
+        // No widths: no inline sizes, and the table has no least width.
+        Assert.That(cut.Find(".nx-treelist-th").HasAttribute("style"), Is.False);
+        Assert.That(cut.Find(".nx-treelist-table").HasAttribute("style"), Is.False);
+    }
+
+    [Test]
+    public async Task Multiple_SelectsSeveral()
+    {
+        IEnumerable<Spot>? selected = null;
+        var cut = RenderList(p => p
+            .Add(x => x.SelectionMode, NxTreeSelectionMode.Multiple)
+            .Add(x => x.SelectedItemsChanged, (IEnumerable<Spot> s) => selected = s));
+        Assert.That(cut.Find("[role=tree]").GetAttribute("aria-multiselectable"), Is.EqualTo("true"));
+
+        await cut.FindAll(".nx-treeview-row")[1].ClickAsync(new MouseEventArgs());
+        await cut.FindAll(".nx-treeview-row")[0].ClickAsync(new MouseEventArgs());
+
+        Assert.That(selected!.Select(s => s.Name), Is.EqualTo(new[] { "Lincoln Ave", "Stockyards" }));
+    }
+
+    [Test]
+    public async Task SelectedItem_Single_Raised()
+    {
+        Spot? selected = null;
+        var cut = RenderList(p => p.Add(x => x.SelectedItemChanged, (Spot? s) => selected = s));
+
+        await cut.FindAll(".nx-treeview-row")[1].ClickAsync(new MouseEventArgs());
+
+        Assert.That(selected, Is.SameAs(Yard[5]));
+    }
+
+    [Test]
+    public async Task Keys_ExpandAndSelect_ThroughTheTree()
+    {
+        Spot? selected = null;
+        var cut = RenderList(p => p.Add(x => x.SelectedItemChanged, (Spot? s) => selected = s));
+        var tree = () => cut.Find("[role=tree]");
+
+        await tree().KeyDownAsync(new KeyboardEventArgs { Key = "ArrowRight" });
+        await tree().KeyDownAsync(new KeyboardEventArgs { Key = "ArrowDown" });
+        await tree().KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.That(cut.FindAll(".nx-treeview-row"), Has.Count.EqualTo(4));
+        Assert.That(selected!.Name, Is.EqualTo("Row A"));
+        Assert.That(tree().GetAttribute("aria-activedescendant"), Is.EqualTo("yard-1"));
+    }
+
+    [Test]
     public void UnknownField_Throws()
     {
         RenderFragment bad = b =>

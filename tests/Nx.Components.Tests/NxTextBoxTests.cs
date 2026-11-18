@@ -329,6 +329,38 @@ public class NxTextBoxTests : BunitContext
         Assert.That(values, Is.EqualTo(new[] { "Acme" }));
     }
 
+    [Test]
+    public async Task Debounce_OutsideValueChange_DropsPendingText()
+    {
+        var values = new List<string?>();
+        var cut = RenderBound(values, p => p
+            .Add(x => x.Immediate, true)
+            .Add(x => x.DebounceDelay, 80), initial: "");
+
+        await StartTypingAsync(cut, "Acme");
+        cut.Render(p => p.Add(x => x.Value, "Reset"));
+        await Task.Delay(250);
+
+        Assert.That(values, Is.Empty);
+        Assert.That(cut.Find("input").GetAttribute("value"), Is.EqualTo("Reset"));
+    }
+
+    [Test]
+    public async Task Debounce_ClearWhilePending_DoesNotRaiseTypedTextLater()
+    {
+        var values = new List<string?>();
+        var cut = RenderBound(values, p => p
+            .Add(x => x.Immediate, true)
+            .Add(x => x.Clearable, true)
+            .Add(x => x.DebounceDelay, 80), initial: "A");
+
+        await StartTypingAsync(cut, "Acme");
+        await cut.Find(".nx-textbox-clear").ClickAsync(new MouseEventArgs());
+        await Task.Delay(250);
+
+        Assert.That(values, Is.EqualTo(new[] { "" }));
+    }
+
     // ── Clear button ──────────────────────────────────────────────────────────
 
     [Test]
@@ -438,6 +470,17 @@ public class NxTextBoxTests : BunitContext
             .Add(x => x.ShowPasswordToggle, false));
 
         Assert.That(cut.FindAll(".nx-textbox-password-toggle"), Is.Empty);
+    }
+
+    [Test]
+    public void PasswordToggle_HiddenWhenDisabled()
+    {
+        var cut = Render<NxTextBox>(p => p
+            .Add(x => x.Type, NxTextBoxType.Password)
+            .Add(x => x.Disabled, true));
+
+        Assert.That(cut.FindAll(".nx-textbox-password-toggle"), Is.Empty);
+        Assert.That(cut.Find("input").GetAttribute("type"), Is.EqualTo("password"));
     }
 
     [Test]

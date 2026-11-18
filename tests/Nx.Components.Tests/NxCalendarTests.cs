@@ -291,6 +291,83 @@ public class NxCalendarTests : BunitContext
     }
 
     [Test]
+    public async Task CtrlDown_ZoomsBackIn()
+    {
+        var cut = RenderBound([], Oct23);
+
+        await KeyAsync(cut, "ArrowUp", ctrl: true);
+        await KeyAsync(cut, "ArrowUp", ctrl: true);
+        await KeyAsync(cut, "ArrowDown", ctrl: true);
+        Assert.That(cut.Find(".nx-calendar-title").TextContent.Trim(), Is.EqualTo("2026"));
+        await KeyAsync(cut, "ArrowDown", ctrl: true);
+
+        Assert.That(cut.Find(".nx-calendar-title").TextContent.Trim(), Is.EqualTo("October 2026"));
+        Assert.That(Active(cut), Is.EqualTo("cal-d20261023"));
+    }
+
+    [Test]
+    public async Task YearAndDecadeViews_DisableMonthsAndYearsOutsideMinMax()
+    {
+        var cut = RenderBound([], Oct23, p => p
+            .Add(x => x.Min, new DateOnly(2026, 3, 15))
+            .Add(x => x.Max, new DateOnly(2027, 6, 1)));
+
+        await KeyAsync(cut, "ArrowUp", ctrl: true);
+        Assert.That(cut.Find("#cal-m202602").GetAttribute("aria-disabled"), Is.EqualTo("true"));
+        Assert.That(cut.Find("#cal-m202603").HasAttribute("aria-disabled"), Is.False);
+
+        await KeyAsync(cut, "ArrowUp", ctrl: true);
+        Assert.That(cut.Find("#cal-y2025").GetAttribute("aria-disabled"), Is.EqualTo("true"));
+        Assert.That(cut.Find("#cal-y2027").HasAttribute("aria-disabled"), Is.False);
+        Assert.That(cut.Find("#cal-y2028").GetAttribute("aria-disabled"), Is.EqualTo("true"));
+    }
+
+    [Test]
+    public void NoValue_OpensOnToday()
+    {
+        var cut = RenderBound([]);
+
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        Assert.That(Active(cut), Is.EqualTo($"cal-d{today:yyyyMMdd}"));
+        Assert.That(cut.Find(".nx-calendar-title").TextContent.Trim(), Is.EqualTo(today.ToString("MMMM yyyy", EnUs)));
+    }
+
+    [Test]
+    public void OutsideValueChange_ShowsItsMonth()
+    {
+        var cut = RenderBound([], Oct23);
+
+        cut.Render(p => p.Add(x => x.Value, new DateOnly(2027, 2, 14)));
+
+        Assert.That(cut.Find(".nx-calendar-title").TextContent.Trim(), Is.EqualTo("February 2027"));
+        Assert.That(Active(cut), Is.EqualTo("cal-d20270214"));
+        Assert.That(cut.Find("#cal-d20270214").GetAttribute("aria-selected"), Is.EqualTo("true"));
+    }
+
+    [Test]
+    public async Task Disabled_NoPicks_NoTabStop()
+    {
+        var raised = new List<DateOnly?>();
+        var cut = RenderBound(raised, Oct23, p => p.Add(x => x.Disabled, true));
+
+        await cut.Find("#cal-d20261014").ClickAsync(new MouseEventArgs());
+        await KeyAsync(cut, "ArrowRight");
+
+        Assert.That(raised, Is.Empty);
+        Assert.That(Active(cut), Is.EqualTo("cal-d20261023"));
+        Assert.That(cut.Find(".nx-calendar-grids").HasAttribute("tabindex"), Is.False);
+        Assert.That(cut.Find(".nx-calendar-today-button").HasAttribute("disabled"), Is.True);
+    }
+
+    [Test]
+    public void ShowTodayButtonOff_NoFooter()
+    {
+        var cut = RenderBound([], Oct23, p => p.Add(x => x.ShowTodayButton, false));
+
+        Assert.That(cut.FindAll(".nx-calendar-today-button"), Is.Empty);
+    }
+
+    [Test]
     public void NotFocusable_HasNoTabStop()
     {
         var cut = RenderBound([], Oct23, p => p.Add(x => x.Focusable, false));

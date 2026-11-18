@@ -164,6 +164,133 @@ public class NxPdfViewerTests : BunitContext
     }
 
     [Test]
+    public async Task BoundPage_GoesThereOnceLoaded()
+    {
+        var cut = RenderViewer(p => p.Add(x => x.Data, Pdf).Add(x => x.Page, 3));
+        Assert.That(Calls("setPage"), Is.Zero);
+
+        await cut.InvokeAsync(() => cut.Instance.OnLoaded(5));
+
+        Assert.That(module.Invocations.Single(i => i.Identifier == "setPage").Arguments, Is.EqualTo(new object?[] { "pdf", 3 }));
+    }
+
+    [Test]
+    public async Task OutsidePage_PastTheEnd_Ignored()
+    {
+        var cut = RenderViewer(p => p.Add(x => x.Data, Pdf));
+        await cut.InvokeAsync(() => cut.Instance.OnLoaded(3));
+
+        cut.Render(p => p.Add(x => x.Page, 9));
+
+        Assert.That(Calls("setPage"), Is.Zero);
+    }
+
+    [Test]
+    public async Task OwnPageReport_ComingBack_DoesNotScroll()
+    {
+        IRenderedComponent<NxPdfViewer>? cut = null;
+        cut = RenderViewer(p => p.Add(x => x.Data, Pdf).Add(x => x.PageChanged, (int n) => cut?.Render(q => q.Add(x => x.Page, n))));
+        await cut.InvokeAsync(() => cut.Instance.OnLoaded(3));
+
+        await cut.InvokeAsync(() => cut.Instance.OnViewChanged(2, 1, "auto"));
+
+        Assert.That(Calls("setPage"), Is.Zero);
+    }
+
+    [Test]
+    public async Task DataRemoved_Closes_ShowsNoDataText()
+    {
+        var cut = RenderViewer(p => p.Add(x => x.Data, Pdf));
+        await cut.InvokeAsync(() => cut.Instance.OnLoaded(3));
+
+        cut.Render(p => p.Add(x => x.Data, null));
+
+        Assert.That(module.Invocations.Single(i => i.Identifier == "close").Arguments[0], Is.EqualTo("pdf"));
+        Assert.That(cut.Find(".nx-pdfviewer-message").TextContent, Is.EqualTo("No document"));
+        Assert.That(cut.Find("[data-nx-pdf-tool=download]").HasAttribute("disabled"), Is.True);
+    }
+
+    [Test]
+    public async Task Failed_WithoutAMessage_SaysItCouldNotOpen()
+    {
+        var cut = RenderViewer(p => p.Add(x => x.Data, Pdf));
+
+        await cut.InvokeAsync(() => cut.Instance.OnFailed(""));
+
+        Assert.That(cut.Find(".nx-pdfviewer-error").TextContent, Is.EqualTo("This document could not be opened."));
+    }
+
+    private async Task<IRenderedComponent<NxPdfViewer>> SearchedAsync(string text)
+    {
+        var cut = RenderViewer(p => p.Add(x => x.Data, Pdf));
+        await cut.InvokeAsync(() => cut.Instance.OnLoaded(3));
+        await cut.InvokeAsync(() => cut.Find("#pdf-find").Input(text));
+        cut.WaitForState(() => module.Invocations.Any(i => i.Identifier == "find"), TimeSpan.FromSeconds(2));
+        return cut;
+    }
+
+    [Test]
+    public async Task Find_EnterNext_ShiftEnterPrevious()
+    {
+        var cut = await SearchedAsync("slump");
+
+        await cut.Find(".nx-pdfviewer-search").KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+        await cut.Find(".nx-pdfviewer-search").KeyDownAsync(new KeyboardEventArgs { Key = "Enter", ShiftKey = true });
+
+        var again = module.Invocations.Where(i => i.Identifier == "find").Skip(1).Select(i => i.Arguments).ToList();
+        Assert.That(again, Is.EqualTo(new[] { new object?[] { "pdf", "slump", true, false }, new object?[] { "pdf", "slump", true, true } }));
+    }
+
+    [Test]
+    public async Task Find_NoMatches_SaysSo_StepButtonsOff()
+    {
+        var cut = await SearchedAsync("nothing");
+
+        await cut.InvokeAsync(() => cut.Instance.OnMatches(0, 0));
+
+        Assert.That(cut.Find(".nx-pdfviewer-matches").TextContent, Is.EqualTo("No matches"));
+        Assert.That(cut.Find("[data-nx-pdf-tool=findnext]").HasAttribute("disabled"), Is.True);
+        Assert.That(cut.Find("[data-nx-pdf-tool=findprevious]").HasAttribute("disabled"), Is.True);
+    }
+
+    [Test]
+    public async Task Find_PreviousButton_StepsBack()
+    {
+        var cut = await SearchedAsync("slump");
+        await cut.InvokeAsync(() => cut.Instance.OnMatches(2, 3));
+
+        await cut.Find("[data-nx-pdf-tool=findprevious]").ClickAsync(new MouseEventArgs());
+
+        Assert.That(module.Invocations.Last(i => i.Identifier == "find").Arguments, Is.EqualTo(new object?[] { "pdf", "slump", true, true }));
+    }
+
+    [TestCase(1.37, null, "137%")]
+    [TestCase(1.5, null, "150%")]
+    [TestCase(0.9, "page-width", "Page width")]
+    public async Task Zoom_ShowsTheViewersScaleOrPreset(double scale, string? preset, string shown)
+    {
+        var cut = RenderViewer(p => p.Add(x => x.Data, Pdf));
+        await cut.InvokeAsync(() => cut.Instance.OnLoaded(3));
+
+        await cut.InvokeAsync(() => cut.Instance.OnViewChanged(1, scale, preset));
+
+        Assert.That(cut.Find(".nx-pdfviewer-zoom input").GetAttribute("value"), Is.EqualTo(shown));
+    }
+
+    [Test]
+    public async Task PageBox_TypedPage_GoesThere()
+    {
+        var cut = RenderViewer(p => p.Add(x => x.Data, Pdf));
+        await cut.InvokeAsync(() => cut.Instance.OnLoaded(3));
+
+        var box = cut.Find("input[aria-label=Page]");
+        await box.TriggerEventAsync("oninput", new ChangeEventArgs { Value = "3" });
+        await cut.Find("input[aria-label=Page]").TriggerEventAsync("onchange", new ChangeEventArgs { Value = "3" });
+
+        Assert.That(module.Invocations.Single(i => i.Identifier == "setPage").Arguments, Is.EqualTo(new object?[] { "pdf", 3 }));
+    }
+
+    [Test]
     public void Tools_Flags_ChooseTheGroups()
     {
         var cut = RenderViewer(p => p.Add(x => x.Tools, NxPdfViewerTools.Download));

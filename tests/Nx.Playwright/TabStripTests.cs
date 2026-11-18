@@ -229,7 +229,7 @@ public class TabStripTests : PageTest
         await Page.Mouse.MoveAsync(yard.X + yard.Width - 4, from.Y + from.Height / 2, new() { Steps = 8 });
         await Expect(pour).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("nx-tabstrip-tab-dragging"));
         Assert.That((await pour.BoundingBoxAsync())!.X, Is.GreaterThan(from.X + 100), "the tab moves with the pointer");
-        await Page.WaitForFunctionAsync("([id, x]) => document.getElementById(id).getBoundingClientRect().left < x - 20", new object[] { "reorder-tabs-tab-yard", yard.X });
+        await Page.WaitForFunctionAsync("({ id, x }) => document.getElementById(id).getBoundingClientRect().left < x - 20", new { id = "reorder-tabs-tab-yard", x = (double)yard.X });
         await Page.Mouse.UpAsync();
         await Expect(order).ToHaveTextAsync("Order: Forms, Rebar, Cure, Strip, Yard, Pour");
         await Expect(Page.Locator("#reorder-log")).ToHaveTextAsync("Moved Pour: 2 to 5");

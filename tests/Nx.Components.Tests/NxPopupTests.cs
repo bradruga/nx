@@ -103,7 +103,7 @@ public class NxPopupTests : BunitContext
     [Test]
     public void OpenOnHover_WatchesTheAnchorsWhileClosed()
     {
-        var cut = RenderPopup(false, p => p.Add(x => x.OpenOnHover, true).Add(x => x.AnchorSelector, ".job").Add(x => x.ShowDelay, 300));
+        var cut = Render<NxPopup>(p => p.Add(x => x.Id, "pop").Add(x => x.OpenOnHover, true).Add(x => x.AnchorSelector, ".job").Add(x => x.ShowDelay, 300));
 
         Assert.That(cut.FindAll(".nx-popup"), Is.Empty);
         var watch = module.Invocations.Single(i => i.Identifier == "watchHover");
@@ -177,6 +177,124 @@ public class NxPopupTests : BunitContext
 
         Assert.That(cut.FindAll(".nx-popup"), Has.Count.EqualTo(1));
         Assert.That(starts, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void Options_CarryTheCloseRulesOffsetMaxHeightAndHover()
+    {
+        RenderPopup(true, p => p
+            .Add(x => x.CloseOnOutsideClick, false)
+            .Add(x => x.CloseOnEscape, false)
+            .Add(x => x.Offset, 12)
+            .Add(x => x.MaxHeight, "300px")
+            .Add(x => x.OpenOnHover, true));
+
+        var options = module.Invocations.Single(i => i.Identifier == "open").Arguments[3]!.ToString();
+        Assert.That(options, Does.Contain("offset = 12").And.Contain("maxHeight = 300px")
+            .And.Contain("closeOnOutside = False").And.Contain("closeOnEscape = False").And.Contain("hover = True"));
+    }
+
+    [Test]
+    public void Options_Defaults_BottomStart_ClosesOnOutsideAndEscape()
+    {
+        RenderPopup(true);
+
+        var options = module.Invocations.Single(i => i.Identifier == "open").Arguments[3]!.ToString();
+        Assert.That(options, Does.Contain("placement = bottom").And.Contain("align = start").And.Contain("offset = 4")
+            .And.Contain("closeOnOutside = True").And.Contain("closeOnEscape = True").And.Contain("hover = False"));
+    }
+
+    [Test]
+    public void OpenFromOutside_OpensInJsOnce_ThenUpdates()
+    {
+        var cut = RenderPopup(false);
+
+        cut.Render(p => p.Add(x => x.Visible, true));
+        cut.Render(p => p.Add(x => x.Width, "200px"));
+
+        Assert.That(module.Invocations.Count(i => i.Identifier == "open"), Is.EqualTo(1));
+        Assert.That(module.Invocations.Count(i => i.Identifier == "update"), Is.EqualTo(1));
+    }
+
+    [Test]
+    public void AdditionalAttributes_GoToThePopup()
+    {
+        var cut = RenderPopup(true, p => p.AddUnmatched("data-test", "card"));
+        Assert.That(cut.Find("#pop").GetAttribute("data-test"), Is.EqualTo("card"));
+    }
+
+    [Test]
+    public async Task Dismiss_WhileHidden_RaisesNothing()
+    {
+        var raised = new List<bool>();
+        var cut = RenderPopup(false, p => p.Add(x => x.VisibleChanged, (bool v) => raised.Add(v)));
+
+        await cut.InvokeAsync(cut.Instance.OnDismiss);
+
+        Assert.That(raised, Is.Empty);
+    }
+
+    [Test]
+    public async Task RefreshAsync_WhileClosed_DoesNothing()
+    {
+        var cut = RenderPopup(false);
+        await cut.InvokeAsync(cut.Instance.RefreshAsync);
+        Assert.That(module.Invocations.Any(i => i.Identifier == "place"), Is.False);
+    }
+
+    [Test]
+    public void OpenOnHover_NewDelaysOrSelector_WatchAgain_OtherChangesDoNot()
+    {
+        var cut = Render<NxPopup>(p => p.Add(x => x.Id, "pop").Add(x => x.AnchorSelector, ".job").Add(x => x.OpenOnHover, true));
+
+        cut.Render(p => p.Add(x => x.Width, "300px"));
+        Assert.That(module.Invocations.Count(i => i.Identifier == "watchHover"), Is.EqualTo(1));
+
+        cut.Render(p => p.Add(x => x.HideDelay, 600));
+        cut.Render(p => p.Add(x => x.AnchorSelector, ".pour"));
+
+        var watches = module.Invocations.Where(i => i.Identifier == "watchHover").Select(i => System.Text.Json.JsonSerializer.Serialize(i.Arguments[2])).ToList();
+        Assert.That(watches, Is.EqualTo(new[]
+        {
+            "{\"anchor\":\".job\",\"showDelay\":400,\"hideDelay\":250}",
+            "{\"anchor\":\".job\",\"showDelay\":400,\"hideDelay\":600}",
+            "{\"anchor\":\".pour\",\"showDelay\":400,\"hideDelay\":600}"
+        }));
+    }
+
+    [Test]
+    public void NotOpenOnHover_NeverWatches()
+    {
+        RenderPopup(false);
+        RenderPopup(true);
+        Assert.That(module.Invocations.Any(i => i.Identifier is "watchHover" or "unwatchHover"), Is.False);
+    }
+
+    [Test]
+    public async Task HoverOpen_AlreadyVisible_DoesNotRaiseVisibleChanged()
+    {
+        var visible = new List<bool>();
+        var contexts = new List<string?>();
+        var cut = RenderPopup(true, p => p.Add(x => x.OpenOnHover, true)
+            .Add(x => x.OnOpening, (NxPopupOpeningEventArgs e) => contexts.Add(e.Context))
+            .Add(x => x.VisibleChanged, (bool v) => visible.Add(v)));
+
+        var opened = await cut.InvokeAsync(() => cut.Instance.OnHoverOpen("7"));
+
+        Assert.That(opened, Is.True);
+        Assert.That(contexts, Is.EqualTo(new[] { "7" }));
+        Assert.That(visible, Is.Empty);
+    }
+
+    [Test]
+    public async Task Dispose_UnwatchesAndCloses()
+    {
+        RenderPopup(true, p => p.Add(x => x.OpenOnHover, true));
+
+        await DisposeComponentsAsync();
+
+        Assert.That(module.Invocations.Single(i => i.Identifier == "unwatchHover").Arguments[0], Is.EqualTo("pop"));
+        Assert.That(module.Invocations.Single(i => i.Identifier == "close").Arguments[0], Is.EqualTo("pop"));
     }
 
     private sealed class Starter : ComponentBase

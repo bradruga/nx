@@ -92,6 +92,26 @@ public class NxToggleSwitchTests : BunitContext
     }
 
     [Test]
+    public async Task StateText_Inside_FollowsValue()
+    {
+        var cut = RenderBound([], true, p => p.Add(x => x.OnText, "On").Add(x => x.OffText, "Off"));
+
+        await ClickAsync(cut);
+
+        Assert.That(cut.Find(".nx-switch-state-inside").TextContent, Is.EqualTo("Off"));
+    }
+
+    [Test]
+    public void ChildContent_RichLabel()
+    {
+        var cut = Render<NxToggleSwitch>(p => p
+            .Add(x => x.Label, "Publish ")
+            .Add(x => x.ChildContent, b => b.AddMarkupContent(0, "<a href=\"#\">to portal</a>")));
+
+        Assert.That(cut.Find("label.nx-switch-label").TextContent, Is.EqualTo("Publish to portal"));
+    }
+
+    [Test]
     public void NoStateText_RendersNone()
     {
         var cut = Render<NxToggleSwitch>();

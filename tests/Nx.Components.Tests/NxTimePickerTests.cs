@@ -233,7 +233,132 @@ public class NxTimePickerTests : BunitContext
         Assert.That(Text(cut), Is.EqualTo(""));
     }
 
+    [Test]
+    public async Task Typed_Empty_NullForNullable_RevertsOtherwise()
+    {
+        var nullable = new List<TimeOnly?>();
+        var cut = RenderBound<TimeOnly?>(nullable, new TimeOnly(8, 0));
+        await TypeAndCommitAsync(cut, "");
+
+        var plain = new List<TimeOnly>();
+        var plainCut = RenderBound(plain, new TimeOnly(8, 0));
+        await TypeAndCommitAsync(plainCut, "");
+
+        Assert.That(nullable, Is.EqualTo(new TimeOnly?[] { null }));
+        Assert.That(plain, Is.Empty);
+        Assert.That(Text(plainCut), Is.EqualTo("8:00 AM"));
+    }
+
+    [Test]
+    public async Task Enter_CommitsTypedText()
+    {
+        var raised = new List<TimeOnly?>();
+        var cut = RenderBound<TimeOnly?>(raised);
+
+        await cut.Find("input").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "1430" });
+        await KeyAsync(cut, "Enter");
+
+        Assert.That(raised, Is.EqualTo(new TimeOnly?[] { new TimeOnly(14, 30) }));
+        Assert.That(Text(cut), Is.EqualTo("2:30 PM"));
+    }
+
+    [Test]
+    public async Task Blur_CommitsTypedText_RaisesFocusAndBlur()
+    {
+        var raised = new List<TimeOnly?>();
+        var events = new List<string>();
+        var cut = RenderBound<TimeOnly?>(raised, null, p => p
+            .Add(x => x.OnFocus, (FocusEventArgs _) => events.Add("focus"))
+            .Add(x => x.OnBlur, (FocusEventArgs _) => events.Add($"blur {raised.Count}")));
+
+        await cut.Find("input").FocusAsync(new FocusEventArgs());
+        await cut.Find("input").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "930p" });
+        await cut.Find("input").BlurAsync(new FocusEventArgs());
+
+        Assert.That(raised, Is.EqualTo(new TimeOnly?[] { new TimeOnly(21, 30) }));
+        Assert.That(events, Is.EqualTo(new[] { "focus", "blur 1" }));
+    }
+
+    [Test]
+    public async Task OwnRender_KeepsTypedText_OutsideChangeReplacesIt()
+    {
+        var cut = RenderBound<TimeOnly?>([], new TimeOnly(8, 0));
+        await cut.Find("input").FocusAsync(new FocusEventArgs());
+        await cut.Find("input").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "9:4" });
+
+        cut.Render(p => p.Add(x => x.Value, new TimeOnly(8, 0)));
+        Assert.That(Text(cut), Is.EqualTo("9:4"));
+
+        cut.Render(p => p.Add(x => x.Value, new TimeOnly(16, 15)));
+        Assert.That(Text(cut), Is.EqualTo("4:15 PM"));
+    }
+
+    [Test]
+    public void Use24HourFalse_TwelveHourInA24HourCulture()
+    {
+        var cut = RenderBound<TimeOnly?>([], new TimeOnly(14, 30), p => p.Add(x => x.Use24Hour, false), DeDe);
+
+        Assert.That(Text(cut), Does.Contain("2:30").And.Not.Contain("14"));
+        Assert.That(cut.Find("input").HasAttribute("inputmode"), Is.False);
+    }
+
+    [Test]
+    public async Task EscapeWhenClearable_Clears()
+    {
+        var raised = new List<TimeOnly?>();
+        var cut = RenderBound<TimeOnly?>(raised, new TimeOnly(7, 0), p => p.Add(x => x.Clearable, true));
+
+        await KeyAsync(cut, "Escape");
+
+        Assert.That(raised, Is.EqualTo(new TimeOnly?[] { null }));
+    }
+
+    [Test]
+    public void Clearable_IgnoredForNonNullable()
+    {
+        var cut = RenderBound<TimeOnly>([], new TimeOnly(7, 0), p => p.Add(x => x.Clearable, true));
+
+        Assert.That(cut.FindAll(".nx-timepicker-clear"), Is.Empty);
+    }
+
+    [Test]
+    public async Task ReadOnlyAndDisabled_DoNotOpen()
+    {
+        var ro = RenderBound<TimeOnly?>([], new TimeOnly(7, 0), p => p.Add(x => x.ReadOnly, true));
+        await KeyAsync(ro, "ArrowDown");
+        Assert.That(ro.FindAll(".nx-timepicker-popup"), Is.Empty);
+        Assert.That(ro.Find("input").HasAttribute("readonly"), Is.True);
+        Assert.That(ro.Find(".nx-timepicker-toggle").HasAttribute("disabled"), Is.True);
+
+        var off = RenderBound<TimeOnly?>([], new TimeOnly(7, 0), p => p.Add(x => x.Disabled, true));
+        Assert.That(off.Find("input").HasAttribute("disabled"), Is.True);
+    }
+
+    [Test]
+    public async Task List_SelectedTimeMarked()
+    {
+        var cut = RenderBound<TimeOnly?>([], new TimeOnly(9, 30));
+
+        await KeyAsync(cut, "ArrowDown");
+
+        var selected = cut.FindAll(".nx-timepicker-popup [role=option][aria-selected=true]");
+        Assert.That(selected.Select(o => o.TextContent.Trim()), Is.EqualTo(new[] { "9:30 AM" }));
+    }
+
     // ── Phone sheet ───────────────────────────────────────────────────────────
+
+    [Test]
+    public async Task Sheet_Clear_EmptiesAndCloses()
+    {
+        var raised = new List<TimeOnly?>();
+        var cut = RenderBound<TimeOnly?>(raised, new TimeOnly(9, 0), p => p.Add(x => x.MobileMode, NxMobileMode.Always).Add(x => x.Clearable, true));
+
+        await cut.Find(".nx-timepicker-toggle").ClickAsync(new MouseEventArgs());
+        await cut.Find(".nx-sheet .nx-timepicker-sheet-clear").ClickAsync(new MouseEventArgs());
+
+        Assert.That(raised, Is.EqualTo(new TimeOnly?[] { null }));
+        Assert.That(cut.FindAll(".nx-sheet"), Is.Empty);
+    }
 
     [Test]
     public async Task Sheet_ListOfButtons_TapPicksAndCloses()

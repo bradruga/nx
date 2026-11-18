@@ -175,6 +175,229 @@ public class NxTileLayoutTests : BunitContext
         Assert.That(cut.Find("[data-nx-tile=a]").GetAttribute("style"), Is.EqualTo("--nx-tile-cols: 1; --nx-tile-rows: 1;"));
     }
 
+    private Task KeyAsync(IRenderedComponent<NxTileLayout> cut, string tile, string key, bool ctrl = false, bool shift = false) =>
+        cut.Find($"[data-nx-tile={tile}] .nx-tile-header").KeyDownAsync(new KeyboardEventArgs { Key = key, CtrlKey = ctrl, ShiftKey = shift });
+
+    [Test]
+    public async Task Keyboard_CtrlHome_MovesToTheFront()
+    {
+        var cut = RenderLayout(p => p.Add(x => x.Reorderable, true));
+
+        await KeyAsync(cut, "c", "Home", ctrl: true);
+
+        Assert.That(Order(cut), Is.EqualTo(new[] { "c", "a", "b" }));
+        Assert.That((reorders.Single().OldIndex, reorders[0].NewIndex), Is.EqualTo((2, 0)));
+    }
+
+    [Test]
+    public async Task Keyboard_CtrlArrowPastTheEnds_DoesNothing()
+    {
+        var cut = RenderLayout(p => p.Add(x => x.Reorderable, true));
+
+        await KeyAsync(cut, "a", "ArrowLeft", ctrl: true);
+        await KeyAsync(cut, "c", "ArrowDown", ctrl: true);
+
+        Assert.That(Order(cut), Is.EqualTo(new[] { "a", "b", "c" }));
+        Assert.That(reorders, Is.Empty);
+    }
+
+    [Test]
+    public async Task Keyboard_CtrlShiftArrow_NeitherMovesNorResizes()
+    {
+        var cut = RenderLayout(p => p.Add(x => x.Reorderable, true).Add(x => x.Resizable, true));
+
+        await KeyAsync(cut, "a", "ArrowRight", ctrl: true, shift: true);
+
+        Assert.That(Order(cut), Is.EqualTo(new[] { "a", "b", "c" }));
+        Assert.That(cut.Find("[data-nx-tile=a]").GetAttribute("style"), Is.EqualTo("--nx-tile-cols: 2; --nx-tile-rows: 1;"));
+        Assert.That(reorders, Is.Empty);
+        Assert.That(resizes, Is.Empty);
+    }
+
+    [Test]
+    public async Task Keyboard_ReorderableOnly_ShiftDoesNotResize()
+    {
+        var cut = RenderLayout(p => p.Add(x => x.Reorderable, true));
+
+        await KeyAsync(cut, "b", "ArrowRight", shift: true);
+
+        Assert.That(cut.Find("[data-nx-tile=b]").GetAttribute("style"), Is.EqualTo("--nx-tile-cols: 1; --nx-tile-rows: 1;"));
+        Assert.That(resizes, Is.Empty);
+    }
+
+    [Test]
+    public async Task Keyboard_ResizableOnly_CtrlDoesNotMove()
+    {
+        var cut = RenderLayout(p => p.Add(x => x.Resizable, true));
+
+        await KeyAsync(cut, "a", "ArrowRight", ctrl: true);
+
+        Assert.That(Order(cut), Is.EqualTo(new[] { "a", "b", "c" }));
+        Assert.That(reorders, Is.Empty);
+    }
+
+    [Test]
+    public async Task Keyboard_ShiftUpDown_WithAutoRows_DoesNotChangeTheHeight()
+    {
+        var cut = RenderLayout(p => p.Add(x => x.Resizable, true), rowHeight: null);
+
+        await KeyAsync(cut, "b", "ArrowDown", shift: true);
+
+        Assert.That(cut.Find("[data-nx-tile=b]").GetAttribute("style"), Is.EqualTo("--nx-tile-cols: 1; --nx-tile-rows: 1;"));
+        Assert.That(resizes, Is.Empty);
+    }
+
+    [Test]
+    public async Task Keyboard_ShiftLeftAtOneColumn_StaysOne_NoEvent()
+    {
+        var cut = RenderLayout(p => p.Add(x => x.Resizable, true));
+
+        await KeyAsync(cut, "b", "ArrowLeft", shift: true);
+        await KeyAsync(cut, "b", "ArrowUp", shift: true);
+
+        Assert.That(cut.Find("[data-nx-tile=b]").GetAttribute("style"), Is.EqualTo("--nx-tile-cols: 1; --nx-tile-rows: 1;"));
+        Assert.That(resizes, Is.Empty);
+    }
+
+    [Test]
+    public async Task Resize_ToTheSameSpans_RaisesNothing()
+    {
+        var cut = RenderLayout(p => p.Add(x => x.Resizable, true));
+
+        await cut.Instance.OnTileResize("a", 2, 1);
+
+        Assert.That(resizes, Is.Empty);
+    }
+
+    [Test]
+    public async Task Resize_IgnoredWhenNotResizable()
+    {
+        var cut = RenderLayout();
+
+        await cut.Instance.OnTileResize("b", 3, 2);
+
+        Assert.That(cut.Find("[data-nx-tile=b]").GetAttribute("style"), Is.EqualTo("--nx-tile-cols: 1; --nx-tile-rows: 1;"));
+        Assert.That(resizes, Is.Empty);
+    }
+
+    [Test]
+    public async Task Drop_OnAnUnknownTile_IsIgnored()
+    {
+        var cut = RenderLayout(p => p.Add(x => x.Reorderable, true));
+
+        await cut.Instance.OnTileDrop("c", "nope");
+
+        Assert.That(Order(cut), Is.EqualTo(new[] { "a", "b", "c" }));
+        Assert.That(reorders, Is.Empty);
+    }
+
+    [Test]
+    public void HeaderTemplate_ReplacesTheTitle_ItemClassOnTheTile()
+    {
+        var cut = Render<NxTileLayout>(p => p.Add(x => x.ChildContent, b =>
+        {
+            b.OpenComponent<NxTileLayoutItem>(0);
+            b.AddComponentParameter(1, nameof(NxTileLayoutItem.Id), "x");
+            b.AddComponentParameter(2, nameof(NxTileLayoutItem.HeaderText), "Ignored");
+            b.AddComponentParameter(3, nameof(NxTileLayoutItem.HeaderTemplate), (RenderFragment)(h => h.AddMarkupContent(0, "<b>Sets 12</b>")));
+            b.AddComponentParameter(4, nameof(NxTileLayoutItem.Class), "warm");
+            b.CloseComponent();
+        }));
+
+        Assert.That(cut.Find("[data-nx-tile=x] .nx-tile-header").InnerHtml, Does.Contain("<b>Sets 12</b>"));
+        Assert.That(cut.FindAll("[data-nx-tile=x] .nx-tile-title"), Is.Empty);
+        Assert.That(cut.Find("[data-nx-tile=x]").ClassList, Does.Contain("nx-tile").And.Contain("warm"));
+    }
+
+    [Test]
+    public void ClassStyleAndAttributes_OnTheOuterElement()
+    {
+        var cut = RenderLayout(p => p.Add(x => x.Class, "mine").Add(x => x.Style, "height: 400px").AddUnmatched("data-test", "board"));
+
+        var outer = cut.Find("#t");
+        Assert.That(outer.ClassList, Does.Contain("nx-tilelayout").And.Contain("mine"));
+        Assert.That(outer.GetAttribute("style"), Is.EqualTo("height: 400px"));
+        Assert.That(outer.GetAttribute("data-test"), Is.EqualTo("board"));
+    }
+
+    [Test]
+    public async Task SetState_BeforeTheTilesRender_AppliesWhenTheyArrive()
+    {
+        var cut = Render<NxTileLayout>(p => p.Add(x => x.Id, "t").Add(x => x.Columns, 4));
+        var state = new NxTileLayoutState
+        {
+            ItemStates =
+            [
+                new() { Id = "c", Order = 0, ColSpan = 3 },
+                new() { Id = "a", Order = 1 },
+                new() { Id = "b", Order = 2, Visible = false }
+            ]
+        };
+        await cut.InvokeAsync(() => cut.Instance.SetState(state));
+
+        cut.Render(p => p.Add(x => x.ChildContent, Tiles(new("a", 2), new("b"), new("c"))));
+
+        Assert.That(Order(cut), Is.EqualTo(new[] { "c", "a" }));
+        Assert.That(cut.Find("[data-nx-tile=c]").GetAttribute("style"), Is.EqualTo("--nx-tile-cols: 3; --nx-tile-rows: 1;"));
+        Assert.That(cut.Find("[data-nx-tile=a]").GetAttribute("style"), Is.EqualTo("--nx-tile-cols: 1; --nx-tile-rows: 1;"));
+    }
+
+    [Test]
+    public async Task SetState_TilesItDoesNotName_GoAfterTheOthers()
+    {
+        var cut = RenderLayout();
+
+        await cut.InvokeAsync(() => cut.Instance.SetState(new NxTileLayoutState { ItemStates = [new() { Id = "c", Order = 0 }] }));
+
+        Assert.That(Order(cut), Is.EqualTo(new[] { "c", "a", "b" }));
+    }
+
+    [Test]
+    public void OutsideVisibleChange_HidesAndShowsTheTile_InItsPlace()
+    {
+        var cut = RenderLayout(tiles: [new("a"), new("b"), new("c")]);
+
+        cut.Render(p => p.Add(x => x.ChildContent, Tiles(new("a"), new("b", Visible: false), new("c"))));
+        Assert.That(Order(cut), Is.EqualTo(new[] { "a", "c" }));
+
+        cut.Render(p => p.Add(x => x.ChildContent, Tiles(new("a"), new("b"), new("c"))));
+        Assert.That(Order(cut), Is.EqualTo(new[] { "a", "b", "c" }));
+    }
+
+    [Test]
+    public void TileRemovedFromTheMarkup_Disappears_AddedOneGoesLast()
+    {
+        var cut = RenderLayout(tiles: [new("a"), new("b"), new("c")]);
+
+        cut.Render(p => p.Add(x => x.ChildContent, Tiles(new("a"), new("c"))));
+        Assert.That(Order(cut), Is.EqualTo(new[] { "a", "c" }));
+
+        cut.Render(p => p.Add(x => x.ChildContent, Tiles(new("d"), new("a"), new("c"))));
+        Assert.That(Order(cut), Is.EqualTo(new[] { "a", "c", "d" }));
+    }
+
+    [Test]
+    public void NotEditable_NoHelpOrLiveRegion()
+    {
+        var cut = RenderLayout();
+
+        Assert.That(cut.FindAll(".nx-tilelayout-sr"), Is.Empty);
+        Assert.That(cut.Find(".nx-tilelayout-grid").GetAttribute("data-reorderable"), Is.EqualTo("false"));
+    }
+
+    [Test]
+    public async Task Js_InitOnFirstRender_DisposeOnDispose()
+    {
+        var cut = RenderLayout(p => p.Add(x => x.Reorderable, true));
+        Assert.That(module.Invocations.Count(i => i.Identifier == "init"), Is.EqualTo(1));
+
+        cut.Render(p => p.Add(x => x.Resizable, true));
+        Assert.That(module.Invocations.Count(i => i.Identifier == "init"), Is.EqualTo(1));
+
+        await DisposeComponentsAsync();
+        Assert.That(module.Invocations.Count(i => i.Identifier == "dispose"), Is.EqualTo(1));
+    }
+
     [Test]
     public void ItemOutsideALayout_Throws() => Assert.Throws<InvalidOperationException>(() => Render<NxTileLayoutItem>());
 }

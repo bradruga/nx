@@ -53,12 +53,12 @@ public class FileManagerTests : PageTest
         await GoToPage("overview");
         var box = (await Entry("overview-files", "Drawings").BoundingBoxAsync())!;
         await Page.EvaluateAsync("""
-            ([x, y]) => {
+            ({ x, y }) => {
                 const el = document.elementFromPoint(x, y);
                 el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', clientX: x, clientY: y }));
                 el.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: x, clientY: y }));
             }
-            """, new[] { box.X + 20, box.Y + 10 });
+            """, new { x = (double)box.X + 20, y = (double)box.Y + 10 });   // a float arrives in JS as a non-number
         await Expect(Page.Locator("#overview-folder")).ToHaveTextAsync("Folder: Drawings");
     }
 

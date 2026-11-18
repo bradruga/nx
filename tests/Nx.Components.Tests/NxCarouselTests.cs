@@ -148,6 +148,63 @@ public class NxCarouselTests : BunitContext
     }
 
     [Test]
+    public void Page_FromOutside_Moves_ClampedToTheLast()
+    {
+        var cut = RenderBound([]);
+
+        cut.Render(p => p.Add(x => x.Page, 2));
+        Assert.That(Active(cut), Is.EqualTo("Two"));
+
+        cut.Render(p => p.Add(x => x.Page, 9));
+        Assert.That(Active(cut), Is.EqualTo("Three"));
+    }
+
+    [Test]
+    public async Task ArrowLeft_FromTheFirst_WrapsToTheLast()
+    {
+        var raised = new List<int>();
+        var cut = RenderBound(raised);
+
+        await cut.Find("section").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowLeft" });
+
+        Assert.That(raised, Is.EqualTo(new[] { 3 }));
+        Assert.That(Active(cut), Is.EqualTo("Three"));
+    }
+
+    [Test]
+    public async Task NextAndPrevious_FromCode()
+    {
+        var raised = new List<int>();
+        var cut = RenderBound(raised);
+
+        await cut.InvokeAsync(cut.Instance.NextAsync);
+        await cut.InvokeAsync(cut.Instance.NextAsync);
+        await cut.InvokeAsync(cut.Instance.PreviousAsync);
+
+        Assert.That(raised, Is.EqualTo(new[] { 2, 3, 2 }));
+    }
+
+    [Test]
+    public async Task FocusLeaving_ResumesTheRotation()
+    {
+        var cut = RenderBound([], auto: true);
+        await cut.Find("section").FocusInAsync(new FocusEventArgs());
+
+        await cut.Find("section").FocusOutAsync(new FocusEventArgs());
+
+        Assert.That(cut.Instance.Running, Is.True);
+    }
+
+    [Test]
+    public void DefaultTemplate_ShowsTheText_SizeFromWidthAndHeight()
+    {
+        var cut = Render<NxCarousel<string>>(p => p.Add(x => x.Data, Slides).Add(x => x.Width, "640px").Add(x => x.Height, "360px"));
+
+        Assert.That(cut.Find(".nx-carousel-slide-active").TextContent.Trim(), Is.EqualTo("One"));
+        Assert.That(cut.Find("section").GetAttribute("style"), Does.StartWith("--nx-carousel-width: 640px; --nx-carousel-height: 360px"));
+    }
+
+    [Test]
     public void OneItem_NoControls()
     {
         var cut = Render<NxCarousel<string>>(p => p.Add(x => x.Data, ["Only"]));

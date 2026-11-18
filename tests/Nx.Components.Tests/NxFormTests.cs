@@ -207,6 +207,60 @@ public class NxFormTests : BunitContext
     }
 
     [Test]
+    public async Task GeneratedCheckBox_ClickWritesTheModel()
+    {
+        var model = new Pour();
+        var cut = RenderForm(model, Fields("PumpTruck"));
+
+        await cut.Find("#f-PumpTruck").ClickAsync(new MouseEventArgs());
+
+        Assert.That(model.PumpTruck, Is.True);
+        Assert.That(cut.Find("#f-PumpTruck").GetAttribute("aria-checked"), Is.EqualTo("true"));
+    }
+
+    [Test]
+    public void GeneratedNumber_CommitWritesTheModel()
+    {
+        var model = new Pour();
+        var cut = RenderForm(model, Fields("Trucks"));
+
+        cut.Find("#f-Trucks").Input("7");
+        cut.Find("#f-Trucks").Change("7");
+
+        Assert.That(model.Trucks, Is.EqualTo(7));
+    }
+
+    [Test]
+    public void NewModel_ItemsShowAndEditTheNewModel()
+    {
+        var cut = RenderForm(new Pour { Name = "Old" }, Fields("Name"));
+        var next = new Pour { Name = "New" };
+
+        cut.Render(p => p.Add(x => x.Model, next));
+        Assert.That(cut.Find("#f-Name").GetAttribute("value"), Is.EqualTo("New"));
+        Assert.That(cut.Instance.EditContext!.Model, Is.SameAs(next));
+
+        cut.Find("#f-Name").Input("Newer");
+        cut.Find("#f-Name").Change("Newer");
+        Assert.That(next.Name, Is.EqualTo("Newer"));
+    }
+
+    [Test]
+    public void Items_InsideOwnMarkup_StillGenerateEditors()
+    {
+        RenderFragment layout = b =>
+        {
+            b.OpenElement(0, "aside");
+            b.AddContent(1, Fields("Name", "Trucks"));
+            b.CloseElement();
+        };
+        var cut = RenderForm(new Pour(), layout);
+
+        Assert.That(cut.Find("aside #f-Name"), Is.Not.Null);
+        Assert.That(cut.Find("aside #f-Trucks"), Is.Not.Null);
+    }
+
+    [Test]
     public void Disabled_DisablesGeneratedEditor()
     {
         var cut = RenderForm(new Pour(), Items(("Trucks", new { Disabled = true })));
@@ -235,6 +289,17 @@ public class NxFormTests : BunitContext
 
         var labelled = RenderForm(new Pour(), Items(("Name", new { ChildContent = own, Label = "Mine", Id = "mine" })));
         Assert.That(labelled.Find("label.nx-form-label").GetAttribute("for"), Is.EqualTo("mine"));
+    }
+
+    [Test]
+    public async Task ChildContent_WithField_StillShowsTheFieldsMessages()
+    {
+        RenderFragment own = b => b.AddMarkupContent(0, "<input id=\"mine\" />");
+        var cut = RenderForm(new Pour(), Items(("Name", new { ChildContent = own })));
+
+        await cut.InvokeAsync(() => cut.Instance.IsValid());
+
+        Assert.That(cut.Find(".nx-form-item .nx-validation-message").TextContent.Trim(), Is.EqualTo("Name is required."));
     }
 
     // ── Layout ────────────────────────────────────────────────────────────────
@@ -268,7 +333,48 @@ public class NxFormTests : BunitContext
             Is.EqualTo(new[] { "--nx-form-span: 4", "--nx-form-span: 4" }));
     }
 
+    [Test]
+    public void Group_WithoutColumns_UsesTheFormsColumns()
+    {
+        RenderFragment group = b =>
+        {
+            b.OpenComponent<NxFormGroup>(0);
+            b.AddComponentParameter(1, nameof(NxFormGroup.ChildContent), Items(("Trucks", new { ColSpan = 9 })));
+            b.CloseComponent();
+        };
+        var cut = RenderForm(new Pour(), group, p => p.Add(x => x.Columns, 3));
+
+        Assert.That(cut.Find(".nx-form-group-items").GetAttribute("style"), Does.StartWith("--nx-form-columns: 3"));
+        Assert.That(cut.Find(".nx-form-group .nx-form-item").GetAttribute("style"), Is.EqualTo("--nx-form-span: 3"));
+    }
+
     // ── Validation and submit ─────────────────────────────────────────────────
+
+    [Test]
+    public async Task OnSubmit_RaisedWithoutValidating()
+    {
+        var submitted = 0;
+        var cut = RenderForm(new Pour(), Fields("Name"), p => p.Add(x => x.OnSubmit, () => submitted++));
+
+        await cut.Find("form").SubmitAsync();
+
+        Assert.That(submitted, Is.EqualTo(1));
+        Assert.That(cut.FindAll(".nx-validation-message"), Is.Empty);
+    }
+
+    [Test]
+    public async Task FixingAField_ClearsItsMessage()
+    {
+        var cut = RenderForm(new Pour(), Fields("Name"));
+        await cut.Find("form").SubmitAsync();
+        Assert.That(cut.FindAll(".nx-validation-message"), Has.Count.EqualTo(1));
+
+        cut.Find("#f-Name").Input("Deck");
+        cut.Find("#f-Name").Change("Deck");
+
+        Assert.That(cut.FindAll(".nx-validation-message"), Is.Empty);
+        Assert.That(cut.Find("#f-Name").HasAttribute("aria-invalid"), Is.False);
+    }
 
     [Test]
     public async Task Submit_Invalid_ShowsMessagesUnderItems_ThenValidSubmits()
@@ -368,6 +474,23 @@ public class NxFormTests : BunitContext
         await cut.InvokeAsync(context.NotifyValidationStateChanged);
 
         Assert.That(cut.Find(".nx-validation-message").TextContent.Trim(), Is.EqualTo("Name is required."));
+    }
+
+    [Test]
+    public async Task ValidationMessage_ClearsWhenTheFieldIsValid()
+    {
+        var model = new Pour();
+        var context = new EditContext(model);
+        var store = new ValidationMessageStore(context);
+        var cut = Render<NxValidationMessage>(p => p.AddCascadingValue(context).Add(x => x.For, () => model.Trucks));
+        store.Add(context.Field(nameof(Pour.Trucks)), "Too many.");
+        await cut.InvokeAsync(context.NotifyValidationStateChanged);
+
+        store.Clear();
+        await cut.InvokeAsync(context.NotifyValidationStateChanged);
+
+        Assert.That(cut.FindAll(".nx-validation-message"), Is.Empty);
+        Assert.That(cut.Find(".nx-validation").ClassList, Does.Not.Contain("nx-validation-invalid"));
     }
 
     // ── Label words ───────────────────────────────────────────────────────────

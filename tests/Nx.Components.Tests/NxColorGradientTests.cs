@@ -1,5 +1,6 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using NUnit.Framework;
 
@@ -162,6 +163,132 @@ public class NxColorGradientTests : BunitContext
         Assert.That(raised, Is.Empty);
         Assert.That(cut.Find(".nx-colorgradient-thumb").GetAttribute("tabindex"), Is.EqualTo("-1"));
         Assert.That(cut.Find(".nx-colorgradient-hue").HasAttribute("disabled"), Is.True);
+    }
+
+    [Test]
+    public async Task AreaKeys_ArrowsStepOnePercent_PagesTen()
+    {
+        var cut = RenderBound([], "#ff0000");
+        string? ValueText() => cut.Find(".nx-colorgradient-thumb").GetAttribute("aria-valuetext");
+        Task Key(string key) => cut.Find(".nx-colorgradient-thumb").KeyDownAsync(new KeyboardEventArgs { Key = key });
+
+        await Key("ArrowLeft");
+        Assert.That(ValueText(), Is.EqualTo("Saturation 99%, brightness 100%"));
+        await Key("ArrowDown");
+        Assert.That(ValueText(), Is.EqualTo("Saturation 99%, brightness 99%"));
+        await Key("PageDown");
+        Assert.That(ValueText(), Is.EqualTo("Saturation 99%, brightness 89%"));
+        await Key("PageUp");
+        await Key("ArrowUp");
+        Assert.That(ValueText(), Is.EqualTo("Saturation 99%, brightness 100%"));
+        await Key("ArrowRight");
+        Assert.That(ValueText(), Is.EqualTo("Saturation 100%, brightness 100%"));
+        Assert.That(cut.Find(".nx-colorgradient-thumb").GetAttribute("aria-valuenow"), Is.EqualTo("100"));
+    }
+
+    [Test]
+    public async Task AreaKeys_StopAtTheEdges()
+    {
+        var raised = new List<string?>();
+        var cut = RenderBound(raised, "#ff0000");
+
+        await cut.Find(".nx-colorgradient-thumb").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowRight" });
+        await cut.Find(".nx-colorgradient-thumb").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp" });
+
+        Assert.That(raised, Is.Empty, "already at full saturation and brightness");
+    }
+
+    [Test]
+    public async Task RgbParts_OutOfRangeClamps_BadTextReverts()
+    {
+        var raised = new List<string?>();
+        var cut = RenderBound(raised, "rgb(10, 20, 30)", p => p.Add(x => x.Format, NxColorFormat.Rgb).Add(x => x.ValueFormat, NxColorFormat.Rgb));
+
+        await cut.FindAll(".nx-colorgradient-input")[0].ChangeAsync(new ChangeEventArgs { Value = "300" });
+        await cut.FindAll(".nx-colorgradient-input")[1].ChangeAsync(new ChangeEventArgs { Value = "lots" });
+
+        Assert.That(raised, Is.EqualTo(new[] { "rgb(255, 20, 30)" }));
+        Assert.That(cut.FindAll(".nx-colorgradient-input").Select(i => i.GetAttribute("value")), Is.EqualTo(new[] { "255", "20", "30", "100" }));
+    }
+
+    [Test]
+    public async Task NoOpacityEditor_RgbHasNoAPart_ValueIsOpaque()
+    {
+        var raised = new List<string?>();
+        var cut = RenderBound(raised, "#ff000080", p => p.Add(x => x.ShowOpacityEditor, false).Add(x => x.Format, NxColorFormat.Rgb));
+
+        Assert.That(cut.FindAll(".nx-colorgradient-input").Select(i => i.GetAttribute("aria-label")), Is.EqualTo(new[] { "Red", "Green", "Blue" }));
+        await cut.Find(".nx-colorgradient-hue").InputAsync(new ChangeEventArgs { Value = "120" });
+
+        Assert.That(raised, Is.EqualTo(new[] { "#00ff00" }));
+    }
+
+    [Test]
+    public async Task Disabled_KeysIgnored_EveryInputOff()
+    {
+        var raised = new List<string?>();
+        var cut = RenderBound(raised, "#ff0000", p => p.Add(x => x.Disabled, true));
+
+        await cut.Find(".nx-colorgradient-thumb").KeyDownAsync(new KeyboardEventArgs { Key = "Home" });
+
+        Assert.That(raised, Is.Empty);
+        Assert.That(cut.Find(".nx-colorgradient").ClassList, Does.Contain("nx-colorgradient-disabled"));
+        Assert.That(cut.Find(".nx-colorgradient-thumb").GetAttribute("aria-disabled"), Is.EqualTo("true"));
+        Assert.That(cut.Find("#g-hex").HasAttribute("disabled"), Is.True);
+        Assert.That(cut.Find(".nx-colorgradient-alpha").HasAttribute("disabled"), Is.True);
+        Assert.That(cut.Find(".nx-colorgradient-view").HasAttribute("disabled"), Is.True);
+    }
+
+    [Test]
+    public void OutsideValue_Unreadable_KeepsTheColor()
+    {
+        var cut = RenderBound([], "#ff0000");
+
+        cut.Render(p => p.Add(x => x.Value, "not a color"));
+
+        Assert.That(cut.Find("#g-hex").GetAttribute("value"), Is.EqualTo("#ff0000"));
+    }
+
+    [Test]
+    public void AriaLabelClassAndAttributes_OnTheGroup()
+    {
+        var cut = RenderBound([], "#ff0000", p => p
+            .Add(x => x.AriaLabel, "Crew color")
+            .Add(x => x.Class, "mine")
+            .AddUnmatched("data-test", "x"));
+
+        var group = cut.Find(".nx-colorgradient");
+        Assert.That(group.GetAttribute("aria-label"), Is.EqualTo("Crew color"));
+        Assert.That(group.ClassList, Does.Contain("mine"));
+        Assert.That(group.GetAttribute("data-test"), Is.EqualTo("x"));
+    }
+
+    private sealed class Crew
+    {
+        public string? Color { get; set; }
+    }
+
+    [Test]
+    public async Task Validation_InvalidState_AndNotifiesOnChange()
+    {
+        var crew = new Crew { Color = "#ff0000" };
+        var context = new EditContext(crew);
+        var store = new ValidationMessageStore(context);
+        var changed = new List<string>();
+        context.OnFieldChanged += (_, e) => changed.Add(e.FieldIdentifier.FieldName);
+        var cut = Render<NxColorGradient>(p => p
+            .AddCascadingValue(context)
+            .Add(x => x.Value, crew.Color)
+            .Add(x => x.ValueChanged, v => crew.Color = v)
+            .Add(x => x.ValueExpression, () => crew.Color));
+
+        store.Add(context.Field(nameof(Crew.Color)), "Pick a darker color");
+        await cut.InvokeAsync(context.NotifyValidationStateChanged);
+        Assert.That(cut.Find(".nx-colorgradient").ClassList, Does.Contain("nx-colorgradient-invalid"));
+
+        await cut.Find(".nx-colorgradient-thumb").KeyDownAsync(new KeyboardEventArgs { Key = "PageDown" });
+        Assert.That(crew.Color, Is.EqualTo("#e60000"));
+        Assert.That(changed, Is.EqualTo(new[] { "Color" }));
     }
 
     // ── ColorMath ─────────────────────────────────────────────────────────────

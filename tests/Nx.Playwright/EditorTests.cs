@@ -49,15 +49,19 @@ public class EditorTests : PageTest
         await editor.ClickAsync();
         await Page.Keyboard.TypeAsync("First");
         await Page.Keyboard.PressAsync("Control+a");
+        // Tools run after a server round trip: wait for the HTML rather than reading it once.
         await Tool("comment-editor", "italic").ClickAsync();
-        Assert.That(await Html("comment-editor"), Does.Contain("<i>First</i>"));
+        await WaitForHtml("comment-editor", "<p><i>First</i></p>");
 
         await Page.Keyboard.PressAsync("Control+z");
-        Assert.That(await Html("comment-editor"), Is.EqualTo("<p>First</p>"));
+        await WaitForHtml("comment-editor", "<p>First</p>");
         await Expect(Tool("comment-editor", "redo")).ToBeEnabledAsync();
         await Page.Keyboard.PressAsync("Control+y");
-        Assert.That(await Html("comment-editor"), Does.Contain("<i>First</i>"));
+        await WaitForHtml("comment-editor", "<p><i>First</i></p>");
     }
+
+    private Task WaitForHtml(string editor, string html) =>
+        Page.WaitForFunctionAsync("([id, html]) => document.getElementById(id).innerHTML === html", new[] { editor, html });
 
     [Test]
     public async Task Paste_Word_CleansAndMakesLists()
@@ -265,6 +269,7 @@ public class EditorTests : PageTest
     {
         await GoToPage("examples");
         var image = Page.Locator("#picture-editor img");
+        await Page.Locator("#picture-editor").ScrollIntoViewIfNeededAsync();   // mouse events below the viewport go nowhere
         var target = (await Page.Locator("#picture-editor p").Last.BoundingBoxAsync())!;
         var from = (await image.BoundingBoxAsync())!;
         await Page.Mouse.MoveAsync(from.X + 40, from.Y + 40);

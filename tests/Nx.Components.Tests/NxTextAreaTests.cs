@@ -159,6 +159,54 @@ public class NxTextAreaTests : BunitContext
     }
 
     [Test]
+    public void Rows_SetsHeightInLines()
+    {
+        var cut = RenderBound([], configure: p => p.Add(x => x.Rows, 6));
+
+        Assert.That(cut.Find("textarea").GetAttribute("rows"), Is.EqualTo("6"));
+    }
+
+    [Test]
+    public async Task Counter_UpdatesWhileTyping()
+    {
+        var cut = RenderBound([], "hi", p => p.Add(x => x.MaxLength, 140).Add(x => x.ShowCounter, true));
+
+        await cut.Find("textarea").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "hi\nthere" });
+
+        Assert.That(cut.Find(".nx-textarea-counter").TextContent, Is.EqualTo("8 / 140"));
+    }
+
+    [Test]
+    public async Task OnChange_ParentRerenderWithSameValue_KeepsTypedText()
+    {
+        var cut = RenderBound([], "old");
+
+        await cut.Find("textarea").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "typing" });
+        cut.Render(p => p.Add(x => x.Value, "old"));
+
+        Assert.That(cut.Find("textarea").GetAttribute("value"), Is.EqualTo("typing"));
+    }
+
+    [Test]
+    public void OutsideValueChange_ReplacesText()
+    {
+        var cut = RenderBound([], "one");
+
+        cut.Render(p => p.Add(x => x.Value, "two"));
+
+        Assert.That(cut.Find("textarea").GetAttribute("value"), Is.EqualTo("two"));
+    }
+
+    [Test]
+    public void Disabled_DisablesTextarea_NoClearButton()
+    {
+        var cut = RenderBound([], "notes", p => p.Add(x => x.Disabled, true).Add(x => x.Clearable, true));
+
+        Assert.That(cut.Find("textarea").HasAttribute("disabled"), Is.True);
+        Assert.That(cut.FindAll(".nx-field-clear"), Is.Empty);
+    }
+
+    [Test]
     public void ReadOnly_RendersClassAndAttribute()
     {
         var cut = RenderBound([], "x", p => p.Add(x => x.Label, "Notes").Add(x => x.ReadOnly, true));

@@ -6,7 +6,7 @@ Blazor UI components for the Northeast Precast ERP portal.
 | Component | What it does |
 |---|---|
 | `NxButton` | Native button: primary/secondary/danger/ghost/link and success/warning/info variants, three sizes, icon slot and icon-only mode, loading spinner, busy-click guard, submit/reset types, full width. |
-| `NxButtonGroup` | Joins NxButtons (and menu buttons) into one bar of related actions; `Variant`, `Size` and `Disabled` on the group apply to every button that does not set its own; full width; `role="group"`. |
+| `NxButtonGroup` | Joins NxButtons (and menu buttons) into one bar of related actions; `Variant` and `Size` on the group apply to every NxButton that does not set its own (menu buttons keep theirs), `Disabled` to every button; full width; `role="group"`. |
 | `NxToggleButton` | A button that stays on or off: `@bind-Selected`, `aria-pressed`, a pressed look in every NxButton variant, icons and icon-only, works inside NxButtonGroup. |
 | `NxToolBar` + `NxToolBarButton` | A row of actions with separators and a spacer: buttons that do not fit move into a More menu (or the bar wraps or scrolls), one tab stop with arrow keys, `Visible`/`Disabled` per button, the toolbar's size for every button. |
 | `NxTextBox` | Text input: `@bind-Value` on change or as you type (with debounce), label, prefix/suffix slots, clear button, password toggle, max length with counter, read-only/disabled, `EditForm` validation, autofocus, input modes. |

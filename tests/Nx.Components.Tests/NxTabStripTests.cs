@@ -402,6 +402,114 @@ public class NxTabStripTests : BunitContext
         Assert.That(moves, Is.Zero);
     }
 
+    [Test]
+    public async Task Reorderable_SideTabs_CtrlShiftUpDownMove_LeftRightDoNot()
+    {
+        var moves = new List<NxTabReorderEventArgs>();
+        var cut = RenderBound([], ThreeTabs, "a", p => p.Add(x => x.Reorderable, true).Add(x => x.Position, NxTabPosition.Left)
+            .Add(x => x.OnTabReorder, (NxTabReorderEventArgs e) => moves.Add(e)));
+
+        await cut.Find("#t-tab-a").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowRight", CtrlKey = true, ShiftKey = true });
+        Assert.That(Order(cut), Is.EqualTo(new[] { "A", "B", "C" }));
+
+        await cut.Find("#t-tab-a").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowDown", CtrlKey = true, ShiftKey = true });
+        Assert.That(Order(cut), Is.EqualTo(new[] { "B", "A", "C" }));
+        Assert.That(moves.Select(m => (m.TabId, m.OldIndex, m.NewIndex)), Is.EqualTo(new[] { ("a", 0, 1) }));
+    }
+
+    [Test]
+    public async Task Reorderable_ArrowsWithoutBothCtrlAndShift_DoNotMove()
+    {
+        var moves = 0;
+        var cut = RenderBound([], ThreeTabs, "a", p => p.Add(x => x.Reorderable, true).Add(x => x.OnTabReorder, (NxTabReorderEventArgs _) => moves++));
+
+        await cut.Find("#t-tab-a").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowRight", CtrlKey = true });
+        await cut.Find("#t-tab-a").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowRight", ShiftKey = true });
+
+        Assert.That(Order(cut), Is.EqualTo(new[] { "A", "B", "C" }));
+        Assert.That(moves, Is.Zero);
+    }
+
+    [Test]
+    public async Task Reorderable_DropOnItsOwnPlaceOrFromNowhere_RaisesNothing()
+    {
+        var moves = 0;
+        var cut = RenderBound([], ThreeTabs, "a", p => p.Add(x => x.Reorderable, true).Add(x => x.OnTabReorder, (NxTabReorderEventArgs _) => moves++));
+
+        await cut.InvokeAsync(() => cut.Instance.OnTabDrop(1, 1));
+        await cut.InvokeAsync(() => cut.Instance.OnTabDrop(7, 0));
+        await cut.InvokeAsync(() => cut.Instance.OnTabDrop(-1, 0));
+
+        Assert.That(Order(cut), Is.EqualTo(new[] { "A", "B", "C" }));
+        Assert.That(moves, Is.Zero);
+    }
+
+    [Test]
+    public async Task Reorderable_DropPastTheEnd_GoesLast()
+    {
+        var moves = new List<NxTabReorderEventArgs>();
+        var cut = RenderBound([], ThreeTabs, "a", p => p.Add(x => x.Reorderable, true).Add(x => x.OnTabReorder, (NxTabReorderEventArgs e) => moves.Add(e)));
+
+        await cut.InvokeAsync(() => cut.Instance.OnTabDrop(0, 99));
+
+        Assert.That(Order(cut), Is.EqualTo(new[] { "B", "C", "A" }));
+        Assert.That(moves.Single().NewIndex, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task Reorderable_TheStripKeepsTheOrder_WhenThePageRendersAgain()
+    {
+        var ids = new List<string> { "a", "b", "c" };
+        var cut = Render<NxTabStrip>(p => p.Add(x => x.Id, "t").Add(x => x.Reorderable, true).Add(x => x.ChildContent, WithBodies(ids)));
+        cut.WaitForState(() => cut.FindAll("[role=tab]").Count == 3);
+
+        await cut.InvokeAsync(() => cut.Instance.OnTabDrop(0, 2));
+        cut.Render(p => p.Add(x => x.ChildContent, WithBodies(ids)));
+
+        Assert.That(Order(cut), Is.EqualTo(new[] { "b", "c", "a" }));
+    }
+
+    [Test]
+    public async Task Reorderable_TabAddedLater_GoesAfterItsMarkupNeighbour_WhereverThatWasDragged()
+    {
+        var ids = new List<string> { "a", "b", "c" };
+        var cut = Render<NxTabStrip>(p => p.Add(x => x.Id, "t").Add(x => x.Reorderable, true).Add(x => x.ChildContent, WithBodies(ids)));
+        cut.WaitForState(() => cut.FindAll("[role=tab]").Count == 3);
+        await cut.InvokeAsync(() => cut.Instance.OnTabDrop(0, 2));
+
+        ids.Insert(1, "x");
+        cut.Render(p => p.Add(x => x.ChildContent, WithBodies(ids)));
+
+        cut.WaitForState(() => cut.FindAll("[role=tab]").Count == 4);
+        Assert.That(Order(cut), Is.EqualTo(new[] { "b", "c", "a", "x" }));
+    }
+
+    [Test]
+    public async Task Reorder_KeepAlivePanelsSurviveTheMove()
+    {
+        var cut = RenderBound([], ThreeTabs, "a", p => p.Add(x => x.Reorderable, true).Add(x => x.KeepAlive, true));
+        await cut.Find("#t-tab-b").ClickAsync(new MouseEventArgs());
+
+        await cut.InvokeAsync(() => cut.Instance.OnTabDrop(1, 0));
+
+        Assert.That(cut.FindAll("[role=tabpanel]").Select(p => p.Id), Is.EquivalentTo(new[] { "t-panel-a", "t-panel-b" }));
+        Assert.That(cut.Find("#t-panel-b").HasAttribute("hidden"), Is.False);
+    }
+
+    /// <summary>Tabs with a body, so each re-renders with the strip and reports its place in the markup.</summary>
+    private static RenderFragment WithBodies(List<string> ids) => b =>
+    {
+        foreach (var id in ids)
+        {
+            b.OpenComponent<NxTab>(0);
+            b.SetKey(id);
+            b.AddAttribute(1, nameof(NxTab.Id), id);
+            b.AddAttribute(2, nameof(NxTab.Title), id);
+            b.AddAttribute(3, nameof(NxTab.ChildContent), Text($"Panel {id}"));
+            b.CloseComponent();
+        }
+    };
+
     private static RenderFragment Fragment(List<string> ids) => b =>
     {
         foreach (var id in ids)
@@ -410,6 +518,7 @@ public class NxTabStripTests : BunitContext
             b.SetKey(id);
             b.AddAttribute(1, nameof(NxTab.Id), id);
             b.AddAttribute(2, nameof(NxTab.Title), id);
+            b.AddAttribute(3, nameof(NxTab.ChildContent), (RenderFragment)(c => c.AddContent(0, id)));
             b.CloseComponent();
         }
     };

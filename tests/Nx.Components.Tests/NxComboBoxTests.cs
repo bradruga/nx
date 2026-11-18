@@ -1550,4 +1550,69 @@ public class NxComboBoxTests : BunitContext
         Assert.That(cut.FindAll(".nx-combobox-chip"), Is.Empty);
         Assert.That(cut.Find(".nx-combobox").ClassList, Does.Not.Contain("nx-combobox-multiple"));
     }
+
+    // ── Hardening: two-way rule, data arriving, overlay title ─────────────────
+
+    [Test]
+    public async Task ParentRerender_SameValue_KeepsTypedText()
+    {
+        var cut = RenderBound([], [], initial: 1);
+
+        await TypeAsync(cut, "bos");
+        cut.Render(p => p.Add(x => x.Value, 1).Add(x => x.Placeholder, "City"));
+
+        Assert.That(cut.Find("input").GetAttribute("value"), Is.EqualTo("bos"));
+        Assert.That(OptionTexts(cut), Is.EqualTo(new[] { "Boston" }));
+    }
+
+    [Test]
+    public async Task OutsideValueChange_WhileOpen_ReplacesTypedText_ClosesTheList()
+    {
+        var cut = RenderBound([], [], initial: 1);
+
+        await TypeAsync(cut, "bos");
+        cut.Render(p => p.Add(x => x.Value, 4));
+
+        Assert.That(cut.Find("input").GetAttribute("value"), Is.EqualTo("Hartford"));
+        Assert.That(cut.Instance.IsOpen, Is.False);
+    }
+
+    [Test]
+    public void Value_BeforeData_ShowsTextWhenDataArrives()
+    {
+        var cut = Render<NxComboBox<City, int?>>(p => p
+            .Add(x => x.ItemText, c => c.Name)
+            .Add(x => x.ItemValue, c => c.Id)
+            .Add(x => x.Value, 5));
+        Assert.That(cut.Find("input").GetAttribute("value"), Is.EqualTo(""));
+
+        cut.Render(p => p.Add(x => x.Data, Cities));
+
+        Assert.That(cut.Find("input").GetAttribute("value"), Is.EqualTo("Newark"));
+    }
+
+    [Test]
+    public async Task Data_ReplacedWhileOpen_ListShowsNewItems()
+    {
+        var cut = RenderCities();
+
+        await KeyAsync(cut, "ArrowDown");
+        cut.Render(p => p.Add(x => x.Data, Cities.Take(2).ToList()));
+
+        Assert.That(OptionTexts(cut), Is.EqualTo(new[] { "Albany", "Boston" }));
+    }
+
+    [Test]
+    public async Task Mobile_MobileTitle_NamesOverlayAndSearch()
+    {
+        var cut = RenderCities(p => p
+            .Add(x => x.MobileMode, NxComboBoxMobileMode.Always)
+            .Add(x => x.Placeholder, "City")
+            .Add(x => x.MobileTitle, "Find a city"));
+
+        await cut.Find(".nx-combobox-field").ClickAsync(new MouseEventArgs());
+
+        Assert.That(cut.Find(".nx-combobox-overlay").GetAttribute("aria-label"), Is.EqualTo("Find a city"));
+        Assert.That(cut.Find(".nx-combobox-overlay-search").GetAttribute("placeholder"), Is.EqualTo("Find a city"));
+    }
 }

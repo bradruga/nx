@@ -215,6 +215,76 @@ public class NxToggleGroupTests : BunitContext
         Assert.That(TabIndexes(cut), Is.EqualTo(new[] { "0", "-1", "-1", "-1" }), "a disabled selection must not hold the tab stop");
     }
 
+    private static RenderFragment Declared(params (string Value, bool Disabled)[] items) => b =>
+    {
+        var seq = 0;
+        foreach (var (value, disabled) in items)
+        {
+            b.OpenComponent<NxToggleGroupItem<string>>(seq++);
+            b.AddAttribute(seq++, "Value", value);
+            b.AddAttribute(seq++, "Label", value);
+            b.AddAttribute(seq++, "Disabled", disabled);
+            b.AddAttribute(seq++, "Title", $"Tip {value}");
+            b.CloseComponent();
+        }
+    };
+
+    [Test]
+    public async Task Declared_ClickSelects_DisabledItemInert()
+    {
+        var raised = new List<string?>();
+        var cut = Render<NxToggleGroup<string>>(p => p
+            .Add(x => x.Value, "a")
+            .Add(x => x.ValueChanged, (string? v) => raised.Add(v))
+            .Add(x => x.ChildContent, Declared(("a", false), ("b", false), ("c", true))));
+
+        var items = cut.FindAll(".nx-toggle");
+        Assert.That(items[2].HasAttribute("disabled"), Is.True);
+        Assert.That(items[1].GetAttribute("title"), Is.EqualTo("Tip b"));
+        await items[2].ClickAsync(new MouseEventArgs());
+        await cut.FindAll(".nx-toggle")[1].ClickAsync(new MouseEventArgs());
+
+        Assert.That(raised, Is.EqualTo(new[] { "b" }));
+    }
+
+    [Test]
+    public void ExternalValueChange_MovesSelection_EvenForDeclaredItems()
+    {
+        var cut = Render<NxToggleGroup<string>>(p => p
+            .Add(x => x.Value, "a")
+            .Add(x => x.ChildContent, Declared(("a", false), ("b", false))));
+
+        cut.Render(p => p.Add(x => x.Value, "b"));
+
+        Assert.That(cut.FindAll(".nx-toggle").Select(t => t.GetAttribute("aria-checked")), Is.EqualTo(new[] { "false", "true" }));
+        Assert.That(TabStops(cut), Is.EqualTo(new[] { "-1", "0" }));
+    }
+
+    [Test]
+    public void Multiple_ExternalValuesChange_UpdatesPressed()
+    {
+        var cut = RenderMulti([], [View.List]);
+
+        cut.Render(p => p.Add(x => x.Values, new[] { View.Board, View.Map }));
+
+        Assert.That(cut.FindAll(".nx-toggle").Select(t => t.GetAttribute("aria-pressed")),
+            Is.EqualTo(new[] { "false", "true", "false", "true" }));
+    }
+
+    [Test]
+    public async Task GroupDisabled_ClickIgnored()
+    {
+        var raised = new List<View>();
+        var cut = RenderSingle(raised, View.List, p => p.Add(x => x.Disabled, true));
+
+        await ClickAsync(cut, 2);
+
+        Assert.That(raised, Is.Empty);
+    }
+
+    private static List<string?> TabStops(IRenderedComponent<NxToggleGroup<string>> cut) =>
+        cut.FindAll(".nx-toggle").Select(t => t.GetAttribute("tabindex")).ToList();
+
     [Test]
     public void GroupDisabled_DisablesEveryItem()
     {
@@ -346,5 +416,27 @@ public class NxToggleGroupTests : BunitContext
 
         Assert.That(context.IsModified(context.Field(nameof(Model.Views))), Is.True);
         Assert.That(model.Views, Is.EqualTo(new[] { View.Board }));
+    }
+
+    [Test]
+    public async Task Validation_Multiple_MessagesMarkInvalid()
+    {
+        var model = new Model();
+        var context = new EditContext(model);
+        var host = Render<CascadingValue<EditContext>>(p => p
+            .Add(x => x.Value, context)
+            .AddChildContent<NxToggleGroup<View>>(c => c
+                .Add(x => x.Data, Enum.GetValues<View>())
+                .Add(x => x.Multiple, true)
+                .Add(x => x.Values, model.Views)
+                .Add(x => x.ValuesExpression, () => model.Views)));
+        var cut = host.FindComponent<NxToggleGroup<View>>();
+
+        var store = new ValidationMessageStore(context);
+        store.Add(context.Field(nameof(Model.Views)), "Pick two.");
+        await cut.InvokeAsync(context.NotifyValidationStateChanged);
+
+        Assert.That(cut.Find(".nx-togglegroup").GetAttribute("aria-invalid"), Is.EqualTo("true"));
+        Assert.That(cut.Find(".nx-togglegroup").ClassList, Does.Contain("nx-togglegroup-invalid"));
     }
 }

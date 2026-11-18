@@ -280,6 +280,8 @@ public class WindowTests : PageTest
         await GoToPage();
 
         await Page.Locator("#open-explicit").ClickAsync();
+        // nx-window.js places the window after it renders; read the box once it has moved.
+        await Window("explicit-window").EvaluateAsync("w => new Promise(r => { const f = () => Math.abs(w.getBoundingClientRect().left - 40) < 1 ? r() : requestAnimationFrame(f); f(); })");
         var box = (await Window("explicit-window").BoundingBoxAsync())!;
 
         Assert.That(box.X, Is.EqualTo(40).Within(1));

@@ -118,6 +118,28 @@ public class NxChipListTests : BunitContext
     }
 
     [Test]
+    public async Task RemovingTheLastChip_FocusesTheNewLast()
+    {
+        var removed = new List<string>();
+        var cut = RenderRemovable(["A", "B", "C"], removed);
+
+        await cut.FindAll(".nx-chiplist-chip")[2].FocusAsync(new FocusEventArgs());
+        await cut.FindAll(".nx-chiplist-chip")[2].KeyDownAsync(new KeyboardEventArgs { Key = "Delete" });
+
+        Assert.That(removed, Is.EqualTo(new[] { "C" }));
+        Assert.That(cut.FindAll(".nx-chiplist-chip").Select(c => c.GetAttribute("tabindex")), Is.EqualTo(new[] { "-1", "0" }));
+        Assert.That(JSInterop.Invocations.Count(i => i.Identifier.EndsWith("focus", StringComparison.Ordinal)), Is.EqualTo(1));
+    }
+
+    [Test]
+    public void Size_Small_Class()
+    {
+        var cut = Render<NxChipList<string>>(p => p.Add(x => x.Data, ["A"]).Add(x => x.Size, NxSize.Small));
+
+        Assert.That(cut.Find("ul").ClassList, Does.Contain("nx-chiplist-sm"));
+    }
+
+    [Test]
     public void DuplicateItems_Render()
     {
         var cut = Render<NxChipList<string>>(p => p.Add(x => x.Data, ["SCC", "SCC"]));

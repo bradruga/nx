@@ -347,4 +347,109 @@ public class NxDropDownTests : BunitContext
         var cut = Render<NxDropDown<Shift, Shift>>(p => p.Add(x => x.Data, Enum.GetValues<Shift>()).Add(x => x.Value, Shift.Swing));
         Assert.That(cut.Find("input").GetAttribute("value"), Is.EqualTo("Swing"));
     }
+
+    // ── Hardening: forwarded engine features ──────────────────────────────────
+
+    [Test]
+    public async Task Clearable_ClearButtonClears()
+    {
+        var raised = new List<int?>();
+        var cut = RenderBound(raised, 3, p => p.Add(x => x.Clearable, true));
+
+        await cut.Find(".nx-combobox-clear").ClickAsync(new MouseEventArgs());
+
+        Assert.That(raised, Is.EqualTo(new int?[] { null }));
+        Assert.That(cut.Find("input").GetAttribute("value"), Is.EqualTo(""));
+    }
+
+    [Test]
+    public async Task Disabled_DoesNotOpen()
+    {
+        var cut = RenderBound([], 1, p => p.Add(x => x.Disabled, true));
+
+        await KeyAsync(cut, "Enter");
+        await cut.Find(".nx-combobox-field").ClickAsync(new MouseEventArgs());
+
+        Assert.That(cut.Find("input").HasAttribute("disabled"), Is.True);
+        Assert.That(cut.Find("input").GetAttribute("aria-expanded"), Is.EqualTo("false"));
+    }
+
+    [Test]
+    public async Task Columns_RenderGrid_PickShowsItemText()
+    {
+        var raised = new List<int?>();
+        var cut = RenderBound(raised, configure: p => p.Add(x => x.ColumnDefinitions, new List<NxComboBoxColumnDefinition<Plant>>
+        {
+            new() { Field = i => i.Name, Header = "Plant" },
+            new() { Field = i => i.Region, Header = "Region" },
+        }));
+
+        await KeyAsync(cut, "Enter");
+        Assert.That(cut.Find(".nx-combobox-columns-header").Children.Take(2).Select(h => h.TextContent), Is.EqualTo(new[] { "Plant", "Region" }));
+        Assert.That(cut.FindAll("[role=option]")[1].QuerySelectorAll(".nx-combobox-cell").Select(c => c.TextContent.Trim()),
+            Is.EqualTo(new[] { "Bethlehem", "South" }));
+
+        await cut.FindAll("[role=option]")[1].ClickAsync(new MouseEventArgs());
+        Assert.That(raised, Is.EqualTo(new int?[] { 2 }));
+        Assert.That(cut.Find("input").GetAttribute("value"), Is.EqualTo("Bethlehem"));
+    }
+
+    [Test]
+    public async Task Virtualize_RendersAWindow_TypeAheadStillFinds()
+    {
+        var raised = new List<int?>();
+        IRenderedComponent<NxDropDown<int, int?>>? cut = null;
+        cut = Render<NxDropDown<int, int?>>(p => p
+            .Add(x => x.Data, Enumerable.Range(1, 10_000))
+            .Add(x => x.ItemText, i => $"P{i:00000}")
+            .Add(x => x.ItemValue, i => i)
+            .Add(x => x.Virtualize, true)
+            .Add(x => x.ValueChanged, (int? v) => { raised.Add(v); cut!.Render(q => q.Add(x => x.Value, v)); }));
+
+        await KeyAsync(cut, "Enter");
+        var options = cut.FindAll("[role=option]");
+        Assert.That(options.Count, Is.GreaterThan(0).And.LessThan(200));
+        Assert.That(options[0].GetAttribute("aria-setsize"), Is.EqualTo("10000"));
+
+        await KeyAsync(cut, "Escape");
+        await KeyAsync(cut, "p");
+        Assert.That(raised, Is.EqualTo(new int?[] { 1 }));
+    }
+
+    [Test]
+    public async Task PhoneSheet_NoSearchBox_ListTakesKeys()
+    {
+        var raised = new List<int?>();
+        var cut = RenderBound(raised, configure: p => p
+            .Add(x => x.MobileMode, NxComboBoxMobileMode.Always)
+            .Add(x => x.MobileTitle, "Plant")
+            .Add(x => x.DefaultText, "No plant"));
+
+        await cut.Find(".nx-combobox-field").ClickAsync(new MouseEventArgs());
+
+        Assert.That(cut.FindAll(".nx-combobox-overlay-search"), Is.Empty);
+        Assert.That(cut.Find(".nx-combobox-overlay-title").TextContent, Is.EqualTo("Plant"));
+        var list = cut.Find(".nx-combobox-overlay-list");
+        Assert.That(list.GetAttribute("aria-label"), Is.EqualTo("Plant"));
+        Assert.That(cut.FindAll(".nx-combobox-overlay [role=option]")[0].TextContent.Trim(), Is.EqualTo("No plant"));
+
+        await list.KeyDownAsync(new KeyboardEventArgs { Key = "ArrowDown" });
+        await cut.Find(".nx-combobox-overlay-list").KeyDownAsync(new KeyboardEventArgs { Key = " " });
+
+        Assert.That(raised, Is.EqualTo(new int?[] { 1 }));
+        Assert.That(cut.FindAll(".nx-combobox-overlay"), Is.Empty);
+    }
+
+    [Test]
+    public async Task EmptyList_SaysNoItems()
+    {
+        var cut = Render<NxDropDown<Plant, int?>>(p => p
+            .Add(x => x.Data, new List<Plant>())
+            .Add(x => x.ItemText, i => i.Name)
+            .Add(x => x.ItemValue, i => i.Id));
+
+        await KeyAsync(cut, "Enter");
+
+        Assert.That(cut.Find(".nx-combobox-empty").TextContent.Trim(), Is.EqualTo("No items"));
+    }
 }
