@@ -49,10 +49,23 @@ export function dispose(input) {
 
 // Brings the time list's active (else selected) option into view; in the phone sheet also focuses it.
 export function scrollActive(list, focus) {
-    const item = list && (list.querySelector('.nx-timepicker-item-active') ?? list.querySelector('[aria-selected="true"]'));
-    item?.scrollIntoView({ block: focus ? 'center' : 'nearest' });
+    const show = () => {
+        const item = list && (list.querySelector('.nx-timepicker-item-active') ?? list.querySelector('[aria-selected="true"]'));
+        item?.scrollIntoView({ block: focus ? 'center' : 'nearest' });
+        return item;
+    };
+    const item = show();
     if (focus) (item ?? list?.querySelector('button'))?.focus();
+    if (!list || focus) return;
+    // On a slow connection the render that moves the active option can land after this call: follow it for a moment.
+    followers.get(list)?.disconnect();
+    const observer = new MutationObserver(show);
+    observer.observe(list, { subtree: true, attributes: true, attributeFilter: ['class', 'aria-selected'] });
+    followers.set(list, observer);
+    setTimeout(() => { if (followers.get(list) === observer) { observer.disconnect(); followers.delete(list); } }, 1000);
 }
+
+const followers = new WeakMap();   // time list → the observer that keeps its active option in view
 
 // NxDatePicker, while its calendar is closed: Up and Down step the date part under the caret (day, month or year),
 // as a spin box would; an empty or unreadable field starts from today. The text is typed freely, so its numbers are

@@ -57,8 +57,8 @@ public class SplitterTests : PageTest
         await bar.FocusAsync();
         await Page.Keyboard.PressAsync("ArrowRight");
         await Page.Keyboard.PressAsync("ArrowRight");
-        await Page.WaitForFunctionAsync($"() => document.querySelector('#overview-list').getBoundingClientRect().width > {before + 19}");
-        Assert.That(await WidthAsync("overview-list") - before, Is.EqualTo(20).Within(1));
+        // .NET writes each step's size back a round trip later: wait for the last one, not the first that passes.
+        await Page.WaitForFunctionAsync("w => Math.abs(document.querySelector('#overview-list').getBoundingClientRect().width - w) < 1", (double)before + 20);
 
         await Page.Keyboard.PressAsync("Home");
         await Page.WaitForFunctionAsync("() => Math.abs(document.querySelector('#overview-list').getBoundingClientRect().width - 160) < 1");
@@ -134,6 +134,24 @@ public class SplitterTests : PageTest
         await Expect(Page.Locator("#collapse-state")).ToContainTextAsync("Properties: collapsed");
         await Page.Locator("#toggle-props").ClickAsync();
         await Expect(Page.Locator("#collapse-state")).ToContainTextAsync("Properties: open");
+    }
+
+    [Test]
+    public async Task Collapse_LastPane_ItsBarGoes_TheOtherBarStillDrags()
+    {
+        await GoToPage();
+        await Page.Locator("#collapse-splitter").ScrollIntoViewIfNeededAsync();
+        await Expect(Bar("collapse-splitter", 1)).ToBeVisibleAsync();
+
+        await Page.Locator("#toggle-props").ClickAsync();
+        await Expect(Page.Locator("#collapse-state")).ToContainTextAsync("Properties: collapsed");
+        await Expect(Bar("collapse-splitter", 1)).ToBeHiddenAsync();
+        await Page.WaitForFunctionAsync("() => document.querySelector('#collapse-props').getBoundingClientRect().width < 1");
+
+        var before = await WidthAsync("collapse-nav");
+        await DragAsync(Bar("collapse-splitter", 0), 80, 0);
+        await Page.WaitForFunctionAsync("w => Math.abs(document.querySelector('#collapse-nav').getBoundingClientRect().width - (w + 80)) < 3", (double)before);
+        Assert.That(await WidthAsync("collapse-props"), Is.EqualTo(0).Within(1), "the collapsed pane stays collapsed");
     }
 
     [Test]

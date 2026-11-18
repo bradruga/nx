@@ -96,6 +96,82 @@ public class FileManagerTests : PageTest
         await Expect(Page.Locator("#go-files .nx-treeview [role=treeitem][aria-expanded=true]")).ToHaveCountAsync(1);
     }
 
+    private ILocator Names(string manager) => Page.Locator($"#{manager} [role=option] .nx-filemanager-name-text");
+
+    private ILocator ViewButton(string manager, string which) => Page.Locator($"#{manager} [data-nx-filemanager={which}]");
+
+    [Test]
+    public async Task ColumnHeaders_Sort_FoldersFirst()
+    {
+        await GoToPage("overview");
+        await Expect(Names("overview-files")).ToHaveTextAsync(["Archive", "Drawings", "Photos", "Quality", "Contract.pdf", "Read me.txt"]);
+
+        await Page.Locator("#overview-files .nx-filemanager-th", new() { HasText = "Name" }).ClickAsync();
+        await Expect(Page.Locator("#overview-files .nx-filemanager-th", new() { HasText = "Name" })).ToHaveTextAsync("Name ↓");
+        await Expect(Names("overview-files")).ToHaveTextAsync(["Quality", "Photos", "Drawings", "Archive", "Read me.txt", "Contract.pdf"]);
+
+        // Size: the files by size, the folders still ahead of them.
+        await Page.Locator("#overview-files .nx-filemanager-th", new() { HasText = "Size" }).ClickAsync();
+        await Expect(Names("overview-files").Nth(4)).ToHaveTextAsync("Read me.txt");
+        await Expect(Names("overview-files").Nth(5)).ToHaveTextAsync("Contract.pdf");
+        var folders = await Page.Locator("#overview-files [role=option]").EvaluateAllAsync<bool[]>(
+            "os => os.map(o => !!o.querySelector('.nx-filemanager-icon-folder'))");
+        Assert.That(folders, Is.EqualTo(new[] { true, true, true, true, false, false }));
+    }
+
+    [Test]
+    public async Task Tiles_SwitchesTheLayout_ArrowsStillSelect()
+    {
+        await GoToPage("overview");
+        await ViewButton("overview-files", "tiles").ClickAsync();
+        await Expect(ViewButton("overview-files", "tiles")).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(Page.Locator("#overview-files .nx-filemanager-list")).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("nx-filemanager-tiles"));
+        await Expect(Page.Locator("#overview-files .nx-filemanager-head")).ToHaveCountAsync(0);
+        // Tiles sit side by side.
+        var first = (await Entry("overview-files", "Archive").BoundingBoxAsync())!;
+        var second = (await Entry("overview-files", "Drawings").BoundingBoxAsync())!;
+        Assert.That(second.Y, Is.EqualTo(first.Y).Within(1));
+        Assert.That(second.X, Is.GreaterThan(first.X + first.Width - 1));
+
+        await Page.Locator("#overview-files [role=listbox]").FocusAsync();
+        await Page.Keyboard.PressAsync("ArrowRight");
+        await Page.Keyboard.PressAsync("ArrowRight");
+        await Expect(Page.Locator("#overview-selected")).ToHaveTextAsync("Selected: Drawings");
+        await Page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(Page.Locator("#overview-selected")).ToHaveTextAsync("Selected: Archive");
+        await Expect(Entry("overview-files", "Archive")).ToHaveAttributeAsync("aria-selected", "true");
+    }
+
+    [Test]
+    public async Task DetailsToggle_HidesThePane_ListWidens()
+    {
+        await GoToPage("overview");
+        var main = Page.Locator("#overview-files .nx-filemanager-main");
+        await Expect(Page.Locator("#overview-files .nx-filemanager-details")).ToBeVisibleAsync();
+        var before = (await main.BoundingBoxAsync())!.Width;
+        var pane = (await Page.Locator("#overview-files .nx-filemanager-details").BoundingBoxAsync())!.Width;
+
+        await ViewButton("overview-files", "details").ClickAsync();
+        await Expect(ViewButton("overview-files", "details")).ToHaveAttributeAsync("aria-pressed", "false");
+        await Expect(Page.Locator("#overview-files .nx-filemanager-details")).ToHaveCountAsync(0);
+        Assert.That((await main.BoundingBoxAsync())!.Width - before, Is.EqualTo(pane).Within(2));
+    }
+
+    [Test]
+    public async Task Breadcrumb_GoesUp_TreeFollows()
+    {
+        await GoToPage("overview");
+        await Entry("overview-files", "Drawings").DblClickAsync();
+        await Entry("overview-files", "Shop").DblClickAsync();
+        await Expect(Page.Locator("#overview-files .nx-treeview [aria-selected=true] > .nx-treeview-row")).ToHaveTextAsync("Shop");
+
+        await Page.Locator("#overview-files .nx-filemanager-crumb").Nth(1).ClickAsync();
+        await Expect(Page.Locator("#overview-folder")).ToHaveTextAsync("Folder: Drawings");
+        await Expect(Page.Locator("#overview-files .nx-filemanager-crumb")).ToHaveTextAsync(["Route 9 Bridge", "Drawings"]);
+        await Expect(Page.Locator("#overview-files .nx-treeview [aria-selected=true] > .nx-treeview-row")).ToHaveTextAsync("Drawings");
+        await Expect(Page.Locator("#overview-files .nx-treeview [aria-selected=true]")).ToHaveCountAsync(1);
+    }
+
     [TestCase(390)]
     [TestCase(1280)]
     public async Task List_NeverScrollsSideways(int width)

@@ -82,6 +82,46 @@ public class SliderChipDateInputTests : PageTest
         await Expect(Page.Locator(".nx-slider", new() { Has = Page.Locator("#buttons-slider") }).Locator(".nx-slider-value")).ToHaveTextAsync("3");
     }
 
+    [Test]
+    public async Task Slider_Validation_RejectsOutOfRange_ThenSaves()
+    {
+        await GoToPage("/slider/examples");
+        var slider = Page.Locator("#slump-slider");
+        await slider.ScrollIntoViewIfNeededAsync();
+
+        await Page.Locator("#slider-submit").ClickAsync();
+        await Expect(Page.Locator("#slider-form .nx-validation-message")).ToHaveTextAsync("Slump must be 3 to 7 inches.");
+        await Expect(slider).ToHaveAttributeAsync("aria-invalid", "true");
+        await Expect(Page.Locator("#slider-result")).ToHaveTextAsync("Not saved");
+
+        await slider.FocusAsync();
+        for (var i = 0; i < 4; i++)
+            await Page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(slider).ToHaveValueAsync("5");
+        await Page.Locator("#slider-submit").ClickAsync();
+
+        await Expect(Page.Locator("#slider-result")).ToHaveTextAsync("Saved slump 5 in");
+        await Expect(Page.Locator("#slider-form .nx-validation-message")).ToHaveCountAsync(0);
+        await Expect(slider).Not.ToHaveAttributeAsync("aria-invalid", "true");
+    }
+
+    [Test]
+    public async Task Slider_Synchronized_MovingOneMovesTheOther()
+    {
+        await GoToPage("/slider/examples");
+        var a = Page.Locator("#sync-a");
+        await a.ScrollIntoViewIfNeededAsync();
+        await Expect(Page.Locator("#sync-b")).ToHaveValueAsync("5");
+
+        await a.FocusAsync();
+        for (var i = 0; i < 3; i++)
+            await Page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(a).ToHaveValueAsync("8");
+        await Expect(Page.Locator("#sync-b")).ToHaveValueAsync("8");
+        await Expect(Page.Locator("#sync-b")).ToHaveAttributeAsync("aria-valuetext", "8");
+    }
+
     // ── NxChipList ────────────────────────────────────────────────────────────
 
     [Test]

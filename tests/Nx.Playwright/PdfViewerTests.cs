@@ -94,6 +94,32 @@ public class PdfViewerTests : PageTest
     }
 
     [Test]
+    public async Task Print_PrintsTheFileInAHiddenFrame_NoErrors()
+    {
+        var errors = new List<string>();
+        Page.Console += (_, m) => { if (m.Type == "error") errors.Add(m.Text); };
+        Page.PageError += (_, e) => errors.Add(e);
+        // Runs in every frame: print is stubbed (headless would block on it) and counted on the page; a failed print opens a window.
+        await Page.AddInitScriptAsync("""
+            window.print = () => { top.__printed = (top.__printed || 0) + 1; };
+            window.open = (...args) => { top.__opened = args; return null; };
+            """);
+        await GoToPage("examples");
+        await Expect(Page.Locator("#url-pdf .nx-pdfviewer-pages")).ToHaveTextAsync("of 3");
+
+        await Tool("url-pdf", "print").ClickAsync();
+        var frame = Page.Locator("iframe[src^='blob:']");
+        await Expect(frame).ToHaveCountAsync(1);
+        Assert.That(await frame.EvaluateAsync<double>("f => f.getBoundingClientRect().width"), Is.EqualTo(0), "hidden");
+        Assert.That(await frame.EvaluateAsync<string>("async f => (await (await fetch(f.src)).text()).slice(0, 5)"), Is.EqualTo("%PDF-"), "the frame shows the file");
+        // Headless Chromium has no PDF viewer: the frame never loads the file, so its load is raised here to run the print.
+        await frame.EvaluateAsync("f => f.dispatchEvent(new Event('load'))");
+        await Page.WaitForFunctionAsync("() => window.__printed >= 1 || window.__opened !== undefined");
+        Assert.That(await Page.EvaluateAsync<bool>("() => window.__opened === undefined"), Is.True, "the frame printed; no window fallback");
+        Assert.That(errors, Is.Empty);
+    }
+
+    [Test]
     public async Task Download_SavesUnderTheFileName()
     {
         await GoToPage("overview");

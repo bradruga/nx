@@ -134,6 +134,10 @@ public class WindowTests : PageTest
         Assert.That((await Window("window-a").BoundingBoxAsync())!.Y, Is.EqualTo(0).Within(1));
     }
 
+    /// <summary>The window is placed and sized in JS after it renders: wait until its box stops changing.</summary>
+    private Task Settled(string id) => Window(id).EvaluateAsync(
+        "w => new Promise(r => { let last = ''; const f = () => { const b = w.getBoundingClientRect(); const now = [b.left, b.top, b.width, b.height].join(); now === last ? r() : (last = now, requestAnimationFrame(f)); }; f(); })");
+
     [Test]
     public async Task Resize_FromCorner()
     {
@@ -141,6 +145,7 @@ public class WindowTests : PageTest
 
         await Page.Locator("#open-actions").ScrollIntoViewIfNeededAsync();
         await Page.Locator("#open-actions").ClickAsync();
+        await Settled("actions-window");
         var before = (await Window("actions-window").BoundingBoxAsync())!;
         var handle = (await Window("actions-window").Locator(".nx-window-resize-se").BoundingBoxAsync())!;
         await Page.Mouse.MoveAsync(handle.X + 7, handle.Y + 7);
@@ -148,6 +153,7 @@ public class WindowTests : PageTest
         await Page.Mouse.MoveAsync(handle.X + 107, handle.Y + 57, new() { Steps = 5 });
         await Page.Mouse.UpAsync();
 
+        await Settled("actions-window");
         var after = (await Window("actions-window").BoundingBoxAsync())!;
         Assert.That(after.Width - before.Width, Is.EqualTo(100).Within(2));
         Assert.That(after.Height - before.Height, Is.EqualTo(50).Within(2));
@@ -161,12 +167,14 @@ public class WindowTests : PageTest
 
         await Page.Locator("#open-actions").ScrollIntoViewIfNeededAsync();
         await Page.Locator("#open-actions").ClickAsync();
+        await Settled("actions-window");
         var handle = (await Window("actions-window").Locator(".nx-window-resize-e").BoundingBoxAsync())!;
         await Page.Mouse.MoveAsync(handle.X + 4, handle.Y + 10);
         await Page.Mouse.DownAsync();
         await Page.Mouse.MoveAsync(handle.X - 500, handle.Y + 10, new() { Steps = 5 });
         await Page.Mouse.UpAsync();
 
+        await Window("actions-window").EvaluateAsync("w => new Promise(r => { const f = () => Math.abs(w.getBoundingClientRect().width - 240) <= 1 ? r() : requestAnimationFrame(f); f(); })");
         Assert.That((await Window("actions-window").BoundingBoxAsync())!.Width, Is.EqualTo(240).Within(1));
     }
 
@@ -229,6 +237,43 @@ public class WindowTests : PageTest
         await Expect(Window("outer-window")).ToHaveCountAsync(0);
         await Expect(Page.Locator("#open-outer")).ToBeFocusedAsync();
         Assert.That(await ScrollLockedAsync(), Is.False);
+    }
+
+    private async Task OpenNestedAsync()
+    {
+        await GoToPage();
+        await Page.Locator("#open-outer").ScrollIntoViewIfNeededAsync();
+        await Page.Locator("#open-outer").ClickAsync();
+        await Page.Locator("#open-inner").ClickAsync();
+        await Expect(Window("inner-window")).ToBeVisibleAsync();
+        await Page.WaitForFunctionAsync("() => document.querySelector('#inner-window').contains(document.activeElement)");
+    }
+
+    [Test]
+    public async Task Nested_TabStaysInTheInnerWindow()
+    {
+        await OpenNestedAsync();
+
+        // Forward and back, focus never leaves the top window for the one below or the page.
+        foreach (var key in new[] { "Tab", "Tab", "Tab", "Tab", "Tab", "Shift+Tab", "Shift+Tab", "Shift+Tab", "Shift+Tab", "Shift+Tab", "Shift+Tab" })
+        {
+            await Page.Keyboard.PressAsync(key);
+            Assert.That(await Page.EvaluateAsync<bool>("() => document.querySelector('#inner-window').contains(document.activeElement)"), Is.True, $"after {key}");
+        }
+    }
+
+    [Test]
+    public async Task Nested_CloseButtonsReturnFocusToTheirOpeners()
+    {
+        await OpenNestedAsync();
+
+        // Closed with the mouse, not Escape: focus still goes back to the button that opened it.
+        await Window("inner-window").Locator(".nx-window-close").ClickAsync();
+        await Expect(Window("inner-window")).ToHaveCountAsync(0);
+        await Expect(Page.Locator("#open-inner")).ToBeFocusedAsync();
+        await Window("outer-window").Locator(".nx-window-close").First.ClickAsync();
+        await Expect(Window("outer-window")).ToHaveCountAsync(0);
+        await Expect(Page.Locator("#open-outer")).ToBeFocusedAsync();
     }
 
     [Test]

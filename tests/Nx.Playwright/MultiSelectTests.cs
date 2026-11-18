@@ -173,4 +173,104 @@ public class MultiSelectTests : PageTest
         await page.Locator(".nx-multiselect:has(#overview-multi) .nx-combobox-field").TapAsync();
         await Expect(page.Locator(".nx-combobox-overlay .nx-combobox-overlay-done")).ToBeVisibleAsync();
     }
+
+    [Test]
+    public async Task Columns_TypePageDownSpace_Toggles_SummaryAfterThreshold()
+    {
+        await GoToPage();
+        var field = Field("virtual-multi");
+        var host = Page.Locator(".nx-multiselect:has(#virtual-multi)");
+        await field.ScrollIntoViewIfNeededAsync();
+        await field.ClickAsync();
+        await field.PressSequentiallyAsync("P-0001");
+        await Expect(Popup.Locator("[role=option]")).ToHaveCountAsync(10);
+
+        await Page.Keyboard.PressAsync("PageDown");
+        await Expect(Popup.Locator(".nx-combobox-item-active")).ToContainTextAsync("P-00019");
+        await Page.Keyboard.PressAsync(" ");
+        await Expect(Option("P-00019").Or(Popup.Locator("[role=option]", new() { HasText = "P-00019" }))).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(host.Locator(".nx-combobox-chip-text")).ToHaveTextAsync(new[] { "P-00019" });
+        await Expect(field).ToHaveValueAsync("P-0001");
+
+        foreach (var expected in new[] { 2, 3 })
+        {
+            await Page.Keyboard.PressAsync("ArrowUp");
+            await Page.Keyboard.PressAsync(" ");
+            await Expect(host.Locator(".nx-combobox-chip-text")).ToHaveCountAsync(expected);
+        }
+        await Expect(host.Locator(".nx-combobox-summary")).ToHaveCountAsync(0);
+
+        await Page.Keyboard.PressAsync("ArrowUp");
+        await Page.Keyboard.PressAsync(" ");
+        await Expect(host.Locator(".nx-combobox-summary")).ToHaveTextAsync("4 selected");
+        await Expect(host.Locator(".nx-combobox-chip-text")).ToHaveCountAsync(0);
+        await Expect(Popup).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task Columns_PopupWidthNarrowerThanTheField_FillsTheField()
+    {
+        await GoToPage();
+        await OpenAsync("virtual-multi");
+        await Expect(Popup.Locator(".nx-combobox-item-grid").First).ToBeVisibleAsync();
+
+        var widths = await Popup.EvaluateAsync<double[]>(@"p => [
+            p.querySelector('.nx-combobox-popup-body').getBoundingClientRect().width,
+            p.getBoundingClientRect().width,
+            document.querySelector('.nx-multiselect:has(#virtual-multi)').getBoundingClientRect().width]");
+
+        // PopupWidth="420px" is narrower than the 560px field here; the popup is never narrower than its field.
+        Assert.That(widths[2], Is.GreaterThan(420));
+        Assert.That(widths[0], Is.EqualTo(widths[1]).Within(2.5), "the body fills the popup");
+        Assert.That(widths[1], Is.EqualTo(widths[2]).Within(2.5), "the popup matches the field");
+    }
+
+    [Test]
+    public async Task Chips_MoreThanMaxVisible_ShowsPlusNMore()
+    {
+        await GoToPage();
+        var host = Page.Locator(".nx-multiselect:has(#group-multi)");
+        await Expect(host.Locator(".nx-combobox-chip-text")).ToHaveCountAsync(2);
+        await Expect(host.Locator(".nx-combobox-chip-more")).ToHaveCountAsync(0);
+
+        await OpenAsync("group-multi");
+        // The ItemTemplate adds each person's title to the option's name.
+        ILocator Person(string name) => Popup.Locator("[role=option]", new() { HasText = name });
+        await Person("Dana Ortiz").ClickAsync();
+        await Expect(host.Locator(".nx-combobox-chip-text")).ToHaveCountAsync(3);
+        await Expect(host.Locator(".nx-combobox-chip-more")).ToHaveCountAsync(0);
+
+        await Person("Grace Liu").ClickAsync();
+        await Person("Tom Kowalski").ClickAsync();
+        await Expect(host.Locator(".nx-combobox-chip-more")).ToHaveTextAsync("+2 more");
+        await Expect(host.Locator(".nx-combobox-chip-text")).ToHaveCountAsync(3);
+    }
+
+    [Test]
+    public async Task Chips_Phone_NoHorizontalOverflow()
+    {
+        await Page.SetViewportSizeAsync(390, 844);
+        await GoToPage();
+        var host = Page.Locator(".nx-multiselect:has(#group-multi)");
+        await host.ScrollIntoViewIfNeededAsync();
+        // Select everyone through the sheet so the chips are as wide as they get.
+        await Field("group-multi").ClickAsync();
+        var sheet = Page.Locator(".nx-combobox-overlay");
+        await Expect(sheet).ToBeVisibleAsync();
+        foreach (var name in new[] { "Dana Ortiz", "Priya Raman", "Hannah O'Neill", "Victor Moreau" })
+            await sheet.Locator("[role=option]", new() { HasText = name }).ClickAsync();
+        await sheet.GetByRole(AriaRole.Button, new() { Name = "Done" }).ClickAsync();
+        await Expect(sheet).ToHaveCountAsync(0);
+        await Expect(host.Locator(".nx-combobox-chip-more")).ToHaveTextAsync("+3 more");
+
+        var overflow = await Page.EvaluateAsync<double[]>(@"() => {
+            const host = document.querySelector('.nx-multiselect:has(#group-multi)');
+            const r = host.getBoundingClientRect();
+            const chips = [...host.querySelectorAll('.nx-combobox-chip')].map(c => c.getBoundingClientRect().right);
+            return [document.documentElement.scrollWidth - document.documentElement.clientWidth, Math.max(...chips) - r.right, r.right - window.innerWidth];
+        }");
+        Assert.That(overflow[0], Is.LessThanOrEqualTo(0), "page scrolls sideways");
+        Assert.That(overflow[1], Is.LessThanOrEqualTo(0.5), "a chip spills out of the field");
+        Assert.That(overflow[2], Is.LessThanOrEqualTo(0), "the field runs off screen");
+    }
 }

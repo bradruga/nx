@@ -132,6 +132,40 @@ public class DialogTests : PageTest
         await Expect(Page.Locator("#ex-progress-result")).ToHaveTextAsync("Imported 4 files");
     }
 
+    [Test]
+    public async Task Markup_TabWrapsInside_CancelAndEscapeReturnFocus()
+    {
+        await GoToPage("examples");
+        var dialog = Page.Locator("#ex-review");
+
+        await Page.Locator("#ex-markup").ClickAsync();
+        await Expect(dialog).ToBeVisibleAsync();
+        await Page.WaitForFunctionAsync("() => document.querySelector('#ex-review').contains(document.activeElement)");
+        var first = await Page.EvaluateAsync<string>("() => document.activeElement.id || document.activeElement.className");
+
+        // Every Tab stays in the dialog, and enough of them come back round to where focus started.
+        var seen = new HashSet<string>();
+        for (var i = 0; i < 8; i++)
+        {
+            await Page.Keyboard.PressAsync("Tab");
+            Assert.That(await Page.EvaluateAsync<bool>("() => document.querySelector('#ex-review').contains(document.activeElement)"), Is.True, $"after Tab {i + 1}");
+            seen.Add(await Page.EvaluateAsync<string>("() => document.activeElement.id || document.activeElement.className"));
+        }
+        Assert.That(seen, Does.Contain(first), "Tab wrapped");
+        Assert.That(seen, Does.Contain("ex-review-cancel"));
+
+        await Page.Locator("#ex-review-cancel").ClickAsync();
+        await Expect(dialog).ToHaveCountAsync(0);
+        await Expect(Page.Locator("#ex-markup")).ToBeFocusedAsync();
+
+        await Page.Locator("#ex-markup").ClickAsync();
+        await Expect(dialog).ToBeVisibleAsync();
+        await Page.WaitForFunctionAsync("() => document.querySelector('#ex-review').contains(document.activeElement)");
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(dialog).ToHaveCountAsync(0);
+        await Expect(Page.Locator("#ex-markup")).ToBeFocusedAsync();
+    }
+
     [TestCase(390)]
     [TestCase(1280)]
     public async Task Markup_CompactCardAtAnyWidth_Centered(int width)

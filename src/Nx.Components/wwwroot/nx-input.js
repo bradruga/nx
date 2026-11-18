@@ -222,6 +222,11 @@ export function editMask(input, mask, prompt) {
             const end = input.selectionEnd ?? start;
             const clear = (from, to) => { for (let i = from; i < to; i++) if (slot(i)) chars[i] = state.maskPrompt; };
             if (e.inputType.startsWith('insert')) {
+                // A caret past the typed text (a click into the empty mask, or after Clear) types from the first empty slot.
+                const firstEmpty = state.maskParts.findIndex((p, i) => p.rule && chars[i] === state.maskPrompt);
+                if (start === end && firstEmpty >= 0 && firstEmpty < start
+                    && chars.slice(firstEmpty, start).every((c, k) => !slot(firstEmpty + k) || c === state.maskPrompt))
+                    start = firstEmpty;
                 clear(start, end);
                 let at = start;
                 for (const c of [...(e.data ?? e.dataTransfer?.getData('text/plain') ?? '')]) {

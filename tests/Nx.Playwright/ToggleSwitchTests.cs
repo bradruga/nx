@@ -148,4 +148,36 @@ public class ToggleSwitchTests : PageTest
         await Page.Locator("#pg-size-Large").ClickAsync();
         await Expect(Page.Locator(".nx-switch").Filter(new() { Has = Switch("playground-switch") })).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("nx-switch-lg"));
     }
+
+    [Test]
+    public async Task LabelPosition_StartPutsTheLabelLeftOfTheSwitch()
+    {
+        await GoToPage();
+        await Switch("pos-start-1").ScrollIntoViewIfNeededAsync();
+
+        foreach (var id in new[] { "pos-start-1", "pos-start-2", "pos-start-3" })
+        {
+            var label = (await Page.Locator($"label[for={id}]").BoundingBoxAsync())!;
+            var toggle = (await Switch(id).BoundingBoxAsync())!;
+            Assert.That(label.X + label.Width, Is.LessThanOrEqualTo(toggle.X), id);
+            Assert.That(label.Y + label.Height / 2, Is.EqualTo(toggle.Y + toggle.Height / 2).Within(4), id);
+        }
+    }
+
+    [Test]
+    public async Task Loading_KeepsFocusAfterTheSave()
+    {
+        await GoToPage();
+        var toggle = Switch("loading-switch");
+        await toggle.ScrollIntoViewIfNeededAsync();
+
+        await toggle.ClickAsync();
+        await Expect(toggle).ToHaveAttributeAsync("aria-busy", "true");
+        await Expect(toggle).ToBeFocusedAsync();
+        await Expect(toggle).Not.ToHaveAttributeAsync("aria-busy", "true", new() { Timeout = 4000 });
+
+        await Expect(toggle).ToBeFocusedAsync();
+        await Page.Keyboard.PressAsync(" ");
+        await Expect(toggle).ToHaveAttributeAsync("aria-busy", "true");
+    }
 }

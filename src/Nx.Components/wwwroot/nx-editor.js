@@ -33,7 +33,7 @@ export function init(root, content, dotNet, html) {
         }
     };
     state.onInput = () => {
-        normalizeMarks(state);
+        if (!state.styling) normalizeMarks(state);   // a style tool normalizes itself, to keep its selection
         updateEmpty(state);
         saveRange(state);
         scheduleChange(state);
@@ -351,27 +351,36 @@ const NO_COLOR = '#010203';
 const NO_FONT = 'nx-none';
 
 function applyStyle(state, command, value) {
-    if (command === 'foreColor') {
-        document.execCommand('foreColor', false, value || NO_COLOR);
-    } else if (command === 'fontFamily') {
-        document.execCommand('fontName', false, value || NO_FONT);
-    } else if (command === 'fontSize') {
-        state.pendingSize = value || '';
-        document.execCommand('fontSize', false, '7');
-    } else {
-        // Highlights are spans already; "none" is a transparent one, removed below.
-        document.execCommand('styleWithCSS', false, true);
-        document.execCommand('hiliteColor', false, value || 'transparent');
-        document.execCommand('styleWithCSS', false, false);
+    // Read before the edit: turning <font> into spans below collapses the selection.
+    const hadRange = !document.getSelection().isCollapsed;
+    state.styling = true;   // execCommand raises input at once; its handler must leave the <font> to us
+    try {
+        if (command === 'foreColor') {
+            document.execCommand('foreColor', false, value || NO_COLOR);
+        } else if (command === 'fontFamily') {
+            document.execCommand('fontName', false, value || NO_FONT);
+        } else if (command === 'fontSize') {
+            state.pendingSize = value || '';
+            document.execCommand('fontSize', false, '7');
+        } else {
+            // Highlights are spans already; "none" is a transparent one, removed below.
+            document.execCommand('styleWithCSS', false, true);
+            document.execCommand('hiliteColor', false, value || 'transparent');
+            document.execCommand('styleWithCSS', false, false);
+        }
+    } finally {
+        state.styling = false;
     }
     const made = normalizeMarks(state);
-    if (made.length && !document.getSelection().isCollapsed) {
+    if (made.length && hadRange) {
         const range = document.createRange();
         range.setStartBefore(made[0]);
         range.setEndAfter(made[made.length - 1]);
         const selection = document.getSelection();
         selection.removeAllRanges();
         selection.addRange(range);
+        // A list or color tool takes focus back after this: the next tool restores this range, not the removed <font>.
+        saveRange(state);
     }
 }
 

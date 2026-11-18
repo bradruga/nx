@@ -115,4 +115,20 @@ public class TreeViewTests : PageTest
         await Row("drag-tree", "Main yard").DragToAsync(Row("drag-tree", "Bay B"), new() { TargetPosition = new() { X = 60, Y = (float)(box.Height / 2) } });
         await Expect(log).ToHaveTextAsync("Repair shop before Main yard");
     }
+
+    [Test]
+    public async Task Drag_LowerThird_DropsAfter()
+    {
+        await Page.SetViewportSizeAsync(1280, 900);
+        await GoToPage("examples");
+        var bayA = Page.Locator("#drag-tree li").Filter(new() { Has = Page.Locator("xpath=./div[contains(@class,'nx-treeview-row')]//span[contains(@class,'nx-treeview-content')][normalize-space()='Bay A']") });
+        var forms = bayA.Locator(".nx-treeview-group .nx-treeview-content");
+        await Expect(forms).ToHaveTextAsync(["Wall form 12", "Wall form 14"]);
+
+        var target = Row("drag-tree", "Wall form 14");
+        var box = (await target.BoundingBoxAsync())!;
+        await Row("drag-tree", "Wall form 12").DragToAsync(target, new() { TargetPosition = new() { X = 60, Y = (float)(box.Height - 3) } });
+        await Expect(Page.Locator("#drag-log > span")).ToHaveTextAsync("Wall form 12 after Wall form 14");
+        await Expect(forms).ToHaveTextAsync(["Wall form 14", "Wall form 12"]);
+    }
 }

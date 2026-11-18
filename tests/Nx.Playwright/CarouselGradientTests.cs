@@ -140,6 +140,111 @@ public class CarouselGradientTests : PageTest
         await Expect(hex).ToHaveValueAsync("#c0392b");
     }
 
+    /// <summary>Drags from the middle of the gradient's area to its top-right corner (full saturation and brightness).</summary>
+    private async Task DragAreaToTopRightAsync(string id)
+    {
+        var area = Page.Locator($"#{id} .nx-colorgradient-area");
+        await area.ScrollIntoViewIfNeededAsync();
+        var box = (await area.BoundingBoxAsync())!;
+        await Page.Mouse.MoveAsync(box.X + box.Width * 0.5f, box.Y + box.Height * 0.5f);
+        await Page.Mouse.DownAsync();
+        await Page.Mouse.MoveAsync(box.X + box.Width, box.Y, new() { Steps = 6 });
+        await Page.Mouse.UpAsync();
+    }
+
+    [Test]
+    public async Task Gradient_Examples_DragMovesThumb_HexAndBoundValue()
+    {
+        await GoToPage("/colorgradient/examples");
+
+        // White has hue 0: the top-right corner is pure red.
+        await DragAreaToTopRightAsync("text-gradient");
+
+        await Expect(Page.Locator("#text-gradient-hex")).ToHaveValueAsync("#ff0000");
+        await Expect(Page.Locator("#initials-value")).ToHaveTextAsync("#ff0000 on #2e6db4");
+        await Expect(Page.Locator("#initials-preview")).ToHaveCSSAsync("color", "rgb(255, 0, 0)");
+        var area = (await Page.Locator("#text-gradient .nx-colorgradient-area").BoundingBoxAsync())!;
+        var thumb = (await Page.Locator("#text-gradient .nx-colorgradient-thumb").BoundingBoxAsync())!;
+        Assert.That(thumb.X + thumb.Width / 2, Is.EqualTo(area.X + area.Width).Within(1.5));
+        Assert.That(thumb.Y + thumb.Height / 2, Is.EqualTo(area.Y).Within(1.5));
+    }
+
+    [Test]
+    public async Task Gradient_ArrowDownPageDown_StepBrightness_PageStays()
+    {
+        await GoToPage("/colorgradient/examples");
+        var thumb = Page.Locator("#text-gradient .nx-colorgradient-thumb");
+        await thumb.ScrollIntoViewIfNeededAsync();
+        // nx-colorgradient.js cancels the keys' scrolling one round trip after the page turns interactive.
+        await thumb.EvaluateAsync("""
+            t => new Promise(done => { const probe = () => { const e = new KeyboardEvent('keydown', { key: 'PageDown', cancelable: true });
+                 t.dispatchEvent(e); e.defaultPrevented ? done() : setTimeout(probe, 50); }; probe(); })
+            """);
+        await Expect(thumb).ToHaveAttributeAsync("aria-valuetext", "Saturation 0%, brightness 100%");
+
+        await thumb.FocusAsync();
+        var scroll = await Page.EvaluateAsync<double>("() => window.scrollY");
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Expect(thumb).ToHaveAttributeAsync("aria-valuetext", "Saturation 0%, brightness 99%");
+        await Page.Keyboard.PressAsync("PageDown");
+        await Expect(thumb).ToHaveAttributeAsync("aria-valuetext", "Saturation 0%, brightness 89%");
+
+        await Expect(Page.Locator("#text-gradient-hex")).Not.ToHaveValueAsync("#ffffff");
+        await Expect(thumb).ToBeFocusedAsync();
+        Assert.That(await Page.EvaluateAsync<double>("() => window.scrollY"), Is.EqualTo(scroll), "the keys do not scroll the page");
+    }
+
+    [Test]
+    public async Task Gradient_HueSliderDrag_RepaintsTheArea()
+    {
+        await GoToPage("/colorgradient/examples");
+        var hue = Page.Locator("#background-gradient .nx-colorgradient-hue");
+        await hue.ScrollIntoViewIfNeededAsync();
+        var start = await hue.InputValueAsync();
+
+        var box = (await hue.BoundingBoxAsync())!;
+        await Page.Mouse.MoveAsync(box.X + box.Width * 0.9f, box.Y + box.Height / 2);
+        await Page.Mouse.DownAsync();
+        await Page.Mouse.MoveAsync(box.X + box.Width / 3, box.Y + box.Height / 2, new() { Steps = 8 });
+        await Page.Mouse.UpAsync();
+
+        var end = int.Parse(await hue.InputValueAsync());
+        Assert.That(end, Is.Not.EqualTo(int.Parse(start)));
+        Assert.That(end, Is.InRange(100, 140), "a third of the way along is about green");
+        // The round trip writes the hue onto the root, and the area's gradient is painted in it.
+        await Page.WaitForFunctionAsync("""
+            () => { const root = document.getElementById('background-gradient');
+                    const hue = root.querySelector('.nx-colorgradient-hue').value;
+                    if (root.style.getPropertyValue('--nx-colorgradient-hue').trim() !== hue) return false;
+                    const probe = document.createElement('span'); probe.style.color = `hsl(${hue}deg 100% 50%)`;
+                    document.body.append(probe); const color = getComputedStyle(probe).color; probe.remove();
+                    return getComputedStyle(root.querySelector('.nx-colorgradient-area')).backgroundImage.includes(color); }
+            """);
+        await Expect(Page.Locator("#initials-value")).Not.ToHaveTextAsync("#ffffff on #2e6db4");
+    }
+
+    [Test]
+    public async Task Gradient_InADialog_DragThenOk_SetsTheValue()
+    {
+        await GoToPage("/colorgradient/examples");
+        var swatch = Page.Locator("#popup-swatch");
+        await swatch.ScrollIntoViewIfNeededAsync();
+        await swatch.ClickAsync();
+        await Expect(Page.Locator("#popup-gradient")).ToBeVisibleAsync();
+        var hex = Page.Locator("#popup-gradient-hex");
+        await Expect(hex).ToHaveValueAsync("#c0392b");
+
+        await DragAreaToTopRightAsync("popup-gradient");
+        await Expect(hex).Not.ToHaveValueAsync("#c0392b");
+        var picked = await hex.InputValueAsync();
+        await Expect(Page.Locator("#popup-value")).ToHaveTextAsync("#c0392b", new() { Timeout = 1000 });
+
+        await Page.Locator("#popup-ok").ClickAsync();
+        await Expect(Page.Locator("#popup-gradient")).ToHaveCountAsync(0);
+        await Expect(Page.Locator("#popup-value")).ToHaveTextAsync(picked);
+        Assert.That(picked, Does.Match("^#ff[0-9a-f]{4}$"), "full saturation and brightness of the red hue");
+    }
+
     [Test]
     public async Task Gradient_Phone_FitsTheWidth()
     {

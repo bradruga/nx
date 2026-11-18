@@ -18,6 +18,22 @@ function focusables(root) {
     return [...root.querySelectorAll(FOCUSABLE)].filter(e => e.offsetParent !== null || e === document.activeElement);
 }
 
+// What Tab visits: no tabindex="-1" (roving toolbars, toggle groups), and one stop per radio group, the
+// checked radio or else the first; the active radio stands for its group even when it is not that stop.
+function tabStops(root) {
+    const stops = [];
+    for (const e of focusables(root)) {
+        if (e.tabIndex < 0) continue;
+        let stop = e;
+        if (e.type === 'radio' && e.name) {
+            const group = [...root.querySelectorAll('input[type=radio]')].filter(r => r.name === e.name && r.form === e.form);
+            stop = group.includes(document.activeElement) ? document.activeElement : group.find(r => r.checked) ?? group[0];
+        }
+        if (!stops.includes(stop)) stops.push(stop);
+    }
+    return stops;
+}
+
 function baseZ(win) {
     const value = parseInt(getComputedStyle(win).getPropertyValue('--nx-z-window'), 10);
     return Number.isFinite(value) ? value : 1050;
@@ -113,7 +129,7 @@ function onKeyDown(state, e) {
         return;
     }
     if (e.key !== 'Tab' || !state.options.trapFocus) return;
-    const items = focusables(state.win);
+    const items = tabStops(state.win);
     if (items.length === 0) { e.preventDefault(); state.win.focus(); return; }
     const first = items[0], last = items[items.length - 1];
     if (e.shiftKey && (document.activeElement === first || document.activeElement === state.win)) {

@@ -86,6 +86,111 @@ public class EditorTests : PageTest
     }
 
     [Test]
+    public async Task Paste_Web_DropsScriptsAndClasses()
+    {
+        await GoToPage("examples");
+        var editor = Page.Locator("#comment-editor");
+        await editor.ClickAsync();
+        await editor.EvaluateAsync("""
+            el => {
+                const dt = new DataTransfer();
+                dt.setData('text/html', `<html><body><!--StartFragment--><div class="article-body"><p class="lead" style="color: rgb(200, 0, 0)">Slump <b class="hl">4 in</b></p>`
+                    + `<script>window.pwned = 1</script></div><!--EndFragment--></body></html>`);
+                dt.setData('text/plain', 'Slump 4 in');
+                el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+            }
+            """);
+
+        await Expect(editor).ToContainTextAsync("Slump 4 in");
+        var html = await Html("comment-editor");
+        Assert.That(html, Does.Not.Contain("<script").And.Not.Contain("pwned").And.Not.Contain("class="));
+        Assert.That(html, Does.Contain("<b>4 in</b>"), "the formatting stays");
+        Assert.That(await Page.EvaluateAsync<bool>("() => window.pwned === undefined"), Is.True);
+    }
+
+    /// <summary>Selects "Notes" in the report's last paragraph, wherever the styles so far wrapped it.</summary>
+    private async Task SelectNotesAsync()
+    {
+        var editor = Page.Locator("#report-editor");
+        await editor.Locator("p", new() { HasText = "Notes:" }).ClickAsync();
+        await editor.EvaluateAsync("""
+            el => {
+                const p = [...el.querySelectorAll('p')].find(p => p.textContent === 'Notes:');
+                const text = document.createTreeWalker(p, NodeFilter.SHOW_TEXT).nextNode();
+                const range = document.createRange();
+                range.setStart(text, 0);
+                range.setEnd(text, 5);
+                getSelection().removeAllRanges();
+                getSelection().addRange(range);
+            }
+            """);
+    }
+
+    [Test]
+    public async Task FontSizeAndColors_StyledSpans_NoFontTags()
+    {
+        await GoToPage("examples");
+        var editor = Page.Locator("#report-editor");
+        var tools = Page.Locator(".nx-editor:has(#report-editor)");
+        var popup = Page.Locator(".nx-combobox-popup");
+
+        // Selected again before each tool: a style tool does not keep the selection (see StyleTool_KeepsTheSelection).
+        await SelectNotesAsync();
+        await tools.Locator(".nx-editor-fontfamily .nx-combobox-field").ClickAsync();
+        await popup.GetByRole(AriaRole.Option, new() { Name = "Georgia", Exact = true }).ClickAsync();
+        await Page.WaitForFunctionAsync("() => /font-family:[^;\"]*Georgia/.test(document.getElementById('report-editor').innerHTML)");
+
+        await SelectNotesAsync();
+        await tools.Locator(".nx-editor-fontsize .nx-combobox-field").ClickAsync();
+        await popup.GetByRole(AriaRole.Option, new() { Name = "18 pt", Exact = true }).ClickAsync();
+        await Page.WaitForFunctionAsync("() => /font-size:\\s*18pt/.test(document.getElementById('report-editor').innerHTML)");
+
+        await SelectNotesAsync();
+        await tools.Locator(".nx-editor-color button[aria-expanded]").Nth(0).ClickAsync();
+        await Page.Locator(".nx-colorpicker-popup .nx-colorpicker-cell[aria-label='#ed7e32']").ClickAsync();
+        await Page.WaitForFunctionAsync("() => /[^-]color:\\s*rgb\\(237, 126, 50\\)/.test(document.getElementById('report-editor').innerHTML)");
+
+        await SelectNotesAsync();
+        await tools.Locator(".nx-editor-color button[aria-expanded]").Nth(1).ClickAsync();
+        await Page.Locator(".nx-colorpicker-popup .nx-colorpicker-cell[aria-label='#fce5d4']").ClickAsync();
+        await Page.WaitForFunctionAsync("() => /background-color:\\s*rgb\\(252, 229, 212\\)/.test(document.getElementById('report-editor').innerHTML)");
+
+        var html = await Html("report-editor");
+        Assert.That(html, Does.Not.Contain("<font"));
+        // All four on the selected word, through spans; the rest of the line untouched.
+        var styled = await editor.EvaluateAsync<string[]>("""
+            el => {
+                const p = [...el.querySelectorAll('p')].find(p => p.textContent === 'Notes:');
+                const walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
+                const out = [];
+                for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+                    const s = getComputedStyle(n.parentElement);
+                    out.push(`${n.textContent}|${s.fontFamily.split(',')[0].replace(/"/g, '')}|${s.fontSize}|${s.color}|${s.backgroundColor}`);
+                }
+                return out;
+            }
+            """);
+        Assert.That(styled, Has.Some.EqualTo("Notes|Georgia|24px|rgb(237, 126, 50)|rgb(252, 229, 212)"));
+        Assert.That(styled.Single(s => s.StartsWith(":|")), Does.Not.Contain("Georgia"));
+    }
+
+    [Test]
+    public async Task StyleTool_KeepsTheSelection()
+    {
+        await GoToPage("examples");
+        var tools = Page.Locator(".nx-editor:has(#report-editor)");
+        await SelectNotesAsync();
+        await tools.Locator(".nx-editor-fontsize .nx-combobox-field").ClickAsync();
+        await Page.Locator(".nx-combobox-popup").GetByRole(AriaRole.Option, new() { Name = "18 pt", Exact = true }).ClickAsync();
+        await Page.WaitForFunctionAsync("() => /font-size:\\s*18pt/.test(document.getElementById('report-editor').innerHTML)");
+        await Page.WaitForFunctionAsync("() => getSelection().toString() === 'Notes'");
+
+        await tools.Locator(".nx-editor-color button[aria-expanded]").Nth(0).ClickAsync();
+        await Page.Locator(".nx-colorpicker-popup .nx-colorpicker-cell[aria-label='#ed7e32']").ClickAsync();
+        await Page.WaitForFunctionAsync("() => /[^-]color:\\s*rgb\\(237, 126, 50\\)/.test(document.getElementById('report-editor').innerHTML)");
+    }
+
+    [Test]
     public async Task Link_CtrlK_EnterInserts()
     {
         await GoToPage("examples");

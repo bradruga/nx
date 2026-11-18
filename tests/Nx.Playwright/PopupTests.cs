@@ -97,6 +97,69 @@ public class PopupTests : PageTest
         Assert.That(gap, Is.EqualTo(8).Within(1));
     }
 
+    [TestCase("#place-bottom", "#place-popup", "#place-target")]
+    [TestCase("#card-anchor", "#card-popup", "#card-anchor")]
+    public async Task PageScroll_PopupKeepsItsOffsetFromTheAnchor(string opener, string popupId, string anchorId)
+    {
+        await GoToPage("examples");
+        await Page.Locator(anchorId).EvaluateAsync("a => window.scrollBy(0, a.getBoundingClientRect().top - 300)");
+        await Page.Locator(opener).ClickAsync();
+        var popup = Page.Locator(popupId);
+        await Expect(popup).ToBeVisibleAsync();
+        await Page.WaitForFunctionAsync("p => document.querySelector(p).style.top !== ''", popupId);
+
+        const string offset = "({ p, a }) => { const pr = document.querySelector(p).getBoundingClientRect(), ar = document.querySelector(a).getBoundingClientRect(); return [pr.left - ar.left, pr.top - ar.top]; }";
+        var before = await Page.EvaluateAsync<double[]>(offset, new { p = popupId, a = anchorId });
+        var anchorTop = await Page.Locator(anchorId).EvaluateAsync<double>("a => a.getBoundingClientRect().top");
+
+        await Page.EvaluateAsync("() => window.scrollBy(0, 120)");
+        await Page.WaitForFunctionAsync("({ a, top }) => Math.abs(document.querySelector(a).getBoundingClientRect().top - (top - 120)) < 1",
+            new { a = anchorId, top = anchorTop });
+        await Page.WaitForFunctionAsync(
+            "({ p, a, dx, dy }) => { const pr = document.querySelector(p).getBoundingClientRect(), ar = document.querySelector(a).getBoundingClientRect(); return Math.abs(pr.left - ar.left - dx) < 1 && Math.abs(pr.top - ar.top - dy) < 1; }",
+            new { p = popupId, a = anchorId, dx = before[0], dy = before[1] });
+        await Expect(popup).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task NearTheRightEdge_ShiftsLeftToStayOnScreen()
+    {
+        await Page.SetViewportSizeAsync(390, 800);
+        await Page.GotoAsync($"{_baseUrl}/popup/examples");
+        await Expect(Page.Locator(".layout-container[data-interactive=true]")).ToBeVisibleAsync();
+        var job = Page.Locator("#job-55117");
+        await job.ScrollIntoViewIfNeededAsync();
+        var viewport = await Page.EvaluateAsync<double>("() => document.documentElement.clientWidth");
+        var j = (await job.BoundingBoxAsync())!;
+        Assert.That(j.X + 280, Is.GreaterThan(viewport - 8), "start-aligned, the card would overflow the right edge");
+
+        await job.HoverAsync();
+        var card = Page.Locator("#hover-card");
+        await Expect(card).ToContainTextAsync("55117 · Riverside Garage");
+        // Right edge 8 px inside the viewport, still under its job.
+        await Page.WaitForFunctionAsync("w => Math.abs(document.querySelector('#hover-card').getBoundingClientRect().right - (w - 8)) < 1.5", viewport);
+        var c = (await card.BoundingBoxAsync())!;
+        Assert.That((double)c.X, Is.GreaterThanOrEqualTo(8));
+        Assert.That((double)c.Width, Is.EqualTo(280).Within(1));
+        Assert.That((double)c.Y, Is.EqualTo((double)(j.Y + j.Height + 4)).Within(2));
+    }
+
+    [Test]
+    public async Task EndAligned_AnchorNearTheLeftEdge_ShiftsRightToStayOnScreen()
+    {
+        await Page.SetViewportSizeAsync(390, 800);
+        await Page.GotoAsync($"{_baseUrl}/popup/examples");
+        await Expect(Page.Locator(".layout-container[data-interactive=true]")).ToBeVisibleAsync();
+        var a = (await Page.Locator("#mix-filter").BoundingBoxAsync())!;
+        Assert.That(a.X + a.Width - 240, Is.LessThan(8), "end-aligned, the menu would overflow the left edge");
+
+        await Page.Locator("#mix-filter").ClickAsync();
+        await Expect(Page.Locator("#filter-popup")).ToBeVisibleAsync();
+        await Page.WaitForFunctionAsync("() => Math.abs(document.querySelector('#filter-popup').getBoundingClientRect().left - 8) < 1");
+        var p = (await Page.Locator("#filter-popup").BoundingBoxAsync())!;
+        Assert.That((double)p.Width, Is.EqualTo(240).Within(1));
+    }
+
     [Test]
     public async Task NoRoomBelow_FlipsAbove_AndScrolls()
     {

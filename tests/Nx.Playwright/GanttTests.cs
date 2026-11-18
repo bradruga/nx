@@ -192,6 +192,99 @@ public class GanttTests : PageTest
     }
 
     [Test]
+    public async Task CellEdit_ClickAnotherRow_ItsEditorOpensFocused()
+    {
+        await GoToPage("examples");
+        var g = Gantt("edit-gantt");
+        var editor = g.Locator(".nx-gantt-td-editing input");
+        await g.Locator("[role=row]").Filter(new() { HasText = "Forms set" }).Locator("[role=gridcell]").First.ClickAsync();
+        await Expect(editor).ToHaveValueAsync("Forms set");
+
+        await g.Locator("[role=row]").Filter(new() { HasText = "Cure and strip" }).Locator("[role=gridcell]").First.ClickAsync();
+        await Expect(g.Locator(".nx-gantt-td-editing")).ToHaveCountAsync(1);
+        await Expect(editor).ToHaveValueAsync("Cure and strip");
+        await Expect(editor).ToBeVisibleAsync();
+        await Expect(editor).ToBeFocusedAsync();
+    }
+
+    /// <summary>A bar's left and width inside the timeline canvas, so a scrolled timeline does not move it.</summary>
+    private Task<double[]> BarInCanvasAsync(string gantt, string title) => Page.EvaluateAsync<double[]>("""
+        ([id, title]) => {
+            const g = document.getElementById(id);
+            const c = g.querySelector('.nx-gantt-canvas').getBoundingClientRect();
+            const b = [...g.querySelectorAll('.nx-gantt-bar')].find(b => b.textContent.trim() === title).getBoundingClientRect();
+            return [b.left - c.left, b.width];
+        }
+        """, new[] { gantt, title });
+
+    [Test]
+    public async Task AltArrows_MoveTheBar_ThenShrinkItsEnd_NoPageScroll()
+    {
+        await GoToPage("examples");
+        var g = Gantt("edit-gantt");
+        await g.Locator(".nx-gantt-bar").Filter(new() { HasText = "Forms set" }).ScrollIntoViewIfNeededAsync();
+        var before = await BarInCanvasAsync("edit-gantt", "Forms set");
+        var scrollX = await Page.EvaluateAsync<double>("() => window.scrollX");
+
+        await g.Locator("[role=row]").Filter(new() { HasText = "Forms set" }).FocusAsync();
+        await Expect(Page.Locator("#edit-selected")).ToHaveTextAsync("Selected: Forms set");
+        await Page.Keyboard.PressAsync("Alt+ArrowRight");
+        await Expect(Page.Locator("#edit-log")).ToContainTextAsync("Move: Forms set");
+        var moved = await BarInCanvasAsync("edit-gantt", "Forms set");
+        Assert.That(moved[0] - before[0], Is.EqualTo(30).Within(1), "one slot (a day is 30 px)");
+        Assert.That(moved[1], Is.EqualTo(before[1]).Within(1));
+
+        await Page.Keyboard.PressAsync("Alt+Shift+ArrowLeft");
+        await Expect(Page.Locator("#edit-log")).ToContainTextAsync("ResizeEnd: Forms set");
+        var shrunk = await BarInCanvasAsync("edit-gantt", "Forms set");
+        Assert.That(shrunk[0], Is.EqualTo(moved[0]).Within(1));
+        Assert.That(before[1] - shrunk[1], Is.EqualTo(30).Within(1));
+
+        Assert.That(Page.Url, Does.EndWith("/gantt/examples"), "Alt+Left is not the browser's Back");
+        Assert.That(await Page.EvaluateAsync<double>("() => window.scrollX"), Is.EqualTo(scrollX));
+        Assert.That(await Page.EvaluateAsync<int>("() => document.documentElement.scrollWidth - document.documentElement.clientWidth"), Is.LessThanOrEqualTo(0));
+    }
+
+    /// <summary>Each arrow's end and its successor bar's left, in page x; "Shop drawings → Engineer review" is the first link.</summary>
+    private Task<double[][]> ArrowEndsAsync() => Page.EvaluateAsync<double[][]>("""
+        () => {
+            const g = document.getElementById('playground-gantt');
+            const svg = g.querySelector('.nx-gantt-links');
+            const left = svg.getBoundingClientRect().left;
+            const bar = t => [...g.querySelectorAll('.nx-gantt-bar')].find(b => b.textContent.trim() === t).getBoundingClientRect().left;
+            const ends = [...svg.querySelectorAll(':scope > path')].map(p => left + p.getPointAtLength(p.getTotalLength()).x);
+            return [[ends[0], bar('Engineer review')], [ends[1], bar('Forms set')]];
+        }
+        """);
+
+    [Test]
+    public async Task Zoom_ScalesBarsAndArrows_ArrowsEndAtTheirSuccessor()
+    {
+        await GoToPage("playground");
+        var g = Gantt("playground-gantt");
+        var bar = g.Locator(".nx-gantt-bar").Filter(new() { HasText = "Forms set" });
+        var before = (await bar.BoundingBoxAsync())!;
+        Assert.That(before.Width, Is.EqualTo(90).Within(1), "three days at 30 px");
+        var canvas = (await g.Locator(".nx-gantt-canvas").BoundingBoxAsync())!;
+        var arrowsBefore = await ArrowEndsAsync();
+
+        await Page.Locator("#pg-slot").FillAsync("60");
+        await Page.Locator("#pg-slot").PressAsync("Tab");
+        await Page.WaitForFunctionAsync("() => [...document.querySelectorAll('#playground-gantt .nx-gantt-bar')].find(b => b.textContent.trim() === 'Forms set').getBoundingClientRect().width > 170");
+
+        var after = (await bar.BoundingBoxAsync())!;
+        var canvasAfter = (await g.Locator(".nx-gantt-canvas").BoundingBoxAsync())!;
+        Assert.That(after.Width, Is.EqualTo(180).Within(1));
+        Assert.That(after.X - canvasAfter.X, Is.EqualTo(2 * (before.X - canvas.X)).Within(1), "the bar's offset scales with the slot");
+        var arrows = await ArrowEndsAsync();
+        for (var i = 0; i < arrows.Length; i++)
+        {
+            Assert.That(arrows[i][0], Is.EqualTo(arrows[i][1]).Within(2), $"arrow {i} ends at its successor's left");
+            Assert.That(arrows[i][0] - canvasAfter.X, Is.EqualTo(2 * (arrowsBefore[i][0] - canvas.X)).Within(2), $"arrow {i} scales");
+        }
+    }
+
+    [Test]
     public async Task Hover_ShowsTheTooltip()
     {
         await GoToPage("overview");

@@ -180,4 +180,58 @@ public class AutoCompleteTests : PageTest
         Assert.That(box.X + box.Width, Is.LessThanOrEqualTo(390));
         Assert.That(await page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= window.innerWidth"), Is.True);
     }
+
+    [Test]
+    public async Task SearchBox_WiderPopupAlignedLeft_PickOpens_ClearEmpties()
+    {
+        await GoToPage();
+        var input = Page.Locator("#search-box");
+        await input.ScrollIntoViewIfNeededAsync();
+        await input.ClickAsync();
+        await input.PressSequentiallyAsync("ba");
+        var option = Page.Locator(".nx-combobox-popup [role=option]", new() { HasText = "Baldwin Paving" });
+        await Expect(option).ToBeVisibleAsync();
+
+        var box = await Page.EvaluateAsync<double[]>(@"() => {
+            const f = document.querySelector('.nx-autocomplete:has(#search-box) .nx-combobox-field').getBoundingClientRect();
+            const p = document.querySelector('.nx-combobox-popup').getBoundingClientRect();
+            return [f.left, f.width, p.left, p.width, window.innerWidth];
+        }");
+        Assert.That(box[1], Is.LessThan(460), "the demo field is narrower than PopupWidth");
+        Assert.That(box[3], Is.EqualTo(460).Within(2.5), "PopupWidth=460px");
+        Assert.That(box[2], Is.EqualTo(box[0]).Within(1.5), "the popup starts at the field's left edge");
+
+        await option.ClickAsync();
+        await Expect(input).ToHaveValueAsync("Baldwin Paving");
+        await Expect(Page.Locator("#search-result")).ToHaveTextAsync("Opened BALD");
+
+        await Page.Locator(".nx-autocomplete:has(#search-box) .nx-combobox-clear").ClickAsync();
+        await Expect(input).ToHaveValueAsync("");
+        await Expect(input).ToBeFocusedAsync();
+        await Expect(Page.Locator("#search-result")).Not.ToHaveTextAsync("Opened BALD");
+        await Expect(Page.Locator(".nx-combobox-popup")).ToHaveCountAsync(0);
+    }
+
+    [Test]
+    public async Task State_ReadOnlyAndDisabled_DoNotOpenWhenTypedInto()
+    {
+        await GoToPage();
+        var readOnly = Page.Locator("#state-readonly");
+        await readOnly.ScrollIntoViewIfNeededAsync();
+
+        await readOnly.ClickAsync();
+        await Page.Keyboard.PressAsync("End");
+        await Page.Keyboard.TypeAsync("Sa");
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Expect(readOnly).ToHaveValueAsync("Portland");
+        await Expect(Page.Locator(".nx-combobox-popup")).ToHaveCountAsync(0);
+
+        var disabled = Page.Locator("#state-disabled");
+        await Expect(disabled).ToBeDisabledAsync();
+        await disabled.ClickAsync(new() { Force = true });
+        await Page.Keyboard.TypeAsync("Po");
+        await Expect(disabled).ToHaveValueAsync("Salem");
+        await Expect(disabled).Not.ToBeFocusedAsync();
+        await Expect(Page.Locator(".nx-combobox-popup")).ToHaveCountAsync(0);
+    }
 }

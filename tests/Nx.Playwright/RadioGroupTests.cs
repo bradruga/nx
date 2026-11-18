@@ -144,4 +144,18 @@ public class RadioGroupTests : PageTest
         await Expect(Page.Locator("#playground-value")).ToHaveTextAsync("Value: Sandblast");
         await Expect(Page.Locator("#playground-radio")).ToHaveAttributeAsync("aria-orientation", "horizontal");
     }
+
+    [Test]
+    public async Task ItemTemplate_ClickingTheMetaTextChecksTheItem()
+    {
+        await GoToPage();
+        await Page.Locator("#template-radio").ScrollIntoViewIfNeededAsync();
+        await Expect(Radios("template-radio").Nth(1)).ToBeCheckedAsync();
+
+        await Page.Locator("#template-radio .demo-item-meta", new() { HasText = "next open slot" }).ClickAsync();
+
+        await Expect(Radios("template-radio").Nth(0)).ToBeCheckedAsync();
+        await Expect(Radios("template-radio").Nth(1)).Not.ToBeCheckedAsync();
+        await Expect(Radios("template-radio").Nth(0)).ToBeFocusedAsync();
+    }
 }

@@ -87,6 +87,70 @@ public class DateTimePickerTests : PageTest
         await Expect(Popup).ToHaveCountAsync(0);
     }
 
+    /// <summary>Opens the 15-minute picker and picks a day, so the time list (from midnight) takes the keys.</summary>
+    private async Task<ILocator> OpenTimeListAsync()
+    {
+        var input = Page.Locator("#step-15");
+        await input.ScrollIntoViewIfNeededAsync();
+        await input.FocusAsync();
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Popup).ToBeVisibleAsync();
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(input).ToHaveAttributeAsync("aria-activedescendant", "step-15-time-0");
+        await Expect(Popup.Locator(".nx-timepicker-item")).ToHaveCountAsync(96);
+        return input;
+    }
+
+    /// <summary>Waits until the time list's active option is the index-th and lies inside the list's box.</summary>
+    private Task ExpectActiveTimeInView(int index) =>
+        Page.WaitForFunctionAsync("""
+            ({ index }) => {
+                const list = document.querySelector('.nx-datetimepicker-popup .nx-datetimepicker-time-list');
+                const items = [...list.querySelectorAll('.nx-timepicker-item')];
+                const active = list.querySelector('.nx-timepicker-item-active');
+                if (!active || items.indexOf(active) !== index) return false;
+                const l = list.getBoundingClientRect(), a = active.getBoundingClientRect();
+                return a.top >= l.top - 1 && a.bottom <= l.bottom + 1;
+            }
+            """, new { index });
+
+    [Test]
+    public async Task Keyboard_TimeList_KeepsTheActiveOptionInView()
+    {
+        await GoToPage();
+        var input = await OpenTimeListAsync();
+
+        var at = 0;
+        var keys = new[] { ("PageDown", 6), ("PageDown", 6), ("PageDown", 6), ("ArrowDown", 1), ("PageDown", 6), ("PageDown", 6), ("ArrowDown", 1), ("ArrowDown", 1) }
+            .Concat(Enumerable.Repeat(("PageDown", 6), 12)).Append(("PageUp", -6));
+        foreach (var (key, step) in keys)
+        {
+            await Page.Keyboard.PressAsync(key);
+            at = Math.Clamp(at + step, 0, 95);
+            await ExpectActiveTimeInView(at);
+        }
+
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(Popup).ToHaveCountAsync(0);
+        await Expect(input).ToHaveValueAsync(new Regex("10:15 PM$"));
+    }
+
+    [Test]
+    public async Task Keyboard_TimeList_FastKeysOnASlowConnection_LastOptionInView()
+    {
+        await GoToPage();
+        var cdp = await Page.Context.NewCDPSessionAsync(Page);
+        await cdp.SendAsync("Network.enable");
+        await cdp.SendAsync("Network.emulateNetworkConditions", new() { ["offline"] = false, ["latency"] = 120, ["downloadThroughput"] = -1, ["uploadThroughput"] = -1 });
+        var input = await OpenTimeListAsync();
+
+        for (var i = 0; i < 16; i++)
+            await Page.Keyboard.PressAsync("PageDown");
+
+        await Expect(input).ToHaveAttributeAsync("aria-activedescendant", "step-15-time-95");
+        await ExpectActiveTimeInView(95);
+    }
+
     [Test]
     public async Task Typing_FreeFormatReadLeniently()
     {

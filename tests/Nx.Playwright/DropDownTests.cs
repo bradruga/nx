@@ -202,4 +202,44 @@ public class DropDownTests : PageTest
 
         await Expect(page.Locator("#overview-ship-value")).ToHaveTextAsync("Value: Flatbed");
     }
+
+    [Test]
+    public async Task Columns_HeaderAndCellsLineUp_PopupTakesItsWidth()
+    {
+        await GoToPage();
+        await Field("columns-dropdown").ScrollIntoViewIfNeededAsync();
+        await Field("columns-dropdown").ClickAsync();
+        await Expect(Popup.Locator(".nx-combobox-item-grid").First).ToBeVisibleAsync();
+
+        var layout = await Popup.EvaluateAsync<double[]>(@"p => {
+            const head = [...p.querySelectorAll('.nx-combobox-columns-header > span')].slice(0, 3).map(s => s.getBoundingClientRect());
+            const rows = [...p.querySelectorAll('.nx-combobox-item-grid')].slice(0, 3);
+            const out = [p.querySelector('.nx-combobox-popup-body').getBoundingClientRect().width];
+            for (const row of rows) {
+                const cells = [...row.querySelectorAll('.nx-combobox-cell')].map(c => c.getBoundingClientRect());
+                for (let i = 0; i < 3; i++) out.push(Math.abs(cells[i].left - head[i].left), Math.abs(cells[i].width - head[i].width));
+            }
+            return out;
+        }");
+
+        Assert.That(layout[0], Is.EqualTo(480).Within(1), "PopupWidth=480px");
+        Assert.That(layout.Length, Is.EqualTo(1 + 3 * 6));
+        Assert.That(layout.Skip(1), Is.All.LessThanOrEqualTo(1.0), "every cell starts and ends with its header");
+    }
+
+    [Test]
+    public async Task Clear_EmptiesTheValue_FocusStays()
+    {
+        await GoToPage();
+        var field = Field("state-clear");
+        await field.ScrollIntoViewIfNeededAsync();
+        await Expect(field).ToHaveValueAsync("Lowboy");
+
+        await Page.Locator(".nx-combobox", new() { Has = field }).Locator(".nx-combobox-clear").ClickAsync();
+
+        await Expect(field).ToHaveValueAsync("");
+        await Expect(field).ToHaveAttributeAsync("placeholder", "Ship via");
+        await Expect(field).ToBeFocusedAsync();
+        await Expect(Page.Locator(".nx-combobox", new() { Has = field }).Locator(".nx-combobox-clear")).ToHaveCountAsync(0);
+    }
 }

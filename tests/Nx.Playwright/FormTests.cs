@@ -217,4 +217,58 @@ public class FormTests : PageTest
         await Page.Locator("#pg-group").CheckAsync();
         await Expect(Page.Locator("#playground-form fieldset legend")).ToHaveTextAsync("Crew");
     }
+
+    [Test]
+    public async Task Groups_FillTheForm_SpansInsideTheGroupGrid()
+    {
+        await Page.SetViewportSizeAsync(1280, 900);
+        await GoToPage();
+        await Page.Locator("#groups-form").ScrollIntoViewIfNeededAsync();
+
+        var items = (await Page.Locator("#groups-form .nx-form-items").BoundingBoxAsync())!;
+        var groups = Page.Locator("#groups-form fieldset");
+        await Expect(groups).ToHaveCountAsync(2);
+        foreach (var group in await groups.AllAsync())
+        {
+            var box = (await group.BoundingBoxAsync())!;
+            Assert.That(box.Width, Is.EqualTo(items.Width).Within(2));
+            Assert.That(box.X, Is.EqualTo(items.X).Within(2));
+        }
+
+        var name = (await Page.Locator(".nx-field:has(#groups-form-OtherContactName) .nx-field-box").BoundingBoxAsync())!;
+        var phone = (await Page.Locator(".nx-field:has(#groups-form-OtherContactPhone) .nx-field-box").BoundingBoxAsync())!;
+        Assert.That(phone.Y, Is.EqualTo(name.Y).Within(1));
+        Assert.That(name.Width / phone.Width, Is.EqualTo(2).Within(0.1), "ColSpan=2 of the group's 3 columns");
+    }
+
+    [Test]
+    public async Task Horizontal_CheckBoxLinesUpWithTheTextEditors()
+    {
+        await Page.SetViewportSizeAsync(1280, 900);
+        await GoToPage();
+        await Page.Locator("#horizontal-form").ScrollIntoViewIfNeededAsync();
+
+        var name = (await Page.Locator("#horizontal-form-Name").BoundingBoxAsync())!;
+        var check = (await Page.Locator("#horizontal-form-PumpTruck").BoundingBoxAsync())!;
+        Assert.That(check.X, Is.EqualTo(name.X).Within(2));
+        Assert.That(check.Y, Is.GreaterThan(name.Y));
+    }
+
+    [Test]
+    public async Task OwnLayout_SidePanelBesideTheMainItems_OnADesktop()
+    {
+        await Page.SetViewportSizeAsync(1280, 900);
+        await GoToPage();
+        await Page.Locator("#layout-form").ScrollIntoViewIfNeededAsync();
+
+        var name = (await Page.Locator("#layout-form .nx-form-label", new() { HasText = "Name" }).BoundingBoxAsync())!;
+        var status = (await Page.Locator("#layout-form .nx-form-label", new() { HasText = "Status" }).BoundingBoxAsync())!;
+        var nameInput = (await Page.Locator("#layout-form-Name").BoundingBoxAsync())!;
+        var statusInput = (await Page.Locator("#layout-form-Status").BoundingBoxAsync())!;
+        var side = (await Page.Locator("#layout-form .demo-form-layout-side").BoundingBoxAsync())!;
+        // The side panel starts level with Name; its padding puts Status a little lower, still beside the Name box.
+        Assert.That(side.Y, Is.EqualTo(name.Y).Within(2), "same row");
+        Assert.That(status.Y, Is.LessThan(nameInput.Y + nameInput.Height), "Status is beside Name, not below it");
+        Assert.That(statusInput.X, Is.GreaterThan(nameInput.X + nameInput.Width), "to the right of Name");
+    }
 }

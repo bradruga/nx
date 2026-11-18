@@ -191,4 +191,30 @@ public class ToggleGroupTests : PageTest
         await Items("playground-group").Nth(1).ClickAsync();
         await Expect(Page.Locator("#playground-values")).ToHaveTextAsync("Values: [Pipe, Box]");
     }
+
+    [Test]
+    public async Task IconOnly_MultiSelect_ArrowsMoveFocus_ValueStays()
+    {
+        await GoToPage();
+        var bold = Page.GetByRole(AriaRole.Button, new() { Name = "Bold" });
+        var italic = Page.GetByRole(AriaRole.Button, new() { Name = "Italic" });
+        var underline = Page.GetByRole(AriaRole.Button, new() { Name = "Underline" });
+        await bold.ScrollIntoViewIfNeededAsync();
+        await Expect(Page.Locator("#format-value")).ToHaveTextAsync("[bold] · left");
+
+        await bold.FocusAsync();
+        await Page.Keyboard.PressAsync("ArrowRight");
+        await Expect(italic).ToBeFocusedAsync();
+        await Page.Keyboard.PressAsync("ArrowRight");
+        await Expect(underline).ToBeFocusedAsync();
+        await Page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(italic).ToBeFocusedAsync();
+
+        await Expect(bold).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(italic).ToHaveAttributeAsync("aria-pressed", "false");
+        await Expect(underline).ToHaveAttributeAsync("aria-pressed", "false");
+        // Space after the arrows round-trips; only then does the value change, by the focused item alone.
+        await Page.Keyboard.PressAsync(" ");
+        await Expect(Page.Locator("#format-value")).ToHaveTextAsync("[bold, italic] · left");
+    }
 }

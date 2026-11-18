@@ -66,6 +66,46 @@ public class DateRangePickerTests : PageTest
         await Expect(Popup).ToHaveCountAsync(0);
     }
 
+    [TestCase("Escape")]
+    [TestCase("Alt+ArrowUp")]
+    public async Task Keyboard_EscapeAndAltUp_Close_FocusStays(string key)
+    {
+        await GoToPage();
+
+        foreach (var id in new[] { "range-basic-start", "range-basic-end" })
+        {
+            await Toggle(id).ClickAsync();
+            await Expect(Popup).ToBeVisibleAsync();
+            await Expect(Input(id)).ToBeFocusedAsync();
+
+            await Page.Keyboard.PressAsync(key);
+            await Expect(Popup).ToHaveCountAsync(0);
+            await Expect(Input(id)).ToBeFocusedAsync();
+            await Expect(Input(id)).ToHaveAttributeAsync("aria-expanded", "false");
+        }
+        await Expect(Page.Locator("#range-basic-value")).ToHaveTextAsync("Range: 2026-10-19 → 2026-10-23");
+    }
+
+    [Test]
+    public async Task EndToggle_WithAStart_MakesTheEndActive()
+    {
+        await GoToPage();
+
+        await Toggle("range-basic-end").ClickAsync();
+        await Expect(Popup).ToBeVisibleAsync();
+        await Expect(Input("range-basic-end")).ToBeFocusedAsync();
+        // The calendar's active day is the end, and the end field (not the start) points at it.
+        await Expect(Input("range-basic-end")).ToHaveAttributeAsync("aria-activedescendant", new System.Text.RegularExpressions.Regex(".+"));
+        await Expect(Input("range-basic-start")).Not.ToHaveAttributeAsync("aria-activedescendant", new System.Text.RegularExpressions.Regex(".+"));
+        var active = await Input("range-basic-end").GetAttributeAsync("aria-activedescendant");
+        await Expect(Popup.Locator($"[id='{active}']")).ToHaveAttributeAsync("data-date", "2026-10-23");
+
+        // A pick sets the end, keeps the start, and closes.
+        await Popup.Locator("td[data-date='2026-10-27']").ClickAsync();
+        await Expect(Page.Locator("#range-basic-value")).ToHaveTextAsync("Range: 2026-10-19 → 2026-10-27");
+        await Expect(Popup).ToHaveCountAsync(0);
+    }
+
     [Test]
     public async Task OutsideClick_Closes()
     {

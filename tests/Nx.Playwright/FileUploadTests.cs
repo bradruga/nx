@@ -156,6 +156,115 @@ public class FileUploadTests : PageTest
         await Expect(Page.Locator("#disabled-upload")).ToBeDisabledAsync();
     }
 
+    [Test]
+    public async Task Upload_CancelMidUpload_NoSuccess_RowSaysCancelled()
+    {
+        await GoToPage("/upload/examples");
+        var release = new TaskCompletionSource();
+        var arrived = new TaskCompletionSource();
+        await Page.RouteAsync("**/demo/upload", async route =>
+        {
+            arrived.TrySetResult();
+            await release.Task;
+            try { await route.FulfillAsync(new() { Status = 200, Body = "tmp-held" }); }
+            catch (PlaywrightException) { }  // aborted by the cancel
+        });
+
+        await Page.Locator("#results-upload").SetInputFilesAsync(File("slow.txt", 5000));
+        await arrived.Task.WaitAsync(TimeSpan.FromSeconds(15));
+        var row = Rows("results-upload").Filter(new() { HasText = "slow.txt" });
+        await row.GetByRole(AriaRole.Button, new() { Name = "Cancel slow.txt" }).ClickAsync();
+
+        await Expect(row.Locator(".nx-filerow-status")).ToHaveTextAsync("· Cancelled");
+        await Expect(Page.Locator("#results-log li").First).ToHaveTextAsync("Cancelled slow.txt");
+        release.SetResult();
+        await Expect(row.GetByRole(AriaRole.Button, new() { Name = "Retry slow.txt" })).ToBeVisibleAsync();
+        // The held answer is let go: an aborted request must not turn the row into a success.
+        await Page.WaitForTimeoutAsync(1000);
+        await Expect(row.Locator(".nx-filerow-status")).ToHaveTextAsync("· Cancelled");
+        await Expect(row).Not.ToHaveClassAsync(new System.Text.RegularExpressions.Regex("nx-filerow-success"));
+        await Expect(Page.Locator("#results-log li").Filter(new() { HasText = "OK slow.txt" })).ToHaveCountAsync(0);
+    }
+
+    [Test]
+    public async Task Upload_MaxConcurrentUploads_HoldsTheRestInTheQueue()
+    {
+        await GoToPage("/upload/examples");
+        var gate = new object();
+        int inFlight = 0, maxInFlight = 0, total = 0;
+        var two = new TaskCompletionSource();
+        var release = new TaskCompletionSource();
+        await Page.RouteAsync("**/demo/upload", async route =>
+        {
+            lock (gate)
+            {
+                inFlight++;
+                total++;
+                maxInFlight = Math.Max(maxInFlight, inFlight);
+                if (total == 2) two.TrySetResult();
+            }
+            await release.Task;
+            lock (gate) inFlight--;
+            await route.FulfillAsync(new() { Status = 200, Body = "tmp-held" });
+        });
+
+        // The demo's on-demand upload sends at most two at once.
+        await Page.Locator("#manual-upload").SetInputFilesAsync([File("a.txt"), File("b.txt"), File("c.txt"), File("d.txt"), File("e.txt")]);
+        await Page.Locator("#manual-upload-upload").ClickAsync();
+        var rows = Rows("manual-upload");
+        await two.Task.WaitAsync(TimeSpan.FromSeconds(15));
+        // Give a broken limit time to send a third.
+        await Page.WaitForTimeoutAsync(1000);
+        lock (gate) Assert.That(total, Is.EqualTo(2), "two requests sent, three queued");
+
+        release.SetResult();
+        await Expect(rows.Locator(".nx-filerow-status")).ToHaveTextAsync(["· Uploaded", "· Uploaded", "· Uploaded", "· Uploaded", "· Uploaded"]);
+        lock (gate)
+        {
+            Assert.That(total, Is.EqualTo(5));
+            Assert.That(maxInFlight, Is.EqualTo(2));
+        }
+    }
+
+    [Test]
+    public async Task Upload_DropOnTheZone_ListsAndSends()
+    {
+        await GoToPage("/upload/overview");
+        var sent = new List<string>();
+        Page.Request += (_, r) => { if (r.Url.Contains("/demo/upload") && r.Method == "POST") lock (sent) sent.Add(r.Url); };
+
+        var input = Page.Locator("#overview-upload");
+        var zone = Page.Locator(".nx-upload:has(#overview-upload) .nx-filezone");
+        await zone.ScrollIntoViewIfNeededAsync();
+        // A drop from the desktop: drag events carrying a DataTransfer with the files. The browser's own drop into the
+        // file input (it lies over the zone) cannot be faked from script, so its effect - files set, change raised - is.
+        await input.EvaluateAsync("""
+            input => {
+                const dt = new DataTransfer();
+                dt.items.add(new File(['dropped one'], 'dropped-a.txt', { type: 'text/plain' }));
+                dt.items.add(new File(['dropped two'], 'dropped-b.txt', { type: 'text/plain' }));
+                window.__nxDrop = dt;
+                input.dispatchEvent(new DragEvent('dragenter', { dataTransfer: dt, bubbles: true }));
+            }
+            """);
+        await Expect(zone).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("nx-filezone-dragging"));
+        await input.EvaluateAsync("""
+            input => {
+                const dt = window.__nxDrop;
+                input.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true }));
+                input.files = dt.files;
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            """);
+
+        await Expect(zone).Not.ToHaveClassAsync(new System.Text.RegularExpressions.Regex("nx-filezone-dragging"));
+        var rows = Rows("overview-upload");
+        await Expect(rows.Locator(".nx-filerow-name")).ToHaveTextAsync(["dropped-a.txt", "dropped-b.txt"]);
+        await Expect(rows.Locator(".nx-filerow-status")).ToHaveTextAsync(["· Uploaded", "· Uploaded"]);
+        await Expect(Page.Locator("#overview-log")).ToHaveTextAsync(new System.Text.RegularExpressions.Regex("^dropped-[ab].txt stored as tmp-"));
+        lock (sent) Assert.That(sent, Has.Count.EqualTo(2));
+    }
+
     [TestCase(390)]
     [TestCase(1280)]
     public async Task Upload_LongNamesStayInTheRow(int width)

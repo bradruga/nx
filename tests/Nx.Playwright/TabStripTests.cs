@@ -249,6 +249,73 @@ public class TabStripTests : PageTest
         await Expect(Tab("reorder-tabs-tab-cure")).ToHaveAttributeAsync("aria-selected", "true");
     }
 
+    private Task<string> PlaygroundOrderAsync() =>
+        Page.EvaluateAsync<string>("() => [...document.querySelectorAll('#playground-tabs [role=tab]')].map(t => t.id.replace('playground-tabs-tab-', '')).join(',')");
+
+    [Test]
+    public async Task Reorder_LeftTabs_CtrlShiftDownMoves_CtrlShiftRightDoesNothing()
+    {
+        await GoToPage("playground");
+        await Page.Locator("#pg-reorderable").CheckAsync();
+        await Page.Locator("#pg-position").SelectOptionAsync("Left");
+        await Expect(Page.Locator("#playground-tabs")).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("nx-tabstrip-left.*nx-tabstrip-reorderable"));
+
+        await Tab("playground-tabs-tab-tab-1").FocusAsync();
+        await Page.Keyboard.PressAsync("Control+Shift+ArrowDown");
+        await Page.WaitForFunctionAsync("() => [...document.querySelectorAll('#playground-tabs [role=tab]')].map(t => t.id).join(',') === 'playground-tabs-tab-tab-2,playground-tabs-tab-tab-1,playground-tabs-tab-tab-3'");
+        await Expect(Tab("playground-tabs-tab-tab-1")).ToBeFocusedAsync();
+        var one = (await Tab("playground-tabs-tab-tab-1").BoundingBoxAsync())!;
+        var two = (await Tab("playground-tabs-tab-tab-2").BoundingBoxAsync())!;
+        Assert.That(one.Y, Is.GreaterThan(two.Y), "the moved tab sits below");
+
+        // Across a column of tabs, Right is not a move.
+        await Page.Keyboard.PressAsync("Control+Shift+ArrowRight");
+        await Page.Keyboard.PressAsync("Control+Shift+ArrowLeft");
+        await Expect(Tab("playground-tabs-tab-tab-1")).ToBeFocusedAsync();
+        // A later Down still moves it, so the Right/Left presses had their round trip and changed nothing.
+        await Page.Keyboard.PressAsync("Control+Shift+ArrowDown");
+        await Page.WaitForFunctionAsync("() => [...document.querySelectorAll('#playground-tabs [role=tab]')].map(t => t.id).join(',') === 'playground-tabs-tab-tab-2,playground-tabs-tab-tab-3,playground-tabs-tab-tab-1'");
+        Assert.That(await PlaygroundOrderAsync(), Is.EqualTo("tab-2,tab-3,tab-1"));
+    }
+
+    [Test]
+    public async Task Reorder_KeepAlivePanel_SurvivesAMove()
+    {
+        await GoToPage("playground");
+        await Page.Locator("#pg-reorderable").CheckAsync();
+        await Page.Locator("#pg-keepalive").CheckAsync();
+        await Expect(Page.Locator("#playground-tabs")).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("nx-tabstrip-reorderable"));
+
+        // Visit Tab 2 so Tab 1's panel is kept, hidden; mark that panel's element.
+        await Tab("playground-tabs-tab-tab-2").ClickAsync();
+        await Expect(Page.Locator("#playground-value")).ToHaveTextAsync("ActiveTab: Tab 2");
+        await Expect(Page.Locator("#playground-tabs-panel-tab-1")).ToBeHiddenAsync();
+        await Page.Locator("#playground-tabs-panel-tab-1").EvaluateAsync("p => p.dataset.marker = 'kept'");
+        await Page.Locator("#playground-tabs-panel-tab-2").EvaluateAsync("p => p.dataset.marker = 'kept'");
+
+        // Move the active tab (keyboard), then the hidden one (drag).
+        await Tab("playground-tabs-tab-tab-2").FocusAsync();
+        await Page.Keyboard.PressAsync("Control+Shift+ArrowLeft");
+        await Page.WaitForFunctionAsync("() => document.querySelector('#playground-tabs [role=tab]').id === 'playground-tabs-tab-tab-2'");
+
+        var from = (await Tab("playground-tabs-tab-tab-1").BoundingBoxAsync())!;
+        var to = (await Tab("playground-tabs-tab-tab-3").BoundingBoxAsync())!;
+        await Page.Mouse.MoveAsync(from.X + from.Width / 2, from.Y + from.Height / 2);
+        await Page.Mouse.DownAsync();
+        await Page.Mouse.MoveAsync(to.X + to.Width - 4, from.Y + from.Height / 2, new() { Steps = 8 });
+        await Page.Mouse.UpAsync();
+        await Page.WaitForFunctionAsync("() => [...document.querySelectorAll('#playground-tabs [role=tab]')].map(t => t.id).join(',') === 'playground-tabs-tab-tab-2,playground-tabs-tab-tab-3,playground-tabs-tab-tab-1'");
+
+        // Neither panel was rebuilt: the same elements, still marked.
+        await Expect(Page.Locator("#playground-tabs-panel-tab-1")).ToHaveAttributeAsync("data-marker", "kept");
+        await Expect(Page.Locator("#playground-tabs-panel-tab-2")).ToHaveAttributeAsync("data-marker", "kept");
+        await Expect(Page.Locator("#playground-tabs-panel-tab-2")).ToBeVisibleAsync();
+
+        await Tab("playground-tabs-tab-tab-1").ClickAsync();
+        await Expect(Page.Locator("#playground-tabs-panel-tab-1")).ToBeVisibleAsync();
+        await Expect(Page.Locator("#playground-tabs-panel-tab-1")).ToHaveAttributeAsync("data-marker", "kept");
+    }
+
     [Test]
     public async Task Reorder_CtrlShiftArrow_MovesTheFocusedTab_FocusFollows()
     {

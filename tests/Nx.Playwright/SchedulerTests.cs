@@ -72,6 +72,48 @@ public class SchedulerTests : PageTest
     }
 
     [Test]
+    public async Task Today_FromAnotherWeek_HighlightsTodaysColumn()
+    {
+        await GoToPage("examples");
+        var today = Page.Locator("#date-scheduler [data-nx-scheduler=today]");
+        await Page.Locator("#date-scheduler [data-nx-scheduler=previous]").ClickAsync();
+        await Expect(today).ToBeEnabledAsync();
+        await Expect(Page.Locator("#date-scheduler .nx-scheduler-day.nx-scheduler-today")).ToHaveCountAsync(0);
+
+        await today.ClickAsync();
+        await Expect(today).ToBeDisabledAsync();
+        // The week starts on Sunday: today's column is its day of the week.
+        var column = (int)DateTime.Today.DayOfWeek;
+        await Expect(Page.Locator("#date-scheduler .nx-scheduler-day.nx-scheduler-today")).ToHaveCountAsync(1);
+        await Expect(Page.Locator("#date-scheduler .nx-scheduler-day").Nth(column)).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("nx-scheduler-today"));
+        await Expect(Page.Locator("#date-scheduler .nx-scheduler-day-head").Nth(column)).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("nx-scheduler-today"));
+        await Expect(Page.Locator("#date-scheduler .nx-scheduler-day-head.nx-scheduler-today .nx-scheduler-date"))
+            .ToHaveTextAsync(DateTime.Today.Day.ToString(System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    [Test]
+    public async Task Overnight_ShowsAsTwoPieces()
+    {
+        await GoToPage("examples");
+        // Monday's night shift, 23:00 to Tuesday 7:00, on a 24-hour day.
+        var monday = Page.Locator("#date-scheduler .nx-scheduler-day").Nth(1);
+        var tuesday = Page.Locator("#date-scheduler .nx-scheduler-day").Nth(2);
+        var late = monday.Locator(".nx-scheduler-event").Filter(new() { HasText = "Night" });
+        await Expect(late).ToHaveCountAsync(1);
+        var early = tuesday.Locator(".nx-scheduler-event").Filter(new() { HasText = "Night" }).First;
+
+        var m = (await monday.BoundingBoxAsync())!;
+        var t = (await tuesday.BoundingBoxAsync())!;
+        var a = (await late.BoundingBoxAsync())!;
+        var b = (await early.BoundingBoxAsync())!;
+        Assert.That(a.Y + a.Height, Is.EqualTo(m.Y + m.Height).Within(2), "the end of Monday");
+        Assert.That(a.Height, Is.EqualTo(m.Height / 24).Within(2), "one hour");
+        Assert.That(b.Y, Is.EqualTo(t.Y).Within(2), "the start of Tuesday");
+        Assert.That(b.Height, Is.EqualTo(7 * t.Height / 24).Within(2), "seven hours");
+        Assert.That(await early.GetAttributeAsync("title"), Is.EqualTo(await late.GetAttributeAsync("title")), "both pieces are the same shift");
+    }
+
+    [Test]
     public async Task Overlaps_SideBySide()
     {
         await GoToPage("examples");

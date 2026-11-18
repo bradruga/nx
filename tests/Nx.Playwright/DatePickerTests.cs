@@ -226,6 +226,39 @@ public class DatePickerTests : PageTest
     }
 
     [Test]
+    public async Task InlineCalendar_KeysMoveTheDay_PageDoesNotScroll()
+    {
+        await GoToPage();
+
+        var grid = Page.Locator("#inline-calendar");
+        // Centered, so the page could scroll either way.
+        await grid.EvaluateAsync("g => g.scrollIntoView({ block: 'center' })");
+        // nx-input.js cancels the keys' scrolling one round trip after the page turns interactive.
+        await grid.EvaluateAsync("""
+            g => new Promise(done => { const probe = () => { const e = new KeyboardEvent('keydown', { key: 'Home', cancelable: true });
+                 g.dispatchEvent(e); e.defaultPrevented ? done() : setTimeout(probe, 50); }; probe(); })
+            """);
+        await grid.FocusAsync();
+        var scroll = await Page.EvaluateAsync<double>("() => window.scrollY");
+        Assert.That(scroll, Is.GreaterThan(0));
+
+        // From Fri Oct 23 2026: a week on, a month on, back a week, then the end of that week.
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Expect(grid).ToHaveAttributeAsync("aria-activedescendant", new System.Text.RegularExpressions.Regex("-d20261030$"));
+        await Page.Keyboard.PressAsync("PageDown");
+        await Expect(grid).ToHaveAttributeAsync("aria-activedescendant", new System.Text.RegularExpressions.Regex("-d20261130$"));
+        await Page.Keyboard.PressAsync("ArrowUp");
+        await Expect(grid).ToHaveAttributeAsync("aria-activedescendant", new System.Text.RegularExpressions.Regex("-d20261123$"));
+        await Page.Keyboard.PressAsync("End");
+        await Expect(grid).ToHaveAttributeAsync("aria-activedescendant", new System.Text.RegularExpressions.Regex("-d20261128$"));
+        await Page.Keyboard.PressAsync("Space");
+
+        await Expect(Page.Locator("#inline-value")).ToHaveTextAsync("Value: 2026-11-28");
+        await Expect(grid).ToBeFocusedAsync();
+        Assert.That(await Page.EvaluateAsync<double>("() => window.scrollY"), Is.EqualTo(scroll), "arrows, PageDown, End and Space do not scroll the page");
+    }
+
+    [Test]
     public async Task Clearable_Clears()
     {
         await GoToPage("overview");
