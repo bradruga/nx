@@ -1461,3 +1461,104 @@ code {
 .demo-gantt-form { display: flex; flex-direction: column; gap: 12px; }
 .home-gantt { display: flex; flex-direction: column; gap: 8px; width: 240px; }
 .home-gantt span { display: block; height: 18px; padding: 0 6px; border-radius: 4px; background: #2e6db4; color: #fff; font-size: 11px; line-height: 18px; }
+
+/* Splitter: tool windows */
+.demo-ide {
+    display: flex;
+    width: 100%;
+    height: 340px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--bg);
+    --nx-splitter-pane-padding: 0px;
+}
+.demo-ide .nx-splitter { border: none; border-radius: 0; }
+.demo-ide-main { flex: 1; min-width: 0; height: 100%; }
+.demo-ide-stripe { display: flex; flex-direction: column; gap: 4px; padding: 6px 4px; background: var(--bg-subtle); border-right: 1px solid var(--border); }
+.demo-ide-stripe-end { margin-top: auto; display: flex; }
+.demo-ide-panel { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.demo-ide-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-shrink: 0;
+    min-height: 32px;
+    padding: 0 4px 0 10px;
+    background: var(--bg-subtle);
+    border-bottom: 1px solid var(--border);
+    color: var(--fg-secondary);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.demo-ide-head-tab { font-family: var(--font-mono); font-weight: 500; letter-spacing: 0; text-transform: none; }
+.demo-ide-body { flex: 1; min-height: 0; margin: 0; padding: 8px 10px; overflow: auto; font-size: 13px; }
+.demo-ide-list { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+.demo-ide-list li { padding: 2px 6px; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.demo-ide-item-active { background: var(--accent-subtle); color: var(--accent); }
+.demo-ide-code { font-family: var(--font-mono); font-size: 12px; line-height: 1.5; white-space: pre; }
+
+@media (max-width: 600px) {
+    .demo-ide { height: auto; }
+    /* The panels carry their own headers here. */
+    .demo-ide .nx-splitter-pane-header { display: none !important; }
+}
+
+/* Tab strip: browser tabs */
+.demo-browser { position: relative; width: 100%; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: var(--bg); }
+/* Room at the end of the tabs for the new-tab button. */
+.demo-browser .nx-tabstrip-header { padding-right: 40px; background: var(--bg-subtle); }
+.demo-browser .nx-tabstrip-panel { padding: 0; }
+.demo-browser-new { position: absolute; top: 6px; right: 6px; }
+.demo-browser-address { display: flex; align-items: center; gap: 8px; margin: 10px 12px; padding: 6px 12px; border-radius: 999px; background: var(--bg-subtle); color: var(--fg-secondary); font-family: var(--font-mono); font-size: 12px; min-width: 0; }
+.demo-browser-address span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.demo-browser-address svg { width: 13px; height: 13px; flex-shrink: 0; }
+.demo-browser-page { display: flex; flex-direction: column; gap: 4px; padding: 18px 16px 28px; min-height: 90px; }
+.demo-browser-page span { color: var(--fg-secondary); font-size: 13px; }
+
+/* Popup: hover card */
+.demo-jobs { display: flex; flex-wrap: wrap; gap: 8px; }
+.demo-job {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 132px;
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--demo-job);
+    background: var(--bg-subtle);
+    font-size: 13px;
+    cursor: default;
+}
+.demo-job span { color: var(--fg-secondary); }
+.demo-job:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.demo-job-card a { margin-top: 6px; color: var(--accent); font-weight: 500; text-decoration: none; }
+.demo-job-card a:hover, .demo-job-card a:focus-visible { text-decoration: underline; }
+
+/* Popup: loaded on open */
+.demo-pieces { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 6px; width: 100%; }
+.demo-piece { padding: 4px 0; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-subtle); font-family: var(--font-mono); font-size: 12px; text-align: center; cursor: default; }
+.demo-piece:hover { border-color: var(--accent); }
+.demo-piece:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.demo-history-loading { display: flex; align-items: center; gap: 8px; min-height: 96px; color: var(--fg-secondary); font-size: 13px; }
+.demo-history { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; min-height: 96px; font-size: 13px; }
+.demo-history li { display: flex; flex-direction: column; }
+.demo-history span { color: var(--fg-secondary); font-size: 12px; }
+.demo-history strong { font-weight: 500; }
+
+/* Loader: the page's own animations (NxLoader's content) */
+.demo-loader-mixer, .demo-loader-pour { width: 100%; height: 100%; overflow: visible; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.demo-loader-mixer g { transform-origin: 22px 22px; animation: demo-mixer-turn 1.8s linear infinite; }
+.demo-loader-pour-fill, .demo-loader-pour-chute { fill: currentColor; stroke: none; }
+.demo-loader-pour-fill { transform-box: fill-box; transform-origin: bottom; animation: demo-pour-fill 2.2s ease-in-out infinite; }
+.demo-loader-pour-chute { opacity: 0.5; animation: demo-pour-chute 2.2s ease-in-out infinite; }
+@keyframes demo-mixer-turn { to { transform: rotate(360deg); } }
+@keyframes demo-pour-fill { 0% { transform: scaleY(0); opacity: 1; } 68%, 86% { transform: scaleY(1); opacity: 1; } 100% { transform: scaleY(1); opacity: 0; } }
+@keyframes demo-pour-chute { 0%, 62% { opacity: 0.5; } 70%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+    .demo-loader-mixer g, .demo-loader-pour-fill, .demo-loader-pour-chute { animation-duration: 4s; }
+}

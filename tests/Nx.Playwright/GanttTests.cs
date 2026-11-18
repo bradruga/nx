@@ -36,6 +36,92 @@ public class GanttTests : PageTest
         await Expect(g.Locator(".nx-gantt-bar").Filter(new() { HasText = "rev 2" })).ToHaveCountAsync(1);
     }
 
+    private async Task DragAsync(ILocator from, float dx, float dy = 0)
+    {
+        var box = (await from.BoundingBoxAsync())!;
+        await Page.Mouse.MoveAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+        await Page.Mouse.DownAsync();
+        await Page.Mouse.MoveAsync(box.X + box.Width / 2 + dx, box.Y + box.Height / 2 + dy, new() { Steps = 8 });
+    }
+
+    [Test]
+    public async Task Bar_DragMoves_GripResizes_SnappedToDays()
+    {
+        await GoToPage("examples");
+        var g = Gantt("edit-gantt");
+        var bar = g.Locator(".nx-gantt-bar").Filter(new() { HasText = "Forms set" });
+        await bar.ScrollIntoViewIfNeededAsync();
+        var before = (await bar.BoundingBoxAsync())!;
+
+        // 2.4 days to the right lands on two days (a day is 30 px).
+        await DragAsync(bar, 72);
+        await Expect(g.Locator(".nx-gantt-bar-ghost")).ToHaveCountAsync(1);
+        var ghost = (await g.Locator(".nx-gantt-bar-ghost").BoundingBoxAsync())!;
+        Assert.That(ghost.X - before.X, Is.EqualTo(60).Within(1), "the outline snaps to whole days");
+        await Page.Mouse.UpAsync();
+
+        await Expect(Page.Locator("#edit-log")).ToContainTextAsync("Move: Forms set");
+        await Expect(g.Locator(".nx-gantt-bar-ghost")).ToHaveCountAsync(0);
+        Assert.That((await bar.BoundingBoxAsync())!.X - before.X, Is.EqualTo(60).Within(1));
+        Assert.That((await bar.BoundingBoxAsync())!.Width, Is.EqualTo(before.Width).Within(1));
+
+        // The right edge out a day: three days become four.
+        await bar.HoverAsync();
+        await DragAsync(bar.Locator(".nx-gantt-grip-end"), 30);
+        await Page.Mouse.UpAsync();
+        await Expect(Page.Locator("#edit-log")).ToContainTextAsync("ResizeEnd: Forms set");
+        await Expect(Page.Locator("#edit-log")).ToContainTextAsync("(4 d)");
+        Assert.That((await bar.BoundingBoxAsync())!.Width - before.Width, Is.EqualTo(30).Within(1));
+    }
+
+    [Test]
+    public async Task Bar_EscapeDropsTheDrag_ClickStillSelects_SummaryStaysPut()
+    {
+        await GoToPage("examples");
+        var g = Gantt("edit-gantt");
+        var bar = g.Locator(".nx-gantt-bar").Filter(new() { HasText = "Forms set" });
+        await bar.ScrollIntoViewIfNeededAsync();
+        var before = (await bar.BoundingBoxAsync())!;
+
+        await DragAsync(bar, 90);
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(g.Locator(".nx-gantt-bar-ghost")).ToHaveCountAsync(0);
+        await Page.Mouse.UpAsync();
+        await Expect(Page.Locator("#edit-log")).ToHaveTextAsync("Drag a bar, or one of its ends");
+        Assert.That((await bar.BoundingBoxAsync())!.X, Is.EqualTo(before.X).Within(1));
+
+        await bar.ClickAsync();
+        await Expect(Page.Locator("#edit-selected")).ToHaveTextAsync("Selected: Forms set");
+
+        var summary = g.Locator(".nx-gantt-bar-summary").First;
+        await Expect(summary).Not.ToHaveAttributeAsync("data-nx-gantt-drag", "true");
+    }
+
+    [Test]
+    public async Task Editable_Off_NothingDrags_AddAndDelete()
+    {
+        await GoToPage("examples");
+        var g = Gantt("edit-gantt");
+        var rows = g.Locator("[role=row]");
+        var count = await rows.CountAsync();
+
+        await g.Locator("[role=row]").Filter(new() { HasText = "Forms set" }).Locator("[role=gridcell]").Nth(1).ClickAsync();
+        await Page.Locator("#edit-add").ClickAsync();
+        await Expect(rows).ToHaveCountAsync(count + 1);
+        await Expect(Page.Locator("#edit-selected")).ToHaveTextAsync("Selected: New task");
+
+        await g.Locator("[role=row][aria-selected=true]").FocusAsync();
+        await Page.Keyboard.PressAsync("Delete");
+        await Expect(rows).ToHaveCountAsync(count);
+        await Expect(Page.Locator("#edit-log")).ToHaveTextAsync("Deleted: New task");
+
+        await Page.Locator("#edit-editable").ClickAsync();
+        await Expect(Page.Locator("#edit-editable")).ToHaveAttributeAsync("aria-checked", "false");
+        await Expect(g.Locator("[data-nx-gantt-drag]")).ToHaveCountAsync(0);
+        await Expect(g.Locator(".nx-gantt-handle")).ToHaveCountAsync(0);
+        await Expect(Page.Locator("#edit-add")).ToBeDisabledAsync();
+    }
+
     [Test]
     public async Task DoubleClick_OpensThePageForm()
     {

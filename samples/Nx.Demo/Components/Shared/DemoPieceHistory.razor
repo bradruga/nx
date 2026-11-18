@@ -1,0 +1,41 @@
+@* A piece's history, queried when this is first shown: put it in an NxPopup and the query runs as the popup opens. *@
+
+@if (events is null)
+{
+    <div class="demo-history-loading"><NxLoader Size="NxSize.Small" AriaLabel="Loading history" /><span>Loading history…</span></div>
+}
+else
+{
+    <ol class="demo-history">
+        @foreach (var (when, what) in events)
+        {
+            <li><span>@when.ToString("MMM d, h:mm tt")</span><strong>@what</strong></li>
+        }
+    </ol>
+}
+
+@code {
+    /// <summary>The piece whose history to load.</summary>
+    [Parameter, EditorRequired] public string PieceId { get; set; } = "";
+
+    /// <summary>Raised as the query starts, so the page can count them.</summary>
+    [Parameter] public EventCallback<string> OnQuery { get; set; }
+
+    List<(DateTime When, string What)>? events;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await OnQuery.InvokeAsync(PieceId);
+        // The demo's database: 600 ms, then a history made from the piece's number.
+        await Task.Delay(600);
+        var number = int.Parse(PieceId[3..]);
+        var poured = new DateTime(2026, 11, 2, 7, 15, 0).AddDays(number % 9).AddMinutes(number * 7 % 50);
+        events =
+        [
+            (poured, $"Poured, bed {number % 4 + 1}"),
+            (poured.AddHours(19), "Stripped"),
+            (poured.AddDays(1).AddHours(3), number % 5 == 0 ? "QC: patch and re-inspect" : "QC passed"),
+            (poured.AddDays(2), $"Moved to yard row {(char)('A' + number % 6)}"),
+        ];
+    }
+}

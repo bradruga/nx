@@ -222,7 +222,8 @@
 
 /* ── Columns: the list as an aligned grid under a sticky header ──────────── */
 
-.nx-combobox-popup-body { max-width: 100%; }
+/* min-width: a PopupWidth narrower than the field still fills the popup, which is never narrower than the field. */
+.nx-combobox-popup-body { max-width: 100%; min-width: 100%; }
 
 .nx-combobox-list-columns { padding-top: 0; scroll-padding-top: 30px; }
 

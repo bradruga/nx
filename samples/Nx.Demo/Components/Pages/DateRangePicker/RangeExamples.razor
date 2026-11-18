@@ -20,7 +20,7 @@
 <div class="doc-section">
     <h2>Typing</h2>
     <p class="doc-note">
-        Each field takes typed dates with the date picker's mask. Type a start after the end and the two swap, so the range is
+        Each field takes a typed date as the date picker does (<em>12/5</em> is this year's). Type a start after the end and the two swap, so the range is
         always in order.
     </p>
     <div class="demo-stage demo-stage-column" style="max-width:560px">
@@ -44,11 +44,11 @@
     <h2>DateTime &amp; Labels</h2>
     <p class="doc-note">
         Bound to <code>DateTime</code>, each end keeps its time of day. <code>StartLabel</code> and <code>EndLabel</code> name the
-        fields; <code>FloatingLabel</code> puts them inside.
+        fields.
     </p>
     <div class="demo-stage demo-stage-column" style="max-width:560px">
         <NxDateRangePicker Id="range-datetime" @bind-StartValue="dtFrom" @bind-EndValue="dtTo" StartLabel="Check in" EndLabel="Check out"
-                           FloatingLabel="true" Culture="EnUs" />
+                           Culture="EnUs" />
         <div class="demo-row"><span class="demo-value" id="range-datetime-value">Range: <strong>@dtFrom.ToString("yyyy-MM-dd HH:mm") → @dtTo.ToString("yyyy-MM-dd HH:mm")</strong></span></div>
     </div>
 </div>

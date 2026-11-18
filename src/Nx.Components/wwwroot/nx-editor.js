@@ -17,7 +17,7 @@ const BLOCKS = 'p,h1,h2,h3,h4,h5,h6,blockquote,pre';
 export function init(root, content, dotNet, html) {
     if (!content || editors.has(content.id)) return;
     const state = { root, content, dotNet, undo: [], redo: [], typing: false, typingTimer: 0, changeTimer: 0, range: null,
-        lastHtml: null, reported: '', frame: 0 };
+        lastHtml: null, reported: '', frame: 0, image: null, imageBox: null, dragImage: null, sizing: false };
     editors.set(content.id, state);
     document.execCommand('defaultParagraphSeparator', false, 'p');
     setContent(state, html);
@@ -41,16 +41,31 @@ export function init(root, content, dotNet, html) {
     };
     state.onKeyDown = e => keyDown(state, e);
     state.onPaste = e => paste(state, e);
-    state.onBlur = () => { endTyping(state); flushChange(state); };
+    state.onBlur = () => { endTyping(state); flushChange(state); if (!state.sizing) deselectImage(state); };
     state.onMouseDown = e => {
-        // Toolbar buttons must not take the focus (and the selection) from the text.
-        if (e.target.closest('[data-nx-editor-cmd]')) e.preventDefault();
+        // Toolbar buttons and picture handles must not take the focus (and the selection) from the text.
+        if (e.target.closest('[data-nx-editor-cmd], .nx-editor-image-handle')) e.preventDefault();
     };
+    state.onPointerDown = e => {
+        if (e.target.tagName === 'IMG' && content.isContentEditable) selectImage(state, e.target);
+        else deselectImage(state);
+    };
+    state.onClick = e => { if (e.target === state.image) selectNode(state, e.target); };
+    state.onDragStart = e => { state.dragImage = e.target.tagName === 'IMG' && content.isContentEditable ? e.target : null; };
+    state.onDragEnd = () => { state.dragImage = null; };
+    state.onDrop = e => dropImage(state, e);
+    state.onPlace = () => placeImageBox(state);
     content.addEventListener('beforeinput', state.onBeforeInput);
     content.addEventListener('input', state.onInput);
     content.addEventListener('keydown', state.onKeyDown);
     content.addEventListener('paste', state.onPaste);
     content.addEventListener('blur', state.onBlur);
+    content.addEventListener('pointerdown', state.onPointerDown);
+    content.addEventListener('click', state.onClick);
+    content.addEventListener('dragstart', state.onDragStart);
+    content.addEventListener('dragend', state.onDragEnd);
+    content.addEventListener('drop', state.onDrop);
+    content.addEventListener('scroll', state.onPlace);
     root.addEventListener('mousedown', state.onMouseDown);
     if (editors.size === 1) document.addEventListener('selectionchange', onSelectionChange);
     reportSoon(state);
@@ -63,6 +78,13 @@ export function dispose(id) {
     clearTimeout(state.changeTimer);
     cancelAnimationFrame(state.frame);
     const { content, root } = state;
+    deselectImage(state);
+    content.removeEventListener('pointerdown', state.onPointerDown);
+    content.removeEventListener('click', state.onClick);
+    content.removeEventListener('dragstart', state.onDragStart);
+    content.removeEventListener('dragend', state.onDragEnd);
+    content.removeEventListener('drop', state.onDrop);
+    content.removeEventListener('scroll', state.onPlace);
     content.removeEventListener('beforeinput', state.onBeforeInput);
     content.removeEventListener('input', state.onInput);
     content.removeEventListener('keydown', state.onKeyDown);
@@ -684,6 +706,182 @@ function splitCell(state) {
     caretIn(state, cell);
 }
 
+// ── Picture selection: an outline and four corner handles over the picture, kept outside the text ──
+
+const IMAGE_MIN = 24;           // px, the narrowest a picture is dragged to
+const IMAGE_ROOM = 30;          // px the handles may reach past the picture before they are clipped
+
+function selectImage(state, image) {
+    if (state.image === image) return;
+    deselectImage(state);
+    const box = document.createElement('div');
+    box.className = 'nx-editor-image-box';
+    box.setAttribute('aria-hidden', 'true');
+    for (const corner of ['nw', 'ne', 'sw', 'se']) {
+        const handle = document.createElement('span');
+        handle.className = `nx-editor-image-handle nx-editor-image-handle-${corner}`;
+        handle.addEventListener('pointerdown', e => beginSizing(state, e, corner));
+        box.append(handle);
+    }
+    state.root.append(box);
+    state.image = image;
+    state.imageBox = box;
+    // The picture moving, resizing or leaving the text, and the editor turning read-only.
+    state.imageWatch = new MutationObserver(state.onPlace);
+    state.imageWatch.observe(state.content, { attributes: true, childList: true, characterData: true, subtree: true });
+    state.imageResize = new ResizeObserver(state.onPlace);
+    state.imageResize.observe(state.content);
+    state.imageResize.observe(image);
+    window.addEventListener('resize', state.onPlace);
+    placeImageBox(state);
+}
+
+function deselectImage(state) {
+    if (!state.image) return;
+    state.imageWatch.disconnect();
+    state.imageResize.disconnect();
+    window.removeEventListener('resize', state.onPlace);
+    state.imageBox.remove();
+    state.image = state.imageBox = null;
+    state.sizing = false;
+}
+
+function placeImageBox(state) {
+    const { image, imageBox: box, content, root } = state;
+    if (!image) return;
+    if (!image.isConnected || !content.isContentEditable) return deselectImage(state);
+    const r = image.getBoundingClientRect();
+    const o = root.getBoundingClientRect();
+    const c = content.getBoundingClientRect();
+    const left = c.left + content.clientLeft, top = c.top + content.clientTop;
+    box.style.left = `${r.left - o.left - root.clientLeft}px`;
+    box.style.top = `${r.top - o.top - root.clientTop}px`;
+    box.style.width = `${r.width}px`;
+    box.style.height = `${r.height}px`;
+    // Scrolled partly out of the text: cut there, so nothing draws over the toolbar.
+    const cut = hidden => hidden > 0 ? `${hidden}px` : `-${IMAGE_ROOM}px`;
+    box.style.clipPath = `inset(${cut(top - r.top)} ${cut(r.right - left - content.clientWidth)} ${cut(r.bottom - top - content.clientHeight)} ${cut(left - r.left)})`;
+}
+
+// The selection is the picture itself, so alignment and the like apply to it.
+function selectNode(state, node) {
+    const range = document.createRange();
+    range.selectNode(node);
+    const selection = document.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    saveRange(state);
+}
+
+function caretBeside(state, node) {
+    const range = document.createRange();
+    range.setStartAfter(node);
+    range.collapse(true);
+    const selection = document.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    saveRange(state);
+}
+
+// A block left with nothing in it keeps its line.
+function keepLine(block) {
+    if (block?.isConnected && !block.childNodes.length) block.append(document.createElement('br'));
+}
+
+function removeImage(state, image) {
+    record(state);
+    const parent = image.parentNode;
+    caretBeside(state, image);
+    image.remove();
+    if (parent !== state.content) keepLine(parent);
+    if (!state.content.firstChild) state.content.innerHTML = '<p><br></p>';
+    changed(state);
+}
+
+// A corner drag keeps the picture's proportions and writes width and height when it ends.
+function beginSizing(state, e, corner) {
+    const image = state.image;
+    if (!image || e.button > 0) return;
+    const handle = e.currentTarget;
+    const start = image.getBoundingClientRect();
+    if (!start.width || !start.height) return;
+    const before = { width: image.getAttribute('width'), height: image.getAttribute('height') };
+    const ratio = start.width / start.height;
+    const signX = corner.includes('e') ? 1 : -1, signY = corner.includes('s') ? 1 : -1;
+    const style = getComputedStyle(state.content);
+    const most = Math.max(IMAGE_MIN, state.content.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight));
+    let recorded = false;
+    state.sizing = true;
+    handle.setPointerCapture(e.pointerId);
+
+    const move = m => {
+        const wide = Math.max(start.width + signX * (m.clientX - e.clientX), (start.height + signY * (m.clientY - e.clientY)) * ratio);
+        let width = Math.round(Math.min(most, Math.max(IMAGE_MIN, wide)));
+        if (!recorded && width === Math.round(start.width)) return;
+        if (!recorded) { record(state); recorded = true; }
+        image.setAttribute('width', width);
+        image.setAttribute('height', Math.round(width / ratio));
+        // Its container may hold it narrower than asked (a table cell): keep what shows.
+        const shown = Math.round(image.getBoundingClientRect().width);
+        if (shown < width) {
+            image.setAttribute('width', shown);
+            image.setAttribute('height', Math.round(shown / ratio));
+        }
+        placeImageBox(state);
+    };
+    const end = u => {
+        handle.removeEventListener('pointermove', move);
+        handle.removeEventListener('pointerup', end);
+        handle.removeEventListener('pointercancel', end);
+        state.sizing = false;
+        if (!recorded) return;
+        if (u.type === 'pointercancel') {
+            for (const name of ['width', 'height']) {
+                if (before[name] === null) image.removeAttribute(name);
+                else image.setAttribute(name, before[name]);
+            }
+            state.undo.pop();
+        }
+        changed(state);
+        placeImageBox(state);
+    };
+    handle.addEventListener('pointermove', move);
+    handle.addEventListener('pointerup', end);
+    handle.addEventListener('pointercancel', end);
+}
+
+function rangeAtPoint(x, y) {
+    if (document.caretPositionFromPoint) {
+        const position = document.caretPositionFromPoint(x, y);
+        if (!position) return null;
+        const range = document.createRange();
+        range.setStart(position.offsetNode, position.offset);
+        return range;
+    }
+    return document.caretRangeFromPoint?.(x, y) ?? null;
+}
+
+// A picture dragged inside the text is moved as the same element: one undo step, nothing for the browser to re-serialize.
+function dropImage(state, e) {
+    const image = state.dragImage;
+    state.dragImage = null;
+    if (!image || !image.isConnected || !state.content.isContentEditable) return;
+    e.preventDefault();
+    const range = rangeAtPoint(e.clientX, e.clientY);
+    const at = range?.startContainer;
+    if (!at || at === image || !state.content.contains(at)) return;
+    record(state);
+    const parent = image.parentNode;
+    if (at === state.content) (state.content.children[range.startOffset] ?? state.content.lastElementChild ?? state.content).append(image);
+    else range.insertNode(image);
+    if (parent !== state.content) keepLine(parent);
+    state.content.focus({ preventScroll: true });
+    selectNode(state, image);
+    selectImage(state, image);
+    changed(state);
+    placeImageBox(state);
+}
+
 // ── Table size picker ────────────────────────────────────────────────────────
 
 export function openTablePicker(id, popup, dotNet) {
@@ -737,6 +935,17 @@ export function closeTablePicker(id) {
 function keyDown(state, e) {
     const ctrl = e.ctrlKey || e.metaKey;
     const key = e.key.toLowerCase();
+    if (state.image && !['Control', 'Shift', 'Alt', 'Meta'].includes(e.key)) {
+        // Any key lets go of the picture; Delete and Backspace take it out.
+        const image = state.image;
+        deselectImage(state);
+        if (e.key === 'Escape' || e.key === 'Delete' || e.key === 'Backspace') {
+            e.preventDefault();
+            if (e.key === 'Escape') caretBeside(state, image);
+            else removeImage(state, image);
+            return;
+        }
+    }
     if (ctrl && !e.altKey && (key === 'z' || key === 'y')) {
         e.preventDefault();
         if (!state.content.isContentEditable) return;

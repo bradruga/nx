@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace Nx.Components;
 
@@ -30,16 +29,13 @@ public partial class NxSplitterPane : IDisposable
     /// <summary>Whether the bar next to this pane resizes it. Default: <c>true</c>.</summary>
     [Parameter] public bool Resizable { get; set; } = true;
 
-    /// <summary>Adds a collapse button to the adjacent bar (and the phone header); <kbd>Enter</kbd> on the bar toggles it.</summary>
-    [Parameter] public bool Collapsible { get; set; }
-
-    /// <summary>Whether the pane is collapsed. Use <c>@bind-Collapsed</c>, or leave it to the buttons.</summary>
+    /// <summary>Whether the pane is collapsed to nothing, its content kept. The bar beside it hides too. The splitter draws no button for it: bind it (<c>@bind-Collapsed</c>) to your own.</summary>
     [Parameter] public bool Collapsed { get; set; }
 
-    /// <summary>Raised when a button or key collapses or expands the pane.</summary>
+    /// <summary>Raised when <see cref="ToggleAsync"/> collapses or expands the pane.</summary>
     [Parameter] public EventCallback<bool> CollapsedChanged { get; set; }
 
-    /// <summary>Name of the pane: the bar's accessible name and, on phones, the header that collapses it.</summary>
+    /// <summary>Name of the pane: the bar's accessible name and, on phones, the header over it.</summary>
     [Parameter] public string? Title { get; set; }
 
     /// <summary>The pane's content. It scrolls when larger than the pane.</summary>
@@ -87,7 +83,10 @@ public partial class NxSplitterPane : IDisposable
         return resized.Resizable;
     }
 
-    private string BarClass(NxSplitterPane? prev) => BarMovable(prev) ? "nx-splitter-bar" : "nx-splitter-bar nx-splitter-bar-fixed";
+    /// <summary>A bar beside a collapsed pane is hidden with it: there is nothing for it to resize.</summary>
+    private string BarClass(NxSplitterPane? prev) =>
+        prev is { collapsed: true } || collapsed ? "nx-splitter-bar nx-splitter-bar-fixed nx-splitter-bar-hidden"
+        : BarMovable(prev) ? "nx-splitter-bar" : "nx-splitter-bar nx-splitter-bar-fixed";
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -137,24 +136,12 @@ public partial class NxSplitterPane : IDisposable
         await SizeChanged.InvokeAsync(newSize);
     }
 
-    /// <summary>Collapses or expands the pane, as its button does.</summary>
+    /// <summary>Collapses or expands the pane, for a button of your own.</summary>
     public async Task ToggleAsync()
     {
-        if (!Collapsible)
-            return;
         collapsed = !collapsed;
         await CollapsedChanged.InvokeAsync(collapsed);
         Splitter!.RefreshPanes();
-    }
-
-    private async Task HandleBarKeyDown(KeyboardEventArgs e, NxSplitterPane? prev)
-    {
-        if (e.Key != "Enter")
-            return;
-        if (prev is { Collapsible: true })
-            await prev.ToggleAsync();
-        else if (Collapsible)
-            await ToggleAsync();
     }
 
     /// <inheritdoc />

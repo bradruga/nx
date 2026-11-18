@@ -13,8 +13,9 @@
                 <tr><td>KeepAlive</td><td>bool</td><td>false</td><td>Keep shown panels rendered (hidden) instead of rebuilding them.</td></tr>
                 <tr><td>Position</td><td>NxTabPosition</td><td>Top</td><td>Top, Bottom, Left, Right. Left and right move to the top on phones.</td></tr>
                 <tr><td>FullWidth</td><td>bool</td><td>false</td><td>Tabs share the full width (top and bottom).</td></tr>
+                <tr><td>Reorderable</td><td>bool</td><td>false</td><td>A tab is dragged along the strip while the others make room, or moved with Ctrl+Shift+Arrow. The strip keeps the order.</td></tr>
                 <tr><td>AriaLabel</td><td>string?</td><td>—</td><td>Accessible name of the tab list.</td></tr>
-                <tr><td>Id</td><td>string?</td><td>generated</td><td>Tabs get <code>{Id}-tab-{key}</code>, panels <code>{Id}-panel-{key}</code>.</td></tr>
+                <tr><td>Id</td><td>string?</td><td>generated</td><td>Tabs get <code>{Id}-tab-{key}</code>, panels <code>{Id}-panel-{key}</code>. Each tab also carries its key as <code>data-nx-context</code>, for an <code>NxContextMenu</code> around the strip.</td></tr>
                 <tr><td>Class / Style</td><td>string?</td><td>—</td><td>Outer element; give left and right strips a height.</td></tr>
             </tbody>
         </table>
@@ -46,6 +47,7 @@
             <thead><tr><th>Event</th><th>Args</th><th>Raised when</th></tr></thead>
             <tbody>
                 <tr><td>ActiveTabChanged</td><td>string?</td><td>The user activates a tab, or closing the active tab moves to its neighbour.</td></tr>
+                <tr><td>OnTabReorder</td><td>NxTabReorderEventArgs</td><td>The user moved a tab: <code>TabId</code>, <code>OldIndex</code>, <code>NewIndex</code>. Save the order, or reorder your list to match.</td></tr>
                 <tr><td>OnTabClose</td><td>NxTabCloseEventArgs</td><td>The user closes a tab: <code>TabId</code> is its key. Remove it from the markup.</td></tr>
             </tbody>
         </table>

@@ -18,7 +18,7 @@
                 }
                 else
                 {
-                    <NxLoader Type="pgType" Size="pgSize" AriaLabel="@(OrNull(pgAriaLabel) ?? "Loading")" id="playground-loader" />
+                    <NxLoader Type="pgType" Size="pgSize" AriaLabel="@(OrNull(pgAriaLabel) ?? "Loading")" id="playground-loader" ChildContent="@(pgCustom ? Mixer : null)" />
                 }
             </div>
         </div>
@@ -44,6 +44,7 @@
                 </select>
             </label>
             <label class="demo-control"><span>AriaLabel</span><input type="text" id="pg-aria-label" placeholder="Loading" @bind="pgAriaLabel" @bind:event="oninput" /></label>
+            <label class="demo-control"><span>ChildContent (own animation)</span><input type="checkbox" id="pg-custom" @bind="pgCustom" /></label>
 
             <div class="demo-controls-title">Container</div>
             <label class="demo-control"><span>In a container</span><input type="checkbox" id="pg-container" @bind="pgContainer" /></label>
@@ -65,7 +66,13 @@
     NxLoaderType pgType;
     NxSize pgSize = NxSize.Large;
     string pgAriaLabel = "", pgText = "Loading…";
-    bool pgContainer = true, pgVisible = true;
+    bool pgContainer = true, pgVisible = true, pgCustom;
+
+    RenderFragment Mixer =>
+        @<svg class="demo-loader-mixer" viewBox="0 0 44 44" aria-hidden="true">
+            <circle cx="22" cy="22" r="18" />
+            <g><path d="M22 22 Q31 15 24 6" /><path d="M22 22 Q11.4 17.7 6.8 28.3" /><path d="M22 22 Q23.6 33.3 35.2 31.7" /></g>
+        </svg>;
 
     string PlaygroundCode
     {
@@ -77,6 +84,8 @@
                 if (pgType != NxLoaderType.Spinner) attrs.Add($"Type=\"NxLoaderType.{pgType}\"");
                 if (pgSize != NxSize.Medium) attrs.Add($"Size=\"NxSize.{pgSize}\"");
                 if (OrNull(pgAriaLabel) is { } a) attrs.Add($"AriaLabel=\"{a}\"");
+                if (pgCustom)
+                    return "<NxLoader " + string.Join(" ", attrs.Where(x => !x.StartsWith("Type="))) + ">\n    <svg class=\"mixer\" …>…</svg>\n</NxLoader>";
                 return "<NxLoader " + string.Join(" ", attrs) + " />";
             }
             var c = new List<string> { pgVisible ? "Visible=\"true\"" : "Visible=\"false\"" };

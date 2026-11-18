@@ -5,7 +5,7 @@ namespace Nx.Components;
 
 /// <summary>
 /// A value on a ring: the arc fills clockwise from the top as <see cref="Value"/> goes from <see cref="Min"/> to
-/// <see cref="Max"/>, with anything you like in the middle. Telerik's single-scale, single-pointer gauge, flattened.
+/// <see cref="Max"/>, with anything you like in the middle. One scale, one pointer.
 /// </summary>
 /// <example>
 /// <code>

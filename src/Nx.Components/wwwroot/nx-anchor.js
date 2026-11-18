@@ -2,9 +2,20 @@
 // on its side of the anchor, flips to the other side when that has more room, and shifts along the anchor to stay on
 // screen; it follows scrolling, resizing and its own size changes. A press outside (popup and anchor) or Escape is
 // reported to .NET, which closes it. State is keyed by the popup's id.
+//
+// A hover card (OpenOnHover) is also watched while it is closed: the pointer resting on an element that matches the
+// anchor selector, or the keyboard focusing one, asks .NET to open it for that element; the pointer leaving both the
+// anchor and the popup asks to close it. Many elements may match: the popup goes to the one in use.
 
 const EDGE = 8;     // px kept clear of the viewport edge
 const popups = new Map();
+const hovers = new Map();
+
+// The element the popup belongs to now: the hovered one, else the first that matches.
+function anchorOf(id, options) {
+    const hovered = hovers.get(id)?.anchor;
+    return hovered?.isConnected ? hovered : document.querySelector(options.anchor);
+}
 
 export function open(id, popup, dotNet, options) {
     if (!popup) return;
@@ -13,12 +24,15 @@ export function open(id, popup, dotNet, options) {
     state.place = () => place(id);
     state.onPress = e => {
         if (!state.options.closeOnOutside) return;
-        const anchor = document.querySelector(state.options.anchor);
-        if (popup.contains(e.target) || anchor?.contains(e.target)) return;
+        const anchor = anchorOf(id, state.options);
+        if (state.popup.contains(e.target) || anchor?.contains(e.target)) return;
         dotNet.invokeMethodAsync('OnDismiss');
     };
     state.onKey = e => {
-        if (e.key === 'Escape' && state.options.closeOnEscape && !e.defaultPrevented) dotNet.invokeMethodAsync('OnDismiss');
+        if (e.key !== 'Escape' || !state.options.closeOnEscape || e.defaultPrevented) return;
+        // A hover card that took the keyboard gives it back to its anchor.
+        if (state.options.hover && state.popup.contains(document.activeElement)) anchorOf(id, state.options)?.focus();
+        dotNet.invokeMethodAsync('OnDismiss');
     };
     state.resize = new ResizeObserver(state.place);
     state.resize.observe(popup);
@@ -53,7 +67,7 @@ export function place(id) {
     const state = popups.get(id);
     if (!state || !state.popup.isConnected) return;
     const { popup, options } = state;
-    const anchor = document.querySelector(options.anchor);
+    const anchor = anchorOf(id, options);
     popup.style.width = options.width ?? '';
     const viewportW = document.documentElement.clientWidth;
     const viewportH = window.innerHeight;
@@ -104,4 +118,72 @@ export function place(id) {
     popup.style.top = `${Math.round(top)}px`;
     popup.style.left = `${Math.round(left)}px`;
     popup.dataset.placement = side;
+}
+
+// ── Hover cards ───────────────────────────────────────────────────────────────
+
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+export function watchHover(id, dotNet, options) {
+    unwatchHover(id);
+    const state = { anchor: null, showTimer: 0, hideTimer: 0 };
+    const popup = () => popups.get(id)?.popup;
+    const contextOf = el => el.closest('[data-nx-context]')?.getAttribute('data-nx-context') ?? null;
+    const show = (anchor, delay) => {
+        clearTimeout(state.hideTimer);
+        clearTimeout(state.showTimer);
+        if (anchor === state.anchor && popup()) return;
+        state.showTimer = setTimeout(async () => {
+            if (!anchor.isConnected) return;
+            const before = state.anchor;
+            state.anchor = anchor;
+            // .NET may refuse (OnOpening cancelled): then the popup stays as it was.
+            if (!await dotNet.invokeMethodAsync('OnHoverOpen', contextOf(anchor))) state.anchor = before;
+        }, delay);
+    };
+    const hide = () => {
+        clearTimeout(state.showTimer);
+        clearTimeout(state.hideTimer);
+        if (!popup()) return;
+        state.hideTimer = setTimeout(() => { if (popup()) dotNet.invokeMethodAsync('OnDismiss'); }, options.hideDelay);
+    };
+    // Touch has no hover: a tap is the page's to handle.
+    state.onOver = e => {
+        if (e.pointerType === 'touch') return;
+        const anchor = e.target.closest?.(options.anchor);
+        if (anchor) show(anchor, options.showDelay);
+        else if (popup()?.contains(e.target)) clearTimeout(state.hideTimer);
+        else hide();
+    };
+    state.onLeave = () => hide();
+    state.onFocusIn = e => {
+        const anchor = e.target.closest?.(options.anchor);
+        if (anchor && e.target.matches(':focus-visible')) show(anchor, 0);
+        else if (!anchor && !popup()?.contains(e.target)) hide();
+    };
+    // Down from the anchor goes into the card, where its links are.
+    state.onKey = e => {
+        if (e.key !== 'ArrowDown' || !popup() || e.target !== state.anchor) return;
+        const first = popup().querySelector(FOCUSABLE);
+        if (!first) return;
+        e.preventDefault();
+        first.focus();
+    };
+    document.addEventListener('pointerover', state.onOver, true);
+    document.documentElement.addEventListener('pointerleave', state.onLeave);
+    document.addEventListener('focusin', state.onFocusIn);
+    document.addEventListener('keydown', state.onKey);
+    hovers.set(id, state);
+}
+
+export function unwatchHover(id) {
+    const state = hovers.get(id);
+    if (!state) return;
+    clearTimeout(state.showTimer);
+    clearTimeout(state.hideTimer);
+    document.removeEventListener('pointerover', state.onOver, true);
+    document.documentElement.removeEventListener('pointerleave', state.onLeave);
+    document.removeEventListener('focusin', state.onFocusIn);
+    document.removeEventListener('keydown', state.onKey);
+    hovers.delete(id);
 }

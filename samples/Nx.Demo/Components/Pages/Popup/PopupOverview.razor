@@ -37,7 +37,8 @@
         <table class="doc-table">
             <thead><tr><th>Key</th><th>Behavior</th></tr></thead>
             <tbody>
-                <tr><td>Escape</td><td>Closes it (with <code>CloseOnEscape</code>).</td></tr>
+                <tr><td>Escape</td><td>Closes it (with <code>CloseOnEscape</code>). A hover card gives focus back to its anchor.</td></tr>
+                <tr><td>↓ on a hover card's anchor</td><td>With <code>OpenOnHover</code>: focusing an anchor opens the card, and ↓ moves into it.</td></tr>
                 <tr><td>Tab</td><td>Focus stays where it was when it opens; the content's own fields and buttons are reachable after the anchor.</td></tr>
                 <tr><td>Roles</td><td>A <code>dialog</code> by default (<code>Role</code>), named by <code>AriaLabel</code>. Give the anchor <code>aria-expanded</code>.</td></tr>
             </tbody>

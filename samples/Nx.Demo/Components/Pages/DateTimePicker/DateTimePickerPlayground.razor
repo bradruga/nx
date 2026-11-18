@@ -14,7 +14,7 @@
                                   Format="@(OrNull(pgFormat) ?? "g")" Culture="Culture" TimeStep="pgStep"
                                   Min="pgMinOn ? MinValue : null" Max="pgMaxOn ? MaxValue : null"
                                   ShowWeekNumbers="pgWeeks" ShowTodayButton="pgToday"
-                                  Label="@OrNull(pgLabel)" FloatingLabel="pgFloating" Placeholder="@OrNull(pgPlaceholder)"
+                                  Label="@OrNull(pgLabel)" Placeholder="@OrNull(pgPlaceholder)"
                                   Clearable="pgClearable" ReadOnly="pgReadOnly" Disabled="pgDisabled" MobileMode="pgMobile" />
             </div>
             <div class="demo-row">
@@ -47,7 +47,6 @@
 
             <div class="demo-controls-title">Text</div>
             <label class="demo-control"><span>Label</span><input type="text" @bind="pgLabel" @bind:event="oninput" /></label>
-            <label class="demo-control"><span>FloatingLabel</span><input type="checkbox" id="pg-floating" @bind="pgFloating" /></label>
             <label class="demo-control"><span>Placeholder</span><input type="text" @bind="pgPlaceholder" @bind:event="oninput" /></label>
 
             <div class="demo-controls-title">Behavior</div>
@@ -82,7 +81,7 @@
     DateTime? pgValue = DateTime.Today.AddDays(1).AddHours(10);
     string pgFormat = "g", pgCulture = "en-US", pgLabel = "Starts", pgPlaceholder = "";
     int pgStep = 30, pgChanges;
-    bool pgMinOn, pgMaxOn, pgWeeks, pgToday = true, pgFloating, pgClearable = true, pgReadOnly, pgDisabled;
+    bool pgMinOn, pgMaxOn, pgWeeks, pgToday = true, pgClearable = true, pgReadOnly, pgDisabled;
     NxMobileMode pgMobile = NxMobileMode.Auto;
 
     CultureInfo Culture => CultureInfo.GetCultureInfo(pgCulture);
@@ -102,7 +101,6 @@
             if (pgWeeks) attrs.Add("ShowWeekNumbers=\"true\"");
             if (!pgToday) attrs.Add("ShowTodayButton=\"false\"");
             if (OrNull(pgLabel) is { } l) attrs.Add($"Label=\"{l}\"");
-            if (pgFloating) attrs.Add("FloatingLabel=\"true\"");
             if (OrNull(pgPlaceholder) is { } p) attrs.Add($"Placeholder=\"{p}\"");
             if (pgClearable) attrs.Add("Clearable=\"true\"");
             if (pgReadOnly) attrs.Add("ReadOnly=\"true\"");

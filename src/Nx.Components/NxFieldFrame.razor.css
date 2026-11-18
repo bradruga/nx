@@ -100,39 +100,6 @@
 
 .nx-field-box ::deep .nx-field-button:hover { background: var(--nx-surface-hover); color: var(--nx-fg); }
 
-/* ── Floating label ───────────────────────────────────────────────────────── */
-
-.nx-field-floating .nx-field-box { height: calc(var(--nx-control-height-lg) + 6px); }
-.nx-field-floating ::deep input { padding-top: 14px; }
-
-.nx-field-floating-label {
-    position: absolute;
-    left: var(--nx-control-padding-x);
-    top: 50%;
-    transform: translateY(-50%);
-    transform-origin: left top;
-    color: var(--nx-fg-muted);
-    pointer-events: none;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: calc(100% - 16px);
-    transition: top var(--nx-transition), transform var(--nx-transition), color var(--nx-transition);
-}
-
-.nx-field-has-prefix .nx-field-floating-label { left: 6px; }
-
-.nx-field-floating .nx-field-box:focus-within .nx-field-floating-label,
-.nx-field-floating.nx-field-has-value .nx-field-floating-label {
-    top: 7px;
-    transform: translateY(0) scale(0.8);
-}
-
-.nx-field-floating .nx-field-box:focus-within .nx-field-floating-label { color: var(--nx-accent); }
-
-.nx-field-floating ::deep input::placeholder { opacity: 0; transition: opacity var(--nx-transition); }
-.nx-field-floating .nx-field-box:focus-within ::deep input::placeholder { opacity: 1; }
-
 /* ── Counter ──────────────────────────────────────────────────────────────── */
 
 .nx-field ::deep .nx-field-counter {
@@ -157,10 +124,9 @@
 .nx-field-invalid .nx-field-box,
 .nx-field-invalid .nx-field-box:hover { border-color: var(--nx-invalid); }
 .nx-field-invalid .nx-field-box:focus-within { box-shadow: 0 0 0 1px var(--nx-invalid); }
-.nx-field-invalid .nx-field-label,
-.nx-field-invalid .nx-field-floating-label { color: var(--nx-invalid); }
+.nx-field-invalid .nx-field-label { color: var(--nx-invalid); }
 
-/* ── Multi-line (NxTextArea): the box grows with the textarea; buttons and labels sit at the top ── */
+/* ── Multi-line (NxTextArea): the box grows with the textarea; buttons sit at the top ── */
 
 .nx-field-multiline .nx-field-box {
     height: auto;
@@ -186,14 +152,14 @@
     line-height: var(--nx-textarea-line-height);
 }
 
+/* Resize both ways: the textarea takes the dragged width and the box follows it. */
+.nx-field-multiline .nx-field-control ::deep textarea[data-resize="both"] { flex: none; }
+.nx-field-multiline .nx-field-control:has(> textarea[data-resize="both"]) { min-width: auto; }
+.nx-field-multiline .nx-field-box:has(textarea[data-resize="both"]),
+.nx-field-multiline:has(textarea[data-resize="both"]) { min-width: fit-content; }
+
 .nx-field-multiline .nx-field-control ::deep textarea::placeholder { color: var(--nx-fg-subtle); opacity: 1; }
 .nx-field-multiline .nx-field-prefix,
 .nx-field-multiline .nx-field-suffix { padding-top: 5px; }
 
-.nx-field-multiline.nx-field-floating .nx-field-box { height: auto; padding-top: 18px; }
-.nx-field-multiline .nx-field-floating-label { top: 14px; }
-.nx-field-multiline.nx-field-floating .nx-field-box:focus-within .nx-field-floating-label,
-.nx-field-multiline.nx-field-floating.nx-field-has-value .nx-field-floating-label { top: -12px; }
-.nx-field-multiline.nx-field-floating ::deep textarea::placeholder { opacity: 0; transition: opacity var(--nx-transition); }
-.nx-field-multiline.nx-field-floating .nx-field-box:focus-within ::deep textarea::placeholder { opacity: 1; }
 .nx-field-multiline.nx-field-disabled ::deep textarea { cursor: not-allowed; }

@@ -22,6 +22,8 @@
                 <tr><td>Sortable</td><td>bool</td><td>false</td><td>Header clicks sort among siblings: ascending, descending, off.</td></tr>
                 <tr><td>FilterRow</td><td>bool</td><td>false</td><td>Filter boxes: tasks containing the text, with their parents.</td></tr>
                 <tr><td>ExpandedItems</td><td>IEnumerable&lt;TItem&gt;?</td><td>all</td><td><code>@@bind-ExpandedItems</code>; <code>null</code> expands every task.</td></tr>
+                <tr><td>SelectedItems</td><td>IEnumerable&lt;TItem&gt;?</td><td>none</td><td><code>@@bind-SelectedItems</code>: the selected task, in a list of one or none (as NxGrid's).</td></tr>
+                <tr><td>Editable</td><td>bool</td><td>true</td><td><code>false</code> turns off cell editors, dragging bars, drawing dependencies and Delete.</td></tr>
                 <tr><td>ToolBarTemplate</td><td>RenderFragment?</td><td>—</td><td>A toolbar over the Gantt.</td></tr>
                 <tr><td>Height / Width</td><td>string?</td><td>600px / —</td><td>CSS sizes.</td></tr>
                 <tr><td>Culture / AriaLabel / Id / Class / Style</td><td></td><td>—</td><td>Dates, the task list's name ("Tasks"), the outer element.</td></tr>
@@ -55,10 +57,12 @@
             <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
             <tbody>
                 <tr><td>OnEdit</td><td>EventCallback&lt;TItem&gt;</td><td>Double-click on a row or bar, Enter on a row: open your form.</td></tr>
-                <tr><td>OnUpdate</td><td>EventCallback&lt;TItem&gt;</td><td>A cell edited in place was left; the editor already wrote the item.</td></tr>
+                <tr><td>OnUpdate</td><td>EventCallback&lt;NxGanttUpdateArgs&lt;TItem&gt;&gt;</td><td>Any edit, as NxGrid's: a bar dragged or resized (the item is untouched) or a cell left (its editor wrote it). Bars drag only with a handler.</td></tr>
+                <tr><td>NxGanttUpdateArgs</td><td>Item, Kind, Changes, Apply()</td><td><code>Kind</code> is Edit, Move, ResizeStart or ResizeEnd; each change has <code>Field</code>, <code>OldValue</code>, <code>NewValue</code> and <code>Apply(item)</code>; <code>Apply()</code> writes them all.</td></tr>
+                <tr><td>OnDelete</td><td>EventCallback&lt;TItem&gt;</td><td>Delete on the selected row: remove the task from <code>Data</code>.</td></tr>
                 <tr><td>OnDependencyCreate</td><td>EventCallback&lt;NxGanttDependencyCreateEventArgs&lt;TItem&gt;&gt;</td><td>A link drawn from one bar to another: <code>Predecessor</code>, <code>Successor</code>, <code>Type</code>.</td></tr>
                 <tr><td>OnStateChanged</td><td>EventCallback</td><td>The sort or a filter changed.</td></tr>
-                <tr><td>TreeListWidthChanged / ExpandedItemsChanged</td><td>EventCallback</td><td>The divider moved; a task opened or closed.</td></tr>
+                <tr><td>TreeListWidthChanged / ExpandedItemsChanged / SelectedItemsChanged</td><td>EventCallback</td><td>The divider moved; a task opened or closed; another task was selected.</td></tr>
                 <tr><td>HasSort / HasFilter</td><td>bool</td><td>A sort or a filter is on.</td></tr>
                 <tr><td>ClearSortAsync() / ClearFilterAsync()</td><td>Task</td><td>Back to the data's order; empty the filters.</td></tr>
                 <tr><td>Rebind()</td><td>void</td><td>Draws again after the data changed in place outside a render.</td></tr>
@@ -79,6 +83,8 @@
                 <tr><td>--nx-gantt-weekend-bg / -today</td><td>#f6f6f8 / --nx-danger</td><td>Weekend days; today's line.</td></tr>
                 <tr><td>--nx-gantt-bar-bg / -bar-fg / -summary-bg</td><td>accent / accent-fg / #5f6b73</td><td>Bars without a template; summary (parent) bars.</td></tr>
                 <tr><td>--nx-gantt-link</td><td>#6b6b78</td><td>Dependency arrows.</td></tr>
+                <tr><td>--nx-gantt-grip-width / -grip-bg</td><td>7px / white 35% (dark: black 30%)</td><td>The strip at each end of a bar that resizes it.</td></tr>
+                <tr><td>--nx-gantt-ghost-bg</td><td>the bar color at 14%</td><td>The outline that shows where a dragged bar will land.</td></tr>
             </tbody>
         </table>
     </div>

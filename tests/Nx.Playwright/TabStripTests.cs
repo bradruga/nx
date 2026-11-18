@@ -212,4 +212,95 @@ public class TabStripTests : PageTest
         Assert.That(yard.Y, Is.EqualTo(casting.Y).Within(1));
         Assert.That(yard.X, Is.GreaterThan(casting.X));
     }
+
+    [Test]
+    public async Task Reorder_DragMovesTheTab_EscapeDropsIt_ClickStillActivates()
+    {
+        await GoToPage();
+        var order = Page.Locator("#reorder-order");
+        var pour = Tab("reorder-tabs-tab-pour");
+        await pour.ScrollIntoViewIfNeededAsync();
+        var from = (await pour.BoundingBoxAsync())!;
+        var yard = (await Tab("reorder-tabs-tab-yard").BoundingBoxAsync())!;
+
+        // Past the last tab: the tab follows the pointer and each one it passes slides back into its space.
+        await Page.Mouse.MoveAsync(from.X + from.Width / 2, from.Y + from.Height / 2);
+        await Page.Mouse.DownAsync();
+        await Page.Mouse.MoveAsync(yard.X + yard.Width - 4, from.Y + from.Height / 2, new() { Steps = 8 });
+        await Expect(pour).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("nx-tabstrip-tab-dragging"));
+        Assert.That((await pour.BoundingBoxAsync())!.X, Is.GreaterThan(from.X + 100), "the tab moves with the pointer");
+        await Page.WaitForFunctionAsync("([id, x]) => document.getElementById(id).getBoundingClientRect().left < x - 20", new object[] { "reorder-tabs-tab-yard", yard.X });
+        await Page.Mouse.UpAsync();
+        await Expect(order).ToHaveTextAsync("Order: Forms, Rebar, Cure, Strip, Yard, Pour");
+        await Expect(Page.Locator("#reorder-log")).ToHaveTextAsync("Moved Pour: 2 to 5");
+        await Page.WaitForFunctionAsync("() => [...document.querySelectorAll('#reorder-tabs [role=tab]')].every(t => !t.style.transform)");
+        await Expect(Tab("reorder-tabs-tab-forms")).ToHaveAttributeAsync("aria-selected", "true");
+
+        // Escape drops a drag.
+        var rebar = (await Tab("reorder-tabs-tab-rebar").BoundingBoxAsync())!;
+        await Page.Mouse.MoveAsync(rebar.X + rebar.Width / 2, rebar.Y + rebar.Height / 2);
+        await Page.Mouse.DownAsync();
+        await Page.Mouse.MoveAsync(rebar.X + 300, rebar.Y + rebar.Height / 2, new() { Steps = 6 });
+        await Page.Keyboard.PressAsync("Escape");
+        await Page.Mouse.UpAsync();
+        await Expect(order).ToHaveTextAsync("Order: Forms, Rebar, Cure, Strip, Yard, Pour");
+
+        await Tab("reorder-tabs-tab-cure").ClickAsync();
+        await Expect(Tab("reorder-tabs-tab-cure")).ToHaveAttributeAsync("aria-selected", "true");
+    }
+
+    [Test]
+    public async Task Reorder_CtrlShiftArrow_MovesTheFocusedTab_FocusFollows()
+    {
+        await GoToPage();
+        await Tab("reorder-tabs-tab-forms").FocusAsync();
+        await Page.Keyboard.PressAsync("Control+Shift+ArrowRight");
+        await Expect(Page.Locator("#reorder-order")).ToHaveTextAsync("Order: Rebar, Forms, Pour, Cure, Strip, Yard");
+        await Expect(Tab("reorder-tabs-tab-forms")).ToBeFocusedAsync();
+    }
+
+    [Test]
+    public async Task Browser_ContextMenuOnATab_ClosesOthers_NewTab_Reorders()
+    {
+        await GoToPage();
+        var order = Page.Locator("#browser-order");
+        var tabs = Page.Locator("#browser-tabs [role=tab]");
+        await Page.Locator("#browser").ScrollIntoViewIfNeededAsync();
+        await Expect(tabs).ToHaveCountAsync(4);
+
+        // The menu knows which tab was pressed, active or not.
+        await Tab("browser-tabs-tab-page-3").ClickAsync(new() { Button = MouseButton.Right });
+        var menu = Page.Locator("#browser-menu [role=menu]").First;
+        await Expect(menu).ToBeVisibleAsync();
+        await menu.GetByText("Duplicate").ClickAsync();
+        // The copy opens beside its original, in the page's list and in the strip.
+        await Expect(order).ToHaveTextAsync("Tabs: Pour schedule, Yard map, Loads, Loads, Drawings");
+        await Expect(tabs).ToHaveTextAsync(new[] { "Pour schedule", "Yard map", "Loads", "Loads", "Drawings" });
+        await Expect(tabs.Nth(3)).ToHaveAttributeAsync("aria-selected", "true");
+
+        await Tab("browser-tabs-tab-page-2").ClickAsync(new() { Button = MouseButton.Right });
+        await Page.Locator("#browser-menu [role=menu]").First.GetByText("Close tabs to the right").ClickAsync();
+        await Expect(order).ToHaveTextAsync("Tabs: Pour schedule, Yard map");
+        await Expect(Tab("browser-tabs-tab-page-2")).ToHaveAttributeAsync("aria-selected", "true");
+
+        // The last tab has nothing to its right.
+        await Tab("browser-tabs-tab-page-2").ClickAsync(new() { Button = MouseButton.Right });
+        await Expect(Page.Locator("#browser-menu [role=menuitem]").Filter(new() { HasText = "Close tabs to the right" })).ToHaveAttributeAsync("aria-disabled", "true");
+        await Page.Keyboard.PressAsync("Escape");
+
+        await Page.Locator("#browser-new").ClickAsync();
+        await Expect(order).ToHaveTextAsync("Tabs: Pour schedule, Yard map, New tab");
+
+        // Drag the new tab to the front; the page's list follows.
+        var fresh = (await tabs.Last.BoundingBoxAsync())!;
+        var first = (await tabs.First.BoundingBoxAsync())!;
+        await Page.Mouse.MoveAsync(fresh.X + fresh.Width / 2, fresh.Y + fresh.Height / 2);
+        await Page.Mouse.DownAsync();
+        await Page.Mouse.MoveAsync(first.X + 2, fresh.Y + fresh.Height / 2, new() { Steps = 8 });
+        await Page.Mouse.UpAsync();
+        await Expect(order).ToHaveTextAsync("Tabs: New tab, Pour schedule, Yard map");
+
+        await tabs.First.Locator(".nx-tabstrip-close").ClickAsync();
+        await Expect(order).ToHaveTextAsync("Tabs: Pour schedule, Yard map");
+    }
 }

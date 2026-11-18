@@ -132,10 +132,9 @@
 </div>
 
 <div class="doc-section">
-    <h2>Labels, Clear &amp; State</h2>
+    <h2>Clear &amp; State</h2>
     <div class="demo-stage">
         <div class="demo-form-grid">
-            <NxNumericTextBox Id="state-floating" Label="Floating label" FloatingLabel="true" @bind-Value="floating" Culture="EnUs" />
             <NxNumericTextBox Id="state-clear" Label="Clearable" @bind-Value="clearable" Clearable="true" Culture="EnUs" />
             <NxNumericTextBox Id="state-readonly" Label="Read-only" Value="1250" ReadOnly="true" Format="N0" Culture="EnUs" />
             <NxNumericTextBox Id="state-disabled" Label="Disabled" Value="0" Disabled="true" Culture="EnUs" />
@@ -197,7 +196,7 @@
     decimal margin = 22.5m;
     int weight = 14800;
     int selectOn = 120, selectOff = 120;
-    int? floating, clearable = 75;
+    int? clearable = 75;
 
     readonly LineForm line = new();
     string lineResult = "No line added";

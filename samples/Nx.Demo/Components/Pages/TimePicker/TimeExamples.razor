@@ -58,10 +58,9 @@
 </div>
 
 <div class="doc-section">
-    <h2>Labels, Clear &amp; State</h2>
+    <h2>Clear &amp; State</h2>
     <div class="demo-stage">
         <div class="demo-form-grid">
-            <NxTimePicker Id="state-floating" Label="Floating label" FloatingLabel="true" @bind-Value="floating" Culture="EnUs" />
             <NxTimePicker Id="state-clear" Label="Clearable" @bind-Value="clearable" Clearable="true" Culture="EnUs" />
             <NxTimePicker Id="state-readonly" Label="Read-only" Value="fixedTime" ReadOnly="true" Culture="EnUs" />
             <NxTimePicker Id="state-disabled" Label="Disabled" Value="fixedTime" Disabled="true" Culture="EnUs" />
@@ -116,7 +115,7 @@
     TimeOnly? pourStart = new(7, 0);
     TimeSpan span = new(9, 45, 0);
     DateTime stamp = new(2026, 10, 23, 16, 0, 0);
-    TimeOnly? floating, clearable = new TimeOnly(12, 0);
+    TimeOnly? clearable = new TimeOnly(12, 0);
     TimeOnly fixedTime = new(8, 0);
     TimeOnly? sheetTime;
 

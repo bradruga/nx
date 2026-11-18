@@ -9,7 +9,7 @@ namespace Nx.Components;
 /// <summary>
 /// A conversation: messages from <see cref="Data"/>, the user's on the right and everyone else's on the left with an
 /// avatar and name, grouped by author and day, a typing indicator, and a box that sends on <kbd>Enter</kbd>. The list
-/// stays at the newest message unless the user scrolled up to read. Fields are read by name, as Telerik's chat does.
+/// stays at the newest message unless the user scrolled up to read. Fields are read by name.
 /// </summary>
 /// <example>
 /// <code>

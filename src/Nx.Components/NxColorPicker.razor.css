@@ -132,8 +132,41 @@
 .nx-colorpicker-clear:hover { color: var(--nx-accent); }
 .nx-colorpicker-clear:disabled { color: var(--nx-fg-subtle); cursor: default; }
 
+/* ── View: the Palette / Gradient tabs, the gradient's Apply button ──────── */
+
+.nx-colorpicker-tabs {
+    display: flex;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--nx-border);
+}
+
+.nx-colorpicker-tab {
+    flex: 1;
+    height: 30px;
+    margin-bottom: -1px;
+    padding: 0 8px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--nx-fg-muted);
+    font: inherit;
+    cursor: pointer;
+}
+.nx-colorpicker-tab:hover { color: var(--nx-fg); }
+.nx-colorpicker-tab:focus { outline: none; }
+.nx-colorpicker-tab:focus-visible { box-shadow: var(--nx-focus-ring-inset); }
+.nx-colorpicker-tab-active,
+.nx-colorpicker-tab-active:hover {
+    border-bottom-color: var(--nx-accent);
+    color: var(--nx-accent);
+    font-weight: var(--nx-font-weight-medium);
+}
+
+.nx-colorpicker-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+
 /* Bigger targets on touch screens; the popup still fits a 390 px phone with 10 columns. */
 @media (pointer: coarse) {
     .nx-colorpicker-palette { --nx-colorpicker-cell-size: 30px; --nx-colorpicker-cell-gap: 3px; }
-    .nx-colorpicker-clear { min-height: 44px; }
+    .nx-colorpicker-clear, .nx-colorpicker-tab { min-height: 44px; }
+    .nx-colorpicker-actions ::deep .nx-button { min-height: 44px; }
 }

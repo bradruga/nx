@@ -189,3 +189,23 @@
     .nx-tabstrip-tab { min-height: 44px; }
     .nx-tabstrip-close { width: 32px; height: 32px; }
 }
+
+/* ── Reorderable: the dragged tab lifts and follows the pointer; the others slide aside (nx-tabstrip.js) ── */
+
+.nx-tabstrip-reorderable .nx-tabstrip-tab { cursor: grab; }
+.nx-tabstrip-list-dragging, .nx-tabstrip-list-dragging .nx-tabstrip-tab { cursor: grabbing; user-select: none; }
+.nx-tabstrip-list-dragging .nx-tabstrip-tab { transition: transform 0.16s ease; }
+.nx-tabstrip-list-dragging .nx-tabstrip-tab-dragging {
+    z-index: 2;
+    transition: none;
+    background: var(--nx-surface);
+    color: var(--nx-fg);
+    border-radius: var(--nx-radius-sm);
+    box-shadow: var(--nx-shadow-popup);
+}
+/* Let go: the tab eases into its gap too. */
+.nx-tabstrip-list-settling .nx-tabstrip-tab-dragging { transition: transform 0.12s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+    .nx-tabstrip-list-dragging .nx-tabstrip-tab { transition: none; }
+}

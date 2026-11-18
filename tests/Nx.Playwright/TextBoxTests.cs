@@ -104,39 +104,6 @@ public class TextBoxTests : PageTest
         await Expect(Page.Locator("#label-fixed")).ToBeFocusedAsync();
     }
 
-    [Test]
-    public async Task FloatingLabel_LiftsOnFocus_AndStaysUpWithValue()
-    {
-        await GoToPage();
-
-        var label = TextBox("label-floating").Locator(".nx-textbox-floating-label");
-        var input = Page.Locator("#label-floating");
-        var restingTop = (await label.BoundingBoxAsync())!.Y;
-
-        await input.FocusAsync();
-        await Expect(label).ToHaveCSSAsync("top", "7px");
-        await Page.WaitForTimeoutAsync(250);
-        Assert.That((await label.BoundingBoxAsync())!.Y, Is.LessThan(restingTop - 4), "label did not lift on focus");
-
-        await input.FillAsync("Bridge deck");
-        await input.BlurAsync();
-        await Page.WaitForTimeoutAsync(250);
-        Assert.That((await label.BoundingBoxAsync())!.Y, Is.LessThan(restingTop - 4), "label dropped back over the value");
-    }
-
-    [Test]
-    public async Task FloatingLabel_PlaceholderOnlyWhileFocused()
-    {
-        await GoToPage();
-
-        var input = Page.Locator("#label-floating");
-        var opacity = () => input.EvaluateAsync<string>("el => getComputedStyle(el, '::placeholder').opacity");
-
-        Assert.That(await opacity(), Is.EqualTo("0"));
-        await input.FocusAsync();
-        await Page.WaitForFunctionAsync("id => getComputedStyle(document.getElementById(id), '::placeholder').opacity === '1'", "label-floating");
-    }
-
     // ── Prefix and suffix ─────────────────────────────────────────────────────
 
     [Test]

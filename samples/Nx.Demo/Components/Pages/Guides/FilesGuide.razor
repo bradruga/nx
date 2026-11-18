@@ -1,0 +1,102 @@
+@page "/guides/files"
+
+<PageTitle>NxFileSelect or NxUpload? — Nx Components</PageTitle>
+
+<nav class="doc-breadcrumb" aria-label="Breadcrumb">
+    <a href="">Components</a>
+    <span aria-hidden="true">/</span>
+    <span>Guide</span>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">NxFileSelect or NxUpload?</span>
+</nav>
+
+<h1>NxFileSelect or NxUpload?</h1>
+<p class="doc-intro">
+    Both show the same drop zone and file list and run the same type and size checks. The difference is who moves the
+    bytes, and that decides which one fits.
+</p>
+
+<div class="doc-section">
+    <h2>The Short Answer</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table" id="files-guide-summary">
+            <thead><tr><th></th><th><a href="fileselect/overview">NxFileSelect</a></th><th><a href="upload/overview">NxUpload</a></th></tr></thead>
+            <tbody>
+                <tr><td>Who moves the bytes</td><td>Your .NET code, reading a stream in <code>OnSelect</code>.</td><td>The browser, posting each file to <code>SaveUrl</code>.</td></tr>
+                <tr><td>What you write</td><td>An event handler. No endpoint.</td><td>An HTTP endpoint that takes <code>multipart/form-data</code>, plus <code>OnSuccess</code>.</td></tr>
+                <tr><td>Progress, cancel, retry</td><td>No: a file is read or it is not.</td><td>Yes, per file.</td></tr>
+                <tr><td>Paste a screenshot</td><td>No.</td><td>Yes (Ctrl+V or the Paste button).</td></tr>
+                <tr><td>Where your code runs</td><td>In the component, with its injected services and the signed-in user.</td><td>In the endpoint; the component only gets the answer, e.g. a temp file id.</td></tr>
+                <tr><td>Good size</td><td>Small: up to a few MB.</td><td>Any, up to what the endpoint allows.</td></tr>
+                <tr><td>Use it for</td><td>A file you read and are done with: a CSV import, a settings file, a small image to preview.</td><td>A file you keep: attachments, drawings, photos, anything large.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>It Depends on Where Blazor Runs</h2>
+    <p class="doc-note">
+        <code>NxUpload</code> behaves the same everywhere, because the browser does the sending. <code>NxFileSelect</code> does
+        not: its stream reads the file from wherever the component is running.
+    </p>
+    <div class="doc-table-wrap">
+        <table class="doc-table" id="files-guide-hosting">
+            <thead><tr><th></th><th>Blazor Server (ERP)</th><th>Blazor WebAssembly</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>NxFileSelect</td>
+                    <td>
+                        The file travels to the server over the SignalR circuit, in small chunks, on the same connection
+                        that carries every click and render. It is slower than an HTTP post, a dropped connection loses
+                        the read with no retry, and a large file makes the page feel slow while it goes.
+                    </td>
+                    <td>
+                        The stream reads the file in the browser: fast, and nothing is sent. To keep the file you still
+                        have to post it yourself with <code>HttpClient</code>, without progress.
+                    </td>
+                </tr>
+                <tr>
+                    <td>NxUpload</td>
+                    <td>An ordinary HTTP post beside the circuit. The circuit stays free; cookies go with the request.</td>
+                    <td>
+                        The same post. If the API is on another origin it needs CORS that allows credentials:
+                        <code>WithCredentials</code> (on by default) sends the cookies.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="doc-note" style="margin-top:14px">
+        So on Blazor Server, <code>NxFileSelect</code> is for convenience with small files, and <code>NxUpload</code> is the one
+        for anything large or kept. On WebAssembly, <code>NxFileSelect</code> is the one for work done in the browser (parse,
+        preview, check), and <code>NxUpload</code> for getting a file to the server.
+    </p>
+</div>
+
+<div class="doc-section">
+    <h2>Choosing</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table" id="files-guide-choices">
+            <thead><tr><th>Use</th><th>When</th></tr></thead>
+            <tbody>
+                <tr><td>NxUpload</td><td>The file is stored: an attachment, a drawing, a photo.</td></tr>
+                <tr><td>NxUpload</td><td>It may be more than a few MB, or come from a phone on a weak connection.</td></tr>
+                <tr><td>NxUpload</td><td>The user should see progress, or be able to cancel or retry.</td></tr>
+                <tr><td>NxUpload</td><td>Users paste screenshots.</td></tr>
+                <tr><td>NxFileSelect</td><td>The file is read once and thrown away: an import parsed into rows.</td></tr>
+                <tr><td>NxFileSelect</td><td>There is no endpoint and writing one is not worth it for a small file.</td></tr>
+                <tr><td>NxFileSelect</td><td>The work needs the component's own state before anything is saved.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>Either Way</h2>
+    <p class="doc-note">
+        Set <code>MaxFileSize</code> and <code>AllowedExtensions</code> on both: a refused file is listed with the reason and is
+        never read or sent. They are a courtesy to the user, not security — check the size and type again on the server.
+        With <code>NxFileSelect</code>, copy the stream to its destination rather than reading it into memory.
+    </p>
+</div>

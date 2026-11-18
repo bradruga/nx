@@ -1,9 +1,11 @@
 // Interop for NxGantt. The browser's part: the task list and the timeline scroll together (and each header with its
-// body), the divider is dragged, a press outside the cell being edited ends the edit, and a dependency is drawn by
-// dragging from one bar's start or end handle onto another bar. Everything else is .NET.
+// body), the divider is dragged, a press outside the cell being edited ends the edit, a dependency is drawn by
+// dragging from one bar's start or end handle onto another bar, and a bar is dragged (or one of its edges) to new
+// days: an outline shows where it would land and .NET is told how many days on release. Everything else is .NET.
 
 const states = new WeakMap();
 const MIN_PANE = 120;   // px either side of the divider
+const DRAG_START = 4;   // px the pointer moves before a press on a bar becomes a drag (a click still selects)
 
 export function init(root, dotNet, todayX) {
     if (!root || states.has(root)) return;
@@ -43,9 +45,17 @@ export function init(root, dotNet, todayX) {
 
     state.onHandleDown = e => {
         const handle = e.target.closest('[data-nx-gantt-handle]');
-        if (handle) dragLink(root, state, handle, e);
+        if (handle) { dragLink(root, state, handle, e); return; }
+        const bar = e.button === 0 ? e.target.closest('[data-nx-gantt-drag]') : null;
+        if (bar) dragBar(root, state, bar, e.target.closest('[data-nx-gantt-grip]')?.dataset.nxGanttGrip ?? 'move', e);
     };
     state.timeBody.addEventListener('pointerdown', state.onHandleDown);
+
+    // Alt+Left/Right on a row move its bar (.NET); the browser's Back and Forward must not also run.
+    state.onRowKey = e => {
+        if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') && e.target.closest('[role="row"]')) e.preventDefault();
+    };
+    state.treeBody.addEventListener('keydown', state.onRowKey);
 }
 
 function slotWidth(root) {
@@ -117,6 +127,59 @@ function dragLink(root, state, handle, e) {
     document.addEventListener('pointerup', up);
 }
 
+// A press on a bar moves it; on a grip at either end, that end. An outline snaps to whole days and the bar itself stays
+// put until .NET draws it again, so a page that refuses or adjusts the dates never leaves it in the wrong place.
+// Escape, or a cancelled pointer, drops the drag.
+function dragBar(root, state, bar, mode, e) {
+    const canvas = root.querySelector('.nx-gantt-canvas');
+    const slot = slotWidth(root);
+    const startX = e.clientX, left = bar.offsetLeft, width = bar.offsetWidth;
+    const span = Math.max(1, Math.round(width / slot));     // the bar's days; an end never crosses the other
+    let ghost = null, days = 0;
+    const move = ev => {
+        const dx = ev.clientX - startX;
+        if (!ghost) {
+            if (Math.abs(dx) < DRAG_START) return;
+            ghost = document.createElement('div');
+            ghost.className = 'nx-gantt-bar-ghost';
+            ghost.style.top = bar.offsetTop + 'px';
+            ghost.style.height = bar.offsetHeight + 'px';
+            canvas.append(ghost);
+            bar.classList.add('nx-gantt-bar-dragging');
+            root.classList.add(mode === 'move' ? 'nx-gantt-moving' : 'nx-gantt-sizing');
+        }
+        days = Math.round(dx / slot);
+        if (mode === 'start') days = Math.min(days, span - 1);
+        if (mode === 'end') days = Math.max(days, 1 - span);
+        const shift = days * slot;
+        ghost.style.left = (mode === 'end' ? left : left + shift) + 'px';
+        ghost.style.width = (mode === 'move' ? width : mode === 'start' ? width - shift : width + shift) + 'px';
+    };
+    const finish = commit => {
+        document.removeEventListener('pointermove', move);
+        document.removeEventListener('pointerup', up);
+        document.removeEventListener('pointercancel', cancel);
+        document.removeEventListener('keydown', key, true);
+        bar.classList.remove('nx-gantt-bar-dragging');
+        root.classList.remove('nx-gantt-moving', 'nx-gantt-sizing');
+        const dragged = ghost !== null;
+        ghost?.remove();
+        if (commit && dragged && days !== 0) state.dotNet.invokeMethodAsync('OnBarDrop', Number(bar.dataset.nxGanttTask), mode, days);
+    };
+    const up = () => finish(true);
+    const cancel = () => finish(false);
+    const key = ev => {
+        if (ev.key !== 'Escape' || !ghost) return;
+        ev.preventDefault();
+        ev.stopPropagation();
+        finish(false);
+    };
+    document.addEventListener('pointermove', move);
+    document.addEventListener('pointerup', up);
+    document.addEventListener('pointercancel', cancel);
+    document.addEventListener('keydown', key, true);
+}
+
 // While a cell is edited, a press anywhere outside it ends the edit (its own popups live inside it).
 export function watchEdit(root) {
     const state = states.get(root);
@@ -152,5 +215,6 @@ export function dispose(root) {
     state.divider.removeEventListener('pointerdown', state.onDividerDown);
     state.divider.removeEventListener('keydown', state.onDividerKey);
     state.timeBody.removeEventListener('pointerdown', state.onHandleDown);
+    state.treeBody.removeEventListener('keydown', state.onRowKey);
     states.delete(root);
 }

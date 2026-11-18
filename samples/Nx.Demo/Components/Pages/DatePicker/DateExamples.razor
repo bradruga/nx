@@ -29,11 +29,12 @@
 </div>
 
 <div class="doc-section">
-    <h2>Masked Typing &amp; Culture</h2>
+    <h2>Typing &amp; Culture</h2>
     <p class="doc-note">
-        Type digits only and the separators appear; type a separator early and the part before it gets its leading zero, so
-        <em>1/5/2026</em> works too. The order and separator come from <code>Culture</code>. Pasted text such as
-        <em>2026-10-23</em> or <em>Oct 23 2026</em> is read as it is. The same date in four cultures:
+        Type a date the way you would write it; nothing is filled in for you, and it is read when you press Enter or leave
+        the field. <em>12/5</em> is December 5 of this year; <em>12/5/26</em>, <em>1205</em> and <em>12052026</em> work too, and
+        so do <em>2026-12-05</em> and <em>Dec 5 2026</em>. The order and separator come from <code>Culture</code>. The same
+        date in four cultures:
     </p>
     <div class="demo-stage">
         <div class="demo-form-grid">
@@ -108,10 +109,27 @@
 </div>
 
 <div class="doc-section">
-    <h2>Labels, Clear &amp; State</h2>
+    <h2>Without the Calendar</h2>
+    <p class="doc-note">
+        <code>ShowCalendar="false"</code> leaves the typed field: no button and no popup; Up and Down still step the day,
+        month or year under the caret. ERP's date dialog puts one over an <code>NxCalendar</code>, both bound to one date: type
+        and the calendar follows; pick and the field follows.
+    </p>
+    <div class="demo-stage demo-stage-column demo-stage-narrow">
+        <NxDatePicker @ref="dialogInput" TValue="DateTime" Id="calendar-input" Label="Date" ShowCalendar="false" @bind-Value="picked" Culture="EnUs" />
+        <NxCalendar Id="calendar-grid" Value="DateOnly.FromDateTime(picked)" ValueChanged="d => picked = d?.ToDateTime(TimeOnly.MinValue) ?? picked" AriaLabel="Date" Culture="EnUs" />
+        <div class="demo-row">
+            <NxButton id="calendar-focus" Size="NxButtonSize.Small" OnClick="() => dialogInput!.FocusAsync()">Focus the field</NxButton>
+            <span class="demo-value" id="calendar-value">@picked.ToString("D", EnUs)</span>
+        </div>
+    </div>
+    <pre class="doc-code">@noCalendarCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Clear &amp; State</h2>
     <div class="demo-stage">
         <div class="demo-form-grid">
-            <NxDatePicker Id="state-floating" Label="Floating label" FloatingLabel="true" @bind-Value="floating" Culture="EnUs" />
             <NxDatePicker Id="state-clear" Label="Clearable" @bind-Value="clearable" Clearable="true" Culture="EnUs" />
             <NxDatePicker Id="state-readonly" Label="Read-only" Value="readOnlyDate" ReadOnly="true" Culture="EnUs" />
             <NxDatePicker Id="state-disabled" Label="Disabled" Value="readOnlyDate" Disabled="true" Culture="EnUs" />
@@ -176,6 +194,15 @@
         ("de-DE", CultureInfo.GetCultureInfo("de-DE")),
     ];
 
+    NxDatePicker<DateTime>? dialogInput;
+    DateTime picked = new(2026, 10, 23);
+
+    const string noCalendarCode =
+        """
+        <NxDatePicker Label="Date" ShowCalendar="false" @bind-Value="date" />
+        <NxCalendar Value="DateOnly.FromDateTime(date)" ValueChanged="d => date = d?.ToDateTime(TimeOnly.MinValue) ?? date" />
+        """;
+
     DateOnly? typeDateOnly;
     DateTime typeDateTime = new(2026, 10, 23, 14, 30, 0);
     DateOnly typeRequired = new(2026, 10, 23);
@@ -184,7 +211,7 @@
     DateOnly? limitDate = new(2026, 10, 23);
     DateOnly? weekDate = new(2026, 1, 1);
     DateOnly? inlineDate = new(2026, 10, 23);
-    DateOnly? floating, clearable = new DateOnly(2026, 10, 23);
+    DateOnly? clearable = new DateOnly(2026, 10, 23);
     DateOnly readOnlyDate = new(2026, 10, 23);
     DateOnly? sheetDate;
 

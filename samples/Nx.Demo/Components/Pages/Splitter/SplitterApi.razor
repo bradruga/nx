@@ -26,8 +26,7 @@
                 <tr><td>Size</td><td>string?</td><td>rest</td><td>Use <code>@@bind-Size</code>: <code>"30%"</code> or <code>"240px"</code>. None: shares what is left.</td></tr>
                 <tr><td>Min / Max</td><td>string?</td><td>—</td><td>Resize limits, px or %.</td></tr>
                 <tr><td>Resizable</td><td>bool</td><td>true</td><td>Whether the bar next to the pane resizes it.</td></tr>
-                <tr><td>Collapsible</td><td>bool</td><td>false</td><td>Collapse button on the bar and, on phones, the pane header; Enter on the bar.</td></tr>
-                <tr><td>Collapsed</td><td>bool</td><td>false</td><td>Use <code>@@bind-Collapsed</code>, or leave it to the buttons.</td></tr>
+                <tr><td>Collapsed</td><td>bool</td><td>false</td><td>Use <code>@@bind-Collapsed</code> with a button of your own: the pane shrinks to nothing and keeps its content.</td></tr>
                 <tr><td>Title</td><td>string?</td><td>—</td><td>The bar's accessible name; the pane header on phones.</td></tr>
                 <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>Pane content; scrolls when larger than the pane.</td></tr>
                 <tr><td>Id / Class</td><td>string?</td><td>—</td><td>The pane element.</td></tr>
@@ -43,7 +42,7 @@
             <thead><tr><th>Event</th><th>Args</th><th>Raised when</th></tr></thead>
             <tbody>
                 <tr><td>SizeChanged</td><td>string?</td><td>A drag or key resized the pane: in % if its size was in %, else px.</td></tr>
-                <tr><td>CollapsedChanged</td><td>bool</td><td>A button, header or Enter collapsed or expanded the pane.</td></tr>
+                <tr><td>CollapsedChanged</td><td>bool</td><td><code>ToggleAsync()</code> collapsed or expanded the pane.</td></tr>
             </tbody>
         </table>
     </div>
@@ -55,7 +54,7 @@
         <table class="doc-table doc-api-table">
             <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
             <tbody>
-                <tr><td>NxSplitterPane.ToggleAsync()</td><td>Task</td><td>Collapses or expands a collapsible pane.</td></tr>
+                <tr><td>NxSplitterPane.ToggleAsync()</td><td>Task</td><td>Collapses or expands the pane, for a button of your own.</td></tr>
             </tbody>
         </table>
     </div>

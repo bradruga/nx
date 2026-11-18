@@ -231,6 +231,9 @@
     --nx-gantt-bar-bg:              var(--nx-accent);
     --nx-gantt-bar-fg:              var(--nx-accent-fg);
     --nx-gantt-summary-bg:          #5f6b73;
+    --nx-gantt-grip-width:          7px;
+    --nx-gantt-grip-bg:             rgba(255, 255, 255, 0.35);
+    --nx-gantt-ghost-bg:            color-mix(in srgb, var(--nx-gantt-bar-bg) 14%, transparent);
     --nx-gantt-link:                #6b6b78;
 
     /* Slider (NxSlider) */
@@ -282,6 +285,9 @@
     --nx-editor-code-bg:            #f3f3f5;
     --nx-editor-code-font:          ui-monospace, Consolas, 'Courier New', monospace;
     --nx-editor-quote-border:       var(--nx-border);
+    --nx-editor-image-outline:      var(--nx-accent);
+    --nx-editor-image-handle-bg:    var(--nx-surface);
+    --nx-editor-image-handle-size:  10px;
 
     /* Chat (NxChat) */
     --nx-chat-bg:                   var(--nx-surface);
@@ -388,6 +394,7 @@
     --nx-gantt-line:                #2c2c33;
     --nx-gantt-weekend-bg:          #121215;
     --nx-gantt-summary-bg:          #8a929a;
+    --nx-gantt-grip-bg:             rgba(0, 0, 0, 0.3);
     --nx-gantt-link:                #9a9aab;
     --nx-pdf-bg:                    #0f0f12;
     --nx-pdf-page-shadow:           0 1px 4px rgba(0, 0, 0, 0.7);
@@ -406,12 +413,12 @@
    tap flash, a grey rectangle on mobile, is turned off. :where() keeps the specificity at zero so a
    component can still adjust the ring with --nx-focus-ring-color / -offset. */
 
-:where(.nx-button, .nx-field-button, .nx-field-label, .nx-field-floating-label, .nx-numeric-spin-button,
+:where(.nx-button, .nx-field-button, .nx-field-label,.nx-numeric-spin-button,
        .nx-combobox-field, .nx-combobox-button, .nx-combobox-chip, .nx-combobox-chip-remove, .nx-combobox-item,
        .nx-combobox-overlay-back, .nx-combobox-overlay-done,
        .nx-calendar-nav, .nx-calendar-title, .nx-calendar-today-button, .nx-calendar-cell,
        .nx-sheet-close, .nx-sheet-action, .nx-timepicker-item, .nx-datepicker-sheet-clear, .nx-window-action,
-       .nx-tabstrip-tab, .nx-tabstrip-close, .nx-tabstrip-scroll, .nx-splitter-toggle,
+       .nx-tabstrip-tab, .nx-tabstrip-close, .nx-tabstrip-scroll,
        .nx-checkbox, .nx-checkbox-box, .nx-checkbox-label, .nx-switch, .nx-switch-track, .nx-switch-label,
        .nx-radio, .nx-radio-input, .nx-radio-label, .nx-toggle) {
     -webkit-tap-highlight-color: transparent;
@@ -476,7 +483,7 @@
 html.nx-scroll-locked,
 html.nx-scroll-locked body { overflow: hidden; }
 /* A page with scrollbar-gutter: stable would keep an empty strip beside the full-screen sheet. */
-html.nx-scroll-locked { scrollbar-gutter: auto; }
+html.nx-scroll-locked { scrollbar-gutter: auto; padding-right: var(--nx-scroll-lock-gap, 0px); }
 
 /* NxForm's <form> is EditForm's element, which its scoped CSS cannot reach. A definite width keeps a flex parent
    from sizing the form by its one-column (container query) layout, which leaves empty space under it. */

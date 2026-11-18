@@ -136,9 +136,9 @@
     font-weight: 600;
 }
 
-/* The keyboard's cell: drawn while the calendar or its picker's input has keyboard focus. */
+/* The keyboard's cell: drawn while the calendar has keyboard focus, or in a picker once a key has moved it. */
 .nx-calendar-focusable .nx-calendar-grids:focus-visible .nx-calendar-focused .nx-calendar-day,
-.nx-calendar:not(.nx-calendar-focusable) .nx-calendar-focused .nx-calendar-day {
+.nx-calendar-keyboard:not(.nx-calendar-focusable) .nx-calendar-focused .nx-calendar-day {
     box-shadow: inset 0 0 0 2px var(--nx-focus-ring-color);
 }
 

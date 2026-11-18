@@ -31,6 +31,7 @@ public partial class NxCalendar : IAsyncDisposable
     private IJSObjectReference? module;
     private ElementReference grids;
     private DateOnly focused;
+    private bool keyMoved;              // a key has moved the focused cell: a picker's calendar shows it from then on
     private DateOnly display;           // the first of the first month shown
     private NxCalendarView view;
     private DateOnly? lastValue;
@@ -162,6 +163,7 @@ public partial class NxCalendar : IAsyncDisposable
         };
         if (target is DateOnly t)
         {
+            keyMoved = true;
             MoveTo(t);
             await NavigatedAsync();
             return true;
@@ -481,6 +483,7 @@ public partial class NxCalendar : IAsyncDisposable
         "nx-calendar",
         MonthCount == 2 ? "nx-calendar-two-months" : null,
         Focusable ? "nx-calendar-focusable" : null,
+        keyMoved ? "nx-calendar-keyboard" : null,
         Disabled ? "nx-calendar-is-disabled" : null,
         Class
     }.Where(c => !string.IsNullOrEmpty(c)));

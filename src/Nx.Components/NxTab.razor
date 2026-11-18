@@ -42,6 +42,7 @@
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        Strip?.Seen(this);
         // The strip drew this header before these parameters arrived; redraw only when what it shows changed
         // (content fragments are new objects on every render, so they cannot be compared).
         var now = (Id, Title, Disabled, Closable, Icon is null, HeaderTemplate is null);

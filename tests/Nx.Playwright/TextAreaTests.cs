@@ -100,20 +100,6 @@ public class TextAreaTests : PageTest
     }
 
     [Test]
-    public async Task FloatingLabel_LiftsOnFocus()
-    {
-        await GoToPage();
-
-        var label = Page.Locator(".nx-field:has(#floating-area) .nx-field-floating-label");
-        await Area("floating-area").ScrollIntoViewIfNeededAsync();
-        var before = (await label.BoundingBoxAsync())!.Y;
-        await Area("floating-area").FocusAsync();
-        await Page.WaitForTimeoutAsync(300);
-        var after = (await label.BoundingBoxAsync())!.Y;
-        Assert.That(after, Is.LessThan(before));
-    }
-
-    [Test]
     public async Task Validation_RequiredAndLength()
     {
         await GoToPage();

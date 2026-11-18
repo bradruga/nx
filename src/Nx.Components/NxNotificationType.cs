@@ -15,6 +15,6 @@ public enum NxNotificationType
     /// <summary>Something failed; announced at once (<c>role="alert"</c>).</summary>
     Error,
 
-    /// <summary>A plain dark message (Telerik's "inverse"), e.g. "Saved by Dana at 9:12".</summary>
+    /// <summary>A plain dark message, e.g. "Saved by Dana at 9:12".</summary>
     Neutral
 }

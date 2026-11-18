@@ -7,10 +7,10 @@
     <h2>Rows &amp; Resize Handle</h2>
     <p class="doc-note"><code>Rows</code> is the height in lines. <code>Resize</code> sets the corner handle: vertical (default), both or none.</p>
     <div class="demo-stage">
-        <div class="demo-form-grid">
-            <NxTextArea Id="rows-two" Label="2 rows, vertical handle" Rows="2" @bind-Value="a" />
-            <NxTextArea Id="rows-both" Label="4 rows, both ways" Rows="4" Resize="NxTextAreaResize.Both" @bind-Value="b" />
-            <NxTextArea Id="rows-none" Label="3 rows, no handle" Resize="NxTextAreaResize.None" @bind-Value="c" />
+        <div class="demo-row" style="align-items:flex-start; max-width:100%; overflow-x:auto">
+            <NxTextArea Id="rows-two" Label="2 rows, vertical handle" Rows="2" @bind-Value="a" Style="width:270px" />
+            <NxTextArea Id="rows-both" Label="4 rows, both ways" Rows="4" Resize="NxTextAreaResize.Both" @bind-Value="b" Style="width:270px" />
+            <NxTextArea Id="rows-none" Label="3 rows, no handle" Resize="NxTextAreaResize.None" @bind-Value="c" Style="width:270px" />
         </div>
     </div>
 </div>
@@ -28,12 +28,11 @@
 </div>
 
 <div class="doc-section">
-    <h2>Counter, Clear &amp; Floating Label</h2>
+    <h2>Counter &amp; Clear</h2>
     <div class="demo-stage">
         <div class="demo-form-grid">
             <NxTextArea Id="counter-area" Label="Up to 140 characters" MaxLength="140" ShowCounter="true" @bind-Value="counter" Immediate="true" />
             <NxTextArea Id="clear-area" Label="Clearable" Clearable="true" @bind-Value="clearable" />
-            <NxTextArea Id="floating-area" Label="Floating label" FloatingLabel="true" Placeholder="Shown on focus" @bind-Value="floating" />
         </div>
     </div>
 </div>
@@ -86,7 +85,7 @@
 <DocPager Slug="textarea" Page="examples" />
 
 @code {
-    string? a, b, c, auto, counter, clearable = "Some notes", floating, onChange = "", debounced = "";
+    string? a, b, c, auto, counter, clearable = "Some notes", onChange = "", debounced = "";
     string result = "No hold";
     readonly HoldForm report = new();
 

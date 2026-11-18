@@ -11,7 +11,7 @@ namespace Nx.Components;
 /// Browses a read-only tree of folders and files: a folder tree, a breadcrumb, the open folder as a grid or tiles, sort
 /// (folders always first, as Explorer), a details pane, and a search that matches anywhere in a name below the open
 /// folder. Double-click, Enter, or a tap on a touch screen opens: folders navigate, files raise <see cref="OnOpen"/>.
-/// Bound to a flat list with Telerik's field names (<c>Id</c>, <c>ParentId</c>, <c>Name</c>, <c>Extension</c>…).
+/// Bound to a flat list by field name (<c>Id</c>, <c>ParentId</c>, <c>Name</c>, <c>Extension</c>…).
 /// </summary>
 /// <typeparam name="TItem">The entry type.</typeparam>
 /// <example>

@@ -103,7 +103,7 @@ public class NxIconTests : BunitContext
     }
 
     [Test]
-    public void IconSet_CoversTheTelerikNamesErpUses()
+    public void IconSet_CoversTheNamesErpUses()
     {
         string[] used = ["Plus", "Trash", "X", "Pencil", "Print", "CheckCircle", "ArrowLeft", "ArrowRight", "FileExcel", "Check",
                          "ExclamationCircle", "Download", "Undo", "Lock", "Redo", "Eye", "Save", "ClockArrowRotate", "Cancel", "XCircle"];

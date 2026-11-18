@@ -63,10 +63,9 @@
 </div>
 
 <div class="doc-section">
-    <h2>Floating Label &amp; State</h2>
+    <h2>State</h2>
     <div class="demo-stage">
         <div class="demo-form-grid">
-            <NxDateTimePicker Id="floating" Label="Floating label" FloatingLabel="true" @bind-Value="floating" />
             <NxDateTimePicker Id="state-readonly" Label="Read-only" ReadOnly="true" Value="fixedValue" />
             <NxDateTimePicker Id="state-disabled" Label="Disabled" Disabled="true" Value="fixedValue" />
         </div>
@@ -104,7 +103,7 @@
 @code {
     static readonly DateTime Base = DateTime.Today.AddDays(2).AddHours(14).AddMinutes(30);
 
-    DateTime? a = Base, b = Base, c = Base.AddSeconds(15), d = Base, stepped, hourly, deactivate, floating, gate;
+    DateTime? a = Base, b = Base, c = Base.AddSeconds(15), d = Base, stepped, hourly, deactivate, gate;
     DateTime restart = DateTime.Today.AddDays(1).AddHours(3);
     DateTime? injury;
     readonly DateTime hireDate = DateTime.Today.AddDays(-20).AddHours(7);

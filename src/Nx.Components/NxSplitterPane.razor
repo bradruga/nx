@@ -13,27 +13,8 @@
          aria-controls="@prev?.PaneId"
          aria-valuemin="0"
          aria-valuemax="100"
-         aria-disabled="@(BarMovable(prev) ? null : "true")"
-         @onkeydown="e => HandleBarKeyDown(e, prev)">
+         aria-disabled="@(BarMovable(prev) ? null : "true")">
         <span class="nx-splitter-grip" aria-hidden="true"></span>
-        @if (prev is { Collapsible: true })
-        {
-            <button type="button" class="nx-splitter-toggle nx-splitter-toggle-prev" tabindex="-1"
-                    aria-label="@($"{(prev.IsCollapsed ? "Expand" : "Collapse")} {prev.Title ?? "pane"}")"
-                    title="@(prev.IsCollapsed ? "Expand" : "Collapse")"
-                    @onclick="prev.ToggleAsync" @onpointerdown:stopPropagation="true">
-                @Chevron(towardPrev: !prev.IsCollapsed)
-            </button>
-        }
-        @if (Collapsible)
-        {
-            <button type="button" class="nx-splitter-toggle nx-splitter-toggle-next" tabindex="-1"
-                    aria-label="@($"{(IsCollapsed ? "Expand" : "Collapse")} {Title ?? "pane"}")"
-                    title="@(IsCollapsed ? "Expand" : "Collapse")"
-                    @onclick="ToggleAsync" @onpointerdown:stopPropagation="true">
-                @Chevron(towardPrev: IsCollapsed)
-            </button>
-        }
     </div>
 }
 <div id="@PaneId"
@@ -48,29 +29,8 @@
      data-resizable="@(Resizable ? "true" : "false")">
     @if (Title is not null)
     {
-        @* Shown on phones only, where the panes stack: tap to collapse or expand. *@
-        <button type="button" class="nx-splitter-pane-header" aria-expanded="@(IsCollapsed ? "false" : "true")"
-                aria-controls="@ContentId" disabled="@(!Collapsible)" @onclick="ToggleAsync">
-            <span class="nx-splitter-pane-title">@Title</span>
-            @if (Collapsible)
-            {
-                <svg class="nx-splitter-pane-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <polyline points="6 9 12 15 18 9" />
-                </svg>
-            }
-        </button>
+        @* Shown on phones only, where the panes stack. *@
+        <div class="nx-splitter-pane-header"><span class="nx-splitter-pane-title">@Title</span></div>
     }
     <div class="nx-splitter-pane-content" id="@ContentId" hidden="@IsCollapsed">@ChildContent</div>
 </div>
-
-@code {
-    private RenderFragment Chevron(bool towardPrev) => __builder =>
-    {
-        var points = Splitter!.Horizontal
-            ? (towardPrev ? "15 18 9 12 15 6" : "9 18 15 12 9 6")
-            : (towardPrev ? "18 15 12 9 6 15" : "6 9 12 15 18 9");
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="@points" />
-        </svg>
-    };
-}

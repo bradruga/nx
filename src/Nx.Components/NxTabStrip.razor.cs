@@ -6,8 +6,9 @@ namespace Nx.Components;
 
 /// <summary>
 /// Tabs over panels of content: declarative <see cref="NxTab"/> children with text, icon or template headers,
-/// disabled and closable tabs, lazy or kept-alive panels, <c>@bind-ActiveTab</c>, tabs on any side, a header
-/// that scrolls with arrows when the tabs do not fit, and the ARIA tablist keyboard pattern.
+/// disabled and closable tabs, tabs dragged into a new order (<see cref="Reorderable"/>), lazy or kept-alive panels,
+/// <c>@bind-ActiveTab</c>, tabs on any side, a header that scrolls with arrows when the tabs do not fit, and the ARIA
+/// tablist keyboard pattern.
 /// </summary>
 /// <example>
 /// <code>
@@ -21,7 +22,8 @@ public partial class NxTabStrip : IAsyncDisposable
 {
     // ── JS interop ────────────────────────────────────────────────────────────
     // nx-tabstrip.js moves focus between tabs with the arrow keys and clicks the one it lands on, shows
-    // and scrolls the overflow arrows, and keeps the active tab in view. Which tab is active is C#.
+    // and scrolls the overflow arrows, keeps the active tab in view, and follows a dragged tab to say where it
+    // was dropped. Which tab is active, and the order, are C#.
 
     private const string ModulePath = "./_content/Nx.Components/nx-tabstrip.js";
 
@@ -31,6 +33,9 @@ public partial class NxTabStrip : IAsyncDisposable
     private readonly List<NxTab> tabs = [];
     private readonly HashSet<string> visited = [];
     private IJSObjectReference? module;
+    private DotNetObjectReference<NxTabStrip>? selfReference;
+    private string? focusPendingId;
+    private NxTab? lastSeen;            // the tab that last took its parameters in this render pass
     private ElementReference header;
     private ElementReference list;
     private string? active;             // the active key as last seen or raised
@@ -39,6 +44,12 @@ public partial class NxTabStrip : IAsyncDisposable
     private bool redrawQueued;
 
     // ── Parameters ────────────────────────────────────────────────────────────
+
+    /// <summary>Tabs are dragged to a new place, or moved with Ctrl+Shift+Arrow. The strip keeps the order (a tab added later goes after its neighbour in the markup); <see cref="OnTabReorder"/> tells you.</summary>
+    [Parameter] public bool Reorderable { get; set; }
+
+    /// <summary>Raised when the user moves a tab, with its old and new place.</summary>
+    [Parameter] public EventCallback<NxTabReorderEventArgs> OnTabReorder { get; set; }
 
     /// <summary>The <see cref="NxTab"/> children.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -84,11 +95,16 @@ public partial class NxTabStrip : IAsyncDisposable
 
     // ── Registration ──────────────────────────────────────────────────────────
 
+    /// <summary>A new tab goes after the one before it in the markup, wherever that one has since been dragged to.</summary>
     internal void Register(NxTab tab)
     {
-        tabs.Add(tab);
+        tabs.Insert(lastSeen is null ? 0 : tabs.IndexOf(lastSeen) + 1, tab);
+        lastSeen = tab;
         Redraw();
     }
+
+    /// <summary>Tabs take their parameters in markup order on every pass: the last one seen is the next new tab's neighbour.</summary>
+    internal void Seen(NxTab tab) => lastSeen = tab;
 
     internal void Unregister(NxTab tab)
     {
@@ -154,6 +170,35 @@ public partial class NxTabStrip : IAsyncDisposable
     {
         if (e.Key == "Delete")
             await CloseAsync(tab);
+        else if (Reorderable && e.CtrlKey && e.ShiftKey && e.Key is "ArrowLeft" or "ArrowRight" or "ArrowUp" or "ArrowDown")
+        {
+            if (Vertical != e.Key is "ArrowUp" or "ArrowDown")
+                return;
+            // The tab's element moves in the DOM, which drops its focus: put it back after the render.
+            focusPendingId = TabId(tab);
+            await MoveAsync(tab, tabs.IndexOf(tab) + (e.Key is "ArrowRight" or "ArrowDown" ? 1 : -1));
+        }
+    }
+
+    /// <summary>Called by nx-tabstrip.js when a dragged tab is dropped. Not for application use.</summary>
+    [JSInvokable]
+    public Task OnTabDrop(int from, int to) => InvokeAsync(async () =>
+    {
+        if (from >= 0 && from < tabs.Count)
+            await MoveAsync(tabs[from], to);
+        StateHasChanged();
+    });
+
+    private async Task MoveAsync(NxTab tab, int newIndex)
+    {
+        var oldIndex = tabs.IndexOf(tab);
+        newIndex = Math.Clamp(newIndex, 0, tabs.Count - 1);
+        if (!Reorderable || oldIndex < 0 || newIndex == oldIndex)
+            return;
+        tabs.RemoveAt(oldIndex);
+        tabs.Insert(newIndex, tab);
+        refreshPending = true;
+        await OnTabReorder.InvokeAsync(new NxTabReorderEventArgs(tab.Key, oldIndex, newIndex));
     }
 
     // ── Rendering helpers ─────────────────────────────────────────────────────
@@ -169,6 +214,7 @@ public partial class NxTabStrip : IAsyncDisposable
         "nx-tabstrip",
         $"nx-tabstrip-{Position.ToString().ToLowerInvariant()}",
         FullWidth && !Vertical ? "nx-tabstrip-full-width" : null,
+        Reorderable ? "nx-tabstrip-reorderable" : null,
         Class
     }.Where(c => !string.IsNullOrEmpty(c)));
 
@@ -196,13 +242,20 @@ public partial class NxTabStrip : IAsyncDisposable
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        lastSeen = null;
         if (ActiveTabItem is { } current)
             visited.Add(current.Key);
         if (firstRender)
         {
             module = await JS.InvokeAsync<IJSObjectReference>("import", ModulePath);
+            selfReference = DotNetObjectReference.Create(this);
             if (module is not null)
-                await module.InvokeVoidAsync("init", header, list);
+                await module.InvokeVoidAsync("init", header, list, selfReference);
+        }
+        if (focusPendingId is { } focusId && module is not null)
+        {
+            focusPendingId = null;
+            await module.InvokeVoidAsync("focusTab", list, focusId);
         }
         if (refreshPending && module is not null)
         {
@@ -214,6 +267,7 @@ public partial class NxTabStrip : IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        selfReference?.Dispose();
         if (module is null)
             return;
         try

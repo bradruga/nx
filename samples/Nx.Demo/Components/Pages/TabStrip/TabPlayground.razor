@@ -10,7 +10,7 @@
         <div class="demo-preview">
             <div class="demo-preview-inner demo-preview-inner-stretch">
                 <NxTabStrip Id="playground-tabs" @bind-ActiveTab="pgActive" @bind-ActiveTab:after="Changed" OnTabClose="CloseTab"
-                            Position="pgPosition" KeepAlive="pgKeepAlive" FullWidth="pgFullWidth" AriaLabel="Playground"
+                            Position="pgPosition" KeepAlive="pgKeepAlive" FullWidth="pgFullWidth" Reorderable="pgReorderable" AriaLabel="Playground"
                             Style="@(pgPosition is NxTabPosition.Left or NxTabPosition.Right ? "min-height: 200px" : null)">
                     @foreach (var name in pgTabs)
                     {
@@ -52,6 +52,7 @@
             </label>
             <label class="demo-control"><span>Icons</span><input type="checkbox" id="pg-icons" @bind="pgIcons" /></label>
             <label class="demo-control"><span>Closable</span><input type="checkbox" id="pg-closable" @bind="pgClosable" /></label>
+            <label class="demo-control"><span>Reorderable</span><input type="checkbox" id="pg-reorderable" @bind="pgReorderable" /></label>
             <label class="demo-control"><span>Second disabled</span><input type="checkbox" id="pg-disable-second" @bind="pgDisableSecond" /></label>
         </div>
 
@@ -67,7 +68,7 @@
     static readonly RenderFragment Icon = @<DemoIcon Name="box" />;
 
     NxTabPosition pgPosition = NxTabPosition.Top;
-    bool pgFullWidth, pgKeepAlive, pgIcons, pgClosable, pgDisableSecond;
+    bool pgFullWidth, pgKeepAlive, pgIcons, pgClosable, pgDisableSecond, pgReorderable;
     int pgCount = 3, pgChanges;
     string? pgActive = "Tab 1";
     List<string> pgTabs = Names(3);
@@ -91,6 +92,7 @@
             if (pgPosition != NxTabPosition.Top) attrs.Add($"Position=\"NxTabPosition.{pgPosition}\"");
             if (pgFullWidth) attrs.Add("FullWidth=\"true\"");
             if (pgKeepAlive) attrs.Add("KeepAlive=\"true\"");
+            if (pgReorderable) attrs.Add("Reorderable=\"true\"");
             if (pgClosable) attrs.Add("OnTabClose=\"e => tabs.Remove(e.TabId)\"");
             var tab = "    <NxTab Title=\"Tab 1\"" + (pgIcons ? " Icon=\"@icon\"" : "") + (pgClosable ? " Closable=\"true\"" : "") + ">…</NxTab>";
             var second = "    <NxTab Title=\"Tab 2\"" + (pgDisableSecond ? " Disabled=\"true\"" : "") + ">…</NxTab>";

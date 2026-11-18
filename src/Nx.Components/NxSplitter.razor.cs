@@ -6,12 +6,12 @@ namespace Nx.Components;
 /// <summary>
 /// Two or more <see cref="NxSplitterPane"/>s side by side or stacked, with draggable split bars between them:
 /// sizes in px or %, min and max, collapsible panes, <c>@bind-Size</c> per pane, keyboard resizing and nesting.
-/// On phones the panes stack, each with a header that collapses it.
+/// A pane collapses through <c>@bind-Collapsed</c>, from a button of your own. On phones the panes stack, each under its title.
 /// </summary>
 /// <example>
 /// <code>
 /// &lt;NxSplitter Style="height: 480px"&gt;
-///     &lt;NxSplitterPane @bind-Size="listWidth" Min="200px" Collapsible="true" Title="Jobs"&gt;…&lt;/NxSplitterPane&gt;
+///     &lt;NxSplitterPane @bind-Size="listWidth" Min="200px" @bind-Collapsed="listHidden" Title="Jobs"&gt;…&lt;/NxSplitterPane&gt;
 ///     &lt;NxSplitterPane Title="Details"&gt;…&lt;/NxSplitterPane&gt;
 /// &lt;/NxSplitter&gt;
 /// </code>

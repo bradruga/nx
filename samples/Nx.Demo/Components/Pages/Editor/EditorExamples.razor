@@ -45,6 +45,20 @@
 </div>
 
 <div class="doc-section">
+    <h2>Pictures</h2>
+    <p class="doc-note">
+        Click a picture to select it, then drag a corner to resize it — it keeps its proportions and the new
+        <code>width</code> and <code>height</code> are written to the HTML. Drag the picture itself to move it to another
+        place in the text; Delete removes it. Each is one undo step.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxEditor Id="picture-editor" @bind-Value="pictureHtml" Tools="PictureTools" Height="auto" AriaLabel="Inspection note" Style="width:100%" />
+        <span class="demo-value">Value</span>
+        <pre class="doc-code demo-editor-html" id="picture-html">@pictureHtml</pre>
+    </div>
+</div>
+
+<div class="doc-section">
     <h2>Form Validation</h2>
     <p class="doc-note">An empty editor is <code>""</code>, so <code>[Required]</code> works as on a text box.</p>
     <div class="demo-stage demo-stage-column">
@@ -77,6 +91,9 @@
     string? commentHtml;
     string? emailHtml = "<p>Hi team,</p><p>The <strong>Route 9 bridge</strong> pour moved to <span style=\"background-color: #ffff00\">Thursday</span>.</p><ul><li>Forms checked Wednesday</li><li>Trucks at 6:30</li></ul><p>Thanks</p>";
     string? reportHtml = ReportTemplate;
+    string? pictureHtml = "<p>Panel <strong>WP-12</strong> as cast:</p>"
+        + "<p><img src=\"samples/wall-panel.svg\" alt=\"Wall panel WP-12 elevation\" width=\"240\" height=\"135\"></p>"
+        + "<p>Lifting inserts are at the four corners. Strip after 18 hours.</p>";
     string holdResult = "No hold";
     readonly HoldForm hold = new();
 
@@ -100,6 +117,9 @@
         NxEditorTool.UnorderedList, NxEditorTool.OrderedList, NxEditorTool.Indent, NxEditorTool.Outdent, NxEditorTool.Separator,
         NxEditorTool.CreateLink, NxEditorTool.Unlink
     ];
+
+    static readonly NxEditorTool[] PictureTools =
+        [NxEditorTool.Undo, NxEditorTool.Redo, NxEditorTool.Separator, NxEditorTool.AlignLeft, NxEditorTool.AlignCenter, NxEditorTool.AlignRight, NxEditorTool.Separator, NxEditorTool.InsertImage];
 
     static readonly NxEditorTool[] ShortTools =
         [NxEditorTool.Bold, NxEditorTool.Italic, NxEditorTool.Underline, NxEditorTool.Separator, NxEditorTool.UnorderedList, NxEditorTool.OrderedList];

@@ -45,6 +45,58 @@
 </div>
 
 <div class="doc-section">
+    <h2>Reordering</h2>
+    <p class="doc-note">
+        <code>Reorderable</code>: drag a tab along the strip and the others make room, as a browser's tabs do (<kbd class="doc-kbd">Esc</kbd> drops it), or
+        move the focused tab with <kbd class="doc-kbd">Ctrl</kbd>+<kbd class="doc-kbd">Shift</kbd>+<kbd class="doc-kbd">←</kbd> / <kbd class="doc-kbd">→</kbd>.
+        The strip keeps the new order and raises <code>OnTabReorder</code> with the tab's old and new place, so you can save it.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxTabStrip Id="reorder-tabs" @bind-ActiveTab="stationTab" Reorderable="true" OnTabReorder="MoveStation" AriaLabel="Stations">
+            @foreach (var station in stations)
+            {
+                <NxTab @key="station" Id="@station" Title="@station"><p>Station <strong>@station</strong>.</p></NxTab>
+            }
+        </NxTabStrip>
+        <div class="demo-row">
+            <span class="demo-value" id="reorder-order">Order: <strong>@string.Join(", ", stations)</strong></span>
+            <span class="demo-value" id="reorder-log">@reorderLog</span>
+        </div>
+    </div>
+    <pre class="doc-code">@reorderCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Browser Tabs</h2>
+    <p class="doc-note">
+        <code>Reorderable</code> and <code>Closable</code> together, inside an <code>NxContextMenu</code>. Every tab carries its
+        key as <code>data-nx-context</code>, so a right-click (or a long press) on a tab comes back as <code>Context</code> in
+        <code>OnOpening</code> and <code>OnItemClick</code>; a right-click anywhere else is cancelled and gets the browser's own menu.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <NxContextMenu Id="browser-menu" Items="browserItems" OnOpening="BrowserOpening" OnItemClick="BrowserPicked" AriaLabel="Tab actions">
+            <div class="demo-browser" id="browser">
+                <NxTabStrip Id="browser-tabs" @bind-ActiveTab="pageTab" Reorderable="true" OnTabReorder="MovePage" OnTabClose="e => ClosePages(p => p.Id == e.TabId)" AriaLabel="Open pages">
+                    @foreach (var p in pages)
+                    {
+                        <NxTab @key="p.Id" Id="@p.Id" Title="@p.Title" Closable="true">
+                            <div class="demo-browser-address"><NxIcon Icon="NxIcons.Lock" /><span>@p.Url</span></div>
+                            <div class="demo-browser-page"><strong>@p.Title</strong><span>@p.Url</span></div>
+                        </NxTab>
+                    }
+                </NxTabStrip>
+                <NxButton id="browser-new" Class="demo-browser-new" Variant="NxButtonVariant.Ghost" Size="NxButtonSize.Small" Icon="@Icon("plus")" AriaLabel="New tab" Title="New tab" OnClick="() => OpenPage(null)" />
+            </div>
+        </NxContextMenu>
+        <div class="demo-row">
+            <span class="demo-value" id="browser-order">Tabs: <strong>@string.Join(", ", pages.Select(p => p.Title))</strong></span>
+            <span class="demo-value" id="browser-log">@browserLog</span>
+        </div>
+    </div>
+    <pre class="doc-code">@browserCode</pre>
+</div>
+
+<div class="doc-section">
     <h2>Overflow</h2>
     <p class="doc-note">
         When the tabs do not fit, arrows appear at the ends and the list scrolls — by the arrows, a swipe, the wheel, or the
@@ -138,6 +190,132 @@
         documents.Remove(e.TabId);
         closeLog = $"Closed {e.TabId}";
     }
+
+    // ── Browser tabs ──
+    sealed record BrowserPage(string Id, string Title, string Url);
+
+    readonly List<BrowserPage> pages =
+    [
+        new("page-1", "Pour schedule", "erp.local/production/pours"),
+        new("page-2", "Yard map", "erp.local/yard/map"),
+        new("page-3", "Loads", "erp.local/shipping/loads"),
+        new("page-4", "Drawings", "erp.local/projects/drawings"),
+    ];
+    string? pageTab = "page-1";
+    int nextPage = 5;
+    string browserLog = "Right-click a tab";
+    IReadOnlyList<NxMenuItem> browserItems = [];
+
+    // The menu is built for the tab that was pressed; anywhere else, the browser's own menu shows.
+    void BrowserOpening(NxContextMenuOpeningEventArgs e)
+    {
+        var at = pages.FindIndex(p => p.Id == e.Context);
+        if (at < 0)
+        {
+            e.Cancel = true;
+            return;
+        }
+        browserItems =
+        [
+            new("Duplicate") { Id = "duplicate" },
+            NxMenuItem.Separator(),
+            new("Close") { Id = "close" },
+            new("Close other tabs") { Id = "close-others", Disabled = pages.Count == 1 },
+            new("Close tabs to the right") { Id = "close-right", Disabled = at == pages.Count - 1 },
+        ];
+    }
+
+    void BrowserPicked(NxMenuItemClickEventArgs e)
+    {
+        var at = pages.FindIndex(p => p.Id == e.Context);
+        if (at < 0)
+            return;
+        var page = pages[at];
+        switch (e.Item.Id)
+        {
+            case "duplicate": OpenPage(page); break;
+            case "close": ClosePages(p => p == page); break;
+            case "close-others": ClosePages(p => p != page); break;
+            case "close-right": ClosePages(p => pages.IndexOf(p) > at); break;
+        }
+        browserLog = $"{e.Item.Text}: {page.Title}";
+    }
+
+    // A copy opens beside its original, a new tab at the end: the strip puts a new tab after its neighbour in the list.
+    void OpenPage(BrowserPage? copyOf)
+    {
+        var page = new BrowserPage($"page-{nextPage++}", copyOf?.Title ?? "New tab", copyOf?.Url ?? "erp.local");
+        pages.Insert(copyOf is null ? pages.Count : pages.IndexOf(copyOf) + 1, page);
+        pageTab = page.Id;
+        browserLog = copyOf is null ? "New tab" : browserLog;
+    }
+
+    void ClosePages(Func<BrowserPage, bool> closing)
+    {
+        var at = pages.FindIndex(p => p.Id == pageTab);
+        var gone = pages.Where(closing).ToList();
+        pages.RemoveAll(gone.Contains);
+        // The active page went: the one that took its place, else the last.
+        if (gone.Any(p => p.Id == pageTab))
+            pageTab = pages.Count == 0 ? null : pages[Math.Min(at, pages.Count - 1)].Id;
+        if (gone.Count == 1)
+            browserLog = $"Closed {gone[0].Title}";
+    }
+
+    void MovePage(NxTabReorderEventArgs e)
+    {
+        var page = pages[e.OldIndex];
+        pages.RemoveAt(e.OldIndex);
+        pages.Insert(e.NewIndex, page);
+        browserLog = $"Moved {page.Title}";
+    }
+
+    const string browserCode =
+        """
+        <NxContextMenu Items="items" OnOpening="Opening" OnItemClick="Picked">
+            <NxTabStrip @bind-ActiveTab="active" Reorderable="true" OnTabReorder="Move" OnTabClose="e => Close(e.TabId)">
+                @foreach (var page in pages)
+                {
+                    <NxTab @key="page.Id" Id="@page.Id" Title="@page.Title" Closable="true">…</NxTab>
+                }
+            </NxTabStrip>
+        </NxContextMenu>
+
+        void Opening(NxContextMenuOpeningEventArgs e)
+        {
+            if (pages.All(p => p.Id != e.Context)) { e.Cancel = true; return; }   // not on a tab
+            items = ItemsFor(e.Context);
+        }
+
+        void Picked(NxMenuItemClickEventArgs e) => Run(e.Item.Id, tabId: e.Context);
+        """;
+
+    string? stationTab = "Forms";
+    readonly List<string> stations = ["Forms", "Rebar", "Pour", "Cure", "Strip", "Yard"];
+    string reorderLog = "Drag a tab";
+
+    void MoveStation(NxTabReorderEventArgs e)
+    {
+        stations.RemoveAt(e.OldIndex);
+        stations.Insert(e.NewIndex, e.TabId);
+        reorderLog = $"Moved {e.TabId}: {e.OldIndex} to {e.NewIndex}";
+    }
+
+    const string reorderCode =
+        """
+        <NxTabStrip @bind-ActiveTab="active" Reorderable="true" OnTabReorder="Move">
+            @foreach (var station in stations)
+            {
+                <NxTab @key="station" Id="@station" Title="@station">…</NxTab>
+            }
+        </NxTabStrip>
+
+        void Move(NxTabReorderEventArgs e)
+        {
+            stations.RemoveAt(e.OldIndex);
+            stations.Insert(e.NewIndex, e.TabId);
+        }
+        """;
 
     const string closableCode =
         """

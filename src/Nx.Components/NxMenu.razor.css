@@ -1,5 +1,8 @@
 /* Lists are fixed: nx-menu.js sets left/top on the root list and each open submenu, and reveals the root. */
 
+/* Out of flow: the host must not become a flex or grid item beside its button. */
+.nx-menu { position: fixed; }
+
 .nx-menu-backdrop { display: none; }
 
 .nx-menu-list {
@@ -47,7 +50,8 @@
 }
 
 .nx-menu-item:focus { outline: none; background: var(--nx-item-active-bg); }
-.nx-menu-item:focus-visible { box-shadow: inset 0 0 0 2px var(--nx-focus-ring-color); }
+/* The ring is the keyboard's: nx-menu.js marks the menu while keys drive it (the pointer's item is only tinted). */
+.nx-menu-keyboard .nx-menu-item:focus-visible { box-shadow: inset 0 0 0 2px var(--nx-focus-ring-color); }
 .nx-menu-item[aria-expanded="true"] { background: var(--nx-item-hover-bg); }
 
 .nx-menu-item-disabled { color: var(--nx-fg-subtle); cursor: default; }

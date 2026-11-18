@@ -9,8 +9,8 @@
         <code>NxSplitter</code> lays out two or more <code>NxSplitterPane</code>s side by side (or stacked, with
         <code>Orientation="Vertical"</code>) with a bar between each pair. Drag a bar, or focus it and use the arrow keys.
         Give a pane a <code>Size</code> in px or % — bound with <code>@@bind-Size</code> — and leave one without, to take the rest.
-        <code>Min</code> and <code>Max</code> limit resizing; <code>Collapsible</code> puts a collapse button on the bar.
-        Splitters nest. On a phone the panes stack, each with a header that collapses it.
+        <code>Min</code> and <code>Max</code> limit resizing; <code>@@bind-Collapsed</code> hides a pane from a button of your own.
+        Splitters nest. On a phone the panes stack, each under its title.
     </p>
 </div>
 
@@ -45,7 +45,6 @@
                 <tr><td>Tab</td><td>Each movable bar is a tab stop.</td></tr>
                 <tr><td>← / → (↑ / ↓ when stacked)</td><td>Moves the bar 10 px; with Shift, 50 px. Stops at Min and Max.</td></tr>
                 <tr><td>Home / End</td><td>Moves the bar to the limit.</td></tr>
-                <tr><td>Enter</td><td>Collapses or expands the collapsible pane next to the bar.</td></tr>
                 <tr><td>role="separator"</td><td>Focusable, with <code>aria-valuenow</code> (the pane before it, in % of the splitter), <code>aria-controls</code> and the pane's title as its name.</td></tr>
             </tbody>
         </table>

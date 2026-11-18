@@ -96,6 +96,9 @@ export function unwatchViewport(field) {
 // Counted, so nested sheets and windows unlock only when the last one closes.
 let lockCount = 0;
 export function lockScroll(lock) {
+    const root = document.documentElement;
+    // The scrollbar goes with the scrolling: its width becomes padding, so the page under the dialog does not shift.
+    if (lock && lockCount === 0) root.style.setProperty('--nx-scroll-lock-gap', (window.innerWidth - root.clientWidth) + 'px');
     lockCount = Math.max(0, lockCount + (lock ? 1 : -1));
-    document.documentElement.classList.toggle('nx-scroll-locked', lockCount > 0);
+    root.classList.toggle('nx-scroll-locked', lockCount > 0);
 }

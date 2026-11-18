@@ -130,6 +130,61 @@ public class NxColorPickerTests : BunitContext
     }
 
     [Test]
+    public async Task ViewGradient_NoPalette_ApplyRaisesDraft()
+    {
+        var raised = new List<string?>();
+        var cut = RenderBound(raised, "#4371c4", p => p.Add(x => x.View, NxColorPickerView.Gradient));
+        Assert.That(cut.Find("#cp").GetAttribute("aria-haspopup"), Is.EqualTo("dialog"));
+        await OpenAsync(cut);
+
+        Assert.That(cut.FindAll(".nx-colorpicker-palette"), Is.Empty);
+        Assert.That(cut.FindAll(".nx-colorpicker-tabs"), Is.Empty);
+        Assert.That(cut.Find("#cp").HasAttribute("aria-controls"), Is.False);
+
+        // Dragging raises nothing; only Apply does.
+        await cut.InvokeAsync(() => cut.FindComponent<NxColorGradient>().Instance.OnAreaPick(1, 1));
+        Assert.That(raised, Is.Empty);
+
+        await cut.Find("#cp-apply").ClickAsync(new MouseEventArgs());
+        Assert.That(raised, Has.Count.EqualTo(1));
+        Assert.That(raised[0], Does.Match("^#[0-9a-f]{6}$").And.Not.EqualTo("#4371c4"));
+        Assert.That(cut.FindAll(".nx-colorpicker-popup"), Is.Empty);
+    }
+
+    [Test]
+    public async Task ViewBoth_TabsSwitch_SwatchValueOpensOnPalette()
+    {
+        var raised = new List<string?>();
+        var cut = RenderBound(raised, "#4371c4", p => p.Add(x => x.View, NxColorPickerView.Both));
+        await OpenAsync(cut);
+
+        Assert.That(cut.Find("#cp-tab-palette").GetAttribute("aria-selected"), Is.EqualTo("true"));
+        Assert.That(cut.FindAll(".nx-colorpicker-palette"), Has.Count.EqualTo(1));
+        Assert.That(cut.FindAll(".nx-colorgradient"), Is.Empty);
+
+        var opens = module.Invocations.Count(i => i.Identifier == "open");
+        await cut.Find("#cp-tab-gradient").ClickAsync(new MouseEventArgs());
+        Assert.That(cut.Find("#cp-tab-gradient").GetAttribute("aria-selected"), Is.EqualTo("true"));
+        Assert.That(cut.FindAll(".nx-colorpicker-palette"), Is.Empty);
+        Assert.That(cut.FindAll(".nx-colorgradient"), Has.Count.EqualTo(1));
+        // The popup changed size, so it is placed again.
+        Assert.That(module.Invocations.Count(i => i.Identifier == "open"), Is.EqualTo(opens + 1));
+
+        await cut.Find("#cp-tab-palette").ClickAsync(new MouseEventArgs());
+        await cut.Find(".nx-colorpicker-cell[aria-label='#ed7e32']").ClickAsync(new MouseEventArgs());
+        Assert.That(raised, Is.EqualTo(new[] { "#ed7e32" }));
+    }
+
+    [Test]
+    public async Task ViewBoth_ColorOutsidePalette_OpensOnGradient()
+    {
+        var cut = RenderBound([], "#123456", p => p.Add(x => x.View, NxColorPickerView.Both));
+        await OpenAsync(cut);
+        Assert.That(cut.Find("#cp-tab-gradient").GetAttribute("aria-selected"), Is.EqualTo("true"));
+        Assert.That(cut.FindAll(".nx-colorgradient"), Has.Count.EqualTo(1));
+    }
+
+    [Test]
     public async Task Escape_Closes_ToggleClickCloses()
     {
         var cut = RenderBound([], "#ffffff");

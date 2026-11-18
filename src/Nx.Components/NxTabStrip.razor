@@ -8,17 +8,18 @@
         <button type="button" class="nx-tabstrip-scroll nx-tabstrip-scroll-start" tabindex="-1" aria-hidden="true">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
         </button>
-        <div class="nx-tabstrip-list" @ref="list" role="tablist" aria-label="@AriaLabel"
+        <div class="nx-tabstrip-list" @ref="list" role="tablist" aria-label="@AriaLabel" data-reorderable="@(Reorderable ? "true" : null)"
              aria-orientation="@(Vertical ? "vertical" : "horizontal")">
             @foreach (var tab in tabs)
             {
                 var active = IsActive(tab);
-                <div id="@TabId(tab)"
+                <div @key="tab" id="@TabId(tab)"
                      class="@TabClass(tab, active)"
                      role="tab"
                      aria-selected="@(active ? "true" : "false")"
                      aria-controls="@PanelId(tab)"
                      aria-disabled="@(tab.Disabled ? "true" : null)"
+                     data-nx-context="@tab.Key"
                      tabindex="@(active ? "0" : "-1")"
                      @onclick="() => ActivateAsync(tab)"
                      @onkeydown="e => HandleTabKeyDown(e, tab)">

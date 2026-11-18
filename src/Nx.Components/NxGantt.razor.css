@@ -257,6 +257,36 @@
 
 .nx-gantt-bar-summary { background: var(--nx-gantt-summary-bg); }
 
+/* ── Dragging: the bar moves, a grip at either end changes that end; nx-gantt.js draws the outline ── */
+
+/* pan-y: a finger still scrolls the rows; a sideways drag is the bar's. */
+.nx-gantt-bar-draggable { cursor: grab; touch-action: pan-y; }
+.nx-gantt-bar-dragging { opacity: 0.45; }
+
+.nx-gantt-grip {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: var(--nx-gantt-grip-width);
+    cursor: ew-resize;
+}
+.nx-gantt-grip-start { left: 0; border-radius: var(--nx-radius-sm) 0 0 var(--nx-radius-sm); }
+.nx-gantt-grip-end { right: 0; border-radius: 0 var(--nx-radius-sm) var(--nx-radius-sm) 0; }
+.nx-gantt-bar:hover .nx-gantt-grip { background: var(--nx-gantt-grip-bg); }
+
+.nx-gantt-canvas ::deep .nx-gantt-bar-ghost {
+    position: absolute;
+    z-index: 2;
+    box-sizing: border-box;
+    border: 2px dashed var(--nx-gantt-bar-bg);
+    border-radius: var(--nx-radius-sm);
+    background: var(--nx-gantt-ghost-bg);
+    pointer-events: none;
+}
+
+.nx-gantt-moving, .nx-gantt-moving .nx-gantt-bar { cursor: grabbing; user-select: none; }
+.nx-gantt-sizing, .nx-gantt-sizing .nx-gantt-bar { cursor: ew-resize; user-select: none; }
+
 .nx-gantt-bar-text {
     display: block;
     padding: 0 6px;
@@ -281,8 +311,9 @@
     transition: opacity var(--nx-transition);
 }
 
-.nx-gantt-handle-start { left: -7px; }
-.nx-gantt-handle-end { right: -7px; }
+/* Outside the bar's ends, clear of the resize grips inside them. */
+.nx-gantt-handle-start { left: -12px; }
+.nx-gantt-handle-end { right: -12px; }
 .nx-gantt-bar:hover .nx-gantt-handle,
 .nx-gantt-linking .nx-gantt-handle { opacity: 1; }
 
@@ -315,6 +346,9 @@
 @media (pointer: coarse) {
     .nx-gantt-divider { flex-basis: 14px; }
     .nx-gantt-handle { width: 18px; height: 18px; margin-top: -9px; opacity: 1; }
+    .nx-gantt-handle-start { left: -20px; }
+    .nx-gantt-handle-end { right: -20px; }
+    .nx-gantt-grip { width: calc(var(--nx-gantt-grip-width) * 2); background: var(--nx-gantt-grip-bg); }
 }
 
 @media (prefers-reduced-motion: reduce) {

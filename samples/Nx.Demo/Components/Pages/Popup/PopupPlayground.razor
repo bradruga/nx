@@ -12,7 +12,7 @@
                 <NxButton id="playground-anchor" OnClick="() => pgVisible = !pgVisible">Toggle popup</NxButton>
                 <NxPopup Id="playground-popup" Visible="pgVisible" VisibleChanged="Closed" AnchorSelector="#playground-anchor" Placement="pgPlacement" Align="pgAlign"
                          Offset="pgOffset" Width="@OrNull(pgWidth)" MaxHeight="@OrNull(pgMaxHeight)" CloseOnOutsideClick="pgOutside"
-                         CloseOnEscape="pgEscape" AriaLabel="@OrNull(pgAriaLabel)">
+                         CloseOnEscape="pgEscape" OpenOnHover="pgHover" ShowDelay="pgShowDelay" HideDelay="pgHideDelay" AriaLabel="@OrNull(pgAriaLabel)">
                     <div class="demo-popup-body">
                         @for (var i = 1; i <= pgLines; i++)
                         {
@@ -57,6 +57,9 @@
             <div class="demo-controls-title">Behavior</div>
             <label class="demo-control"><span>CloseOnOutsideClick</span><input type="checkbox" id="pg-outside" @bind="pgOutside" /></label>
             <label class="demo-control"><span>CloseOnEscape</span><input type="checkbox" id="pg-escape" @bind="pgEscape" /></label>
+            <label class="demo-control"><span>OpenOnHover</span><input type="checkbox" id="pg-hover" @bind="pgHover" /></label>
+            <label class="demo-control"><span>ShowDelay</span><input type="number" id="pg-showdelay" min="0" step="50" @bind="pgShowDelay" /></label>
+            <label class="demo-control"><span>HideDelay</span><input type="number" id="pg-hidedelay" min="0" step="50" @bind="pgHideDelay" /></label>
             <label class="demo-control"><span>AriaLabel</span><input type="text" id="pg-arialabel" @bind="pgAriaLabel" @bind:event="oninput" /></label>
         </div>
 
@@ -76,14 +79,15 @@
     void Closed(bool visible)
     {
         pgVisible = visible;
-        pgClosed++;
+        if (!visible) pgClosed++;
     }
 
     NxPopupPlacement pgPlacement;
     NxPopupAlign pgAlign;
     int pgOffset = 4, pgLines = 4, pgClosed;
     string pgWidth = "220px", pgMaxHeight = "", pgAriaLabel = "Details";
-    bool pgOutside = true, pgEscape = true;
+    bool pgOutside = true, pgEscape = true, pgHover;
+    int pgShowDelay = 400, pgHideDelay = 250;
 
     string PlaygroundCode
     {
@@ -97,6 +101,9 @@
             if (OrNull(pgMaxHeight) is { } h) attrs.Add($"MaxHeight=\"{h}\"");
             if (!pgOutside) attrs.Add("CloseOnOutsideClick=\"false\"");
             if (!pgEscape) attrs.Add("CloseOnEscape=\"false\"");
+            if (pgHover) attrs.Add("OpenOnHover=\"true\"");
+            if (pgHover && pgShowDelay != 400) attrs.Add($"ShowDelay=\"{pgShowDelay}\"");
+            if (pgHover && pgHideDelay != 250) attrs.Add($"HideDelay=\"{pgHideDelay}\"");
             if (OrNull(pgAriaLabel) is { } label) attrs.Add($"AriaLabel=\"{label}\"");
             return "<NxPopup " + string.Join("\n         ", attrs) + ">\n    …\n</NxPopup>";
         }

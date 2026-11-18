@@ -7,9 +7,9 @@
             type="button"
             class="@ToggleCssClass"
             disabled="@Disabled"
-            aria-haspopup="listbox"
+            aria-haspopup="@(View == NxColorPickerView.Palette ? "listbox" : "dialog")"
             aria-expanded="@(isOpen ? "true" : "false")"
-            aria-controls="@(isOpen ? PaletteId : null)"
+            aria-controls="@(isOpen && !ShowsGradient ? PaletteId : null)"
             aria-label="@ToggleLabel"
             aria-invalid="@(validation.IsInvalid ? "true" : null)"
             @onclick="HandleToggleClick"
@@ -29,22 +29,43 @@
         @* No style attribute on the popup or its body: nx-popup.js places and sizes them. *@
         <div class="nx-colorpicker-popup" @ref="popup" @onkeydown="HandlePopupKeyDown">
             <div class="nx-colorpicker-body" @ref="body">
-                <div class="nx-colorpicker-palette" @ref="palette" id="@PaletteId" role="listbox" aria-label="@(AriaLabel ?? "Colors")"
-                     style="--nx-colorpicker-columns: @Columns">
-                    @foreach (var (color, index) in Palette.Select((c, i) => (c, i)))
-                    {
-                        var selected = Same(color, current);
-                        <button type="button"
-                                class="@(selected ? "nx-colorpicker-cell nx-colorpicker-cell-selected" : "nx-colorpicker-cell")"
-                                role="option"
-                                aria-selected="@(selected ? "true" : "false")"
-                                aria-label="@color"
-                                title="@color"
-                                tabindex="@(index == FocusIndex ? 0 : -1)"
-                                style="background-color: @color"
-                                @onclick="() => PickAsync(color)"></button>
-                    }
-                </div>
+                @if (View == NxColorPickerView.Both)
+                {
+                    <div class="nx-colorpicker-tabs" role="tablist" aria-label="@(AriaLabel ?? "Colors")">
+                        <button type="button" role="tab" id="@($"{ToggleId}-tab-palette")" class="@TabClass(false)"
+                                aria-selected="@(gradientTab ? "false" : "true")" @onclick="() => ShowTab(false)">Palette</button>
+                        <button type="button" role="tab" id="@($"{ToggleId}-tab-gradient")" class="@TabClass(true)"
+                                aria-selected="@(gradientTab ? "true" : "false")" @onclick="() => ShowTab(true)">Gradient</button>
+                    </div>
+                }
+                @if (ShowsGradient)
+                {
+                    <NxColorGradient Id="@($"{ToggleId}-gradient")" Class="nx-colorpicker-gradient" Value="@draft" ValueChanged="v => draft = v"
+                                     ShowOpacityEditor="false" AriaLabel="@(AriaLabel ?? "Color")" />
+                    <div class="nx-colorpicker-actions">
+                        <NxButton id="@($"{ToggleId}-apply")" Size="NxButtonSize.Small" Variant="NxButtonVariant.Primary"
+                                  Disabled="@(draft is null)" OnClick="() => PickAsync(draft)">Apply</NxButton>
+                    </div>
+                }
+                else
+                {
+                    <div class="nx-colorpicker-palette" id="@PaletteId" role="listbox" aria-label="@(AriaLabel ?? "Colors")"
+                         style="--nx-colorpicker-columns: @Columns">
+                        @foreach (var (color, index) in Palette.Select((c, i) => (c, i)))
+                        {
+                            var selected = Same(color, current);
+                            <button type="button"
+                                    class="@(selected ? "nx-colorpicker-cell nx-colorpicker-cell-selected" : "nx-colorpicker-cell")"
+                                    role="option"
+                                    aria-selected="@(selected ? "true" : "false")"
+                                    aria-label="@color"
+                                    title="@color"
+                                    tabindex="@(index == FocusIndex ? 0 : -1)"
+                                    style="background-color: @color"
+                                    @onclick="() => PickAsync(color)"></button>
+                        }
+                    </div>
+                }
                 @if (Clearable)
                 {
                     <button type="button" class="nx-colorpicker-clear" disabled="@(current is null)" @onclick="() => PickAsync(null)">

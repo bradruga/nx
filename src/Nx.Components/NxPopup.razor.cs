@@ -6,7 +6,8 @@ namespace Nx.Components;
 /// <summary>
 /// Any content in a floating box next to an element on the page (its anchor, found by <see cref="AnchorSelector"/>):
 /// below, above or beside it, lined up at the start, center or end, flipping and shifting to stay on screen. Closes on
-/// a press outside or Escape. For a filter menu, a details card, a small form.
+/// a press outside or Escape. For a filter menu, a details card, a small form. With <see cref="OpenOnHover"/> it is a
+/// hover card: it opens when the pointer rests on an anchor and stays while the pointer is on it, so its links can be used.
 /// </summary>
 /// <example>
 /// <code>
@@ -20,6 +21,7 @@ public partial class NxPopup : IAsyncDisposable
     // ── JS interop ────────────────────────────────────────────────────────────
     // nx-anchor.js measures the anchor and the viewport, places the popup, follows scrolling and resizing, and reports
     // presses outside and Escape. Its state is keyed by the popup's id: the element is gone by the time it closes.
+    // With OpenOnHover it also watches the anchors while the popup is closed, and says when to open and for which.
 
     private const string ModulePath = "./_content/Nx.Components/nx-anchor.js";
 
@@ -30,6 +32,7 @@ public partial class NxPopup : IAsyncDisposable
     private DotNetObjectReference<NxPopup>? dotNet;
     private ElementReference popup;
     private bool open;
+    private (string, int, int)? watched;      // the hover watch as last set up: selector and delays
 
     /// <summary>Shows the popup. Use <c>@bind-Visible</c>; it turns false when the popup closes itself.</summary>
     [Parameter] public bool Visible { get; set; }
@@ -37,7 +40,7 @@ public partial class NxPopup : IAsyncDisposable
     /// <summary>Raised when the popup closes itself (a press outside, Escape).</summary>
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
 
-    /// <summary>A CSS selector for the element the popup opens next to, e.g. <c>#status-filter</c>.</summary>
+    /// <summary>A CSS selector for the element the popup opens next to, e.g. <c>#status-filter</c>. With <see cref="OpenOnHover"/> it may match many (<c>.job</c>): one popup serves them all.</summary>
     [Parameter, EditorRequired] public string AnchorSelector { get; set; } = "";
 
     /// <summary>The side of the anchor it opens on. Default: <see cref="NxPopupPlacement.Bottom"/>.</summary>
@@ -60,6 +63,21 @@ public partial class NxPopup : IAsyncDisposable
 
     /// <summary>Closes on Escape. Default: <c>true</c>.</summary>
     [Parameter] public bool CloseOnEscape { get; set; } = true;
+
+    /// <summary>
+    /// A hover card: opens when the pointer rests on an anchor (or the keyboard focuses one), stays open while the pointer
+    /// is on the anchor or the popup, and closes soon after it leaves both. Use with <c>@bind-Visible</c>.
+    /// </summary>
+    [Parameter] public bool OpenOnHover { get; set; }
+
+    /// <summary>With <see cref="OpenOnHover"/>, milliseconds the pointer must rest on an anchor. Default: <c>400</c>.</summary>
+    [Parameter] public int ShowDelay { get; set; } = 400;
+
+    /// <summary>With <see cref="OpenOnHover"/>, milliseconds before it closes once the pointer has left the anchor and the popup. Default: <c>250</c>.</summary>
+    [Parameter] public int HideDelay { get; set; } = 250;
+
+    /// <summary>With <see cref="OpenOnHover"/>, raised before it opens for an anchor, with that anchor's <c>data-nx-context</c>: set the content, or cancel.</summary>
+    [Parameter] public EventCallback<NxPopupOpeningEventArgs> OnOpening { get; set; }
 
     /// <summary>The popup's ARIA role. Default: <c>dialog</c>.</summary>
     [Parameter] public string? Role { get; set; } = "dialog";
@@ -98,12 +116,27 @@ public partial class NxPopup : IAsyncDisposable
         width = Width,
         maxHeight = MaxHeight,
         closeOnOutside = CloseOnOutsideClick,
-        closeOnEscape = CloseOnEscape
+        closeOnEscape = CloseOnEscape,
+        hover = OpenOnHover
     };
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        (string, int, int)? watch = OpenOnHover ? (AnchorSelector, ShowDelay, HideDelay) : null;
+        if (watch != watched)
+        {
+            watched = watch;
+            module ??= await JS.InvokeAsync<IJSObjectReference>("import", ModulePath);
+            dotNet ??= DotNetObjectReference.Create(this);
+            if (module is not null)
+            {
+                if (watch is null)
+                    await module.InvokeVoidAsync("unwatchHover", PopupId);
+                else
+                    await module.InvokeVoidAsync("watchHover", PopupId, dotNet, new { anchor = AnchorSelector, showDelay = ShowDelay, hideDelay = HideDelay });
+            }
+        }
         if (Visible == open && !Visible)
             return;
         module ??= await JS.InvokeAsync<IJSObjectReference>("import", ModulePath);
@@ -123,7 +156,29 @@ public partial class NxPopup : IAsyncDisposable
         }
     }
 
-    /// <summary>Called by nx-anchor.js on a press outside or Escape.</summary>
+    /// <summary>Called by nx-anchor.js when the pointer has rested on an anchor, or the keyboard focused one.</summary>
+    [JSInvokable]
+    public async Task<bool> OnHoverOpen(string? context)
+    {
+        var shown = false;
+        await InvokeAsync(async () =>
+        {
+            var args = new NxPopupOpeningEventArgs(context);
+            await OnOpening.InvokeAsync(args);
+            if (args.Cancel)
+                return;
+            shown = true;
+            var opened = !Visible;
+            Visible = true;
+            // The page hears first: a render of it before then would pass Visible back as false and close the popup under its content.
+            if (opened)
+                await VisibleChanged.InvokeAsync(true);
+            StateHasChanged();
+        });
+        return shown;
+    }
+
+    /// <summary>Called by nx-anchor.js on a press outside, Escape, or the pointer leaving a hover card.</summary>
     [JSInvokable]
     public Task OnDismiss() => InvokeAsync(async () =>
     {
@@ -141,6 +196,7 @@ public partial class NxPopup : IAsyncDisposable
         {
             try
             {
+                await module.InvokeVoidAsync("unwatchHover", PopupId);
                 await module.InvokeVoidAsync("close", PopupId);
                 await module.DisposeAsync();
             }

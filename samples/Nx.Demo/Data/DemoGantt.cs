@@ -16,7 +16,7 @@ public sealed class ScheduleTask
     public int Days => (int)Math.Round((End - Start).TotalDays);
 }
 
-/// <summary>A link between two tasks, with Telerik's field names.</summary>
+/// <summary>A link between two tasks, with the Gantt's default field names.</summary>
 public sealed record ScheduleLink(int PredecessorId, int SuccessorId, NxGanttDependencyType Type = NxGanttDependencyType.FinishStart);
 
 /// <summary>A precast project: design, production and erection, starting this week.</summary>
@@ -44,6 +44,17 @@ public static class DemoGantt
         Add(erection.Id, "Ship to site", 30, 2, "Trucking", "#d97a1e");
         Add(erection.Id, "Set panels", 32, 7, "Erection crew", "#d97a1e");
         return list;
+    }
+
+    /// <summary>Summary tasks span their children, as ERP recalculates its chart after an edit.</summary>
+    public static void Rollup(List<ScheduleTask> tasks)
+    {
+        foreach (var parent in tasks.Where(p => tasks.Any(c => c.ParentId == p.Id)).Reverse())
+        {
+            var children = tasks.Where(c => c.ParentId == parent.Id).ToList();
+            parent.Start = children.Min(c => c.Start);
+            parent.End = children.Max(c => c.End);
+        }
     }
 
     public static List<ScheduleLink> Links() =>

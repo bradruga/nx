@@ -68,7 +68,7 @@ public class NxDatePickerTests : BunitContext
         Assert.That(input.GetAttribute("aria-haspopup"), Is.EqualTo("grid"));
         Assert.That(input.GetAttribute("aria-expanded"), Is.EqualTo("false"));
         Assert.That(input.GetAttribute("placeholder"), Is.EqualTo("mm/dd/yyyy"));
-        Assert.That(input.GetAttribute("inputmode"), Is.EqualTo("numeric"));
+        Assert.That(input.HasAttribute("inputmode"), Is.False);
         Assert.That(cut.Find("label.nx-datepicker-label").GetAttribute("for"), Is.EqualTo(input.Id));
         Assert.That(cut.Find(".nx-datepicker-toggle").GetAttribute("tabindex"), Is.EqualTo("-1"));
     }
@@ -80,13 +80,12 @@ public class NxDatePickerTests : BunitContext
     }
 
     [Test]
-    public void Mask_FollowsCultureOrder()
+    public void NoMask_PlaceholderFollowsCultureOrder()
     {
         RenderBound<DateOnly?>([], Oct23);
-        Assert.That(module.Invocations.Any(i => i.Identifier == "mask" && (string?)i.Arguments[1] == "99/99/9999"), Is.True);
-
         var de = RenderBound<DateOnly?>([], Oct23, culture: DeDe, id: "de");
-        Assert.That(module.Invocations.Any(i => i.Identifier == "mask" && (string?)i.Arguments[1] == "99.99.9999"), Is.True);
+
+        Assert.That(module.Invocations.Any(i => i.Identifier == "mask"), Is.False);
         Assert.That(de.Find("input").GetAttribute("placeholder"), Is.EqualTo("dd.mm.yyyy"));
     }
 
@@ -114,11 +113,96 @@ public class NxDatePickerTests : BunitContext
     }
 
     [Test]
-    public void IsoFormat_EditsInItsOwnOrder()
+    public async Task IsoFormat_EditsInItsOwnOrder()
     {
-        RenderBound<DateOnly?>([], Oct23, p => p.Add(x => x.Format, "yyyy-MM-dd"));
+        var raised = new List<DateOnly?>();
+        var cut = RenderBound<DateOnly?>(raised, Oct23, p => p.Add(x => x.Format, "yyyy-MM-dd"));
+        Assert.That(cut.Find("input").GetAttribute("placeholder"), Is.EqualTo("yyyy-mm-dd"));
 
-        Assert.That(module.Invocations.Any(i => i.Identifier == "mask" && (string?)i.Arguments[1] == "9999-99-99"), Is.True);
+        await TypeAndCommitAsync(cut, "20261205");
+        Assert.That(raised, Is.EqualTo(new DateOnly?[] { new DateOnly(2026, 12, 5) }));
+    }
+
+    // ── Short forms ───────────────────────────────────────────────────────────
+
+    [TestCase("12/5", 0, 12, 5)]
+    [TestCase("12-5", 0, 12, 5)]
+    [TestCase("1205", 0, 12, 5)]
+    [TestCase("12/5/26", 2026, 12, 5)]
+    [TestCase("120526", 2026, 12, 5)]
+    [TestCase("12052026", 2026, 12, 5)]
+    [TestCase("1/5/2026", 2026, 1, 5)]
+    public async Task Typed_ShortForms_MissingYearIsThisYear(string text, int year, int month, int day)
+    {
+        var raised = new List<DateOnly?>();
+        var cut = RenderBound<DateOnly?>(raised);
+        await TypeAndCommitAsync(cut, text);
+
+        Assert.That(raised, Is.EqualTo(new DateOnly?[] { new DateOnly(year == 0 ? DateTime.Today.Year : year, month, day) }));
+    }
+
+    [Test]
+    public async Task Typed_ShortForm_FollowsCultureOrder()
+    {
+        var raised = new List<DateOnly?>();
+        var cut = RenderBound<DateOnly?>(raised, null, culture: DeDe);
+        await TypeAndCommitAsync(cut, "5.12");
+
+        Assert.That(raised, Is.EqualTo(new DateOnly?[] { new DateOnly(DateTime.Today.Year, 12, 5) }));
+    }
+
+    [TestCase("13/5")]
+    [TestCase("2/30")]
+    [TestCase("123")]
+    public async Task Typed_ImpossibleShortForm_Reverts(string text)
+    {
+        var raised = new List<DateOnly?>();
+        var cut = RenderBound<DateOnly?>(raised, Oct23);
+        await TypeAndCommitAsync(cut, text);
+
+        Assert.That(raised, Is.Empty);
+        Assert.That(Text(cut), Is.EqualTo("10/23/2026"));
+    }
+
+    // ── Without the calendar ──────────────────────────────────────────────────
+
+    [Test]
+    public async Task ShowCalendarOff_FieldOnly_AltDownDoesNotOpen()
+    {
+        var cut = RenderBound<DateOnly?>([], Oct23, p => p.Add(x => x.ShowCalendar, false));
+
+        var input = cut.Find("input");
+        Assert.That(cut.FindAll(".nx-datepicker-toggle"), Is.Empty);
+        Assert.That(input.HasAttribute("role"), Is.False);
+        Assert.That(input.HasAttribute("aria-haspopup"), Is.False);
+        Assert.That(input.HasAttribute("aria-expanded"), Is.False);
+        Assert.That(input.GetAttribute("aria-description"), Does.Contain("Up and Down"));
+        var step = module.Invocations.Single(i => i.Identifier == "stepDate");
+        Assert.That(step.Arguments[1], Is.EqualTo("99/99/9999"));
+        Assert.That(step.Arguments[2], Is.EqualTo("Mdy"));
+
+        await KeyAsync(cut, "ArrowDown", alt: true);
+        Assert.That(cut.FindAll(".nx-datepicker-popup"), Is.Empty);
+    }
+
+    [Test]
+    public async Task PlainDown_StepsInTheBrowser_DoesNotOpen()
+    {
+        var cut = RenderBound<DateOnly?>([], Oct23);
+        Assert.That(cut.Find("input").GetAttribute("aria-description"), Does.Contain("Up and Down"));
+
+        await KeyAsync(cut, "ArrowDown");
+        Assert.That(cut.FindAll(".nx-datepicker-popup"), Is.Empty);
+    }
+
+    [Test]
+    public void StepOrderFollowsCulture()
+    {
+        RenderBound<DateOnly?>([], Oct23, culture: DeDe);
+
+        var step = module.Invocations.Single(i => i.Identifier == "stepDate");
+        Assert.That(step.Arguments[1], Is.EqualTo("99.99.9999"));
+        Assert.That(step.Arguments[2], Is.EqualTo("dMy"));
     }
 
     // ── Typing ────────────────────────────────────────────────────────────────
@@ -244,7 +328,7 @@ public class NxDatePickerTests : BunitContext
         var raised = new List<DateOnly?>();
         var cut = RenderBound<DateOnly?>(raised, Oct23);
 
-        await KeyAsync(cut, "ArrowDown");
+        await KeyAsync(cut, "ArrowDown", alt: true);
         await KeyAsync(cut, "ArrowRight");
         await KeyAsync(cut, "ArrowDown");
         Assert.That(cut.Find("input").GetAttribute("aria-activedescendant"), Is.EqualTo("dp-calendar-d20261031"));
@@ -273,7 +357,7 @@ public class NxDatePickerTests : BunitContext
     {
         var cut = RenderBound<DateOnly?>([], Oct23);
 
-        await KeyAsync(cut, "ArrowDown");
+        await KeyAsync(cut, "ArrowDown", alt: true);
         await cut.Find("input").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "03/15/2027" });
 
         Assert.That(cut.Find(".nx-calendar-title").TextContent.Trim(), Is.EqualTo("March 2027"));
@@ -285,11 +369,11 @@ public class NxDatePickerTests : BunitContext
     {
         var cut = RenderBound<DateOnly?>([], Oct23);
 
-        await KeyAsync(cut, "ArrowDown");
+        await KeyAsync(cut, "ArrowDown", alt: true);
         await KeyAsync(cut, "Escape");
         Assert.That(cut.FindAll(".nx-datepicker-popup"), Is.Empty);
 
-        await KeyAsync(cut, "ArrowDown");
+        await KeyAsync(cut, "ArrowDown", alt: true);
         await cut.Find("input").BlurAsync(new FocusEventArgs());
         Assert.That(cut.FindAll(".nx-datepicker-popup"), Is.Empty);
         Assert.That(module.Invocations.Count(i => i.Identifier == "close"), Is.GreaterThanOrEqualTo(2));
@@ -300,7 +384,7 @@ public class NxDatePickerTests : BunitContext
     {
         var cut = RenderBound<DateOnly?>([], Oct23, p => p.Add(x => x.ReadOnly, true));
 
-        await KeyAsync(cut, "ArrowDown");
+        await KeyAsync(cut, "ArrowDown", alt: true);
 
         Assert.That(cut.FindAll(".nx-datepicker-popup"), Is.Empty);
         Assert.That(cut.Find(".nx-datepicker-toggle").HasAttribute("disabled"), Is.True);

@@ -51,7 +51,7 @@
                  @ondrop="e => HandleDropAsync(node, e)">
                 @if (node.Children.Count > 0)
                 {
-                    <span class="nx-treeview-toggle" aria-hidden="true" @onclick="() => ToggleAsync(node)" @onclick:stopPropagation="true">
+                    <span class="nx-treeview-toggle" aria-hidden="true" @onclick="() => ToggleAsync(node)" @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18" /></svg>
                     </span>
                 }

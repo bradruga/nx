@@ -112,12 +112,13 @@ public class SplitterTests : PageTest
     }
 
     [Test]
-    public async Task Collapse_ButtonBindingAndEnter_KeepContent()
+    public async Task Collapse_FromThePagesOwnButtons_KeepsContent_NoButtonOnTheBar()
     {
         await GoToPage();
+        await Expect(Page.Locator("#collapse-splitter .nx-splitter-bar button")).ToHaveCountAsync(0);
 
         await Page.Locator("#collapse-filter").FillAsync("abc");
-        await Bar("collapse-splitter").Locator(".nx-splitter-toggle-prev").ClickAsync();
+        await Page.Locator("#toggle-nav").ClickAsync();
         await Expect(Page.Locator("#collapse-state")).ToContainTextAsync("Navigation: collapsed");
         Assert.That(await WidthAsync("collapse-nav"), Is.EqualTo(0).Within(1));
         await Expect(Bar("collapse-splitter")).ToHaveAttributeAsync("aria-disabled", "true");
@@ -126,9 +127,13 @@ public class SplitterTests : PageTest
         await Expect(Page.Locator("#collapse-state")).ToContainTextAsync("Navigation: open");
         await Expect(Page.Locator("#collapse-filter")).ToHaveValueAsync("abc");
 
+        // Enter on a bar no longer collapses anything.
         await Bar("collapse-splitter", 1).FocusAsync();
         await Page.Keyboard.PressAsync("Enter");
+        await Page.Locator("#toggle-props").ClickAsync();
         await Expect(Page.Locator("#collapse-state")).ToContainTextAsync("Properties: collapsed");
+        await Page.Locator("#toggle-props").ClickAsync();
+        await Expect(Page.Locator("#collapse-state")).ToContainTextAsync("Properties: open");
     }
 
     [Test]
@@ -171,7 +176,37 @@ public class SplitterTests : PageTest
     }
 
     [Test]
-    public async Task Phone_PanesStack_HeadersCollapse_NoBars()
+    public async Task ToolWindows_HideFromThePanel_ShowFromTheStrip_BarGoesWithIt()
+    {
+        await GoToPage();
+        var state = Page.Locator("#ide-state");
+        await Page.Locator("#ide").ScrollIntoViewIfNeededAsync();
+        await Expect(state).ToContainTextAsync("Explorer: shown");
+        var editorBefore = await WidthAsync("ide-center");
+
+        await Page.Locator("#ide-hide-explorer").ClickAsync();
+        await Expect(state).ToContainTextAsync("Explorer: hidden");
+        Assert.That(await WidthAsync("ide-explorer"), Is.EqualTo(0).Within(1));
+        await Expect(Bar("ide-splitter")).ToBeHiddenAsync();
+        Assert.That(await WidthAsync("ide-center"), Is.GreaterThan(editorBefore + 150), "the editor takes the room");
+        await Expect(Page.Locator("#ide-show-explorer")).ToHaveAttributeAsync("aria-pressed", "false");
+
+        await Page.Locator("#ide-show-explorer").ClickAsync();
+        await Expect(state).ToContainTextAsync("Explorer: shown");
+        await Expect(Bar("ide-splitter")).ToBeVisibleAsync();
+
+        // The bottom panel, in the nested splitter; and one that starts hidden.
+        await Page.Locator("#ide-hide-terminal").ClickAsync();
+        await Expect(state).ToContainTextAsync("Terminal: hidden");
+        await Page.Locator("#ide-show-terminal").ClickAsync();
+        await Expect(state).ToContainTextAsync("Terminal: shown");
+        await Expect(state).ToContainTextAsync("Structure: hidden");
+        await Page.Locator("#ide-show-structure").ClickAsync();
+        await Expect(Page.Locator("#ide-hide-structure")).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task Phone_PanesStack_UnderTheirTitles_NoBars()
     {
         await using var context = await Browser.NewContextAsync(new() { ViewportSize = new() { Width = 390, Height = 844 }, HasTouch = true, IsMobile = true });
         var page = await context.NewPageAsync();
@@ -188,7 +223,8 @@ public class SplitterTests : PageTest
         var header = page.Locator("#collapse-nav .nx-splitter-pane-header");
         Assert.That((await header.BoundingBoxAsync())!.Height, Is.GreaterThanOrEqualTo(44));
         await header.TapAsync();
+        await Expect(page.Locator("#collapse-state")).ToContainTextAsync("Navigation: open");
+        await page.Locator("#toggle-nav").TapAsync();
         await Expect(page.Locator("#collapse-state")).ToContainTextAsync("Navigation: collapsed");
-        await Expect(header).ToHaveAttributeAsync("aria-expanded", "false");
     }
 }

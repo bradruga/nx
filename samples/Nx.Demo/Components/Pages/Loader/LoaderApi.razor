@@ -8,8 +8,9 @@
         <table class="doc-table doc-api-table">
             <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
             <tbody>
-                <tr><td>Type</td><td>NxLoaderType</td><td>Spinner</td><td>Spinner, Converging, Pulsing.</td></tr>
+                <tr><td>Type</td><td>NxLoaderType</td><td>Spinner</td><td>Spinner or Pulsing.</td></tr>
                 <tr><td>Size</td><td>NxSize</td><td>Medium</td><td>Small 16, Medium 28, Large 44 px.</td></tr>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>Your own animation in place of <code>Type</code>'s. It gets the loader's box and <code>currentColor</code>; the loader keeps the role and name.</td></tr>
                 <tr><td>AriaLabel</td><td>string</td><td>"Loading"</td><td>The progress bar's accessible name.</td></tr>
                 <tr><td>Class / Style</td><td>string?</td><td>—</td><td>On the outer element; other attributes go there too.</td></tr>
             </tbody>

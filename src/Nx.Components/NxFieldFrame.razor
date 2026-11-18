@@ -3,7 +3,7 @@
 @* The label, bordered box, prefix/suffix slots and clear button around an Nx text input.
    Every part carries a shared nx-field-* class (styled here) and a {ClassPrefix}-* class (the host's hook). *@
 <div class="@RootClass" style="@Style">
-    @if (Label is not null && !FloatingLabel)
+    @if (Label is not null)
     {
         <label class="nx-field-label @(ClassPrefix)-label" for="@InputId">@Label</label>
     }
@@ -14,10 +14,6 @@
         }
         <div class="nx-field-control @(ClassPrefix)-control">
             @ChildContent
-            @if (Label is not null && FloatingLabel)
-            {
-                <label class="nx-field-floating-label @(ClassPrefix)-floating-label" for="@InputId">@Label</label>
-            }
         </div>
         @if (SuffixContent is not null)
         {

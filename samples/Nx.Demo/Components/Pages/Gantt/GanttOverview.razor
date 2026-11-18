@@ -8,18 +8,18 @@
     <p class="doc-note">
         <code>NxGantt</code> shows a project schedule: a task list (tree columns, cells edited in place, sorting, a filter row)
         beside a week timeline of bars, with dependency arrows between them and a divider to share the width. It binds a flat
-        list by field name, as Telerik's Gantt does. Editing a whole task is your own form: <code>OnEdit</code> asks for it on
-        a double-click or Enter. Cells with an <code>EditorTemplate</code> edit in place and raise <code>OnUpdate</code> when
+        list by field name. Editing a whole task is your own form: <code>OnEdit</code> asks for it on
+        a double-click or Enter. Bars drag to move a task and by an end to resize it. Cells with an <code>EditorTemplate</code> edit in place; every edit raises <code>OnUpdate</code>, a cell's when
         left.
     </p>
 </div>
 
 <div class="doc-section">
     <h2>Basic Usage</h2>
-    <p class="doc-note">Double-click a row or bar to edit the task; click a title or date to edit it in place; drag the divider; zoom with the buttons.</p>
+    <p class="doc-note">Drag a bar or one of its ends to reschedule; double-click a row or bar to edit the task; click a title or date to edit it in place; drag the divider; zoom with the buttons.</p>
     <div class="demo-stage demo-stage-column">
         <NxGantt TItem="ScheduleTask" Id="overview-gantt" Data="tasks" Dependencies="links" SlotWidth="slot" @bind-TreeListWidth="treeWidth"
-                 OnEdit="Edit" OnUpdate="t => updated = t.Title" Height="440px" Style="width:100%">
+                 OnEdit="Edit" OnUpdate="Update" Height="440px" Style="width:100%">
             <ToolBarTemplate>
                 <strong>Route 9 Bridge</strong>
                 <NxButtonGroup Size="NxButtonSize.Small">
@@ -73,6 +73,9 @@
                 <tr><td>Tab</td><td>The toolbar, header buttons and filters, then the selected task row.</td></tr>
                 <tr><td>↑ ↓</td><td>The previous or next task.</td></tr>
                 <tr><td>→ / ←</td><td>Expand, or collapse and then move to the parent.</td></tr>
+                <tr><td>Alt+← / Alt+→</td><td>Moves the task's bar a day; with Shift, its end.</td></tr>
+                <tr><td>Delete</td><td>On a row: <code>OnDelete</code>.</td></tr>
+                <tr><td>Esc</td><td>While dragging a bar: drops the drag.</td></tr>
                 <tr><td>Enter</td><td>On a row: <code>OnEdit</code>. In a cell editor: done (also Tab, Escape or a press outside).</td></tr>
                 <tr><td>← → on the divider</td><td>Narrow or widen the task list.</td></tr>
                 <tr><td>Roles</td><td>The task list is a <code>treegrid</code> of rows with levels; the timeline repeats it visually and is hidden from screen readers.</td></tr>
@@ -93,6 +96,13 @@
     string? treeWidth = "45%", updated;
     ScheduleTask? editing;
     string? editTitle, editResources;
+
+    void Update(NxGanttUpdateArgs<ScheduleTask> args)
+    {
+        args.Apply();
+        DemoGantt.Rollup(tasks);
+        updated = args.Item.Title;
+    }
 
     void Edit(ScheduleTask task)
     {

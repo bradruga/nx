@@ -14,7 +14,6 @@
                            @bind-Value="pgValue"
                            @bind-Value:after="PlaygroundChanged"
                            Label="@(string.IsNullOrWhiteSpace(pgLabel) ? null : pgLabel)"
-                           FloatingLabel="pgFloating"
                            Placeholder="@(string.IsNullOrWhiteSpace(pgPlaceholder) ? null : pgPlaceholder)"
                            Type="pgType"
                            InputMode="pgInputMode"
@@ -39,7 +38,6 @@
         <div class="demo-controls">
             <div class="demo-controls-title">Label &amp; text</div>
             <label class="demo-control"><span>Label</span><input type="text" @bind="pgLabel" @bind:event="oninput" /></label>
-            <label class="demo-control"><span>FloatingLabel</span><input type="checkbox" id="pg-floating" @bind="pgFloating" /></label>
             <label class="demo-control"><span>Placeholder</span><input type="text" @bind="pgPlaceholder" @bind:event="oninput" /></label>
             <label class="demo-control"><span>Prefix (icon)</span><input type="checkbox" id="pg-prefix" @bind="pgPrefix" /></label>
             <label class="demo-control"><span>Suffix (text)</span><input type="checkbox" id="pg-suffix" @bind="pgSuffix" /></label>
@@ -97,7 +95,7 @@
     string? pgValue;
     string pgLabel = "Customer";
     string pgPlaceholder = "Start typing…";
-    bool pgFloating, pgPrefix, pgSuffix, pgImmediate, pgClearable = true, pgPasswordToggle = true;
+    bool pgPrefix, pgSuffix, pgImmediate, pgClearable = true, pgPasswordToggle = true;
     bool pgShowCounter, pgReadOnly, pgDisabled, pgAutoFocus;
     int pgDebounce, pgMaxLength, pgChanges, pgKey;
     NxTextBoxType pgType = NxTextBoxType.Text;
@@ -115,7 +113,6 @@
         {
             var attrs = new List<string>();
             if (!string.IsNullOrWhiteSpace(pgLabel)) attrs.Add($"Label=\"{pgLabel}\"");
-            if (pgFloating) attrs.Add("FloatingLabel=\"true\"");
             if (!string.IsNullOrWhiteSpace(pgPlaceholder)) attrs.Add($"Placeholder=\"{pgPlaceholder}\"");
             if (pgType != NxTextBoxType.Text) attrs.Add($"Type=\"NxTextBoxType.{pgType}\"");
             if (pgInputMode is { } mode) attrs.Add($"InputMode=\"NxInputMode.{mode}\"");

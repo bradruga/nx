@@ -9,7 +9,7 @@ namespace Nx.Components;
 /// <summary>
 /// Picks a color from a palette: a button showing the current color opens a grid of swatches (the Office palette by
 /// default), moved through with the arrow keys. The value is the swatch's CSS color string, e.g. <c>#4371c4</c>.
-/// <see cref="Clearable"/> adds "No color".
+/// <see cref="Clearable"/> adds "No color"; <see cref="View"/> adds or swaps in a gradient for any color.
 /// </summary>
 /// <example>
 /// <code>
@@ -20,7 +20,7 @@ public partial class NxColorPicker : IAsyncDisposable
 {
     // ── JS interop ────────────────────────────────────────────────────────────
     // nx-colorpicker.js places the popup (through nx-popup.js), moves focus through the grid with the arrow
-    // keys, focuses the selected swatch on open, and reports a press or Tab outside the popup.
+    // keys, focuses the selected swatch (or the gradient) on open, and reports a press or Tab outside the popup.
 
     private const string ModulePath = "./_content/Nx.Components/nx-colorpicker.js";
 
@@ -33,9 +33,8 @@ public partial class NxColorPicker : IAsyncDisposable
     private ElementReference toggle;
     private ElementReference popup;
     private ElementReference body;
-    private ElementReference palette;
-    private string? current;
-    private bool isOpen, openPending, closePending, returnFocusPending;
+    private string? current, draft;
+    private bool isOpen, openPending, closePending, returnFocusPending, gradientTab;
 
     /// <summary>Creates the component.</summary>
     public NxColorPicker() => validation = new FieldValidation(StateHasChanged);
@@ -56,6 +55,9 @@ public partial class NxColorPicker : IAsyncDisposable
 
     /// <summary>Swatches per row. Default: <c>10</c>.</summary>
     [Parameter] public int Columns { get; set; } = 10;
+
+    /// <summary>What the popup offers: the palette, a gradient for any color (applied with a button), or both on tabs. Default: <see cref="NxColorPickerView.Palette"/>.</summary>
+    [Parameter] public NxColorPickerView View { get; set; }
 
     /// <summary>Adds a "No color" button, which sets the value to <c>null</c>.</summary>
     [Parameter] public bool Clearable { get; set; }
@@ -94,6 +96,8 @@ public partial class NxColorPicker : IAsyncDisposable
     private string ToggleId => Id ?? generatedId;
     private string PaletteId => $"{ToggleId}-palette";
     private int FocusIndex => Math.Max(0, Palette.ToList().FindIndex(c => Same(c, current)));
+    private bool ShowsGradient => View == NxColorPickerView.Gradient || (View == NxColorPickerView.Both && gradientTab);
+    private string TabClass(bool gradient) => gradient == gradientTab ? "nx-colorpicker-tab nx-colorpicker-tab-active" : "nx-colorpicker-tab";
     private string ToggleLabel => $"{AriaLabel ?? "Color"}: {current ?? "none"}";
     private string SwatchCssClass => current is null ? "nx-colorpicker-swatch nx-colorpicker-swatch-empty" : "nx-colorpicker-swatch";
     private string? SwatchStyle => current is null ? null : $"background-color: {current}";
@@ -141,7 +145,7 @@ public partial class NxColorPicker : IAsyncDisposable
         {
             openPending = false;
             selfReference ??= DotNetObjectReference.Create(this);
-            await module.InvokeVoidAsync("open", toggle, popup, body, palette, selfReference);
+            await module.InvokeVoidAsync("open", toggle, popup, body, selfReference);
         }
         if (returnFocusPending)
         {
@@ -164,6 +168,17 @@ public partial class NxColorPicker : IAsyncDisposable
             return;
         isOpen = true;
         openPending = true;
+        draft = current;
+        // With both, a color that is not a swatch opens on the gradient.
+        gradientTab = current is not null && !Palette.Any(c => Same(c, current));
+    }
+
+    private void ShowTab(bool gradient)
+    {
+        if (gradientTab == gradient)
+            return;
+        gradientTab = gradient;
+        openPending = true;     // the popup changed size: place it again
     }
 
     private void Close(bool returnFocus)

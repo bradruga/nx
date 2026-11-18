@@ -91,4 +91,20 @@ public class TreeListTests : PageTest
         await Page.WaitForFunctionAsync("() => true");
         Assert.That((await header.BoundingBoxAsync())!.Y, Is.EqualTo(before).Within(1));
     }
+
+    [Test]
+    public async Task Arrow_ClickedTwiceFast_TogglesTwice_NotThreeTimes()
+    {
+        await GoToPage("overview");
+        var first = Page.Locator("#overview-tree [role=treeitem]").First;
+        await Expect(first).ToHaveAttributeAsync("aria-expanded", "true");
+
+        // Two fast clicks are also a double-click, which the row answers by toggling: the arrow must not pass it on.
+        await first.Locator(".nx-treeview-toggle").First.DblClickAsync();
+        await Expect(Page.Locator("#overview-tree [role=treeitem]")).ToHaveCountAsync(8);
+        await Expect(first).ToHaveAttributeAsync("aria-expanded", "true");
+
+        await first.Locator(".nx-treeview-content").First.DblClickAsync();
+        await Expect(first).ToHaveAttributeAsync("aria-expanded", "false");
+    }
 }

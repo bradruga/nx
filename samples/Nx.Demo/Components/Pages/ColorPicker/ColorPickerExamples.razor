@@ -21,6 +21,27 @@
 </div>
 
 <div class="doc-section">
+    <h2>Gradient</h2>
+    <p class="doc-note">
+        <code>View</code> sets what the popup offers: the palette (default), a gradient for any color, or both on tabs. A
+        swatch is picked with one click; the gradient is dragged, so it has an Apply button. With both, a color that is
+        not a swatch opens on the Gradient tab.
+    </p>
+    <div class="demo-stage">
+        <div class="demo-form-grid">
+            <div>
+                <label class="demo-field-label" for="view-both">Palette and gradient</label>
+                <NxColorPicker Id="view-both" View="NxColorPickerView.Both" @bind-Value="both" AriaLabel="Brand color" ShowValue="true" />
+            </div>
+            <div>
+                <label class="demo-field-label" for="view-gradient">Gradient only</label>
+                <NxColorPicker Id="view-gradient" View="NxColorPickerView.Gradient" @bind-Value="custom" AriaLabel="Custom color" ShowValue="true" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
     <h2>Background &amp; Text Colors</h2>
     <p class="doc-note">
         A schedule item with a fill and a text color, as ERP's project schedule has. <code>ShowValue</code> prints the color
@@ -85,7 +106,7 @@
 @code {
     static readonly string[] StatusColors = ["#3e9e4f", "#e1b12c", "#d97a1e", "#c0392b"];
 
-    string? category = "#2e6db4", status = "#3e9e4f", fill = "#dae1f4", text = "#203764", highlight = "#ffff00";
+    string? category = "#2e6db4", status = "#3e9e4f", fill = "#dae1f4", text = "#203764", highlight = "#ffff00", both = "#4371c4", custom = "#1f8a70";
     string result = "Not saved";
     readonly LoadForm load = new();
 

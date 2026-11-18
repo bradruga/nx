@@ -10,6 +10,12 @@ const EDGE = 8;              // px kept clear of the viewport edge
 const SUB_DELAY = 150;       // ms the pointer rests on a parent item before its submenu opens
 const PHONE = '(max-width: 600px)';
 const states = new Map();    // menu id → state
+
+// The focus ring is for the keyboard. The browser cannot tell: it calls focus moved by script "focus-visible" after a
+// right click too. So the module remembers what the user last used, and the menu shows its ring only for keys.
+let lastInputWasKey = false;
+document.addEventListener('keydown', () => { lastInputWasKey = true; }, true);
+document.addEventListener('pointerdown', () => { lastInputWasKey = false; }, true);
 const contextTargets = new Map();
 
 const itemsOf = list => [...list.querySelectorAll(':scope > li > .nx-menu-item')]
@@ -75,6 +81,7 @@ function closeSub(sub) {
 }
 
 function onKeyDown(state, e) {
+    state.root.classList.add('nx-menu-keyboard');
     const item = e.target.closest('.nx-menu-item');
     if (!item || !state.root.contains(item)) return;
     const list = listOf(item);
@@ -130,6 +137,7 @@ function onPointerOver(state, e) {
     if (state.sheet) return;
     const item = e.target.closest('.nx-menu-item');
     if (!item || !state.root.contains(item)) return;
+    state.root.classList.remove('nx-menu-keyboard');
     if (item !== document.activeElement && item.getAttribute('aria-disabled') !== 'true') item.focus({ preventScroll: true });
     clearTimeout(state.subTimer);
     state.subTimer = setTimeout(() => {
@@ -168,6 +176,8 @@ export function open(id, root, dotNet, how, focusFirst) {
     state.rootList = root.querySelector(':scope > ul.nx-menu-list');
     state.sheet = matchMedia(PHONE).matches;
     root.classList.toggle('nx-menu-sheet', state.sheet);
+    // (The module may load after the key that opens its first menu: the opener's own keyboard focus says so too.)
+    root.classList.toggle('nx-menu-keyboard', lastInputWasKey || state.returnTo?.matches?.(':focus-visible') === true);
     states.set(id, state);
 
     state.onKeyDown = e => onKeyDown(state, e);

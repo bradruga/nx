@@ -4,7 +4,7 @@ using NUnit.Framework;
 
 namespace Nx.Playwright;
 
-/// <summary>NxSlider, NxChipList and NxDateInput.</summary>
+/// <summary>NxSlider, NxChipList and NxDatePicker without its calendar.</summary>
 [TestFixtureSource(typeof(TestConfig), nameof(TestConfig.AppUrls))]
 public class SliderChipDateInputTests : PageTest
 {
@@ -131,56 +131,59 @@ public class SliderChipDateInputTests : PageTest
         Assert.That(await Page.EvaluateAsync<int>("() => document.documentElement.scrollWidth - document.documentElement.clientWidth"), Is.LessThanOrEqualTo(0));
     }
 
-    // ── NxDateInput ───────────────────────────────────────────────────────────
+    // ── NxDatePicker, ShowCalendar="false" ────────────────────────────────────
 
     [Test]
-    public async Task DateInput_UpDown_StepThePartUnderTheCaret()
+    public async Task NoCalendar_UpDown_StepThePartUnderTheCaret()
     {
-        await GoToPage("/dateinput/overview");
-        var input = Page.Locator("#overview-date");
+        await GoToPage("/datepicker/examples");
+        var input = Page.Locator("#calendar-input");
+        var value = Page.Locator("#calendar-value");
 
         await input.FocusAsync();
         await Expect(input).ToHaveValueAsync("10/23/2026");
         // Programmatic focus leaves the caret wherever the browser puts it; put it in the month.
         await input.EvaluateAsync("e => e.setSelectionRange(0, 0)");
         await Page.Keyboard.PressAsync("ArrowUp");
-        await Expect(Page.Locator("#overview-value")).ToHaveTextAsync("Value: 2026-11-23");
+        await Expect(value).ToHaveTextAsync("Monday, November 23, 2026");
         Assert.That(await input.EvaluateAsync<int[]>("e => [e.selectionStart, e.selectionEnd]"), Is.EqualTo(new[] { 0, 2 }), "the month stays selected");
 
         await Page.Keyboard.PressAsync("ArrowUp");
         await Page.Keyboard.PressAsync("ArrowUp");
-        await Expect(Page.Locator("#overview-value")).ToHaveTextAsync("Value: 2026-01-23");
+        await Expect(value).ToHaveTextAsync("Friday, January 23, 2026");
 
         await input.EvaluateAsync("e => e.setSelectionRange(4, 4)");
         await Page.Keyboard.PressAsync("ArrowDown");
-        await Expect(Page.Locator("#overview-value")).ToHaveTextAsync("Value: 2026-01-22");
+        await Expect(value).ToHaveTextAsync("Thursday, January 22, 2026");
         await input.EvaluateAsync("e => e.setSelectionRange(9, 9)");
         await Page.Keyboard.PressAsync("ArrowDown");
-        await Expect(Page.Locator("#overview-value")).ToHaveTextAsync("Value: 2025-01-22");
+        await Expect(value).ToHaveTextAsync("Wednesday, January 22, 2025");
+        await Expect(Page.Locator(".nx-datepicker-popup")).ToHaveCountAsync(0);
     }
 
     [Test]
-    public async Task DateInput_FastTyping_CommitsOnBlur()
+    public async Task NoCalendar_UpDown_ReadShortTypedText()
     {
-        await GoToPage("/dateinput/overview");
-        var input = Page.Locator("#overview-date");
+        await GoToPage("/datepicker/examples");
+        var input = Page.Locator("#calendar-input");
 
         await input.FocusAsync();
         await Page.Keyboard.PressAsync("ControlOrMeta+a");
-        await Page.Keyboard.PressAsync("Backspace");
-        await input.PressSequentiallyAsync("02292028");
-        await Expect(input).ToHaveValueAsync("02/29/2028");
-        await Page.Keyboard.PressAsync("Tab");
+        await input.PressSequentiallyAsync("3/9/26");
+        await Expect(input).ToHaveValueAsync("3/9/26");
+        // The caret is at the end, in the year.
+        await Page.Keyboard.PressAsync("ArrowUp");
 
-        await Expect(Page.Locator("#overview-value")).ToHaveTextAsync("Value: 2028-02-29");
-        await Expect(input).ToHaveValueAsync("2/29/2028");
+        await Expect(input).ToHaveValueAsync("03/09/2027");
+        await Expect(Page.Locator("#calendar-value")).ToHaveTextAsync("Tuesday, March 9, 2027");
     }
 
     [Test]
-    public async Task DateInput_FollowsTheCalendar_AndBack()
+    public async Task NoCalendar_FollowsTheCalendar_AndBack()
     {
-        await GoToPage("/dateinput/examples");
+        await GoToPage("/datepicker/examples");
         var input = Page.Locator("#calendar-input");
+        await Expect(Page.Locator(".nx-datepicker:has(#calendar-input) .nx-datepicker-toggle")).ToHaveCountAsync(0);
 
         await input.FillAsync("11/05/2026");
         await input.PressAsync("Enter");

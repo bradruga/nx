@@ -8,7 +8,8 @@
     <p class="doc-note">
         <code>NxEditor</code> edits rich text and binds it as HTML: ticket descriptions, comments, email bodies, notes, a
         report template. <code>Tools</code> lists the toolbar in order — text styles, block formats, fonts and colors,
-        alignment, lists, links, pictures and tables — and custom tools take a slot of their own. Undo keeps its own history,
+        alignment, lists, links, pictures and tables — and custom tools take a slot of their own. Click a picture to resize
+        it by its corners, or drag it to another place in the text. Undo keeps its own history,
         and pasted Word or web content is cleaned of scripts, comments, classes and Office styles, with Word's lists made
         real lists.
     </p>
@@ -33,6 +34,7 @@
                 <tr><td>Ctrl+B / I / U</td><td>Bold, italic, underline.</td></tr>
                 <tr><td>Ctrl+Z / Ctrl+Y (Ctrl+Shift+Z)</td><td>Undo and redo; typing is one step until a pause.</td></tr>
                 <tr><td>Ctrl+K</td><td>Opens the link dialog (with the <code>CreateLink</code> tool).</td></tr>
+                <tr><td>Picture selected</td><td>Delete or Backspace removes it; Escape (or any other key) lets go of it.</td></tr>
                 <tr><td>Tab / Shift+Tab</td><td>In a table: next or previous cell, a new row after the last. Elsewhere: leaves the editor.</td></tr>
                 <tr><td>Toolbar</td><td>One tab stop; ← → Home End move between its buttons. Lists and color pickers are their own stops.</td></tr>
                 <tr><td>Table grid</td><td>Arrows size the table, Enter inserts it, Escape closes.</td></tr>
@@ -45,7 +47,8 @@
 <DocPager Slug="editor" Page="overview" />
 
 @code {
-    string? notes = "<p>Pour <strong>P-14</strong> at 7:00. Check the <em>embeds</em> before the truck arrives.</p>";
+    string? notes = "<p>Pour <strong>P-14</strong> at 7:00. Check the <em>embeds</em> before the truck arrives.</p>"
+        + "<p><img src=\"samples/wall-panel.svg\" alt=\"Wall panel WP-12 elevation\" width=\"240\" height=\"135\"></p>";
 
     const string basicCode =
         """

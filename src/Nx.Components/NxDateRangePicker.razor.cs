@@ -50,7 +50,6 @@ public partial class NxDateRangePicker<TValue> : IAsyncDisposable
     private ElementReference popupBody;
     private NxCalendar? calendar;
     private DateFormatter formatter = null!;
-    private string? appliedMask;
     private bool activeEnd;             // the next pick sets the end
     private bool isNarrow;
     private bool popupOpen, popupPlaced, closePending;
@@ -122,9 +121,6 @@ public partial class NxDateRangePicker<TValue> : IAsyncDisposable
 
     /// <summary>Label of the end field. Default: "End".</summary>
     [Parameter] public string EndLabel { get; set; } = "End";
-
-    /// <summary>Renders the start and end labels inside the fields, lifted on focus or once there is a value.</summary>
-    [Parameter] public bool FloatingLabel { get; set; }
 
     /// <summary>Placeholder of both fields. Default: the edit pattern, e.g. <c>mm/dd/yyyy</c>.</summary>
     [Parameter] public string? Placeholder { get; set; }
@@ -242,12 +238,6 @@ public partial class NxDateRangePicker<TValue> : IAsyncDisposable
         if (module is null)
             return;
 
-        if (appliedMask != formatter.Mask)
-        {
-            appliedMask = formatter.Mask;
-            await module.InvokeVoidAsync("mask", start.Input, appliedMask);
-            await module.InvokeVoidAsync("mask", end.Input, appliedMask);
-        }
         if (closePending)
         {
             closePending = false;

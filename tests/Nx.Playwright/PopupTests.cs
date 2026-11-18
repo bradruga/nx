@@ -112,4 +112,80 @@ public class PopupTests : PageTest
         var p = (await popup.BoundingBoxAsync())!;
         Assert.That(p.Y, Is.GreaterThanOrEqualTo(8));
     }
+
+    [Test]
+    public async Task HoverCard_OpensOnRest_StaysWhileOnIt_LinkWorks_ClosesOnLeave()
+    {
+        await GoToPage("examples");
+        var card = Page.Locator("#hover-card");
+        var job = Page.Locator("#job-55117");
+        await job.ScrollIntoViewIfNeededAsync();
+
+        // A pass over a job is not a rest.
+        await job.HoverAsync();
+        await Page.Locator("h2", new() { HasText = "Hover Card" }).HoverAsync();
+        await Page.WaitForTimeoutAsync(600);
+        await Expect(card).ToHaveCountAsync(0);
+
+        await job.HoverAsync();
+        await Expect(card).ToBeVisibleAsync();
+        await Expect(card).ToContainTextAsync("55117 · Riverside Garage");
+        var j = (await job.BoundingBoxAsync())!;
+        var c = (await card.BoundingBoxAsync())!;
+        Assert.That(c.Y, Is.EqualTo(j.Y + j.Height + 4).Within(2), "under its own job");
+
+        // Onto the card, across the gap, and it stays; the link is a real link.
+        await Page.Locator("#hover-link").HoverAsync();
+        await Page.WaitForTimeoutAsync(600);
+        await Expect(card).ToBeVisibleAsync();
+        await Expect(Page.Locator("#hover-link")).ToHaveAttributeAsync("href", "gantt/overview");
+
+        // Another job: the same popup moves and shows that one.
+        await Page.Locator("#job-55130").HoverAsync();
+        await Expect(card).ToContainTextAsync("55130 · Mill St Culvert");
+
+        await Page.Locator("h2", new() { HasText = "Hover Card" }).HoverAsync();
+        await Expect(card).ToHaveCountAsync(0);
+    }
+
+    [Test]
+    public async Task HoverCard_Keyboard_FocusOpens_DownEnters_EscapeReturns()
+    {
+        await GoToPage("examples");
+        await Page.Locator("#job-55104").ScrollIntoViewIfNeededAsync();
+        await Page.Locator("#card-anchor").FocusAsync();
+        await Page.Keyboard.PressAsync("Tab");
+        await Expect(Page.Locator("#job-55104")).ToBeFocusedAsync();
+        await Expect(Page.Locator("#hover-card")).ToContainTextAsync("55104 · Route 9 Bridge");
+
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Page.Locator("#hover-link")).ToBeFocusedAsync();
+
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(Page.Locator("#hover-card")).ToHaveCountAsync(0);
+        await Expect(Page.Locator("#job-55104")).ToBeFocusedAsync();
+    }
+
+    [Test]
+    public async Task LoadedOnOpen_QueriesOnlyThePieceShown_LoaderThenHistory()
+    {
+        await GoToPage("examples");
+        var card = Page.Locator("#lazy-card");
+        var queries = Page.Locator("#lazy-queries");
+        await Page.Locator("#piece-WP-007").ScrollIntoViewIfNeededAsync();
+        await Expect(queries).ToHaveTextAsync("Queries run: 0 of 120");
+
+        await Page.Locator("#piece-WP-007").HoverAsync();
+        await Expect(card.Locator(".demo-history-loading")).ToBeVisibleAsync();
+        await Expect(queries).ToHaveTextAsync("Queries run: 1 of 120");
+        await Expect(card.Locator(".demo-history li")).ToHaveCountAsync(4);
+        await Expect(card).ToContainTextAsync("WP-007");
+
+        // The next piece starts its own query; the first one's content is gone.
+        await Page.Locator("#piece-WP-008").HoverAsync();
+        await Expect(Page.Locator("#lazy-last")).ToHaveTextAsync("Last query: WP-008");
+        await Expect(queries).ToHaveTextAsync("Queries run: 2 of 120");
+        await Expect(card.Locator(".demo-history li")).ToHaveCountAsync(4);
+        await Expect(card).ToContainTextAsync("WP-008");
+    }
 }

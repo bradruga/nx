@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Nx** is a Blazor component library (.NET 10) that will replace Telerik in the ERP portal. Components so far:
+**Nx** is a Blazor component library (.NET 10) for the ERP portal. Components so far:
 `NxButton`, `NxTextBox`, `NxNumericTextBox<TValue>`, `NxComboBox<TItem, TValue>`, `NxCheckBox<TValue>`,
 `NxToggleSwitch`, `NxRadioGroup<TValue>` (+ `NxRadioButton`), `NxToggleGroup<TValue>` (+ `NxToggleGroupItem`),
 `NxDatePicker<TValue>`, `NxDateRangePicker<TValue>`, `NxTimePicker<TValue>`, `NxCalendar`, `NxWindow`, `NxTabStrip` (+ `NxTab`),
@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 `NxButtonGroup`, `NxColorPicker`, `NxProgressBar`, `NxNotification`, `NxDialog` (+ `NxDialogService`, `NxDialogHost`), `NxMediaQuery`,
 `NxToggleButton`, `NxUpload`, `NxFileSelect`, `NxTreeView<TItem>`, `NxMaskedTextBox`, `NxTileLayout` (+ `NxTileLayoutItem`),
 `NxCarousel<TItem>`, `NxColorGradient`, `NxSlider<TValue>`, `NxChipList<TItem>`, `NxToolBar` (+ `NxToolBarButton`, `NxToolBarSeparator`,
-`NxToolBarSpacer`), `NxDateInput<TValue>`, `NxChart` (+ `NxChartSeries`, `NxChartCategoryAxis`, `NxChartValueAxis`), `NxEditor` (+ `NxEditorTool`, `NxEditorCustomTool`), `NxChat<TItem>`, `NxPdfViewer`, `NxPopup`, `NxSignature`, `NxCircularGauge`, `NxTreeList<TItem>` (+ `NxTreeListColumn`),
+`NxToolBarSpacer`), `NxChart` (+ `NxChartSeries`, `NxChartCategoryAxis`, `NxChartValueAxis`), `NxEditor` (+ `NxEditorTool`, `NxEditorCustomTool`), `NxChat<TItem>`, `NxPdfViewer`, `NxPopup`, `NxSignature`, `NxCircularGauge`, `NxTreeList<TItem>` (+ `NxTreeListColumn`),
 `NxScheduler<TItem>`, `NxFileManager<TItem>`, `NxGantt<TItem>` (+ `NxGanttColumn`). No third-party dependencies except pdf.js
 (Apache-2.0, vendored in `wwwroot/pdfjs`, used only by NxPdfViewer); themed by CSS custom properties.
 Conventions follow the NxGrid repo (`../nxgrid`), which stays where it is.
@@ -130,7 +130,7 @@ tests/Nx.Playwright/                        # one Playwright fixture per compone
 - **NxForm wraps EditForm**: the `<form>` is EditForm's element, out of scoped CSS's reach, so layout lives on `.nx-form-body`
   (a size container: grids fold to one column under 540 px of form width) and `form.nx-form` gets its width in nx-theme.css.
   `NxFormItem` generates editors by reflection (`FormEditors.cs`), binding through a built `ValueExpression`.
-- **NxIcons is generated** from Lucide SVGs (ISC; notice in the file), one property per Telerik icon name ERP uses.
+- **NxIcons is generated** from Lucide SVGs (ISC; notice in the file), one property per icon ERP uses.
 - **NxButtonGroup cascades defaults to NxButton**: a button uses the group's Variant/Size only when it did not pass its own
   (read in `SetParametersAsync`, as NxNumericTextBox does for Min); Disabled adds up. Joined look is `::deep` CSS on the group.
 - **NxNotification is driven from code** (`@ref` + `Show`), safe from any thread through `InvokeAsync`; timers restart after

@@ -1,6 +1,6 @@
 namespace Nx.Demo.Data;
 
-/// <summary>A folder or file as ERP's project files come: flat, with Telerik's field names.</summary>
+/// <summary>A folder or file as ERP's project files come: flat, each naming its parent.</summary>
 public sealed class FileEntry
 {
     public string Id { get; init; } = "";

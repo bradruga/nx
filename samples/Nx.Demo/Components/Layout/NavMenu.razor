@@ -4,6 +4,7 @@
 <nav class="nav-tree">
     <div class="nav-group-label">Guide</div>
     <NavLink href="" Match="NavLinkMatch.All" class="nav-leaf">Overview</NavLink>
+    <NavLink href="guides/files" Match="NavLinkMatch.All" class="nav-leaf">FileSelect or Upload?</NavLink>
 
     @foreach (var category in DemoCatalog.Categories.Where(c => DemoCatalog.Components.Any(x => x.Category == c)))
     {

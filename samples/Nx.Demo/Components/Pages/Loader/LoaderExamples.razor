@@ -26,10 +26,38 @@
     <div class="demo-stage">
         <div class="demo-row" id="loader-colors">
             <NxLoader Style="--nx-loader-color: var(--nx-success)" />
-            <NxLoader Type="NxLoaderType.Converging" Style="--nx-loader-color: var(--nx-warning)" />
+            <NxLoader Style="--nx-loader-color: var(--nx-warning)" />
             <NxLoader Type="NxLoaderType.Pulsing" Style="--nx-loader-color: var(--nx-fg-muted)" />
         </div>
     </div>
+</div>
+
+<div class="doc-section">
+    <h2>Your Own Animation</h2>
+    <p class="doc-note">
+        Content inside <code>NxLoader</code> replaces the built-in animation, for a one-off on a page that wants its own. The
+        loader still gives it the box (<code>Size</code>, or <code>--nx-loader-size</code>), the color
+        (<code>currentColor</code>) and the accessible name, so it sits in a button or an <code>NxLoaderContainer</code> like
+        any other. Here: a ready-mix drum for batching, and a form filling for a pour. The markup and CSS are the page's.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-row" id="loader-custom">
+            <NxLoader Size="NxSize.Small" AriaLabel="Batching">@Mixer</NxLoader>
+            <NxLoader id="custom-mixer" AriaLabel="Batching">@Mixer</NxLoader>
+            <NxLoader Size="NxSize.Large" AriaLabel="Batching">@Mixer</NxLoader>
+            <NxLoader Size="NxSize.Small" AriaLabel="Pouring">@Pour</NxLoader>
+            <NxLoader id="custom-pour" AriaLabel="Pouring">@Pour</NxLoader>
+            <NxLoader Size="NxSize.Large" AriaLabel="Pouring" Style="--nx-loader-color: var(--nx-fg-muted)">@Pour</NxLoader>
+        </div>
+        <div class="demo-loader-area demo-loader-short" id="custom-loader-area">
+            <NxLoaderContainer>
+                <NxLoader Size="NxSize.Large" AriaLabel="Batching">@Mixer</NxLoader>
+                <strong>Batching load 3 of 5</strong>
+            </NxLoaderContainer>
+            <ul class="demo-loader-list"><li><strong>P-1042</strong><span>North wall</span></li><li><strong>P-1043</strong><span>Footings</span></li><li><strong>P-1044</strong><span>Deck</span></li></ul>
+        </div>
+    </div>
+    <pre class="doc-code">@customCode</pre>
 </div>
 
 <div class="doc-section">
@@ -68,7 +96,7 @@
             </div>
             <div class="demo-loader-area demo-loader-short" id="custom-area">
                 <NxLoaderContainer>
-                    <NxLoader Type="NxLoaderType.Converging" />
+                    <NxLoader Type="NxLoaderType.Pulsing" />
                     <strong>Scanning documents</strong>
                     <span class="demo-value">Page 3 of 12</span>
                 </NxLoaderContainer>
@@ -96,6 +124,36 @@
 <DocPager Slug="loader" Page="examples" />
 
 @code {
+    // The drum of a ready-mix truck, blades turning. (Properties, not fields: each use builds its own.)
+    RenderFragment Mixer =>
+        @<svg class="demo-loader-mixer" viewBox="0 0 44 44" aria-hidden="true">
+            <circle cx="22" cy="22" r="18" />
+            <g><path d="M22 22 Q31 15 24 6" /><path d="M22 22 Q11.4 17.7 6.8 28.3" /><path d="M22 22 Q23.6 33.3 35.2 31.7" /></g>
+        </svg>;
+
+    // A form filling with concrete, then stripped and poured again.
+    RenderFragment Pour =>
+        @<svg class="demo-loader-pour" viewBox="0 0 44 44" aria-hidden="true">
+            <rect class="demo-loader-pour-fill" x="10" y="14" width="24" height="23" />
+            <rect class="demo-loader-pour-chute" x="20.5" y="2" width="3" height="34" />
+            <path d="M8 10 V39 H36 V10" />
+        </svg>;
+
+    const string customCode =
+        """
+        <NxLoader AriaLabel="Batching">
+            <svg class="mixer" viewBox="0 0 44 44" aria-hidden="true">
+                <circle cx="22" cy="22" r="18" />
+                <g><path d="M22 22 Q31 15 24 6" /><path d="M22 22 Q11.4 17.7 6.8 28.3" /><path d="M22 22 Q23.6 33.3 35.2 31.7" /></g>
+            </svg>
+        </NxLoader>
+
+        /* The page's CSS: fill the loader's box, draw in its color. */
+        .mixer { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
+        .mixer g { transform-origin: 22px 22px; animation: mixer-turn 1.8s linear infinite; }
+        @keyframes mixer-turn { to { transform: rotate(360deg); } }
+        """;
+
     static readonly NxSize[] Sizes = [NxSize.Small, NxSize.Medium, NxSize.Large];
 
     bool cardLoading;

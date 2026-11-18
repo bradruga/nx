@@ -9,7 +9,7 @@
             <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
             <tbody>
                 <tr><td>Visible</td><td>bool</td><td>false</td><td>Shows it; <code>@@bind-Visible</code> hears it close itself.</td></tr>
-                <tr><td>AnchorSelector</td><td>string</td><td>—</td><td>A CSS selector for the element it opens next to.</td></tr>
+                <tr><td>AnchorSelector</td><td>string</td><td>—</td><td>A CSS selector for the element it opens next to. With <code>OpenOnHover</code> it may match many: one popup serves them all.</td></tr>
                 <tr><td>Placement</td><td>NxPopupPlacement</td><td>Bottom</td><td>Bottom, Top, Right or Left; flips when the other side has more room.</td></tr>
                 <tr><td>Align</td><td>NxPopupAlign</td><td>Start</td><td>Start, Center or End along the anchor; shifts to stay on screen.</td></tr>
                 <tr><td>Offset</td><td>int</td><td>4</td><td>Pixels between anchor and popup.</td></tr>
@@ -17,6 +17,8 @@
                 <tr><td>MaxHeight</td><td>string?</td><td>room on screen</td><td>The tallest; it scrolls beyond.</td></tr>
                 <tr><td>CloseOnOutsideClick</td><td>bool</td><td>true</td><td>A press outside popup and anchor closes it.</td></tr>
                 <tr><td>CloseOnEscape</td><td>bool</td><td>true</td><td>Escape closes it.</td></tr>
+                <tr><td>OpenOnHover</td><td>bool</td><td>false</td><td>A hover card: opens when the pointer rests on an anchor or the keyboard focuses one, stays while the pointer is on the anchor or the popup, closes after it leaves both. Use with <code>@@bind-Visible</code>.</td></tr>
+                <tr><td>ShowDelay / HideDelay</td><td>int</td><td>400 / 250</td><td>With <code>OpenOnHover</code>: milliseconds of rest before it opens, and after leaving before it closes.</td></tr>
                 <tr><td>Role / AriaLabel</td><td>string?</td><td>dialog / —</td><td>The popup's role and accessible name.</td></tr>
                 <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>The content.</td></tr>
                 <tr><td>Id / Class</td><td>string?</td><td>—</td><td>On the popup; other attributes go there too.</td></tr>
@@ -31,7 +33,8 @@
         <table class="doc-table doc-api-table">
             <thead><tr><th>Member</th><th>Type</th><th>Description</th></tr></thead>
             <tbody>
-                <tr><td>VisibleChanged</td><td>EventCallback&lt;bool&gt;</td><td>It closed itself (outside press, Escape).</td></tr>
+                <tr><td>VisibleChanged</td><td>EventCallback&lt;bool&gt;</td><td>It closed itself (outside press, Escape, the pointer left a hover card), or a hover opened it.</td></tr>
+                <tr><td>OnOpening</td><td>EventCallback&lt;NxPopupOpeningEventArgs&gt;</td><td>With <code>OpenOnHover</code>, before it opens for an anchor: <code>Context</code> is that anchor's <code>data-nx-context</code>; set <code>Cancel</code> to keep it closed.</td></tr>
                 <tr><td>RefreshAsync()</td><td>Task</td><td>Places it again after the anchor moved without a scroll or resize.</td></tr>
             </tbody>
         </table>

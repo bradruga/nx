@@ -74,7 +74,7 @@
                              aria-level="@(task.Level + 1)" aria-selected="@(isSelected ? "true" : "false")"
                              aria-expanded="@(task.Children.Count > 0 ? (IsExpanded(task) ? "true" : "false") : null)"
                              @onmouseenter="() => hovered = task" @onmouseleave="() => hovered = null"
-                             @onfocus="() => selected = task" @ondblclick="() => OnEdit.InvokeAsync(task.Item)"
+                             @onfocus="() => SelectAsync(task)" @ondblclick="() => OnEdit.InvokeAsync(task.Item)"
                              @onkeydown="e => RowKeyDownAsync(e, task, rows)">
                             @foreach (var column in Shown)
                             {
@@ -179,10 +179,12 @@
                             continue;
                         }
                         var summary = task.Children.Count > 0;
-                        <div class="@(summary ? "nx-gantt-bar nx-gantt-bar-summary" : "nx-gantt-bar")" data-nx-gantt-task="@task.Index"
+                        var draggable = CanDrag(task);
+                        <div class="@(summary ? "nx-gantt-bar nx-gantt-bar-summary" : draggable ? "nx-gantt-bar nx-gantt-bar-draggable" : "nx-gantt-bar")" data-nx-gantt-task="@task.Index"
+                             data-nx-gantt-drag="@(draggable ? "true" : null)"
                              style="left: @Px(bar.Left); width: @Px(bar.Width); top: @Px(i * rowHeight + 7); height: @Px(rowHeight - 14)"
                              title="@task.Title" @onmouseenter="() => hovered = task" @onmouseleave="() => hovered = null"
-                             @onclick="() => selected = task" @ondblclick="() => OnEdit.InvokeAsync(task.Item)">
+                             @onclick="() => SelectAsync(task)" @ondblclick="() => OnEdit.InvokeAsync(task.Item)">
                             @if (TaskTemplate is not null)
                             {
                                 @TaskTemplate(task.Item)
@@ -191,7 +193,12 @@
                             {
                                 <span class="nx-gantt-bar-text">@task.Title</span>
                             }
-                            @if (OnDependencyCreate.HasDelegate)
+                            @if (draggable)
+                            {
+                                <span class="nx-gantt-grip nx-gantt-grip-start" data-nx-gantt-grip="start"></span>
+                                <span class="nx-gantt-grip nx-gantt-grip-end" data-nx-gantt-grip="end"></span>
+                            }
+                            @if (Editable && OnDependencyCreate.HasDelegate)
                             {
                                 <span class="nx-gantt-handle nx-gantt-handle-start" data-nx-gantt-handle="start"></span>
                                 <span class="nx-gantt-handle nx-gantt-handle-end" data-nx-gantt-handle="end"></span>

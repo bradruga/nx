@@ -59,12 +59,6 @@ public partial class NxTextBox : IDisposable
     /// <summary>Label text, rendered as a <c>&lt;label&gt;</c> tied to the input.</summary>
     [Parameter] public string? Label { get; set; }
 
-    /// <summary>
-    /// Renders <see cref="Label"/> inside the field, moving it above the text on focus or once there is
-    /// a value. <see cref="Placeholder"/> then shows only while focused.
-    /// </summary>
-    [Parameter] public bool FloatingLabel { get; set; }
-
     /// <summary>Placeholder text shown while the field is empty.</summary>
     [Parameter] public string? Placeholder { get; set; }
 

@@ -1,6 +1,6 @@
 namespace Nx.Components;
 
-/// <summary>How a dependency links two tasks in an <see cref="NxGantt{TItem}"/>; the values are Telerik's, in its order.</summary>
+/// <summary>How a dependency links two tasks in an <see cref="NxGantt{TItem}"/>; a link's own enum or number is read in this order.</summary>
 public enum NxGanttDependencyType
 {
     /// <summary>The successor finishes when the predecessor finishes.</summary>

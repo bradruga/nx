@@ -93,17 +93,14 @@ public class NxNumericTextBoxTests : BunitContext
     }
 
     [Test]
-    public void FloatingLabelPlaceholderPrefixSuffix_LikeTextBox()
+    public void PlaceholderPrefixSuffix_LikeTextBox()
     {
         var cut = Render<NxNumericTextBox<decimal?>>(p => p
             .Add(x => x.Label, "Price")
-            .Add(x => x.FloatingLabel, true)
             .Add(x => x.Placeholder, "0.00")
             .Add(x => x.Prefix, Markup("$"))
             .Add(x => x.Suffix, Markup("USD")));
 
-        Assert.That(cut.Find(".nx-numeric").ClassList, Does.Contain("nx-numeric-floating"));
-        Assert.That(cut.Find(".nx-numeric-floating-label").TextContent, Is.EqualTo("Price"));
         Assert.That(cut.Find("input").GetAttribute("placeholder"), Is.EqualTo("0.00"));
         Assert.That(cut.Find(".nx-numeric-prefix").TextContent, Is.EqualTo("$"));
         Assert.That(cut.Find(".nx-numeric-suffix").TextContent, Is.EqualTo("USD"));

@@ -5,8 +5,8 @@
 <section class="home-hero">
     <h1>Blazor components for the ERP portal.</h1>
     <p>
-        Nx is a small, dependency-free component library for Blazor on .NET 10 — the building blocks that will replace
-        Telerik in the portal. Every component is themed by CSS custom properties, works with <code>EditForm</code>
+        Nx is a small, dependency-free component library for Blazor on .NET 10 — the building blocks of the
+        portal. Every component is themed by CSS custom properties, works with <code>EditForm</code>
         validation, and is driven from the keyboard first.
     </p>
     <div class="home-badges">
@@ -186,7 +186,6 @@
                                    ExpandedItems="HomeExpanded" AriaLabel="Permissions" Style="width:240px; height:120px" />,
         "loader" => @<div class="demo-row">
             <NxLoader />
-            <NxLoader Type="NxLoaderType.Converging" />
             <NxLoader Type="NxLoaderType.Pulsing" />
         </div>,
         "chart" => @<NxChart Height="140px" Width="260px" LegendPosition="NxChartLegendPosition.None" ShowTooltips="false" AriaLabel="Loads per day">
@@ -213,7 +212,6 @@
         "filemanager" => @<div class="home-files" aria-hidden="true"><span class="home-files-tree"><i>▸ Drawings</i><i>▸ Quality</i><i>▸ Photos</i></span><span class="home-files-list"><i class="home-files-folder">Shop</i><i>WP-12.pdf</i><i>Embeds.xlsx</i></span></div>,
         "gantt" => @<div class="home-gantt" aria-hidden="true"><span style="margin-left:0;width:90px">Design</span><span style="margin-left:70px;width:110px;background:#1e8c8c">Production</span><span style="margin-left:160px;width:70px;background:#d97a1e">Erection</span></div>,
         "chat" => @<div class="home-chat" aria-hidden="true"><span>Trucks at 6:30?</span><span class="home-chat-own">Confirmed, three loads.</span></div>,
-        "dateinput" => @<NxDateInput TValue="DateOnly?" Label="Ship date" @bind-Value="pourDate" Style="width:240px" />,
         "toolbar" => @<NxToolBar AriaLabel="Sheet" Overflow="NxToolBarOverflow.Wrap" Style="width:260px">
             <NxToolBarButton Text="New" Icon="@IconOf(NxIcons.Plus)" />
             <NxToolBarButton Text="Save" Icon="@IconOf(NxIcons.Save)" Variant="NxButtonVariant.Primary" />

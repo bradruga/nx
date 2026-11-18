@@ -105,6 +105,53 @@ public class ColorPickerNotificationTests : PageTest
     }
 
     [Test]
+    public async Task Color_ViewBoth_GradientTab_ApplySetsValue()
+    {
+        await Page.SetViewportSizeAsync(1280, 900);
+        await GoToPage("/colorpicker/examples");
+
+        var button = Page.Locator("#view-both");
+        await button.ClickAsync();
+        var popup = Page.Locator(".nx-colorpicker-popup");
+        await Expect(Page.Locator("#view-both-tab-palette")).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(popup.Locator(".nx-colorpicker-cell[aria-selected=true]")).ToBeFocusedAsync();
+
+        await Page.Locator("#view-both-tab-gradient").ClickAsync();
+        await Expect(popup.Locator(".nx-colorgradient-thumb")).ToBeFocusedAsync();
+        await Expect(popup.Locator(".nx-colorpicker-palette")).ToHaveCountAsync(0);
+
+        // Typing a color changes nothing until Apply.
+        var hex = Page.Locator("#view-both-gradient-hex");
+        await hex.FillAsync("#123456");
+        await hex.PressAsync("Tab");
+        await Expect(button).ToHaveAttributeAsync("aria-label", "Brand color: #4371c4");
+
+        await Page.Locator("#view-both-apply").ClickAsync();
+        await Expect(popup).ToHaveCountAsync(0);
+        await Expect(button).ToHaveAttributeAsync("aria-label", "Brand color: #123456");
+        await Expect(button).ToBeFocusedAsync();
+
+        // A color that is not a swatch opens on the gradient.
+        await button.ClickAsync();
+        await Expect(Page.Locator("#view-both-tab-gradient")).ToHaveAttributeAsync("aria-selected", "true");
+    }
+
+    [Test]
+    public async Task Color_ViewGradient_Phone_FitsTheScreen()
+    {
+        await Page.SetViewportSizeAsync(390, 844);
+        await GoToPage("/colorpicker/examples");
+
+        await Page.Locator("#view-gradient").ClickAsync();
+        var popup = Page.Locator(".nx-colorpicker-popup");
+        await Expect(popup.Locator(".nx-colorgradient")).ToBeVisibleAsync();
+        await Expect(popup.Locator(".nx-colorpicker-tabs")).ToHaveCountAsync(0);
+        var p = (await popup.BoundingBoxAsync())!;
+        Assert.That(p.X, Is.GreaterThanOrEqualTo(0));
+        Assert.That(p.X + p.Width, Is.LessThanOrEqualTo(390));
+    }
+
+    [Test]
     public async Task Color_ClickPicks_UsedByThePage()
     {
         await GoToPage("/colorpicker/examples");

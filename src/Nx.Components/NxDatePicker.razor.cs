@@ -8,10 +8,11 @@ using Microsoft.JSInterop;
 namespace Nx.Components;
 
 /// <summary>
-/// A date input for <see cref="DateTime"/> or <see cref="DateOnly"/>, nullable or not: masked typing in the
-/// culture's order, a calendar popup (month, year and decade views) with min/max, disabled dates, week numbers
-/// and Today, and the same label, floating label and clear options as <see cref="NxTextBox"/>. On a phone the
-/// calendar opens as a full-screen sheet.
+/// A date input for <see cref="DateTime"/> or <see cref="DateOnly"/>, nullable or not: a date typed freely in the
+/// culture's order and read when committed (<c>12/5</c> is this year's), a calendar popup (month, year and decade
+/// views) with min/max, disabled dates, week numbers and Today, and the same label and clear options as
+/// <see cref="NxTextBox"/>. Up and Down step the day, month or year under the caret; Alt+Down opens the calendar.
+/// On a phone the calendar opens as a full-screen sheet. <see cref="ShowCalendar"/> off leaves the field alone.
 /// </summary>
 /// <typeparam name="TValue">The bound date type. A <see cref="DateTime"/> keeps its time of day.</typeparam>
 /// <example>
@@ -22,9 +23,9 @@ namespace Nx.Components;
 public partial class NxDatePicker<TValue> : IAsyncDisposable
 {
     // ── JS interop ────────────────────────────────────────────────────────────
-    // nx-picker.js masks typed digits into the edit pattern, places the popup, cancels the caret moves of
-    // the keys the open calendar uses, and locks page scroll under the phone sheet. Parsing and the
-    // calendar itself are C#.
+    // nx-picker.js places the popup, cancels the caret moves of the keys the open calendar uses, locks page
+    // scroll under the phone sheet and, while the calendar is closed, steps the date part under the caret. Parsing and
+    // the calendar itself are C#.
 
     private const string ModulePath = "./_content/Nx.Components/nx-picker.js";
     private const int PopupMaxHeight = 480;
@@ -43,7 +44,7 @@ public partial class NxDatePicker<TValue> : IAsyncDisposable
     private string currentText = "";
     private DateOnly? current;          // the value as last seen or raised
     private DateFormatter formatter = null!;
-    private string? appliedMask;
+    private string? appliedStepShape;
     private bool hasFocus;
     private bool isNarrow;
     private bool popupOpen, popupPlaced, closePending;
@@ -78,7 +79,7 @@ public partial class NxDatePicker<TValue> : IAsyncDisposable
 
     /// <summary>
     /// How the date shows while the field is not focused: a .NET date format such as <c>"d"</c>, <c>"yyyy-MM-dd"</c>
-    /// or <c>"ddd, MMM d, yyyy"</c>. While focused, an all-number form of it is edited behind a mask; a format with
+    /// or <c>"ddd, MMM d, yyyy"</c>. While focused, an all-number form of it is edited; a format with
     /// names edits in the culture's short date. Default: <c>"d"</c>.
     /// </summary>
     [Parameter] public string Format { get; set; } = "d";
@@ -87,6 +88,9 @@ public partial class NxDatePicker<TValue> : IAsyncDisposable
     [Parameter] public CultureInfo? Culture { get; set; }
 
     // ── Calendar ──────────────────────────────────────────────────────────────
+
+    /// <summary>Shows the calendar button and opens the calendar. <c>false</c>: a typed date only. Default: <c>true</c>.</summary>
+    [Parameter] public bool ShowCalendar { get; set; } = true;
 
     /// <summary>Shows week numbers in the calendar.</summary>
     [Parameter] public bool ShowWeekNumbers { get; set; }
@@ -101,9 +105,6 @@ public partial class NxDatePicker<TValue> : IAsyncDisposable
 
     /// <summary>Label text, rendered as a <c>&lt;label&gt;</c> tied to the input.</summary>
     [Parameter] public string? Label { get; set; }
-
-    /// <summary>Renders <see cref="Label"/> inside the field, lifted on focus or once there is a value.</summary>
-    [Parameter] public bool FloatingLabel { get; set; }
 
     /// <summary>Placeholder text shown while the field is empty. Default: the edit pattern, e.g. <c>mm/dd/yyyy</c>.</summary>
     [Parameter] public string? Placeholder { get; set; }
@@ -226,10 +227,10 @@ public partial class NxDatePicker<TValue> : IAsyncDisposable
         if (module is null)
             return;
 
-        if (appliedMask != formatter.Mask)
+        if (appliedStepShape != formatter.Shape)
         {
-            appliedMask = formatter.Mask;
-            await module.InvokeVoidAsync("mask", input, appliedMask);
+            appliedStepShape = formatter.Shape;
+            await module.InvokeVoidAsync("stepDate", input, appliedStepShape, formatter.Order);
         }
         if (closePending)
         {
@@ -273,7 +274,7 @@ public partial class NxDatePicker<TValue> : IAsyncDisposable
 
     private async Task OpenAsync()
     {
-        if (!Editable || popupOpen || sheetOpen)
+        if (!ShowCalendar || !Editable || popupOpen || sheetOpen)
             return;
         if (UseSheet)
         {
@@ -377,7 +378,8 @@ public partial class NxDatePicker<TValue> : IAsyncDisposable
         }
         switch (e.Key)
         {
-            case "ArrowDown":
+            // Up and Down step the date part (nx-picker.js); a format with nothing to step still opens on Down.
+            case "ArrowDown" when e.AltKey || formatter.Shape is null:
                 await OpenAsync();
                 break;
             case "Enter":

@@ -329,6 +329,79 @@ public class NxTabStripTests : BunitContext
         Assert.Throws<InvalidOperationException>(() => Render<NxTab>(p => p.Add(x => x.Title, "Lost")));
     }
 
+    [Test]
+    public void Tabs_CarryTheirKeyForAContextMenu()
+    {
+        var cut = RenderBound([], ThreeTabs, "a");
+        Assert.That(cut.FindAll("[role=tab]").Select(t => t.GetAttribute("data-nx-context")), Is.EqualTo(new[] { "a", "b", "c" }));
+    }
+
+    [Test]
+    public void TabAddedInTheMiddleOrAtTheFrontOfTheMarkup_LandsThere()
+    {
+        var ids = new List<string> { "a", "b", "c" };
+        var cut = Render<NxTabStrip>(p => p.Add(x => x.Id, "t").Add(x => x.Reorderable, true).Add(x => x.ChildContent, Fragment(ids)));
+        cut.WaitForState(() => cut.FindAll("[role=tab]").Count == 3);
+
+        ids.Insert(1, "x");
+        cut.Render(p => p.Add(x => x.ChildContent, Fragment(ids)));
+        cut.WaitForState(() => cut.FindAll("[role=tab]").Count == 4);
+        Assert.That(cut.FindAll("[role=tab]").Select(e => e.GetAttribute("data-nx-context")), Is.EqualTo(new[] { "a", "x", "b", "c" }));
+
+        ids.Insert(0, "first");
+        cut.Render(p => p.Add(x => x.ChildContent, Fragment(ids)));
+        cut.WaitForState(() => cut.FindAll("[role=tab]").Count == 5);
+        Assert.That(cut.FindAll("[role=tab]").First().GetAttribute("data-nx-context"), Is.EqualTo("first"));
+    }
+
+    // ── Reordering ────────────────────────────────────────────────────────────
+
+    private static string[] Order(IRenderedComponent<NxTabStrip> cut) => cut.FindAll("[role=tab]").Select(t => t.TextContent.Trim()).ToArray();
+
+    [Test]
+    public async Task Reorderable_Drop_MovesTheTab_RaisesOldAndNewPlace_ActiveStays()
+    {
+        var moves = new List<NxTabReorderEventArgs>();
+        var cut = RenderBound([], ThreeTabs, "a", p => p.Add(x => x.Reorderable, true).Add(x => x.OnTabReorder, (NxTabReorderEventArgs e) => moves.Add(e)));
+        Assert.That(cut.Find("[role=tablist]").GetAttribute("data-reorderable"), Is.EqualTo("true"));
+        Assert.That(cut.Find(".nx-tabstrip").ClassList, Does.Contain("nx-tabstrip-reorderable"));
+
+        await cut.InvokeAsync(() => cut.Instance.OnTabDrop(0, 2));
+
+        Assert.That(Order(cut), Is.EqualTo(new[] { "B", "C", "A" }));
+        Assert.That(moves.Select(m => (m.TabId, m.OldIndex, m.NewIndex)), Is.EqualTo(new[] { ("a", 0, 2) }));
+        Assert.That(cut.Find("[aria-selected=true]").TextContent.Trim(), Is.EqualTo("A"));
+    }
+
+    [Test]
+    public async Task Reorderable_CtrlShiftArrows_MoveOnePlace_StopAtTheEnds()
+    {
+        var moves = new List<NxTabReorderEventArgs>();
+        var cut = RenderBound([], ThreeTabs, "a", p => p.Add(x => x.Reorderable, true).Add(x => x.OnTabReorder, (NxTabReorderEventArgs e) => moves.Add(e)));
+
+        await cut.Find("#t-tab-a").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowRight", CtrlKey = true, ShiftKey = true });
+        Assert.That(Order(cut), Is.EqualTo(new[] { "B", "A", "C" }));
+        Assert.That(module.Invocations.Any(i => i.Identifier == "focusTab" && (string?)i.Arguments[1] == "t-tab-a"), Is.True);
+
+        await cut.Find("#t-tab-b").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowLeft", CtrlKey = true, ShiftKey = true });
+        await cut.Find("#t-tab-b").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowDown", CtrlKey = true, ShiftKey = true });
+        Assert.That(moves, Has.Count.EqualTo(1), "already first; Up and Down belong to tabs on the side");
+    }
+
+    [Test]
+    public async Task NotReorderable_NothingMoves()
+    {
+        var moves = 0;
+        var cut = RenderBound([], ThreeTabs, "a", p => p.Add(x => x.OnTabReorder, (NxTabReorderEventArgs _) => moves++));
+        Assert.That(cut.Find("[role=tablist]").HasAttribute("data-reorderable"), Is.False);
+
+        await cut.InvokeAsync(() => cut.Instance.OnTabDrop(0, 2));
+        await cut.Find("#t-tab-a").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowRight", CtrlKey = true, ShiftKey = true });
+
+        Assert.That(Order(cut), Is.EqualTo(new[] { "A", "B", "C" }));
+        Assert.That(moves, Is.Zero);
+    }
+
     private static RenderFragment Fragment(List<string> ids) => b =>
     {
         foreach (var id in ids)

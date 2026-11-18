@@ -39,7 +39,7 @@
     </p>
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxAutoComplete Id="search-box" Data="SampleData.Customers" ItemText="c => c.Name" @bind-Value="search" @bind-Value:after="Searched"
-                        Placeholder="Search customers…" PopupWidth="340px" Clearable="true" aria-label="Search customers">
+                        Placeholder="Search customers…" PopupWidth="460px" Clearable="true" aria-label="Search customers">
             <Prefix><NxIcon Icon="NxIcons.Search" /></Prefix>
             <ItemTemplate>
                 <span class="demo-item-main"><strong>@context.Name</strong><span class="demo-item-meta-line">@context.Code · @context.City</span></span>

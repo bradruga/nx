@@ -63,7 +63,7 @@ public class DatePickerTests : PageTest
         await GoToPage("overview");
 
         await Input("overview-date").FocusAsync();
-        await Page.Keyboard.PressAsync("ArrowDown");
+        await Page.Keyboard.PressAsync("Alt+ArrowDown");
         await Expect(Popup).ToBeVisibleAsync();
         foreach (var key in new[] { "ArrowRight", "ArrowRight", "ArrowDown", "PageDown", "ArrowLeft" })
             await Page.Keyboard.PressAsync(key);
@@ -75,12 +75,32 @@ public class DatePickerTests : PageTest
     }
 
     [Test]
+    public async Task Keyboard_UpDown_StepThePartUnderTheCaret_CalendarStaysClosed()
+    {
+        await GoToPage("overview");
+        var input = Input("overview-date");
+
+        await input.FocusAsync();
+        await Expect(input).ToHaveValueAsync("10/23/2026");
+        // Programmatic focus leaves the caret wherever the browser puts it; put it in the day.
+        await input.EvaluateAsync("e => e.setSelectionRange(4, 4)");
+        await Page.Keyboard.PressAsync("ArrowUp");
+        await Expect(Page.Locator("#overview-date-value")).ToHaveTextAsync("Value: 2026-10-24");
+        Assert.That(await input.EvaluateAsync<int[]>("e => [e.selectionStart, e.selectionEnd]"), Is.EqualTo(new[] { 3, 5 }), "the day stays selected");
+
+        await input.EvaluateAsync("e => e.setSelectionRange(0, 0)");
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Page.Locator("#overview-date-value")).ToHaveTextAsync("Value: 2026-09-24");
+        await Expect(Popup).ToHaveCountAsync(0);
+    }
+
+    [Test]
     public async Task Keyboard_CtrlUpZoomsToYear_EscapeCloses()
     {
         await GoToPage("overview");
 
         await Input("overview-date").FocusAsync();
-        await Page.Keyboard.PressAsync("ArrowDown");
+        await Page.Keyboard.PressAsync("Alt+ArrowDown");
         await Page.Keyboard.PressAsync("Control+ArrowUp");
         await Expect(Popup.Locator(".nx-calendar-title")).ToHaveTextAsync("2026");
         await Page.Keyboard.PressAsync("ArrowRight");
@@ -93,7 +113,7 @@ public class DatePickerTests : PageTest
     }
 
     [Test]
-    public async Task Mask_InsertsSeparatorsAndPads()
+    public async Task Typing_NothingInserted_ReadOnCommit()
     {
         await GoToPage();
 
@@ -102,14 +122,15 @@ public class DatePickerTests : PageTest
         await us.ClickAsync();
         await us.FillAsync("");
         await us.PressSequentiallyAsync("12252026");
-        await Expect(us).ToHaveValueAsync("12/25/2026");
+        await Expect(us).ToHaveValueAsync("12252026");
         await Page.Keyboard.PressAsync("Tab");
         await Expect(Page.Locator("#mask-value")).ToHaveTextAsync("Value: 2026-12-25");
+        await Expect(us).ToHaveValueAsync("12/25/2026");
 
         await us.ClickAsync();
         await us.FillAsync("");
         await us.PressSequentiallyAsync("1/5/2026");
-        await Expect(us).ToHaveValueAsync("01/05/2026");
+        await Expect(us).ToHaveValueAsync("1/5/2026");
         await Page.Keyboard.PressAsync("Enter");
         await Expect(Page.Locator("#mask-value")).ToHaveTextAsync("Value: 2026-01-05");
         await Expect(Input("mask-de-DE")).ToHaveValueAsync("05.01.2026");
@@ -117,7 +138,24 @@ public class DatePickerTests : PageTest
     }
 
     [Test]
-    public async Task Mask_FastTyping_LosesNothing()
+    public async Task Typing_MonthAndDay_GetThisYear()
+    {
+        await GoToPage();
+
+        var us = Input("mask-en-US");
+        await us.ScrollIntoViewIfNeededAsync();
+        await us.ClickAsync();
+        await us.FillAsync("");
+        await us.PressSequentiallyAsync("12/5");
+        await Expect(us).ToHaveValueAsync("12/5");
+        await Page.Keyboard.PressAsync("Enter");
+
+        await Expect(Page.Locator("#mask-value")).ToHaveTextAsync($"Value: {DateTime.Today.Year}-12-05");
+        await Expect(us).ToHaveValueAsync($"12/05/{DateTime.Today.Year}");
+    }
+
+    [Test]
+    public async Task FastTyping_LosesNothing()
     {
         await GoToPage();
 

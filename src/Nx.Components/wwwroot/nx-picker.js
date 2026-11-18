@@ -1,6 +1,6 @@
-// Interop for NxDatePicker, NxDateRangePicker, NxTimePicker and NxDateInput. Placing the popup, locking scroll
-// under the phone sheet and watching the viewport come from nx-popup.js; masking typed text comes
-// from nx-input.js. Here: the keys the open popup takes over from the input.
+// Interop for NxDatePicker, NxDateRangePicker, NxTimePicker and NxDateTimePicker. Placing the popup, locking
+// scroll under the phone sheet and watching the viewport come from nx-popup.js; masking typed times comes
+// from nx-input.js. Here: the keys the open popup takes over from the input, and stepping a date's parts.
 
 import { open as openPopup, close as closePopup, unwatchViewport } from './nx-popup.js';
 import { mask, preventKeys, dispose as disposeInput } from './nx-input.js';
@@ -41,6 +41,7 @@ export function dispose(input) {
     const onKeyDown = states.get(input);
     if (onKeyDown) input.removeEventListener('keydown', onKeyDown);
     states.delete(input);
+    disposeStepper(input);
     close(input);
     unwatchViewport(input);
     disposeInput(input);
@@ -53,9 +54,11 @@ export function scrollActive(list, focus) {
     if (focus) (item ?? list?.querySelector('button'))?.focus();
 }
 
-// NxDateInput: Up and Down step the date part under the caret (day, month or year), as a spin box would; an
-// empty or unfinished field starts from today. The text is rewritten here, the part stays selected, and an input
-// and a change event tell .NET, which commits it. order is the parts' pattern letters in mask order, e.g. "Mdy".
+// NxDatePicker, while its calendar is closed: Up and Down step the date part under the caret (day, month or year),
+// as a spin box would; an empty or unreadable field starts from today. The text is typed freely, so its numbers are
+// read in order ("12/5/26" as well as "12/05/2026"); it is rewritten here in the full pattern, the part stays
+// selected, and an input and a change event tell .NET, which commits it. pattern is the full text's shape, e.g.
+// "99/99/9999"; order is its parts' pattern letters, e.g. "Mdy".
 export function stepDate(input, pattern, order) {
     if (!input) return;
     const state = steppers.get(input) ?? {};
@@ -68,17 +71,20 @@ export function stepDate(input, pattern, order) {
     state.width = at;
     if (!state.onKeyDown) {
         state.onKeyDown = e => {
-            if ((e.key !== 'ArrowUp' && e.key !== 'ArrowDown') || e.altKey || input.readOnly || state.parts.length === 0) return;
+            if ((e.key !== 'ArrowUp' && e.key !== 'ArrowDown') || e.altKey || e.ctrlKey || e.metaKey || input.readOnly || state.parts.length === 0) return;
+            if (input.getAttribute('aria-expanded') === 'true') return;     // the open calendar has the arrows
             e.preventDefault();
             const parts = state.parts;
+            const typed = [...input.value.matchAll(/\d+/g)];
             const read = kind => {
-                const p = parts.find(x => x.kind === kind);
-                return p ? parseInt(input.value.substr(p.start, p.length), 10) : NaN;
+                const i = parts.findIndex(x => x.kind === kind);
+                return typed.length === parts.length && i >= 0 ? parseInt(typed[i][0], 10) : NaN;
             };
             let d = read('d'), m = read('M'), y = read('y');
-            const complete = input.value.length === state.width && [d, m, y].every(n => n > 0) && m <= 12;
+            if (y < 100) y += 2000;
+            const complete = [d, m, y].every(n => n > 0) && m <= 12 && !/[a-z]/i.test(input.value);
             const caret = input.selectionStart ?? 0;
-            const part = parts.findLast(p => p.start <= caret) ?? parts[0];
+            const part = (complete ? parts[typed.findLastIndex(t => t.index <= caret)] : parts.findLast(p => p.start <= caret)) ?? parts[0];
             if (!complete) {
                 const today = new Date();
                 [d, m, y] = [today.getDate(), today.getMonth() + 1, today.getFullYear()];

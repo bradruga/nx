@@ -9,8 +9,9 @@ namespace Nx.Components;
 
 /// <summary>
 /// A project schedule: a task list (tree columns, sorting, a filter row, cells edited in place) beside a week timeline
-/// of bars, with dependency arrows between them and a divider to share the width. Bound to a flat list by field name, as
-/// Telerik's Gantt is (<c>IdField</c>, <c>ParentIdField</c>, <c>TitleField</c>, <c>StartField</c>, <c>EndField</c>).
+/// of bars, with dependency arrows between them and a divider to share the width. Bound to a flat list by field
+/// name (<c>IdField</c>, <c>ParentIdField</c>, <c>TitleField</c>, <c>StartField</c>, <c>EndField</c>).
+/// Bars are dragged to move a task and by an edge to change its start or end; every edit arrives in <see cref="OnUpdate"/>.
 /// Editing a whole task is the page's own form, opened from <see cref="OnEdit"/>; the Gantt has none of its own.
 /// </summary>
 /// <typeparam name="TItem">The task type.</typeparam>
@@ -30,7 +31,7 @@ public partial class NxGantt<TItem> : IAsyncDisposable
 {
     // ── JS interop ────────────────────────────────────────────────────────────
     // nx-gantt.js keeps the two halves scrolling together, drags the divider, ends a cell's edit on a press outside it,
-    // and draws the line while a dependency is dragged from one bar to another.
+    // draws the line while a dependency is dragged from one bar to another, and shows where a dragged bar would land.
 
     private const string ModulePath = "./_content/Nx.Components/nx-gantt.js";
     private static readonly ConcurrentDictionary<(Type, string), PropertyInfo?> Properties = new();
@@ -47,10 +48,12 @@ public partial class NxGantt<TItem> : IAsyncDisposable
     private List<Node> tops = [];
     private readonly HashSet<object> collapsedIds = [];
     private IEnumerable<TItem>? lastExpanded;
+    private IEnumerable<TItem>? lastSelected;
     private bool initialized;
     private Node? selected;
     private Node? hovered;
     private (Node Node, Column Column)? editing;
+    private object? editingOldValue;
     private Column? sortColumn;
     private bool sortDescending;
     // By the column's key: its record is new on every render, the column itself is not.
@@ -115,7 +118,7 @@ public partial class NxGantt<TItem> : IAsyncDisposable
     /// <summary>The property holding a link's successor id. Default: <c>SuccessorId</c>.</summary>
     [Parameter] public string SuccessorIdField { get; set; } = "SuccessorId";
 
-    /// <summary>The property holding a link's type (an enum or number in Telerik's order). Default: <c>Type</c>.</summary>
+    /// <summary>The property holding a link's type (an <see cref="NxGanttDependencyType"/>, or an enum or number in its order). Default: <c>Type</c>.</summary>
     [Parameter] public string TypeField { get; set; } = "Type";
 
     /// <summary>Raised when the user drags from one bar's start or end to another bar; with a handler the handles show.</summary>
@@ -161,13 +164,28 @@ public partial class NxGantt<TItem> : IAsyncDisposable
     /// <summary>Raised when a task is expanded or collapsed, with every expanded task.</summary>
     [Parameter] public EventCallback<IEnumerable<TItem>> ExpandedItemsChanged { get; set; }
 
-    // ── Events ────────────────────────────────────────────────────────────────
+    /// <summary>The selected task, in a list of one or none, as NxGrid's. Use <c>@bind-SelectedItems</c>.</summary>
+    [Parameter] public IEnumerable<TItem>? SelectedItems { get; set; }
+
+    /// <summary>Raised when another task is selected.</summary>
+    [Parameter] public EventCallback<IEnumerable<TItem>> SelectedItemsChanged { get; set; }
+
+    // ── Editing ───────────────────────────────────────────────────────────────
+
+    /// <summary><c>false</c> turns off cell editors, dragging bars, drawing dependencies and Delete. Default: <c>true</c>.</summary>
+    [Parameter] public bool Editable { get; set; } = true;
 
     /// <summary>A task asked to be edited: a double-click on its row or bar, or Enter on its row. Open your form.</summary>
     [Parameter] public EventCallback<TItem> OnEdit { get; set; }
 
-    /// <summary>A cell edited in place was left (a press elsewhere, Enter, Tab); the editor already wrote the item.</summary>
-    [Parameter] public EventCallback<TItem> OnUpdate { get; set; }
+    /// <summary>
+    /// Raised after any edit, as NxGrid's: a bar dragged or resized (the item is untouched; apply the changes), or a cell
+    /// left (its editor already wrote the item). Bars drag only with a handler.
+    /// </summary>
+    [Parameter] public EventCallback<NxGanttUpdateArgs<TItem>> OnUpdate { get; set; }
+
+    /// <summary>Delete was pressed on the selected task's row. Remove it from <see cref="Data"/>.</summary>
+    [Parameter] public EventCallback<TItem> OnDelete { get; set; }
 
     /// <summary>The sort or the filters changed; read <see cref="HasSort"/> and <see cref="HasFilter"/>.</summary>
     [Parameter] public EventCallback OnStateChanged { get; set; }
@@ -272,6 +290,7 @@ public partial class NxGantt<TItem> : IAsyncDisposable
     private CultureInfo Formats => Culture ?? CultureInfo.CurrentCulture;
     private string CssClass => string.IsNullOrEmpty(Class) ? "nx-gantt" : $"nx-gantt {Class}";
     private bool IsExpanded(Node t) => !collapsedIds.Contains(t.Id);
+    private bool CanDrag(Node t) => Editable && OnUpdate.HasDelegate && t.Children.Count == 0 && t.Start is not null;
 
     private string? OuterStyle
     {
@@ -321,6 +340,17 @@ public partial class NxGantt<TItem> : IAsyncDisposable
                 var open = ExpandedItems.Select(IdOf).ToHashSet();
                 foreach (var id in byId.Keys.Where(id => !open.Contains(id)))
                     collapsedIds.Add(id);
+            }
+        }
+        // Likewise the selection.
+        if (!ReferenceEquals(SelectedItems, lastSelected))
+        {
+            lastSelected = SelectedItems;
+            selected = null;
+            foreach (var item in SelectedItems ?? [])
+            {
+                selected = byId.GetValueOrDefault(IdOf(item));
+                break;
             }
         }
         if (!initialized || !string.Equals(TreeListWidth, treeWidth, StringComparison.Ordinal))
@@ -391,6 +421,19 @@ public partial class NxGantt<TItem> : IAsyncDisposable
         if (info is null && required)
             throw new InvalidOperationException($"NxGantt: {item.GetType().Name} has no public property '{field}'.");
         return info?.GetValue(item);
+    }
+
+    /// <summary>A change of <paramref name="field"/> to <paramref name="date"/>, in the property's own type.</summary>
+    private static NxGanttChange<TItem> DateChange(TItem item, string field, DateTime date)
+    {
+        var info = Properties.GetOrAdd((item!.GetType(), field), key => key.Item1.GetProperty(key.Item2, BindingFlags.Public | BindingFlags.Instance))!;
+        var type = Nullable.GetUnderlyingType(info.PropertyType) ?? info.PropertyType;
+        object value = date;
+        if (type == typeof(DateOnly))
+            value = DateOnly.FromDateTime(date);
+        else if (type == typeof(DateTimeOffset))
+            value = new DateTimeOffset(date);
+        return new NxGanttChange<TItem> { Field = field, OldValue = info.GetValue(item), NewValue = value, ApplyAction = target => info.SetValue(target, value) };
     }
 
     // ── The rows shown: sorted among siblings, filtered with their parents, collapsed hidden ──
@@ -545,6 +588,14 @@ public partial class NxGantt<TItem> : IAsyncDisposable
     [JSInvokable]
     public Task OnEditOutside() => InvokeAsync(EndEditAsync);
 
+    /// <summary>Called by nx-gantt.js when a bar is let go: <paramref name="mode"/> is <c>move</c>, <c>start</c> or <c>end</c>, <paramref name="days"/> how far.</summary>
+    [JSInvokable]
+    public Task OnBarDrop(int index, string mode, int days) => InvokeAsync(async () =>
+    {
+        if (byId.Values.FirstOrDefault(t => t.Index == index) is { } task)
+            await RescheduleAsync(task, mode switch { "start" => NxGanttUpdateKind.ResizeStart, "end" => NxGanttUpdateKind.ResizeEnd, _ => NxGanttUpdateKind.Move }, days);
+    });
+
     /// <summary>Called by nx-gantt.js when a dependency is dropped from one bar's handle on another's.</summary>
     [JSInvokable]
     public Task OnLinkDrop(int fromIndex, bool fromEnd, int toIndex, bool toEnd) => InvokeAsync(async () =>
@@ -564,6 +615,42 @@ public partial class NxGantt<TItem> : IAsyncDisposable
     });
 
     // ── Actions ───────────────────────────────────────────────────────────────
+
+    private async Task SelectAsync(Node? task)
+    {
+        if (task == selected)
+            return;
+        selected = task;
+        List<TItem> items = task is null ? [] : [task.Item];
+        if (SelectedItemsChanged.HasDelegate)
+            lastSelected = items;
+        await SelectedItemsChanged.InvokeAsync(items);
+    }
+
+    /// <summary>Asks the page to move a task or one of its ends by whole days; a bar keeps at least a day. The item is not written.</summary>
+    private async Task RescheduleAsync(Node task, NxGanttUpdateKind kind, int days)
+    {
+        if (days == 0 || !CanDrag(task) || task.Start is not { } start)
+            return;
+        var end = task.End is { } e && e > start ? e : start;
+        var newStart = kind == NxGanttUpdateKind.ResizeEnd ? start : start.AddDays(days);
+        var newEnd = kind == NxGanttUpdateKind.ResizeStart ? end : end.AddDays(days);
+        if (kind == NxGanttUpdateKind.ResizeStart && newStart > end.AddDays(-1))
+            newStart = end.AddDays(-1);
+        if (kind == NxGanttUpdateKind.ResizeEnd && newEnd < start.AddDays(1))
+            newEnd = start.AddDays(1);
+
+        var changes = new List<NxGanttChange<TItem>>();
+        if (newStart != start)
+            changes.Add(DateChange(task.Item, StartField, newStart));
+        if (newEnd != end)
+            changes.Add(DateChange(task.Item, EndField, newEnd));
+        if (changes.Count == 0)
+            return;
+        await OnUpdate.InvokeAsync(new NxGanttUpdateArgs<TItem> { Item = task.Item, Kind = kind, Changes = changes });
+        Build();
+        StateHasChanged();
+    }
 
     private async Task ToggleAsync(Node task)
     {
@@ -603,13 +690,14 @@ public partial class NxGantt<TItem> : IAsyncDisposable
 
     private async Task CellClickAsync(Node task, Column column)
     {
-        selected = task;
+        await SelectAsync(task);
         if (editing is { } e && e.Node == task && Same(e.Column, column))
             return;
         await EndEditAsync();
-        if (column.Editable && column.EditorTemplate is not null)
+        if (Editable && column.Editable && column.EditorTemplate is not null)
         {
             editing = (task, column);
+            editingOldValue = column.Field is null ? null : Read(task.Item!, column.Field);
             if (module is not null)
                 await module.InvokeVoidAsync("watchEdit", root, RowId(task));
         }
@@ -624,7 +712,15 @@ public partial class NxGantt<TItem> : IAsyncDisposable
             await module.InvokeVoidAsync("unwatchEdit", root);
         Build();
         StateHasChanged();
-        await OnUpdate.InvokeAsync(e.Node.Item);
+        // The editor wrote the item; the change says what the cell's own field was and is.
+        var changes = new List<NxGanttChange<TItem>>();
+        if (e.Column.Field is { } field && Read(e.Node.Item!, field) is var value && !Equals(value, editingOldValue))
+        {
+            var info = Properties[(e.Node.Item!.GetType(), field)]!;
+            changes.Add(new NxGanttChange<TItem> { Field = field, OldValue = editingOldValue, NewValue = value, ApplyAction = target => info.SetValue(target, value) });
+        }
+        editingOldValue = null;
+        await OnUpdate.InvokeAsync(new NxGanttUpdateArgs<TItem> { Item = e.Node.Item, Kind = NxGanttUpdateKind.Edit, Changes = changes });
     }
 
     private async Task RowKeyDownAsync(KeyboardEventArgs e, Node task, List<Node> rows)
@@ -638,18 +734,25 @@ public partial class NxGantt<TItem> : IAsyncDisposable
         var at = rows.IndexOf(task);
         switch (e.Key)
         {
+            // Alt moves the bar a day; with Shift, its end.
+            case "ArrowLeft" or "ArrowRight" when e.AltKey:
+                await RescheduleAsync(task, e.ShiftKey ? NxGanttUpdateKind.ResizeEnd : NxGanttUpdateKind.Move, e.Key == "ArrowRight" ? 1 : -1);
+                return;
+            case "Delete" when Editable && OnDelete.HasDelegate:
+                await OnDelete.InvokeAsync(task.Item);
+                return;
             case "ArrowDown" when at < rows.Count - 1:
-                selected = rows[at + 1];
+                await SelectAsync(rows[at + 1]);
                 break;
             case "ArrowUp" when at > 0:
-                selected = rows[at - 1];
+                await SelectAsync(rows[at - 1]);
                 break;
             case "ArrowRight" when task.Children.Count > 0 && !IsExpanded(task):
             case "ArrowLeft" when task.Children.Count > 0 && IsExpanded(task):
                 await ToggleAsync(task);
                 break;
             case "ArrowLeft" when task.Parent is not null:
-                selected = task.Parent;
+                await SelectAsync(task.Parent);
                 break;
             case "Enter":
                 await OnEdit.InvokeAsync(task.Item);

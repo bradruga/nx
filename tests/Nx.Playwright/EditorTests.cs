@@ -177,6 +177,121 @@ public class EditorTests : PageTest
         await Expect(Tool("playground-editor", "bold")).ToBeDisabledAsync();
     }
 
+    private ILocator ImageBox => Page.Locator(".nx-editor:has(#picture-editor) .nx-editor-image-box");
+
+    private async Task DragAsync(ILocator from, float dx, float dy)
+    {
+        var box = (await from.BoundingBoxAsync())!;
+        await Page.Mouse.MoveAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+        await Page.Mouse.DownAsync();
+        await Page.Mouse.MoveAsync(box.X + box.Width / 2 + dx, box.Y + box.Height / 2 + dy, new() { Steps = 6 });
+        await Page.Mouse.UpAsync();
+    }
+
+    [Test]
+    public async Task Picture_Click_ShowsHandlesOverIt_EscapeLetsGo()
+    {
+        await GoToPage("examples");
+        var image = Page.Locator("#picture-editor img");
+        await image.ClickAsync();
+
+        await Expect(ImageBox.Locator(".nx-editor-image-handle")).ToHaveCountAsync(4);
+        var picture = (await image.BoundingBoxAsync())!;
+        var outline = (await ImageBox.BoundingBoxAsync())!;
+        Assert.That(outline.X, Is.EqualTo(picture.X).Within(1));
+        Assert.That(outline.Y, Is.EqualTo(picture.Y).Within(1));
+        Assert.That(outline.Width, Is.EqualTo(picture.Width).Within(1));
+        // The handles sit in the editor, not in the text: never in the value.
+        Assert.That(await Html("picture-editor"), Does.Not.Contain("nx-editor-image"));
+
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(ImageBox).ToHaveCountAsync(0);
+        await Expect(image).ToHaveCountAsync(1);
+    }
+
+    [Test]
+    public async Task Picture_CornerDrag_ResizesInProportion_RaisesTheValue_OneUndoStep()
+    {
+        await GoToPage("examples");
+        var image = Page.Locator("#picture-editor img");
+        await image.ClickAsync();
+        await DragAsync(ImageBox.Locator(".nx-editor-image-handle-se"), 80, 20);
+
+        await Expect(image).ToHaveAttributeAsync("width", "320");
+        await Expect(image).ToHaveAttributeAsync("height", "180");
+        await Expect(Page.Locator("#picture-html")).ToContainTextAsync("width=\"320\" height=\"180\"");
+        await Expect(Page.Locator("#picture-html")).Not.ToContainTextAsync("nx-editor-image");
+        // Still selected, the outline on the resized picture; the text kept the focus.
+        Assert.That((await ImageBox.BoundingBoxAsync())!.Width, Is.EqualTo(320).Within(1));
+        Assert.That(await Page.Locator("#picture-editor").EvaluateAsync<bool>("e => document.activeElement === e"), Is.True);
+
+        await Page.Keyboard.PressAsync("Control+z");
+        await Expect(image).ToHaveAttributeAsync("width", "240");
+        await Expect(ImageBox).ToHaveCountAsync(0);
+    }
+
+    [Test]
+    public async Task Picture_Resize_StopsAtTheTextWidth()
+    {
+        await GoToPage("examples");
+        var image = Page.Locator("#picture-editor img");
+        await image.ClickAsync();
+        await DragAsync(ImageBox.Locator(".nx-editor-image-handle-se"), 3000, 0);
+
+        var width = int.Parse((await image.GetAttributeAsync("width"))!);
+        var room = await Page.Locator("#picture-editor").EvaluateAsync<int>(
+            "e => Math.round(e.clientWidth - parseFloat(getComputedStyle(e).paddingLeft) - parseFloat(getComputedStyle(e).paddingRight))");
+        Assert.That(width, Is.EqualTo(room).Within(1));
+    }
+
+    [Test]
+    public async Task Picture_Delete_RemovesIt_ClickingTextLetsGo()
+    {
+        await GoToPage("examples");
+        var image = Page.Locator("#picture-editor img");
+        await image.ClickAsync();
+        await Page.Locator("#picture-editor p").First.ClickAsync();
+        await Expect(ImageBox).ToHaveCountAsync(0);
+
+        await image.ClickAsync();
+        await Page.Keyboard.PressAsync("Delete");
+        await Expect(image).ToHaveCountAsync(0);
+        await Expect(ImageBox).ToHaveCountAsync(0);
+        await Expect(Page.Locator("#picture-html")).Not.ToContainTextAsync("<img");
+    }
+
+    [Test]
+    public async Task Picture_Drag_MovesItInTheText()
+    {
+        await GoToPage("examples");
+        var image = Page.Locator("#picture-editor img");
+        var target = (await Page.Locator("#picture-editor p").Last.BoundingBoxAsync())!;
+        var from = (await image.BoundingBoxAsync())!;
+        await Page.Mouse.MoveAsync(from.X + 40, from.Y + 40);
+        await Page.Mouse.DownAsync();
+        await Page.Mouse.MoveAsync(from.X + 50, from.Y + 50, new() { Steps = 3 });
+        await Page.Mouse.MoveAsync(target.X + 60, target.Y + target.Height / 2, new() { Steps = 8 });
+        await Page.Mouse.UpAsync();
+
+        // The same picture, once, now inside the last paragraph.
+        await Expect(Page.Locator("#picture-editor p").Last.Locator("img")).ToHaveCountAsync(1);
+        await Expect(image).ToHaveCountAsync(1);
+        await Expect(image).ToHaveAttributeAsync("width", "240");
+    }
+
+    [Test]
+    public async Task Picture_ReadOnly_IsNotSelected()
+    {
+        await GoToPage("playground");
+        await Page.Locator("#playground-editor").EvaluateAsync(
+            "e => e.insertAdjacentHTML('beforeend', '<p><img src=\"samples/wall-panel.svg\" width=\"120\" height=\"68\"></p>')");
+        await Page.Locator("#pg-readonly").CheckAsync();
+        await Expect(Page.Locator("#playground-editor")).ToHaveAttributeAsync("contenteditable", "false");
+
+        await Page.Locator("#playground-editor img").ClickAsync();
+        await Expect(Page.Locator(".nx-editor-image-box")).ToHaveCountAsync(0);
+    }
+
     [Test]
     public async Task Placeholder_ShowsOnlyWhileEmpty()
     {

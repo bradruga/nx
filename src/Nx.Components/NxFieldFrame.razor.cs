@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 namespace Nx.Components;
 
 /// <summary>
-/// The shared chrome of Nx text inputs — label or floating label, bordered box, prefix and suffix
+/// The shared chrome of Nx text inputs — label, bordered box, prefix and suffix
 /// slots, clear button — used by <see cref="NxTextBox"/>, <see cref="NxNumericTextBox{TValue}"/>, <see cref="NxTextArea"/> and the pickers.
 /// A building block for new Nx inputs; applications use those components instead.
 /// </summary>
@@ -17,12 +17,6 @@ public partial class NxFieldFrame
 
     /// <summary>Label text.</summary>
     [Parameter] public string? Label { get; set; }
-
-    /// <summary>Renders the label inside the box, lifted on focus or when <see cref="HasValue"/>.</summary>
-    [Parameter] public bool FloatingLabel { get; set; }
-
-    /// <summary>Whether the input has text: keeps a floating label lifted.</summary>
-    [Parameter] public bool HasValue { get; set; }
 
     /// <summary>Content inside the box before the input.</summary>
     [Parameter] public RenderFragment? PrefixContent { get; set; }
@@ -75,8 +69,6 @@ public partial class NxFieldFrame
                 modifiers.Add($"nx-field-{name}");
                 modifiers.Add($"{ClassPrefix}-{name}");
             }
-            Add(FloatingLabel && Label is not null, "floating");
-            Add(HasValue, "has-value");
             Add(PrefixContent is not null, "has-prefix");
             Add(Disabled, "disabled");
             Add(ReadOnly, "readonly");

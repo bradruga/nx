@@ -7,7 +7,7 @@ using Microsoft.JSInterop;
 namespace Nx.Components;
 
 /// <summary>
-/// Multi-line text with the same field as <see cref="NxTextBox"/> — label or floating label, clear button, character
+/// Multi-line text with the same field as <see cref="NxTextBox"/> — label, clear button, character
 /// counter, <c>EditForm</c> validation, binding on change or as you type with a debounce — plus <see cref="Rows"/>,
 /// <see cref="AutoResize"/> between <see cref="MinRows"/> and <see cref="MaxRows"/>, and a resize handle.
 /// </summary>
@@ -77,9 +77,6 @@ public partial class NxTextArea : IAsyncDisposable
 
     /// <summary>Label text, rendered as a <c>&lt;label&gt;</c> tied to the textarea.</summary>
     [Parameter] public string? Label { get; set; }
-
-    /// <summary>Renders <see cref="Label"/> inside the field, lifted on focus or once there is text.</summary>
-    [Parameter] public bool FloatingLabel { get; set; }
 
     /// <summary>Placeholder text shown while the field is empty.</summary>
     [Parameter] public string? Placeholder { get; set; }

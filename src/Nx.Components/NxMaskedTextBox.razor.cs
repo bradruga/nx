@@ -79,9 +79,6 @@ public partial class NxMaskedTextBox : IAsyncDisposable
     /// <summary>Label text, rendered as a <c>&lt;label&gt;</c> tied to the input.</summary>
     [Parameter] public string? Label { get; set; }
 
-    /// <summary>Renders <see cref="Label"/> inside the field, lifted on focus or once there is a value.</summary>
-    [Parameter] public bool FloatingLabel { get; set; }
-
     /// <summary>Text shown while the field is empty (with <see cref="MaskOnFocus"/>, while not focused).</summary>
     [Parameter] public string? Placeholder { get; set; }
 

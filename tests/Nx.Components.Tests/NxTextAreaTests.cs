@@ -159,11 +159,11 @@ public class NxTextAreaTests : BunitContext
     }
 
     [Test]
-    public void FloatingLabel_DisabledReadOnly()
+    public void ReadOnly_RendersClassAndAttribute()
     {
-        var cut = RenderBound([], "x", p => p.Add(x => x.Label, "Notes").Add(x => x.FloatingLabel, true).Add(x => x.ReadOnly, true));
+        var cut = RenderBound([], "x", p => p.Add(x => x.Label, "Notes").Add(x => x.ReadOnly, true));
 
-        Assert.That(cut.Find(".nx-field").ClassList, Does.Contain("nx-field-floating").And.Contain("nx-field-has-value").And.Contain("nx-field-readonly"));
+        Assert.That(cut.Find(".nx-field").ClassList, Does.Contain("nx-field-readonly"));
         Assert.That(cut.Find("textarea").HasAttribute("readonly"), Is.True);
     }
 

@@ -21,7 +21,23 @@ public class NxLoaderTests : BunitContext
         Assert.That(cut.FindAll(".nx-loader-ring"), Has.Count.EqualTo(1));
     }
 
-    [TestCase(NxLoaderType.Converging, "nx-loader-converging", 4)]
+    [Test]
+    public void Loader_ChildContent_ReplacesTheAnimation_KeepsBoxAndName()
+    {
+        var cut = Render<NxLoader>(p => p
+            .Add(x => x.Type, NxLoaderType.Pulsing)
+            .Add(x => x.Size, NxSize.Large)
+            .Add(x => x.AriaLabel, "Batching")
+            .AddChildContent("<svg class=\"mine\"></svg>"));
+
+        var root = cut.Find(".nx-loader");
+        Assert.That(root.ClassList, Is.EquivalentTo(new[] { "nx-loader", "nx-loader-custom", "nx-loader-lg" }));
+        Assert.That(root.GetAttribute("role"), Is.EqualTo("progressbar"));
+        Assert.That(root.GetAttribute("aria-label"), Is.EqualTo("Batching"));
+        Assert.That(cut.FindAll(".mine"), Has.Count.EqualTo(1));
+        Assert.That(cut.FindAll(".nx-loader-dot, .nx-loader-ring"), Is.Empty);
+    }
+
     [TestCase(NxLoaderType.Pulsing, "nx-loader-pulsing", 3)]
     public void Loader_DotTypes(NxLoaderType type, string css, int dots)
     {

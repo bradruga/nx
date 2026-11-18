@@ -6,7 +6,7 @@
 <div class="doc-section">
     <h2>What It Is</h2>
     <p class="doc-note">
-        <code>NxLoader</code> is a busy indicator — a spinner, converging dots or pulsing dots in three sizes.
+        <code>NxLoader</code> is a busy indicator — a spinner or pulsing dots in three sizes, or an animation of your own as its content.
         <code>NxLoaderContainer</code> lays a translucent overlay with a centered loader over an area while it loads, and
         catches clicks on what is underneath. The area needs <code>position: relative</code>.
     </p>
@@ -17,7 +17,6 @@
     <div class="demo-stage demo-stage-column">
         <div class="demo-row">
             <NxLoader />
-            <NxLoader Type="NxLoaderType.Converging" />
             <NxLoader Type="NxLoaderType.Pulsing" />
             <NxButton id="overview-reload" OnClick="ReloadAsync">Reload orders</NxButton>
         </div>

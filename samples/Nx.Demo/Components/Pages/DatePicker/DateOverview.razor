@@ -8,11 +8,11 @@
     <h2>What It Is</h2>
     <p class="doc-note">
         <code>NxDatePicker&lt;TValue&gt;</code> edits a <code>DateOnly</code> or <code>DateTime</code>, nullable or not. Type the
-        digits and the separators fill themselves in, in the culture's order — <em>10232026</em> becomes <em>10/23/2026</em> in
-        en-US, <em>23.10.2026</em> in de-DE — or open the calendar and pick. While you are not editing, the date shows in any .NET
+        date the way you would write it, in the culture's order — <em>12/5</em> is December 5 of this year in en-US, as
+        <em>5.12</em> is in de-DE — and it is read when you press Enter or leave the field; or open the calendar and pick. Up and Down step the day, month or year under the caret. While you are not editing, the date shows in any .NET
         <code>Format</code>. The calendar zooms out to months and years, respects <code>Min</code>, <code>Max</code> and a
         disabled-dates callback, and is driven entirely by the keyboard without leaving the field. On a phone it opens as a
-        full-screen sheet. Label, floating label, clear and validation work as in <code>NxTextBox</code>; both are built on the same
+        full-screen sheet. <code>ShowCalendar="false"</code> leaves only the typed field. Label, clear and validation work as in <code>NxTextBox</code>; both are built on the same
         field frame, and the calendar is <code>NxCalendar</code>, which you can also use on its own.
     </p>
 </div>
@@ -41,9 +41,10 @@
         <table class="doc-table">
             <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
             <tbody>
-                <tr><td>↓ or Alt+↓</td><td>Opens the calendar at the date in the field, else today.</td></tr>
-                <tr><td>← / →</td><td>Previous / next day (month or year in the zoomed-out views).</td></tr>
-                <tr><td>↑ / ↓</td><td>Previous / next week.</td></tr>
+                <tr><td>↑ / ↓ (closed)</td><td>Steps the day, month or year under the caret, wrapping within the month or year; an empty field starts from today.</td></tr>
+                <tr><td>Alt+↓</td><td>Opens the calendar at the date in the field, else today.</td></tr>
+                <tr><td>← / → (open)</td><td>Previous / next day (month or year in the zoomed-out views).</td></tr>
+                <tr><td>↑ / ↓ (open)</td><td>Previous / next week.</td></tr>
                 <tr><td>PgUp / PgDn</td><td>Previous / next month; with Shift, a year.</td></tr>
                 <tr><td>Ctrl+↑ / Ctrl+↓</td><td>Zooms out to months, then years; zooms back in.</td></tr>
                 <tr><td>Enter</td><td>Picks the highlighted day and closes. Closed, commits the typed text.</td></tr>

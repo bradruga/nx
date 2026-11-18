@@ -5,7 +5,7 @@ namespace Nx.Components;
 /// <summary>Number formatting, round axis steps and SVG number text for <see cref="NxChart"/>.</summary>
 internal static class ChartMath
 {
-    /// <summary>A .NET format (<c>C0</c>, <c>MMM yy</c>) or Telerik's composite form (<c>{0:C0}</c>) applied to a value.</summary>
+    /// <summary>A .NET format (<c>C0</c>, <c>MMM yy</c>) or the composite form (<c>{0:C0}</c>) applied to a value.</summary>
     public static string Format(object? value, string? format, CultureInfo culture)
     {
         if (value is null)

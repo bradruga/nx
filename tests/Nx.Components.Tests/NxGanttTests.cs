@@ -130,7 +130,8 @@ public class NxGanttTests : BunitContext
     {
         var updated = new List<string>();
         var jobs = Jobs();
-        var cut = RenderGantt(p => p.Add(x => x.OnUpdate, (Job j) => updated.Add(j.Title)), jobs, editor: true);
+        NxGanttUpdateArgs<Job>? last = null;
+        var cut = RenderGantt(p => p.Add(x => x.OnUpdate, (NxGanttUpdateArgs<Job> a) => { last = a; updated.Add(a.Item.Title); }), jobs, editor: true);
 
         await cut.FindAll("[role=gridcell]")[0].ClickAsync(new MouseEventArgs());
         Assert.That(cut.FindAll(".ed"), Has.Count.EqualTo(1));
@@ -145,6 +146,125 @@ public class NxGanttTests : BunitContext
         Assert.That(cut.FindAll(".ed"), Is.Empty);
         Assert.That(updated, Is.EqualTo(new[] { "Design 2" }));
         Assert.That(Titles(cut)[0], Is.EqualTo("Design 2"));
+        // The cell's own field, before and after, as NxGrid's cell change.
+        Assert.That(last!.Kind, Is.EqualTo(NxGanttUpdateKind.Edit));
+        Assert.That(last.Changes.Select(c => (c.Field, c.OldValue, c.NewValue)), Is.EqualTo(new[] { ("Title", (object?)"Design", (object?)"Design 2") }));
+    }
+
+    // ── Dragging bars ─────────────────────────────────────────────────────────
+
+    [Test]
+    public void Bars_DragOnlyWithOnUpdate_SummariesNever()
+    {
+        Assert.That(RenderGantt().FindAll("[data-nx-gantt-drag]"), Is.Empty);
+
+        var cut = RenderGantt(p => p.Add(x => x.OnUpdate, (NxGanttUpdateArgs<Job> _) => { }));
+        var bars = cut.FindAll(".nx-gantt-bar");
+        Assert.That(bars.Select(b => b.HasAttribute("data-nx-gantt-drag")), Is.EqualTo(new[] { false, true, true, true }), "Design is a summary");
+        Assert.That(bars[1].QuerySelectorAll(".nx-gantt-grip").Select(g => g.GetAttribute("data-nx-gantt-grip")), Is.EqualTo(new[] { "start", "end" }));
+        Assert.That(bars[0].QuerySelectorAll(".nx-gantt-grip"), Is.Empty);
+    }
+
+    [Test]
+    public async Task BarDrop_Move_RaisesChanges_ItemUntouchedUntilApplied()
+    {
+        var jobs = Jobs();
+        NxGanttUpdateArgs<Job>? args = null;
+        var cut = RenderGantt(p => p.Add(x => x.OnUpdate, (NxGanttUpdateArgs<Job> a) => args = a), jobs);
+
+        await cut.InvokeAsync(() => cut.Instance.OnBarDrop(3, "move", 2));
+
+        Assert.That(args!.Kind, Is.EqualTo(NxGanttUpdateKind.Move));
+        Assert.That(args.Item, Is.SameAs(jobs[3]));
+        Assert.That(args.Changes.Select(c => (c.Field, c.OldValue, c.NewValue)), Is.EqualTo(new[]
+        {
+            ("Start", (object?)Monday.AddDays(10), (object?)Monday.AddDays(12)),
+            ("End", (object?)Monday.AddDays(15), (object?)Monday.AddDays(17)),
+        }));
+        Assert.That(jobs[3].Start, Is.EqualTo(Monday.AddDays(10)), "the page applies the change");
+
+        args.Apply();
+        Assert.That((jobs[3].Start, jobs[3].End), Is.EqualTo((Monday.AddDays(12), Monday.AddDays(17))));
+    }
+
+    [Test]
+    public async Task BarDrop_Resize_OneEnd_KeepsAtLeastADay()
+    {
+        var jobs = Jobs();
+        var raised = new List<NxGanttUpdateArgs<Job>>();
+        var cut = RenderGantt(p => p.Add(x => x.OnUpdate, (NxGanttUpdateArgs<Job> a) => raised.Add(a)), jobs);
+
+        await cut.InvokeAsync(() => cut.Instance.OnBarDrop(3, "end", -1));
+        Assert.That(raised[0].Kind, Is.EqualTo(NxGanttUpdateKind.ResizeEnd));
+        Assert.That(raised[0].Changes.Select(c => (c.Field, c.NewValue)), Is.EqualTo(new[] { ("End", (object?)Monday.AddDays(14)) }));
+
+        // Pour is five days: its start can come up four at most, its end back four.
+        await cut.InvokeAsync(() => cut.Instance.OnBarDrop(3, "start", 30));
+        Assert.That(raised[1].Kind, Is.EqualTo(NxGanttUpdateKind.ResizeStart));
+        Assert.That(raised[1].Changes.Single().NewValue, Is.EqualTo(Monday.AddDays(14)));
+        await cut.InvokeAsync(() => cut.Instance.OnBarDrop(3, "end", -30));
+        Assert.That(raised[2].Changes.Single().NewValue, Is.EqualTo(Monday.AddDays(11)));
+
+        // A summary, or no days at all, raises nothing.
+        await cut.InvokeAsync(() => cut.Instance.OnBarDrop(0, "move", 3));
+        await cut.InvokeAsync(() => cut.Instance.OnBarDrop(3, "move", 0));
+        Assert.That(raised, Has.Count.EqualTo(3));
+    }
+
+    [Test]
+    public async Task AltArrows_MoveTheBar_WithShiftItsEnd()
+    {
+        var raised = new List<NxGanttUpdateArgs<Job>>();
+        var cut = RenderGantt(p => p.Add(x => x.OnUpdate, (NxGanttUpdateArgs<Job> a) => raised.Add(a)));
+
+        await cut.FindAll("[role=row]")[3].KeyDownAsync(new KeyboardEventArgs { Key = "ArrowRight", AltKey = true });
+        await cut.FindAll("[role=row]")[3].KeyDownAsync(new KeyboardEventArgs { Key = "ArrowLeft", AltKey = true, ShiftKey = true });
+
+        Assert.That(raised.Select(a => a.Kind), Is.EqualTo(new[] { NxGanttUpdateKind.Move, NxGanttUpdateKind.ResizeEnd }));
+        Assert.That(raised[0].Changes.Select(c => c.NewValue), Is.EqualTo(new object?[] { Monday.AddDays(11), Monday.AddDays(16) }));
+        Assert.That(raised[1].Changes.Single().NewValue, Is.EqualTo(Monday.AddDays(14)));
+    }
+
+    [Test]
+    public async Task EditableFalse_NoEditor_NoDrag_NoHandles_NoDelete()
+    {
+        var raised = 0;
+        var cut = RenderGantt(p => p
+            .Add(x => x.Editable, false)
+            .Add(x => x.OnUpdate, (NxGanttUpdateArgs<Job> _) => raised++)
+            .Add(x => x.OnDelete, (Job _) => raised++)
+            .Add(x => x.OnDependencyCreate, (NxGanttDependencyCreateEventArgs<Job> _) => raised++), editor: true);
+
+        Assert.That(cut.FindAll("[data-nx-gantt-drag], .nx-gantt-grip, .nx-gantt-handle"), Is.Empty);
+        await cut.FindAll("[role=gridcell]")[0].ClickAsync(new MouseEventArgs());
+        Assert.That(cut.FindAll(".ed"), Is.Empty);
+        await cut.FindAll("[role=row]")[3].KeyDownAsync(new KeyboardEventArgs { Key = "Delete" });
+        await cut.InvokeAsync(() => cut.Instance.OnBarDrop(3, "move", 2));
+        Assert.That(raised, Is.Zero);
+    }
+
+    [Test]
+    public async Task Selection_BindsAsAListOfOne_DeleteRaisesOnDelete()
+    {
+        var jobs = Jobs();
+        IEnumerable<Job> picked = [];
+        Job? deleted = null;
+        IRenderedComponent<NxGantt<Job>>? cut = null;
+        cut = RenderGantt(p => p
+            .Add(x => x.SelectedItems, picked)
+            .Add(x => x.SelectedItemsChanged, (IEnumerable<Job> items) => { picked = items; cut?.Render(q => q.Add(x => x.SelectedItems, items)); })
+            .Add(x => x.OnDelete, (Job j) => deleted = j), jobs);
+
+        await cut.FindAll(".nx-gantt-bar")[3].ClickAsync(new MouseEventArgs());
+        Assert.That(picked, Is.EqualTo(new[] { jobs[3] }));
+        Assert.That(cut.Find("[aria-selected=true] .nx-gantt-cell").TextContent, Is.EqualTo("Pour"));
+
+        // Set from outside.
+        cut.Render(p => p.Add(x => x.SelectedItems, new List<Job> { jobs[1] }));
+        Assert.That(cut.Find("[aria-selected=true] .nx-gantt-cell").TextContent, Is.EqualTo("Drawings"));
+
+        await cut.Find("[aria-selected=true]").KeyDownAsync(new KeyboardEventArgs { Key = "Delete" });
+        Assert.That(deleted, Is.SameAs(jobs[1]));
     }
 
     [Test]

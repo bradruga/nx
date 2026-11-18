@@ -16,7 +16,7 @@
                                    Months="pgMonths" Format="@pgFormat" Culture="Culture" Min="MinOrNull" Max="MaxOrNull"
                                    IsDateDisabled="@(pgWeekends ? d => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday : null)"
                                    ShowWeekNumbers="pgWeeks" Label="@LabelOrNull" StartLabel="@pgStartLabel" EndLabel="@pgEndLabel"
-                                   FloatingLabel="pgFloating" Clearable="pgClearable" ReadOnly="pgReadOnly" Disabled="pgDisabled"
+                                   Clearable="pgClearable" ReadOnly="pgReadOnly" Disabled="pgDisabled"
                                    MobileMode="pgMobile" />
             </div>
             <div class="demo-row">
@@ -61,7 +61,6 @@
             <label class="demo-control"><span>Label</span><input type="text" @bind="pgLabel" @bind:event="oninput" /></label>
             <label class="demo-control"><span>StartLabel</span><input type="text" @bind="pgStartLabel" @bind:event="oninput" /></label>
             <label class="demo-control"><span>EndLabel</span><input type="text" @bind="pgEndLabel" @bind:event="oninput" /></label>
-            <label class="demo-control"><span>FloatingLabel</span><input type="checkbox" id="pg-floating" @bind="pgFloating" /></label>
 
             <div class="demo-controls-title">Behavior</div>
             <label class="demo-control"><span>Clearable</span><input type="checkbox" id="pg-clearable" @bind="pgClearable" /></label>
@@ -92,7 +91,7 @@
     string pgMin = "", pgMax = "", pgFormat = "d", pgCulture = "en-US";
     string pgLabel = "Pour window", pgStartLabel = "Start", pgEndLabel = "End";
     int pgMonths = 2;
-    bool pgWeekends, pgWeeks, pgFloating, pgClearable, pgReadOnly, pgDisabled;
+    bool pgWeekends, pgWeeks, pgClearable, pgReadOnly, pgDisabled;
     NxMobileMode pgMobile = NxMobileMode.Auto;
     int pgKey, pgChanges;
 
@@ -119,7 +118,6 @@
             if (LabelOrNull is { } l) attrs.Add($"Label=\"{l}\"");
             if (pgStartLabel != "Start") attrs.Add($"StartLabel=\"{pgStartLabel}\"");
             if (pgEndLabel != "End") attrs.Add($"EndLabel=\"{pgEndLabel}\"");
-            if (pgFloating) attrs.Add("FloatingLabel=\"true\"");
             if (pgClearable) attrs.Add("Clearable=\"true\"");
             if (pgReadOnly) attrs.Add("ReadOnly=\"true\"");
             if (pgDisabled) attrs.Add("Disabled=\"true\"");

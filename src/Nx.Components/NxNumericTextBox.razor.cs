@@ -10,7 +10,7 @@ namespace Nx.Components;
 /// <summary>
 /// A number input for <c>int</c>, <c>long</c>, <c>short</c>, <c>decimal</c>, <c>double</c> and <c>float</c>, nullable or not.
 /// Min/max/step, spin buttons with press-and-hold, arrow and page keys, culture-aware format and parsing,
-/// and the same label, floating label, prefix/suffix and clear options as <see cref="NxTextBox"/>.
+/// and the same label, prefix/suffix and clear options as <see cref="NxTextBox"/>.
 /// </summary>
 /// <typeparam name="TValue">The bound number type.</typeparam>
 /// <example>
@@ -94,9 +94,6 @@ public partial class NxNumericTextBox<TValue> : IAsyncDisposable
 
     /// <summary>Label text, rendered as a <c>&lt;label&gt;</c> tied to the input.</summary>
     [Parameter] public string? Label { get; set; }
-
-    /// <summary>Renders <see cref="Label"/> inside the field, lifted on focus or once there is a value.</summary>
-    [Parameter] public bool FloatingLabel { get; set; }
 
     /// <summary>Placeholder text shown while the field is empty.</summary>
     [Parameter] public string? Placeholder { get; set; }

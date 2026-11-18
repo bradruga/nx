@@ -77,11 +77,126 @@
     </div>
 </div>
 
+<div class="doc-section">
+    <h2>Hover Card</h2>
+    <p class="doc-note">
+        <code>OpenOnHover</code>: rest the pointer on a job and its card opens; move onto the card and it stays, so the link
+        in it can be used; leave both and it closes. One popup serves every job: <code>AnchorSelector</code> matches them
+        all, and <code>OnOpening</code> says which one by its <code>data-nx-context</code>. From the keyboard, Tab to a job,
+        press <kbd class="doc-kbd">↓</kbd> to go into the card and <kbd class="doc-kbd">Esc</kbd> to come back. An
+        <code>NxTooltip</code> cannot do this: it ignores the pointer.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-jobs" id="hover-jobs">
+            @foreach (var job in Jobs)
+            {
+                <div class="demo-job" id="@($"job-{job.Number}")" data-nx-context="@job.Number" tabindex="0" style="--demo-job: @job.Color">
+                    <strong>@job.Number</strong><span>@job.Name</span>
+                </div>
+            }
+        </div>
+        <NxPopup Id="hover-card" @bind-Visible="hoverOpen" AnchorSelector=".demo-job" OpenOnHover="true" OnOpening="e => hovered = Jobs.FirstOrDefault(j => j.Number == e.Context)"
+                 Width="280px" AriaLabel="@($"Job {hovered?.Number}")">
+            @if (hovered is not null)
+            {
+                <div class="demo-popup-body demo-job-card">
+                    <strong>@hovered.Number · @hovered.Name</strong>
+                    <span>@hovered.Customer</span>
+                    <span>@hovered.Pieces pieces · ships @hovered.Ships</span>
+                    <a id="hover-link" href="gantt/overview">Open job @hovered.Number →</a>
+                </div>
+            }
+        </NxPopup>
+        <div class="demo-row"><span class="demo-value" id="hover-state">@(hoverOpen ? $"Showing {hovered?.Number}" : "Rest the pointer on a job")</span></div>
+    </div>
+    <pre class="doc-code">@hoverCode</pre>
+</div>
+
+<div class="doc-section">
+    <h2>Loaded on Open</h2>
+    <p class="doc-note">
+        A popup renders nothing while it is closed, so a component inside it starts only when it shows. Here each of 120
+        pieces has a history, and none is loaded with the page: the card's content runs its query as the card opens, for
+        that one piece. <code>@@key</code> starts it again for the next piece, and a slow answer for the last one never
+        lands in the new card. Watch the query count.
+    </p>
+    <div class="demo-stage demo-stage-column">
+        <div class="demo-pieces" id="lazy-pieces">
+            @foreach (var piece in PieceIds)
+            {
+                <span class="demo-piece" id="@($"piece-{piece}")" data-nx-context="@piece" tabindex="0">@piece</span>
+            }
+        </div>
+        <NxPopup Id="lazy-card" @bind-Visible="lazyOpen" AnchorSelector=".demo-piece" OpenOnHover="true" OnOpening="e => lazyPiece = e.Context"
+                 Width="250px" AriaLabel="@($"History of {lazyPiece}")">
+            @if (lazyPiece is not null)
+            {
+                <div class="demo-popup-body">
+                    <strong>@lazyPiece</strong>
+                    <DemoPieceHistory @key="lazyPiece" PieceId="@lazyPiece" OnQuery="id => { queries++; lastQuery = id; }" />
+                </div>
+            }
+        </NxPopup>
+        <div class="demo-row">
+            <span class="demo-counter" id="lazy-queries">Queries run: @queries of 120</span>
+            <span class="demo-value" id="lazy-last">@(lastQuery is null ? "Rest the pointer on a piece" : $"Last query: {lastQuery}")</span>
+        </div>
+    </div>
+    <pre class="doc-code">@lazyCode</pre>
+</div>
+
 <DocPager Slug="popup" Page="examples" />
 
 @code {
     static readonly string[] Mixes = ["5000 psi", "6000 psi", "SCC", "Lightweight", "Grout", "Flowable fill"];
     static readonly RenderFragment CloseIcon = @<NxIcon Icon="NxIcons.X" />;
+    sealed record Job(string Number, string Name, string Customer, int Pieces, string Ships, string Color);
+
+    static readonly Job[] Jobs =
+    [
+        new("55104", "Route 9 Bridge", "Acme Site Development", 48, "Dec 4", "#2e6db4"),
+        new("55117", "Riverside Garage", "Baldwin Paving", 212, "Dec 11", "#1e8c8c"),
+        new("55123", "Harbor Seawall", "Cape Cod Marine Works", 36, "Dec 18", "#d97a1e"),
+        new("55130", "Mill St Culvert", "Brookside Utilities", 9, "Jan 6", "#7a4fb5"),
+    ];
+
+    bool hoverOpen;
+    Job? hovered;
+
+    static IEnumerable<string> PieceIds => Enumerable.Range(1, 120).Select(i => $"WP-{i:000}");
+    bool lazyOpen;
+    string? lazyPiece, lastQuery;
+    int queries;
+
+    const string lazyCode =
+        """
+        <NxPopup @bind-Visible="open" AnchorSelector=".piece" OpenOnHover="true" OnOpening="e => pieceId = e.Context">
+            <PieceHistory @key="pieceId" PieceId="@pieceId" />
+        </NxPopup>
+
+        @* PieceHistory.razor: it only exists while the popup is open *@
+        @if (events is null) { <NxLoader /> } else { … }
+
+        @code {
+            [Parameter] public string PieceId { get; set; } = "";
+            protected override async Task OnInitializedAsync() => events = await db.HistoryOfAsync(PieceId);
+        }
+        """;
+
+    const string hoverCode =
+        """
+        @foreach (var job in jobs)
+        {
+            <div class="job" data-nx-context="@job.Number" tabindex="0">@job.Number</div>
+        }
+
+        <NxPopup @bind-Visible="open" AnchorSelector=".job" OpenOnHover="true"
+                 OnOpening="e => hovered = jobs.First(j => j.Number == e.Context)">
+            <strong>@hovered.Name</strong>
+            <a href="jobs/@hovered.Number">Open job →</a>
+        </NxPopup>
+        """;
+
     bool filterOpen, cardOpen;
     string? search;
     string sortText = "Unsorted";

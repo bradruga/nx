@@ -86,8 +86,7 @@ already answered. Answer by number: "keep" or "change". **Rec** is what I'd do.
 12. **`ShowCounter` is off by default**, even with `MaxLength` set. `MaxLength` alone is common for DB column
     limits.
 13. **The clear button is out of the tab order; Esc clears.** The password toggle stays tabbable.
-14. **No size parameter.** Text boxes are 34px (`--nx-control-height-md`), the same as a Medium button. Floating-label
-    fields are taller (48px).
+14. **No size parameter.** Text boxes are 34px (`--nx-control-height-md`), the same as a Medium button.
 
 ## NxComboBox
 

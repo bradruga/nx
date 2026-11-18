@@ -1,16 +1,20 @@
 @namespace Nx.Components
 
 <span @attributes="AdditionalAttributes" class="@CssClass" style="@Style" role="progressbar" aria-label="@AriaLabel">
-    @switch (Type)
+    @if (ChildContent is not null)
     {
-        case NxLoaderType.Converging:
-            <span class="nx-loader-dot"></span><span class="nx-loader-dot"></span><span class="nx-loader-dot"></span><span class="nx-loader-dot"></span>
-            break;
-        case NxLoaderType.Pulsing:
-            <span class="nx-loader-dot"></span><span class="nx-loader-dot"></span><span class="nx-loader-dot"></span>
-            break;
-        default:
-            <span class="nx-loader-ring"></span>
-            break;
+        @ChildContent
+    }
+    else
+    {
+        switch (Type)
+        {
+            case NxLoaderType.Pulsing:
+                <span class="nx-loader-dot"></span><span class="nx-loader-dot"></span><span class="nx-loader-dot"></span>
+                break;
+            default:
+                <span class="nx-loader-ring"></span>
+                break;
+        }
     }
 </span>

@@ -111,9 +111,6 @@ public partial class NxDateTimePicker<TValue> : IAsyncDisposable
     /// <summary>Label text, rendered as a <c>&lt;label&gt;</c> tied to the input.</summary>
     [Parameter] public string? Label { get; set; }
 
-    /// <summary>Renders <see cref="Label"/> inside the field, lifted on focus or once there is a value.</summary>
-    [Parameter] public bool FloatingLabel { get; set; }
-
     /// <summary>Placeholder text shown while the field is empty. Default: the pattern, e.g. <c>m/d/yyyy h:mm am/pm</c>.</summary>
     [Parameter] public string? Placeholder { get; set; }
 

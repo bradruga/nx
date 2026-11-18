@@ -68,7 +68,6 @@ public class NxTextBoxTests : BunitContext
         var cut = Render<NxTextBox>(p => p.Add(x => x.Value, "Acme"));
 
         Assert.That(cut.Find("input").GetAttribute("value"), Is.EqualTo("Acme"));
-        Assert.That(cut.Find(".nx-textbox").ClassList, Does.Contain("nx-textbox-has-value"));
     }
 
     [Test]
@@ -101,27 +100,6 @@ public class NxTextBoxTests : BunitContext
         var b = Render<NxTextBox>().Find("input").Id;
 
         Assert.That(a, Is.Not.EqualTo(b));
-    }
-
-    [Test]
-    public void FloatingLabel_RendersLabelInsideField()
-    {
-        var cut = Render<NxTextBox>(p => p
-            .Add(x => x.Label, "Email")
-            .Add(x => x.FloatingLabel, true));
-
-        Assert.That(cut.Find(".nx-textbox").ClassList, Does.Contain("nx-textbox-floating"));
-        Assert.That(cut.FindAll(".nx-textbox-label"), Is.Empty);
-        var label = cut.Find(".nx-textbox-control label.nx-textbox-floating-label");
-        Assert.That(label.GetAttribute("for"), Is.EqualTo(cut.Find("input").Id));
-    }
-
-    [Test]
-    public void FloatingLabel_WithoutLabel_IsIgnored()
-    {
-        var cut = Render<NxTextBox>(p => p.Add(x => x.FloatingLabel, true));
-
-        Assert.That(cut.Find(".nx-textbox").ClassList, Does.Not.Contain("nx-textbox-floating"));
     }
 
     [Test]

@@ -44,14 +44,11 @@
     <h2>Labels &amp; Placeholder</h2>
     <p class="doc-note">
         <code>Label</code> renders a real <code>&lt;label for&gt;</code>, so clicking it focuses the field and screen
-        readers announce it. <code>FloatingLabel</code> moves the label inside the field and lifts it on focus or
-        once there is a value; the placeholder then shows only while focused.
+        readers announce it. <code>Placeholder</code> shows while the field is empty.
     </p>
     <div class="demo-stage">
         <div class="demo-form-grid">
             <NxTextBox Id="label-fixed" Label="Job name" Placeholder="e.g. Route 9 culvert" @bind-Value="labelFixed" />
-            <NxTextBox Id="label-floating" Label="Job name" FloatingLabel="true" Placeholder="e.g. Route 9 culvert" @bind-Value="labelFloating" />
-            <NxTextBox Id="label-floating-filled" Label="Customer" FloatingLabel="true" @bind-Value="labelFloatingFilled" />
         </div>
     </div>
 </div>
@@ -200,7 +197,7 @@
     int changeCount, immediateCount, debounceCount;
 
     // ── Other sections ─────────────────────────────────────────────────────────
-    string? labelFixed, labelFloating, labelFloatingFilled = "Kiewit Northeast";
+    string? labelFixed;
     string? affixSearch, affixPrice = "1,240.00", affixWeight, affixEmail = "dispatch";
     string? clearValue = "Clear me", passwordValue = "hunter22", passwordPlain;
     string? counterValue = "PO-4471";

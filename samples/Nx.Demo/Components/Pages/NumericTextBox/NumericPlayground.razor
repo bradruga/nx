@@ -15,7 +15,7 @@
                     case "int":
                         <NxNumericTextBox @key="@($"int-{pgKey}")" TValue="int" Id="playground-numeric" @bind-Value="pgInt"
                                           @attributes="RangeAttributes(v => (int)v)" Decimals="@DecimalsOrNull" Format="@FormatOrNull" Culture="Culture"
-                                          Label="@LabelOrNull" FloatingLabel="pgFloating" Placeholder="@PlaceholderOrNull"
+                                          Label="@LabelOrNull" Placeholder="@PlaceholderOrNull"
                                           Prefix="@(pgPrefix ? Text(PrefixText) : null)" Suffix="@(pgSuffix ? Text(SuffixText) : null)"
                                           ShowSpinButtons="pgSpin" SelectOnFocus="pgSelect" Clearable="pgClearable"
                                           ReadOnly="pgReadOnly" Disabled="pgDisabled" AutoFocus="pgAutoFocus"
@@ -24,7 +24,7 @@
                     case "double":
                         <NxNumericTextBox @key="@($"double-{pgKey}")" TValue="double" Id="playground-numeric" @bind-Value="pgDouble"
                                           @attributes="RangeAttributes(v => (double)v)" Decimals="@DecimalsOrNull" Format="@FormatOrNull" Culture="Culture"
-                                          Label="@LabelOrNull" FloatingLabel="pgFloating" Placeholder="@PlaceholderOrNull"
+                                          Label="@LabelOrNull" Placeholder="@PlaceholderOrNull"
                                           Prefix="@(pgPrefix ? Text(PrefixText) : null)" Suffix="@(pgSuffix ? Text(SuffixText) : null)"
                                           ShowSpinButtons="pgSpin" SelectOnFocus="pgSelect" Clearable="pgClearable"
                                           ReadOnly="pgReadOnly" Disabled="pgDisabled" AutoFocus="pgAutoFocus"
@@ -33,7 +33,7 @@
                     default:
                         <NxNumericTextBox @key="@($"decimal-{pgKey}")" TValue="decimal?" Id="playground-numeric" @bind-Value="pgDecimal"
                                           @attributes="RangeAttributes(v => (decimal?)v)" Decimals="@DecimalsOrNull" Format="@FormatOrNull" Culture="Culture"
-                                          Label="@LabelOrNull" FloatingLabel="pgFloating" Placeholder="@PlaceholderOrNull"
+                                          Label="@LabelOrNull" Placeholder="@PlaceholderOrNull"
                                           Prefix="@(pgPrefix ? Text(PrefixText) : null)" Suffix="@(pgSuffix ? Text(SuffixText) : null)"
                                           ShowSpinButtons="pgSpin" SelectOnFocus="pgSelect" Clearable="pgClearable"
                                           ReadOnly="pgReadOnly" Disabled="pgDisabled" AutoFocus="pgAutoFocus"
@@ -85,7 +85,6 @@
 
             <div class="demo-controls-title">Label &amp; text</div>
             <label class="demo-control"><span>Label</span><input type="text" @bind="pgLabel" @bind:event="oninput" /></label>
-            <label class="demo-control"><span>FloatingLabel</span><input type="checkbox" id="pg-floating" @bind="pgFloating" /></label>
             <label class="demo-control"><span>Placeholder</span><input type="text" @bind="pgPlaceholder" @bind:event="oninput" /></label>
             <label class="demo-control"><span>Prefix ($)</span><input type="checkbox" id="pg-prefix" @bind="pgPrefix" /></label>
             <label class="demo-control"><span>Suffix (%)</span><input type="checkbox" id="pg-suffix" @bind="pgSuffix" /></label>
@@ -116,7 +115,7 @@
     double pgDouble = 2.5;
     string pgMin = "0", pgMax = "", pgStep = "1", pgDecimals = "", pgFormat = "", pgCulture = "en-US";
     string pgLabel = "Amount", pgPlaceholder = "";
-    bool pgFloating, pgPrefix, pgSuffix, pgSpin = true, pgSelect, pgClearable, pgReadOnly, pgDisabled, pgAutoFocus;
+    bool pgPrefix, pgSuffix, pgSpin = true, pgSelect, pgClearable, pgReadOnly, pgDisabled, pgAutoFocus;
     int pgKey, pgChanges;
 
     CultureInfo Culture => CultureInfo.GetCultureInfo(pgCulture);
@@ -162,7 +161,6 @@
             if (FormatOrNull is { } f) attrs.Add($"Format=\"{f}\"");
             if (pgCulture != "en-US") attrs.Add($"Culture=\"@CultureInfo.GetCultureInfo(\"{pgCulture}\")\"");
             if (LabelOrNull is { } l) attrs.Add($"Label=\"{l}\"");
-            if (pgFloating) attrs.Add("FloatingLabel=\"true\"");
             if (PlaceholderOrNull is { } p) attrs.Add($"Placeholder=\"{p}\"");
             if (!pgSpin) attrs.Add("ShowSpinButtons=\"false\"");
             if (pgSelect) attrs.Add("SelectOnFocus=\"true\"");

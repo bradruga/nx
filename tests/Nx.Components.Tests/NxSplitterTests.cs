@@ -24,7 +24,7 @@ public class NxSplitterTests : BunitContext
         public string Id = "";
         public string? Size;
         public string? Min, Max, Title;
-        public bool Collapsible, Collapsed, Resizable = true;
+        public bool Collapsed, Resizable = true;
         public List<string?> SizeLog = [];
         public List<bool> CollapseLog = [];
     }
@@ -42,7 +42,6 @@ public class NxSplitterTests : BunitContext
                 b.AddAttribute(4, nameof(NxSplitterPane.Min), pane.Min);
                 b.AddAttribute(5, nameof(NxSplitterPane.Max), pane.Max);
                 b.AddAttribute(6, nameof(NxSplitterPane.Title), pane.Title);
-                b.AddAttribute(7, nameof(NxSplitterPane.Collapsible), pane.Collapsible);
                 b.AddAttribute(8, nameof(NxSplitterPane.Collapsed), pane.Collapsed);
                 b.AddAttribute(9, nameof(NxSplitterPane.CollapsedChanged), EventCallback.Factory.Create<bool>(this, v => { pane.Collapsed = v; pane.CollapseLog.Add(v); }));
                 b.AddAttribute(10, nameof(NxSplitterPane.Resizable), pane.Resizable);
@@ -172,29 +171,22 @@ public class NxSplitterTests : BunitContext
     // ── Collapsing ────────────────────────────────────────────────────────────
 
     [Test]
-    public void Collapsible_ButtonsOnTheBar()
+    public void NoCollapseControls_OnTheBarOrThePhoneHeader()
     {
-        var a = Pane("a", "200px", "Navigation");
-        a.Collapsible = true;
-        var c = Pane("c", "180px", "Properties");
-        c.Collapsible = true;
-        var cut = RenderSplitter([a, Pane("b"), c]);
+        var cut = RenderSplitter([Pane("a", "200px", "Navigation"), Pane("b"), Pane("c", "180px", "Properties")]);
 
-        var bars = cut.FindAll(".nx-splitter-bar");
-        Assert.That(bars[0].QuerySelector(".nx-splitter-toggle-prev")!.GetAttribute("aria-label"), Is.EqualTo("Collapse Navigation"));
-        Assert.That(bars[0].QuerySelector(".nx-splitter-toggle-next"), Is.Null);
-        Assert.That(bars[1].QuerySelector(".nx-splitter-toggle-next")!.GetAttribute("aria-label"), Is.EqualTo("Collapse Properties"));
-        Assert.That(bars[1].QuerySelector(".nx-splitter-toggle-prev"), Is.Null);
+        Assert.That(cut.FindAll(".nx-splitter-bar button, .nx-splitter-pane-header button, button.nx-splitter-pane-header"), Is.Empty);
+        Assert.That(cut.Find("#a .nx-splitter-pane-header").TextContent.Trim(), Is.EqualTo("Navigation"));
     }
 
     [Test]
-    public async Task Collapse_HidesContentKeepsIt_DisablesBar_RaisesChanged()
+    public async Task ToggleAsync_HidesContentKeepsIt_DisablesBar_RaisesChanged()
     {
         var a = Pane("a", "200px", "Navigation");
-        a.Collapsible = true;
         var cut = RenderSplitter([a, Pane("b")]);
+        var pane = cut.FindComponents<NxSplitterPane>()[0].Instance;
 
-        await cut.Find(".nx-splitter-toggle-prev").ClickAsync(new MouseEventArgs());
+        await cut.InvokeAsync(pane.ToggleAsync);
 
         Assert.That(a.CollapseLog, Is.EqualTo(new[] { true }));
         cut.WaitForState(() => cut.Find("#a").ClassList.Contains("nx-splitter-pane-collapsed"));
@@ -202,43 +194,18 @@ public class NxSplitterTests : BunitContext
         Assert.That(cut.Find("#a .nx-splitter-pane-content").HasAttribute("hidden"), Is.True);
         Assert.That(cut.Find("#a .nx-splitter-pane-content").TextContent, Is.EqualTo("Content a"));
         cut.WaitForState(() => cut.Find(".nx-splitter-bar").GetAttribute("aria-disabled") == "true");
-        Assert.That(cut.Find(".nx-splitter-toggle-prev").GetAttribute("aria-label"), Is.EqualTo("Expand Navigation"));
+        Assert.That(cut.Find(".nx-splitter-bar").ClassList, Does.Contain("nx-splitter-bar-hidden"), "nothing to resize: the bar goes with the pane");
 
-        await cut.Find(".nx-splitter-toggle-prev").ClickAsync(new MouseEventArgs());
+        await cut.InvokeAsync(pane.ToggleAsync);
         Assert.That(a.CollapseLog, Is.EqualTo(new[] { true, false }));
         cut.WaitForState(() => !cut.Find("#a").ClassList.Contains("nx-splitter-pane-collapsed"));
-    }
-
-    [Test]
-    public async Task EnterOnBar_TogglesPrevElseNext()
-    {
-        var b = Pane("b", "180px");
-        b.Collapsible = true;
-        var cut = RenderSplitter([Pane("a"), b]);
-
-        await cut.Find(".nx-splitter-bar").KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
-
-        Assert.That(b.CollapseLog, Is.EqualTo(new[] { true }));
-    }
-
-    [Test]
-    public async Task PhoneHeader_Toggles()
-    {
-        var a = Pane("a", "200px", "Navigation");
-        a.Collapsible = true;
-        var cut = RenderSplitter([a, Pane("b")]);
-
-        await cut.Find("#a .nx-splitter-pane-header").ClickAsync(new MouseEventArgs());
-
-        Assert.That(a.CollapseLog, Is.EqualTo(new[] { true }));
-        cut.WaitForState(() => cut.Find("#a .nx-splitter-pane-header").GetAttribute("aria-expanded") == "false");
+        cut.WaitForState(() => !cut.Find(".nx-splitter-bar").ClassList.Contains("nx-splitter-bar-hidden"));
     }
 
     [Test]
     public void Collapsed_BoundFromOutside()
     {
         var a = Pane("a", "200px");
-        a.Collapsible = true;
         a.Collapsed = true;
         var cut = RenderSplitter([a, Pane("b")]);
 

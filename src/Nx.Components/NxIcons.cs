@@ -1,10 +1,10 @@
 namespace Nx.Components;
 
-// The icon set ERP uses (pass 5 survey of TelerikSvgIcon), drawn from Lucide 0.460.0
+// The icon set ERP uses, drawn from Lucide 0.460.0
 // (https://lucide.dev, ISC License, Copyright (c) Lucide Contributors 2022; portions Copyright (c) Cole Bemis
 // 2013-2022 as part of Feather, MIT). Generated: each value is the inside of a 24×24 stroked <svg>.
 
-/// <summary>The built-in icons for <see cref="NxIcon"/>, named after the Telerik SvgIcon each one replaces.</summary>
+/// <summary>The built-in icons for <see cref="NxIcon"/>: the set ERP uses.</summary>
 public static class NxIcons
 {
     /// <summary>Anchor (Lucide <c>anchor</c>).</summary>

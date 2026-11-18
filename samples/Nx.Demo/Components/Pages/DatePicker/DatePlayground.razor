@@ -14,8 +14,8 @@
                 {
                     <NxDatePicker @key="@($"dt-{pgKey}")" TValue="DateTime" Id="playground-datepicker" @bind-Value="pgDateTime"
                                   Format="@pgFormat" Culture="Culture" Min="MinOrNull" Max="MaxOrNull" IsDateDisabled="DisabledRule"
-                                  ShowWeekNumbers="pgWeeks" FirstDayOfWeek="FirstDay" ShowTodayButton="pgToday"
-                                  Label="@LabelOrNull" FloatingLabel="pgFloating" Placeholder="@PlaceholderOrNull"
+                                  ShowCalendar="pgCalendar" ShowWeekNumbers="pgWeeks" FirstDayOfWeek="FirstDay" ShowTodayButton="pgToday"
+                                  Label="@LabelOrNull" Placeholder="@PlaceholderOrNull"
                                   Clearable="pgClearable" ReadOnly="pgReadOnly" Disabled="pgDisabled" AutoFocus="pgAutoFocus"
                                   MobileMode="pgMobile" @bind-Value:after="Changed" />
                 }
@@ -23,8 +23,8 @@
                 {
                     <NxDatePicker @key="@($"do-{pgKey}")" TValue="DateOnly?" Id="playground-datepicker" @bind-Value="pgDateOnly"
                                   Format="@pgFormat" Culture="Culture" Min="MinOrNull" Max="MaxOrNull" IsDateDisabled="DisabledRule"
-                                  ShowWeekNumbers="pgWeeks" FirstDayOfWeek="FirstDay" ShowTodayButton="pgToday"
-                                  Label="@LabelOrNull" FloatingLabel="pgFloating" Placeholder="@PlaceholderOrNull"
+                                  ShowCalendar="pgCalendar" ShowWeekNumbers="pgWeeks" FirstDayOfWeek="FirstDay" ShowTodayButton="pgToday"
+                                  Label="@LabelOrNull" Placeholder="@PlaceholderOrNull"
                                   Clearable="pgClearable" ReadOnly="pgReadOnly" Disabled="pgDisabled" AutoFocus="pgAutoFocus"
                                   MobileMode="pgMobile" @bind-Value:after="Changed" />
                 }
@@ -77,6 +77,7 @@
             </label>
 
             <div class="demo-controls-title">Calendar</div>
+            <label class="demo-control"><span>ShowCalendar</span><input type="checkbox" id="pg-calendar" @bind="pgCalendar" /></label>
             <label class="demo-control"><span>ShowWeekNumbers</span><input type="checkbox" id="pg-weeks" @bind="pgWeeks" /></label>
             <label class="demo-control">
                 <span>FirstDayOfWeek</span>
@@ -91,7 +92,6 @@
 
             <div class="demo-controls-title">Label &amp; text</div>
             <label class="demo-control"><span>Label</span><input type="text" @bind="pgLabel" @bind:event="oninput" /></label>
-            <label class="demo-control"><span>FloatingLabel</span><input type="checkbox" id="pg-floating" @bind="pgFloating" /></label>
             <label class="demo-control"><span>Placeholder</span><input type="text" @bind="pgPlaceholder" @bind:event="oninput" /></label>
 
             <div class="demo-controls-title">Behavior</div>
@@ -123,7 +123,7 @@
     DateTime pgDateTime = new(2026, 10, 23, 9, 0, 0);
     string pgMin = "", pgMax = "", pgDisabledDates = "", pgFormat = "d", pgCulture = "en-US", pgFirstDay = "";
     string pgLabel = "Pour date", pgPlaceholder = "";
-    bool pgWeeks, pgToday = true, pgFloating, pgClearable, pgReadOnly, pgDisabled, pgAutoFocus;
+    bool pgCalendar = true, pgWeeks, pgToday = true, pgClearable, pgReadOnly, pgDisabled, pgAutoFocus;
     NxMobileMode pgMobile = NxMobileMode.Auto;
     int pgKey, pgChanges;
 
@@ -159,11 +159,11 @@
             if (MaxOrNull is { } max) attrs.Add($"Max=\"new DateOnly({max.Year}, {max.Month}, {max.Day})\"");
             if (pgDisabledDates == "weekends") attrs.Add("IsDateDisabled=\"d => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday\"");
             if (pgDisabledDates == "mondays") attrs.Add("IsDateDisabled=\"d => d.DayOfWeek == DayOfWeek.Monday\"");
+            if (!pgCalendar) attrs.Add("ShowCalendar=\"false\"");
             if (pgWeeks) attrs.Add("ShowWeekNumbers=\"true\"");
             if (FirstDay is { } f) attrs.Add($"FirstDayOfWeek=\"DayOfWeek.{f}\"");
             if (!pgToday) attrs.Add("ShowTodayButton=\"false\"");
             if (LabelOrNull is { } l) attrs.Add($"Label=\"{l}\"");
-            if (pgFloating) attrs.Add("FloatingLabel=\"true\"");
             if (PlaceholderOrNull is { } p) attrs.Add($"Placeholder=\"{p}\"");
             if (pgClearable) attrs.Add("Clearable=\"true\"");
             if (pgReadOnly) attrs.Add("ReadOnly=\"true\"");

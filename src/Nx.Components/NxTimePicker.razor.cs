@@ -10,8 +10,8 @@ namespace Nx.Components;
 
 /// <summary>
 /// A time input for <see cref="TimeOnly"/>, <see cref="TimeSpan"/> or <see cref="DateTime"/>, nullable or not: typed
-/// entry in 12- or 24-hour form, a list of times every <see cref="Step"/> minutes, min/max, and the same label,
-/// floating label and clear options as <see cref="NxTextBox"/>. On a phone the list opens as a full-screen sheet.
+/// entry in 12- or 24-hour form, a list of times every <see cref="Step"/> minutes, min/max, and the same label
+/// and clear options as <see cref="NxTextBox"/>. On a phone the list opens as a full-screen sheet.
 /// </summary>
 /// <typeparam name="TValue">The bound time type. A <see cref="DateTime"/> keeps its date.</typeparam>
 /// <example>
@@ -90,9 +90,6 @@ public partial class NxTimePicker<TValue> : IAsyncDisposable
 
     /// <summary>Label text, rendered as a <c>&lt;label&gt;</c> tied to the input.</summary>
     [Parameter] public string? Label { get; set; }
-
-    /// <summary>Renders <see cref="Label"/> inside the field, lifted on focus or once there is a value.</summary>
-    [Parameter] public bool FloatingLabel { get; set; }
 
     /// <summary>Placeholder text shown while the field is empty. Default: <c>hh:mm</c>, with <c>AM/PM</c> for 12-hour.</summary>
     [Parameter] public string? Placeholder { get; set; }

@@ -12,7 +12,7 @@
             <div class="demo-preview-inner demo-preview-inner-stretch">
                 <NxTimePicker @key="pgKey" TValue="TimeOnly?" Id="playground-timepicker" @bind-Value="pgTime" @bind-Value:after="Changed"
                               Step="StepValue" Min="MinOrNull" Max="MaxOrNull" Use24Hour="Clock" Culture="Culture"
-                              Label="@LabelOrNull" FloatingLabel="pgFloating" Placeholder="@PlaceholderOrNull"
+                              Label="@LabelOrNull" Placeholder="@PlaceholderOrNull"
                               Clearable="pgClearable" ReadOnly="pgReadOnly" Disabled="pgDisabled" AutoFocus="pgAutoFocus"
                               MobileMode="pgMobile" />
             </div>
@@ -56,7 +56,6 @@
 
             <div class="demo-controls-title">Label &amp; text</div>
             <label class="demo-control"><span>Label</span><input type="text" @bind="pgLabel" @bind:event="oninput" /></label>
-            <label class="demo-control"><span>FloatingLabel</span><input type="checkbox" id="pg-floating" @bind="pgFloating" /></label>
             <label class="demo-control"><span>Placeholder</span><input type="text" @bind="pgPlaceholder" @bind:event="oninput" /></label>
 
             <div class="demo-controls-title">Behavior</div>
@@ -86,7 +85,7 @@
     TimeOnly? pgTime = new(9, 30);
     string pgStep = "30", pgMin = "", pgMax = "", pgClock = "", pgCulture = "en-US";
     string pgLabel = "Start time", pgPlaceholder = "";
-    bool pgFloating, pgClearable, pgReadOnly, pgDisabled, pgAutoFocus;
+    bool pgClearable, pgReadOnly, pgDisabled, pgAutoFocus;
     NxMobileMode pgMobile = NxMobileMode.Auto;
     int pgKey, pgChanges;
 
@@ -112,7 +111,6 @@
             if (Clock is bool c) attrs.Add($"Use24Hour=\"{(c ? "true" : "false")}\"");
             if (pgCulture != "en-US") attrs.Add($"Culture=\"@CultureInfo.GetCultureInfo(\"{pgCulture}\")\"");
             if (LabelOrNull is { } l) attrs.Add($"Label=\"{l}\"");
-            if (pgFloating) attrs.Add("FloatingLabel=\"true\"");
             if (PlaceholderOrNull is { } p) attrs.Add($"Placeholder=\"{p}\"");
             if (pgClearable) attrs.Add("Clearable=\"true\"");
             if (pgReadOnly) attrs.Add("ReadOnly=\"true\"");

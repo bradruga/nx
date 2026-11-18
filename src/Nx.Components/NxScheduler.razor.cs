@@ -9,7 +9,7 @@ namespace Nx.Components;
 /// <summary>
 /// A read-only week calendar: items from <see cref="Data"/> placed by their start and end on seven day columns, side by
 /// side where they overlap, split at midnight when they run overnight, with work hours shaded and Today / previous /
-/// next week. Fields are read by name, as Telerik's scheduler does. Scoped to what ERP's shift schedule uses: one
+/// next week. Fields are read by name. Scoped to what ERP's shift schedule uses: one
 /// week view, no creating, editing or deleting.
 /// </summary>
 /// <typeparam name="TItem">The item type.</typeparam>

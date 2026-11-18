@@ -30,7 +30,6 @@
     align-items: center;
     justify-content: center;
     flex: 0 0 var(--nx-splitter-bar-size);
-    gap: 4px;
     background: var(--nx-splitter-bar-bg);
     touch-action: none;
     transition: background var(--nx-transition);
@@ -50,6 +49,7 @@
 
 .nx-splitter-bar-fixed { cursor: default !important; }
 .nx-splitter-bar-fixed:hover { background: var(--nx-splitter-bar-bg); }
+.nx-splitter-bar-hidden { display: none; }
 
 /* A wider invisible hit area than the bar itself, for pointers and fingers. */
 .nx-splitter-bar::before {
@@ -67,26 +67,7 @@
     height: 24px;
 }
 
-.nx-splitter-toggle {
-    position: relative;
-    z-index: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    width: 16px;
-    height: 16px;
-    padding: 0;
-    border: none;
-    border-radius: var(--nx-radius-sm);
-    background: var(--nx-surface);
-    color: var(--nx-fg-muted);
-    box-shadow: 0 0 0 1px var(--nx-border);
-    cursor: pointer;
-}
-.nx-splitter-toggle:hover { color: var(--nx-fg); background: var(--nx-surface-hover); }
-
-/* ── Phone: panes stack, each with a header that collapses it ─────────────── */
+/* ── Phone: panes stack, each under its title ─────────────────────────────── */
 
 @media (max-width: 600px) {
     .nx-splitter-bar { display: none; }
@@ -107,24 +88,12 @@
     .nx-splitter-pane-header {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 8px;
+        box-sizing: border-box;
         width: 100%;
         min-height: 44px;
         padding: 0 12px;
-        border: none;
         background: var(--nx-popup-header-bg);
         color: var(--nx-fg);
-        font: inherit;
         font-weight: 600;
-        text-align: left;
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
     }
-    .nx-splitter-pane-header:disabled { cursor: default; color: var(--nx-fg); }
-    .nx-splitter-pane-header:focus { outline: none; }
-    .nx-splitter-pane-header:focus-visible { outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color); outline-offset: -2px; }
-
-    .nx-splitter-pane-chevron { transition: transform var(--nx-transition); }
-    .nx-splitter-pane-collapsed .nx-splitter-pane-chevron { transform: rotate(-90deg); }
 }

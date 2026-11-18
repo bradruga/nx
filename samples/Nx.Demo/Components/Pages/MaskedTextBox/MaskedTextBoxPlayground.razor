@@ -11,7 +11,7 @@
             <div class="demo-preview-inner demo-preview-inner-stretch">
                 <NxMaskedTextBox @ref="box" Id="playground-mask" @bind-Value="pgValue" @bind-Value:after="() => pgChanges++"
                                  Mask="@pgMask" Prompt="Prompt" IncludeLiterals="pgLiterals" MaskOnFocus="pgMaskOnFocus"
-                                 Label="@OrNull(pgLabel)" FloatingLabel="pgFloating" Placeholder="@OrNull(pgPlaceholder)"
+                                 Label="@OrNull(pgLabel)" Placeholder="@OrNull(pgPlaceholder)"
                                  Clearable="pgClearable" ReadOnly="pgReadOnly" Disabled="pgDisabled" />
             </div>
             <div class="demo-row">
@@ -30,7 +30,6 @@
 
             <div class="demo-controls-title">Text</div>
             <label class="demo-control"><span>Label</span><input type="text" @bind="pgLabel" @bind:event="oninput" /></label>
-            <label class="demo-control"><span>FloatingLabel</span><input type="checkbox" id="pg-floating" @bind="pgFloating" /></label>
             <label class="demo-control"><span>Placeholder</span><input type="text" @bind="pgPlaceholder" @bind:event="oninput" /></label>
 
             <div class="demo-controls-title">Behavior</div>
@@ -53,7 +52,7 @@
     NxMaskedTextBox? box;
     string? pgValue;
     string pgMask = "(000) 000-0000", pgPrompt = "_", pgLabel = "Phone", pgPlaceholder = "";
-    bool pgLiterals, pgMaskOnFocus, pgFloating, pgClearable = true, pgReadOnly, pgDisabled;
+    bool pgLiterals, pgMaskOnFocus, pgClearable = true, pgReadOnly, pgDisabled;
     int pgChanges;
 
     char Prompt => string.IsNullOrEmpty(pgPrompt) ? '_' : pgPrompt[0];
@@ -67,7 +66,6 @@
             if (pgLiterals) attrs.Add("IncludeLiterals=\"true\"");
             if (pgMaskOnFocus) attrs.Add("MaskOnFocus=\"true\"");
             if (OrNull(pgLabel) is { } l) attrs.Add($"Label=\"{l}\"");
-            if (pgFloating) attrs.Add("FloatingLabel=\"true\"");
             if (OrNull(pgPlaceholder) is { } p) attrs.Add($"Placeholder=\"{p}\"");
             if (pgClearable) attrs.Add("Clearable=\"true\"");
             if (pgReadOnly) attrs.Add("ReadOnly=\"true\"");

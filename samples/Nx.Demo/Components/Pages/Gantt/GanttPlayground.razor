@@ -12,7 +12,7 @@
                 <NxGantt TItem="ScheduleTask" Id="playground-gantt" Data="tasks" Dependencies="@(pgLinks ? links : null)" SlotWidth="pgSlot"
                          TreeListWidth="@pgTreeWidth" TreeListWidthChanged="w => pgTreeWidth = w" Sortable="pgSortable" FilterRow="pgFilterRow"
                          DayHeaderDateFormat="@pgDayFormat" Height="@pgHeight" AriaLabel="@OrNull(pgAriaLabel)"
-                         OnEdit="t => pgEdits++" OnUpdate="t => pgUpdates++">
+                         Editable="pgEditable" OnEdit="t => pgEdits++" OnUpdate="Updated">
                     <Columns>
                         <NxGanttColumn Field="@nameof(ScheduleTask.Title)" Title="Task" Width="200px" Expandable="true">
                             <EditorTemplate><NxTextBox @bind-Value="context.Title" Immediate="true" aria-label="Task" /></EditorTemplate>
@@ -45,6 +45,8 @@
             </label>
             <label class="demo-control"><span>Dependencies</span><input type="checkbox" id="pg-links" @bind="pgLinks" /></label>
 
+            <label class="demo-control"><span>Editable</span><input type="checkbox" id="pg-editable" @bind="pgEditable" /></label>
+
             <div class="demo-controls-title">Task list</div>
             <label class="demo-control"><span>TreeListWidth</span><input type="text" id="pg-treewidth" @bind="pgTreeWidth" /></label>
             <label class="demo-control"><span>Sortable</span><input type="checkbox" id="pg-sortable" @bind="pgSortable" /></label>
@@ -71,6 +73,15 @@
 <DocPager Slug="gantt" Page="playground" />
 
 @code {
+    bool pgEditable = true;
+
+    void Updated(NxGanttUpdateArgs<ScheduleTask> args)
+    {
+        args.Apply();
+        DemoGantt.Rollup(tasks);
+        pgUpdates++;
+    }
+
     static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
 
     readonly List<ScheduleTask> tasks = DemoGantt.Tasks();
@@ -93,6 +104,7 @@
             if (pgDayFormat != "{0:%d}") attrs.Add($"DayHeaderDateFormat=\"{pgDayFormat}\"");
             if (pgHeight != "600px") attrs.Add($"Height=\"{pgHeight}\"");
             if (OrNull(pgAriaLabel) is { } label) attrs.Add($"AriaLabel=\"{label}\"");
+            if (!pgEditable) attrs.Add("Editable=\"false\"");
             attrs.Add("OnEdit=\"OpenForm\" OnUpdate=\"SaveAsync\"");
             return "<NxGantt " + string.Join("\n         ", attrs) + ">\n    <Columns>…</Columns>\n</NxGantt>";
         }

@@ -1,4 +1,5 @@
 .nx-editor {
+    position: relative;
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
@@ -117,6 +118,33 @@
 .nx-editor-content ::deep td,
 .nx-editor-content ::deep th { min-width: 2em; vertical-align: top; outline: 1px dashed var(--nx-editor-guide); outline-offset: -1px; }
 
+/* ── Selected picture: nx-editor.js adds the box to the editor (not the text) and places it ── */
+
+.nx-editor ::deep .nx-editor-image-box {
+    position: absolute;
+    z-index: 1;
+    box-sizing: border-box;
+    outline: 2px solid var(--nx-editor-image-outline);
+    pointer-events: none;
+}
+
+.nx-editor ::deep .nx-editor-image-handle {
+    position: absolute;
+    width: var(--nx-editor-image-handle-size);
+    height: var(--nx-editor-image-handle-size);
+    box-sizing: border-box;
+    border: 2px solid var(--nx-editor-image-outline);
+    border-radius: 2px;
+    background: var(--nx-editor-image-handle-bg);
+    pointer-events: auto;
+    touch-action: none;
+}
+
+.nx-editor ::deep .nx-editor-image-handle-nw { left: 0; top: 0; transform: translate(-50%, -50%); cursor: nwse-resize; }
+.nx-editor ::deep .nx-editor-image-handle-ne { right: 0; top: 0; transform: translate(50%, -50%); cursor: nesw-resize; }
+.nx-editor ::deep .nx-editor-image-handle-sw { left: 0; bottom: 0; transform: translate(-50%, 50%); cursor: nesw-resize; }
+.nx-editor ::deep .nx-editor-image-handle-se { right: 0; bottom: 0; transform: translate(50%, 50%); cursor: nwse-resize; }
+
 /* ── Table size picker ───────────────────────────────────────────────────── */
 
 .nx-editor-tablepicker {
@@ -164,4 +192,7 @@
 @media (pointer: coarse) {
     .nx-editor-tablepicker-grid { grid-template-columns: repeat(8, 30px); }
     .nx-editor-tablepicker-cell { width: 30px; height: 30px; }
+
+    /* A 44px touch target around each handle. */
+    .nx-editor ::deep .nx-editor-image-handle::before { content: ""; position: absolute; inset: 50%; margin: -22px; }
 }

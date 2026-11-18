@@ -11,7 +11,7 @@
             <div class="demo-preview-inner">
                 <NxColorPicker Id="playground-color" @bind-Value="pgValue" @bind-Value:after="() => pgChanges++"
                                Colors="@(pgPalette == "Basic" ? NxColorPalettes.Basic : NxColorPalettes.Office)" Columns="pgColumns"
-                               Clearable="pgClearable" ShowValue="pgShowValue" Placeholder="@pgPlaceholder" Disabled="pgDisabled"
+                               View="pgView" Clearable="pgClearable" ShowValue="pgShowValue" Placeholder="@pgPlaceholder" Disabled="pgDisabled"
                                AriaLabel="@OrNull(pgAriaLabel)" />
             </div>
             <div class="demo-row">
@@ -22,6 +22,15 @@
 
         <div class="demo-controls">
             <div class="demo-controls-title">Palette</div>
+            <label class="demo-control">
+                <span>View</span>
+                <select id="pg-view" @bind="pgView">
+                    @foreach (var view in Enum.GetValues<NxColorPickerView>())
+                    {
+                        <option value="@view">@view</option>
+                    }
+                </select>
+            </label>
             <label class="demo-control">
                 <span>Colors</span>
                 <select id="pg-palette" @bind="pgPalette" @bind:after="PaletteChanged">
@@ -56,6 +65,7 @@
     string pgPalette = "Office", pgPlaceholder = "None", pgAriaLabel = "Color";
     int pgColumns = 10, pgChanges;
     bool pgClearable = true, pgShowValue = true, pgDisabled;
+    NxColorPickerView pgView;
 
     void PaletteChanged() => pgColumns = pgPalette == "Basic" ? 6 : 10;
 
@@ -66,6 +76,7 @@
             var attrs = new List<string> { "@bind-Value=\"item.Color\"" };
             if (pgPalette == "Basic") attrs.Add("Colors=\"NxColorPalettes.Basic\"");
             if (pgColumns != 10) attrs.Add($"Columns=\"{pgColumns}\"");
+            if (pgView != NxColorPickerView.Palette) attrs.Add($"View=\"NxColorPickerView.{pgView}\"");
             if (pgClearable) attrs.Add("Clearable=\"true\"");
             if (pgShowValue) attrs.Add("ShowValue=\"true\"");
             if (pgShowValue && pgPlaceholder != "None") attrs.Add($"Placeholder=\"{pgPlaceholder}\"");
