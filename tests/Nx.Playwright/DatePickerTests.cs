@@ -322,6 +322,8 @@ public class DatePickerTests : PageTest
         await Toggle("sheet-always").ScrollIntoViewIfNeededAsync();
         await Toggle("sheet-always").ClickAsync();
         await Expect(Sheet).ToBeVisibleAsync();
+        // Focus moves into the sheet a moment after it shows; keys pressed before that go to the page.
+        await Expect(Sheet.Locator(".nx-calendar-grids")).ToBeFocusedAsync();
         await Page.Keyboard.PressAsync("ArrowRight");
         await Page.Keyboard.PressAsync("Escape");
 
@@ -375,5 +377,123 @@ public class DatePickerTests : PageTest
         await Input("playground-datepicker").FillAsync("01.11.2026");
         await Page.Keyboard.PressAsync("Enter");
         await Expect(Page.Locator("#playground-value")).ToHaveTextAsync("Value: 2026-11-01 09:00");
+    }
+
+    // ── Edit text on focus ────────────────────────────────────────────────────
+
+    [Test]
+    public async Task Focus_TypedRightAway_OnASlowConnection_NothingLostOrOverwritten()
+    {
+        await GoToPage();
+        var input = Input("format-long");
+        await input.ScrollIntoViewIfNeededAsync();
+        await Expect(input).ToHaveValueAsync("Friday, October 23, 2026");
+        var cdp = await Page.Context.NewCDPSessionAsync(Page);
+        await cdp.SendAsync("Network.enable");
+        await cdp.SendAsync("Network.emulateNetworkConditions", new() { ["offline"] = false, ["latency"] = 250, ["downloadThroughput"] = -1, ["uploadThroughput"] = -1 });
+
+        // The edit text is there, selected, before any round trip: what is typed next replaces it.
+        await input.FocusAsync();
+        Assert.That(await input.InputValueAsync(), Is.EqualTo("10/23/2026"));
+        Assert.That(await input.EvaluateAsync<bool>("el => el.selectionStart === 0 && el.selectionEnd === el.value.length"), Is.True);
+        await Page.Keyboard.TypeAsync("12/5/2026");
+        Assert.That(await input.InputValueAsync(), Is.EqualTo("12/5/2026"));
+
+        // The focus round trip lands after the typing. It used to write the edit text of the old date over it.
+        await Page.WaitForTimeoutAsync(1500);
+        Assert.That(await input.InputValueAsync(), Is.EqualTo("12/5/2026"));
+
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(Input("format-dmy")).ToHaveValueAsync("05-12-2026");
+        await Expect(input).ToHaveValueAsync("12/05/2026");
+        await Page.Keyboard.PressAsync("Tab");
+        await Expect(input).ToHaveValueAsync("Saturday, December 5, 2026");
+    }
+
+    [Test]
+    public async Task Focus_ByClick_SwapsAtOnce_PutsTheCaret_TypingAddsToTheText()
+    {
+        await GoToPage();
+        var input = Input("format-long");
+        await input.ScrollIntoViewIfNeededAsync();
+        var cdp = await Page.Context.NewCDPSessionAsync(Page);
+        await cdp.SendAsync("Network.enable");
+        await cdp.SendAsync("Network.emulateNetworkConditions", new() { ["offline"] = false, ["latency"] = 250, ["downloadThroughput"] = -1, ["uploadThroughput"] = -1 });
+
+        await input.ClickAsync();
+        Assert.That(await input.InputValueAsync(), Is.EqualTo("10/23/2026"));
+        Assert.That(await input.EvaluateAsync<bool>("el => el.selectionStart === el.selectionEnd"), Is.True, "a click puts the caret; it does not select");
+
+        await Page.Keyboard.PressAsync("End");
+        await Page.Keyboard.PressAsync("Backspace");
+        await Page.Keyboard.TypeAsync("7");
+        await Page.WaitForTimeoutAsync(1500);
+        Assert.That(await input.InputValueAsync(), Is.EqualTo("10/23/2027"));
+
+        await Page.Keyboard.PressAsync("Tab");
+        await Expect(input).ToHaveValueAsync("Saturday, October 23, 2027");
+    }
+
+    // ── DateTimeOffset ────────────────────────────────────────────────────────
+
+    [Test]
+    public async Task DateTimeOffset_KeepsItsTimeAndOffset()
+    {
+        await GoToPage();
+
+        await Expect(Input("offset-kept")).ToHaveValueAsync("10/23/2026");
+        await Input("offset-kept").FillAsync("1/15/2027");
+        await Page.Keyboard.PressAsync("Enter");
+
+        await Expect(Page.Locator("#offset-kept-value")).ToHaveTextAsync("Value: 2027-01-15 18:00 +09:00");
+    }
+
+    [TestCase("America/Chicago", "7/15/2026", "2026-07-15 00:00 -05:00")]
+    [TestCase("America/Chicago", "1/15/2026", "2026-01-15 00:00 -06:00")]
+    [TestCase("Asia/Kolkata", "7/15/2026", "2026-07-15 00:00 +05:30")]
+    public async Task DateTimeOffset_Empty_TakesTheBrowsersOffsetOnThatDate(string timeZone, string typed, string expected)
+    {
+        await using var context = await Browser.NewContextAsync(new() { TimezoneId = timeZone });
+        var page = await context.NewPageAsync();
+        await page.GotoAsync(_baseUrl + "/datepicker/examples");
+        await Expect(page.Locator(".layout-container[data-interactive=true]")).ToBeVisibleAsync();
+
+        await page.Locator("#offset-empty").FillAsync(typed);
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.Locator("#offset-empty-value")).ToHaveTextAsync($"Value: {expected}");
+    }
+
+    [Test]
+    public async Task DateTimeOffset_Empty_CalendarPick_ThenKeepsThatOffset()
+    {
+        await using var context = await Browser.NewContextAsync(new() { TimezoneId = "Europe/Berlin" });
+        var page = await context.NewPageAsync();
+        await page.GotoAsync(_baseUrl + "/datepicker/examples");
+        await Expect(page.Locator(".layout-container[data-interactive=true]")).ToBeVisibleAsync();
+        var input = page.Locator("#offset-empty");
+
+        await input.FillAsync("7/1/2026");
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.Locator("#offset-empty-value")).ToHaveTextAsync("Value: 2026-07-01 00:00 +02:00");
+
+        await page.Locator(".nx-datepicker:has(#offset-empty) .nx-datepicker-toggle").ClickAsync();
+        await page.Locator(".nx-datepicker-popup td[data-date='2026-07-20']").ClickAsync();
+        await Expect(page.Locator("#offset-empty-value")).ToHaveTextAsync("Value: 2026-07-20 00:00 +02:00");
+    }
+
+    [Test]
+    public async Task Playground_DateTimeOffset()
+    {
+        await GoToPage("playground");
+
+        await Page.Locator("#pg-type").SelectOptionAsync("DateTimeOffset?");
+        // The switch replaces the picker a round trip later; text filled into the old one would be lost.
+        await Expect(Page.Locator("#playground-value")).ToHaveAttributeAsync("data-type", "DateTimeOffset?");
+        await Expect(Page.Locator("#playground-value")).ToHaveTextAsync("Value: null");
+        await Input("playground-datepicker").FillAsync("11/1/2026");
+        await Page.Keyboard.PressAsync("Enter");
+
+        await Expect(Page.Locator("#playground-value")).ToHaveTextAsync(new System.Text.RegularExpressions.Regex(@"^Value: 2026-11-01 00:00 [+-]\d\d:\d\d$"));
     }
 }

@@ -41,6 +41,20 @@ public class DemoSearchTests : PageTest
     }
 
     [Test]
+    public async Task TypingStraightAfterCtrlK_LandsInTheSearch()
+    {
+        await GoToAsync("/textbox/examples");
+
+        var field = Page.Locator(".main-content input[type=text]").First;
+        await field.FocusAsync();
+        await Page.Keyboard.PressAsync("Control+k");
+        await Page.Keyboard.TypeAsync("date");
+
+        await Expect(Input).ToHaveValueAsync("date");
+        await Expect(field).ToHaveValueAsync("");
+    }
+
+    [Test]
     public async Task Slash_Opens_ButNotWhileTypingInAField()
     {
         await GoToAsync("/textbox/examples");

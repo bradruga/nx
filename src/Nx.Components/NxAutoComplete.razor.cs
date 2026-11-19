@@ -81,11 +81,11 @@ public partial class NxAutoComplete<TItem>
     /// <summary>Width of the list as a CSS length, e.g. <c>500px</c>. Default: as wide as the field.</summary>
     [Parameter] public string? PopupWidth { get; set; }
 
-    /// <summary>Renders only the visible suggestions; every one is then <see cref="ItemHeight"/> pixels tall.</summary>
-    [Parameter] public bool Virtualize { get; set; }
+    /// <summary>Suggestion count from which the list renders only the rows in view, all one height. Default: <c>200</c>.</summary>
+    [Parameter] public int VirtualizeThreshold { get; set; } = 200;
 
-    /// <summary>Row height in pixels under <see cref="Virtualize"/>. Default: <c>34</c>.</summary>
-    [Parameter] public float ItemHeight { get; set; } = 34;
+    /// <summary>Row height in pixels of a virtualized list. Default: measured from the rendered rows.</summary>
+    [Parameter] public float? ItemHeight { get; set; }
 
     /// <summary>Largest list height in pixels. Default: <c>300</c>.</summary>
     [Parameter] public int PopupMaxHeight { get; set; } = 300;

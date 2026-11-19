@@ -20,7 +20,7 @@
                 <tr><td>Prefix</td><td>RenderFragment?</td><td>—</td><td>Content before the text, e.g. a search icon.</td></tr>
                 <tr><td>ItemTemplate / GroupHeaderTemplate</td><td>RenderFragment&lt;TItem&gt; / &lt;string&gt;</td><td>—</td><td>Render suggestions and group headers.</td></tr>
                 <tr><td>PopupWidth / PopupMaxHeight</td><td>string? / int</td><td>field / 300</td><td>The list's size.</td></tr>
-                <tr><td>Virtualize / ItemHeight</td><td>bool / float</td><td>false / 34</td><td>Render only rows in view, each ItemHeight px.</td></tr>
+                <tr><td>VirtualizeThreshold / ItemHeight</td><td>int / float?</td><td>200 / measured</td><td>Suggestion count from which only the rows in view are rendered; their height in pixels.</td></tr>
                 <tr><td>Loading / ReadOnly / Disabled</td><td>bool</td><td>false</td><td>As NxComboBox.</td></tr>
                 <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>Input id; outer class and style. Other attributes go to the input.</td></tr>
             </tbody>

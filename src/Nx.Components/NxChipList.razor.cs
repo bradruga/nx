@@ -137,7 +137,7 @@ public partial class NxChipList<TItem> : IAsyncDisposable
                 await module.InvokeVoidAsync("dispose", list);
                 await module.DisposeAsync();
             }
-            catch (JSDisconnectedException)
+            catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
             {
                 // The circuit is gone; the browser cleaned up with it.
             }

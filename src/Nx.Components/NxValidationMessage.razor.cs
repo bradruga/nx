@@ -6,8 +6,8 @@ namespace Nx.Components;
 
 /// <summary>
 /// The validation messages of one field of the cascading <see cref="EditContext"/> (an <see cref="NxForm"/> or
-/// <c>EditForm</c>), each with an alert icon, in <c>--nx-validation-color</c>. Name the field with <see cref="For"/>,
-/// or with <see cref="Field"/> on the form's model. Renders an empty live region while the field is valid.
+/// <c>EditForm</c>), each with an alert icon, in <c>--nx-validation-color</c>. Name the field with <see cref="For"/>.
+/// Renders an empty live region while the field is valid.
 /// </summary>
 /// <example>
 /// <code>
@@ -25,11 +25,6 @@ public partial class NxValidationMessage : IDisposable
     /// <summary>The field, as a lambda: <c>For="() =&gt; order.PourDate"</c>.</summary>
     [Parameter] public Expression<Func<object?>>? For { get; set; }
 
-    /// <summary>The field by property name, on <see cref="Model"/>. Used when <see cref="For"/> is not set.</summary>
-    [Parameter] public string? Field { get; set; }
-
-    /// <summary>The object that owns <see cref="Field"/>. Default: the form's model.</summary>
-    [Parameter] public object? Model { get; set; }
 
     /// <summary>Extra CSS class on the outer element.</summary>
     [Parameter] public string? Class { get; set; }
@@ -56,9 +51,7 @@ public partial class NxValidationMessage : IDisposable
                 subscribed.OnValidationStateChanged += HandleValidationStateChanged;
         }
 
-        field = For is not null ? FieldIdentifier.Create(For)
-              : Field is not null && (Model ?? EditContext?.Model) is { } model ? new FieldIdentifier(model, Field)
-              : null;
+        field = For is not null ? FieldIdentifier.Create(For) : null;
         messages = Read();
     }
 

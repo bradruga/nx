@@ -8,7 +8,7 @@
     @* code *@
     <div class="demo-stage demo-stage-column">
         <div class="demo-row">
-            <NxButtonGroup id="variant-group" AriaLabel="Edit" Size="NxButtonSize.Small">
+            <NxButtonGroup id="variant-group" AriaLabel="Edit" Size="NxSize.Small">
                 <NxButton Icon="@IconOf(NxIcons.Undo)" OnClick='() => Log("Undo")'>Undo</NxButton>
                 <NxButton Icon="@IconOf(NxIcons.Redo)" OnClick='() => Log("Redo")'>Redo</NxButton>
                 <NxButton id="variant-save" Variant="NxButtonVariant.Primary" Icon="@IconOf(NxIcons.Save)" OnClick='() => Log("Save")'>Save</NxButton>
@@ -20,7 +20,7 @@
                 <NxButton OnClick='() => Log("100%")'>100%</NxButton>
                 <NxButton Icon="@IconOf(NxIcons.ZoomIn)" AriaLabel="Zoom in" OnClick='() => Log("Zoom in")' />
             </NxButtonGroup>
-            <NxButtonGroup AriaLabel="Export" Size="NxButtonSize.Large">
+            <NxButtonGroup AriaLabel="Export" Size="NxSize.Large">
                 <NxButton Icon="@IconOf(NxIcons.Print)" OnClick='() => Log("Print")'>Print</NxButton>
                 <NxButton Icon="@IconOf(NxIcons.FileExcel)" OnClick='() => Log("Excel")'>Excel</NxButton>
             </NxButtonGroup>

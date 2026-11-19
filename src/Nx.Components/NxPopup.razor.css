@@ -6,9 +6,9 @@
     box-sizing: border-box;
     max-width: calc(100vw - 16px);
     overflow: auto;
-    border: 1px solid var(--nx-popup-border);
+    border: 1px solid var(--nx-popup-border, var(--nx-border));
     border-radius: var(--nx-radius);
-    background: var(--nx-popup-bg);
+    background: var(--nx-popup-bg, var(--nx-surface));
     box-shadow: var(--nx-shadow-popup);
     color: var(--nx-fg);
     font-family: var(--nx-font-family);

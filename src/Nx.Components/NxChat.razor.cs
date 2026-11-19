@@ -1,6 +1,4 @@
-using System.Collections.Concurrent;
 using System.Globalization;
-using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
@@ -9,12 +7,12 @@ namespace Nx.Components;
 /// <summary>
 /// A conversation: messages from <see cref="Data"/>, the user's on the right and everyone else's on the left with an
 /// avatar and name, grouped by author and day, a typing indicator, and a box that sends on <kbd>Enter</kbd>. The list
-/// stays at the newest message unless the user scrolled up to read. Fields are read by name.
+/// stays at the newest message unless the user scrolled up to read. Fields are read by lambdas.
 /// </summary>
 /// <example>
 /// <code>
-/// &lt;NxChat Data="messages" AuthorId="user" AuthorIdField="@nameof(Msg.AuthorId)" TextField="@nameof(Msg.Text)"
-///         TimestampField="@nameof(Msg.Sent)" OnSendMessage="SendAsync" Height="100%" /&gt;
+/// &lt;NxChat Data="messages" AuthorId="user" ItemAuthorId="m =&gt; m.AuthorId" ItemText="m =&gt; m.Text"
+///         ItemTimestamp="m =&gt; m.Sent" OnSendMessage="SendAsync" Height="100%" /&gt;
 /// </code>
 /// </example>
 public partial class NxChat<TItem> : IAsyncDisposable
@@ -23,7 +21,6 @@ public partial class NxChat<TItem> : IAsyncDisposable
     // nx-chat.js keeps the list at the bottom as messages arrive and sends on Enter (Shift+Enter is a new line).
 
     private const string ModulePath = "./_content/Nx.Components/nx-chat.js";
-    private static readonly ConcurrentDictionary<(Type, string), Func<object, object?>> Getters = new();
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -40,29 +37,29 @@ public partial class NxChat<TItem> : IAsyncDisposable
     /// <summary>The messages, oldest first.</summary>
     [Parameter] public IEnumerable<TItem>? Data { get; set; }
 
-    /// <summary>The current user's author id: messages with this <see cref="AuthorIdField"/> are theirs, on the right.</summary>
+    /// <summary>The current user's author id: messages with this <see cref="ItemAuthorId"/> are theirs, on the right.</summary>
     [Parameter] public string? AuthorId { get; set; }
 
-    /// <summary>The property holding a message's unique id, to keep each message's markup through updates.</summary>
-    [Parameter] public string? IdField { get; set; }
+    /// <summary>A message's unique id, to keep each message's markup through updates.</summary>
+    [Parameter] public Func<TItem, object?>? ItemId { get; set; }
 
-    /// <summary>The property holding a message's author id.</summary>
-    [Parameter] public string? AuthorIdField { get; set; }
+    /// <summary>A message's author id; compared with <see cref="AuthorId"/> as text.</summary>
+    [Parameter] public Func<TItem, object?>? ItemAuthorId { get; set; }
 
-    /// <summary>The property holding the author's display name, shown over their messages.</summary>
-    [Parameter] public string? AuthorNameField { get; set; }
+    /// <summary>The author's display name, shown over their messages.</summary>
+    [Parameter] public Func<TItem, string?>? ItemAuthorName { get; set; }
 
-    /// <summary>The property holding the author's picture address; initials or an icon without one.</summary>
-    [Parameter] public string? AuthorImageUrlField { get; set; }
+    /// <summary>The author's picture address; initials or an icon without one.</summary>
+    [Parameter] public Func<TItem, string?>? ItemAuthorImageUrl { get; set; }
 
-    /// <summary>The property holding the message text, shown as plain text with its line breaks.</summary>
-    [Parameter] public string? TextField { get; set; }
+    /// <summary>The message text, shown as plain text with its line breaks.</summary>
+    [Parameter] public Func<TItem, string?>? ItemText { get; set; }
 
-    /// <summary>The property holding when it was sent (<c>DateTime</c> or <c>DateTimeOffset</c>), for times and day separators.</summary>
-    [Parameter] public string? TimestampField { get; set; }
+    /// <summary>When it was sent (<c>DateTime</c> or <c>DateTimeOffset</c>), for times and day separators.</summary>
+    [Parameter] public Func<TItem, object?>? ItemTimestamp { get; set; }
 
-    /// <summary>The property marking a message as "is typing…", shown as moving dots.</summary>
-    [Parameter] public string? IsTypingField { get; set; }
+    /// <summary>Marks a message as "is typing…", shown as moving dots.</summary>
+    [Parameter] public Func<TItem, bool>? ItemIsTyping { get; set; }
 
     // ── Look ──────────────────────────────────────────────────────────────────
 
@@ -196,40 +193,28 @@ public partial class NxChat<TItem> : IAsyncDisposable
         foreach (var item in Data ?? [])
         {
             if (item is null) continue;
-            var author = Get(item, AuthorIdField)?.ToString();
-            var sent = Get(item, TimestampField) switch
+            var author = ItemAuthorId?.Invoke(item)?.ToString();
+            var sent = ItemTimestamp?.Invoke(item) switch
             {
                 DateTime d => d,
                 DateTimeOffset o => o.LocalDateTime,
                 _ => (DateTime?)null
             };
-            var typing = Get(item, IsTypingField) is true;
+            var typing = ItemIsTyping?.Invoke(item) is true;
             var dayBreak = sent is { } s && s.Date != lastDay;
             if (sent is { } at) lastDay = at.Date;
             var group = next.Count > 0 ? next[^1] : null;
             if (group is null || group.AuthorId != author || dayBreak)
             {
-                group = new Group(author, author is not null && author == AuthorId, Get(item, AuthorNameField)?.ToString(),
-                    Get(item, AuthorImageUrlField)?.ToString(), dayBreak ? sent!.Value.Date : null);
+                group = new Group(author, author is not null && author == AuthorId, ItemAuthorName?.Invoke(item),
+                    ItemAuthorImageUrl?.Invoke(item), dayBreak ? sent!.Value.Date : null);
                 next.Add(group);
             }
-            var key = Get(item, IdField) ?? (object)item;
-            group.Messages.Add(new Message(item, key, Get(item, TextField)?.ToString(), typing));
+            var key = ItemId?.Invoke(item) ?? (object)item;
+            group.Messages.Add(new Message(item, key, ItemText?.Invoke(item), typing));
             if (sent is not null && !typing) group.Time = sent;
         }
         groups = next;
-    }
-
-    private static object? Get(object item, string? field)
-    {
-        if (string.IsNullOrEmpty(field)) return null;
-        var getter = Getters.GetOrAdd((item.GetType(), field), key =>
-        {
-            var info = key.Item1.GetProperty(key.Item2, BindingFlags.Public | BindingFlags.Instance)
-                       ?? throw new InvalidOperationException($"NxChat: {key.Item1.Name} has no public property '{key.Item2}'.");
-            return o => info.GetValue(o);
-        });
-        return getter(item);
     }
 
     // ── Sending ───────────────────────────────────────────────────────────────
@@ -255,7 +240,7 @@ public partial class NxChat<TItem> : IAsyncDisposable
             await module.InvokeVoidAsync("dispose", root);
             await module.DisposeAsync();
         }
-        catch (JSDisconnectedException)
+        catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
         {
             // The circuit is gone; the browser cleaned up with it.
         }

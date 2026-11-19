@@ -68,6 +68,9 @@ public partial class NxDialog
     /// <summary>Fills the screen at 600 px and below, for a dialog with a lot in it. Default: <c>false</c>, a centered card.</summary>
     [Parameter] public bool FullScreenOnPhone { get; set; }
 
+    /// <summary>Keeps the dialog where it is declared even when the layout has an <see cref="NxWindowHost"/>; see <see cref="NxWindow.Inline"/>.</summary>
+    [Parameter] public bool Inline { get; set; }
+
     /// <summary>The dialog's <c>id</c>; the title is <c>{Id}-title</c>.</summary>
     [Parameter] public string? Id { get; set; }
 

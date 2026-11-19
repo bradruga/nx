@@ -11,7 +11,7 @@
     box-sizing: border-box;
     width: max-content;
     max-width: calc(100vw - 16px);
-    background: var(--nx-popup-bg);
+    background: var(--nx-popup-bg, var(--nx-surface));
     border: 1px solid var(--nx-border);
     border-radius: var(--nx-radius);
     box-shadow: var(--nx-shadow-popup);
@@ -77,14 +77,14 @@
     cursor: pointer;
 }
 
-.nx-timepicker-item:hover { background: var(--nx-item-hover-bg); }
+.nx-timepicker-item:hover { background: var(--nx-item-hover-bg, var(--nx-surface-hover)); }
 .nx-timepicker-item-active,
-.nx-timepicker-item-active:hover { background: var(--nx-item-active-bg); }
-.nx-timepicker-item-selected { color: var(--nx-item-selected-fg); font-weight: 600; }
+.nx-timepicker-item-active:hover { background: var(--nx-item-active-bg, var(--nx-accent-subtle)); }
+.nx-timepicker-item-selected { color: var(--nx-item-selected-fg, var(--nx-accent)); font-weight: 600; }
 
-/* ── Phone sheet: Date and Time tabs over a big calendar or the time list ── */
+/* ── Phone sheet: Date and Time tabs over a big calendar or the time columns ── */
 
-/* Stays at the top while the time list scrolls under it; the negative offsets cover the sheet body's padding. */
+/* Stays at the top while the body scrolls under it; the negative offsets cover the sheet body's padding. */
 .nx-datetimepicker-sheet-tabs {
     position: sticky;
     top: -12px;
@@ -132,7 +132,7 @@
 
 .nx-datetimepicker-sheet-tab:focus { outline: none; }
 .nx-datetimepicker-sheet-tab:focus-visible {
-    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color, var(--nx-accent));
     outline-offset: var(--nx-focus-ring-offset);
 }
 
@@ -145,25 +145,3 @@
 .nx-datetimepicker-sheet-host ::deep .nx-calendar-today-button { height: 44px; }
 .nx-datetimepicker-sheet-host ::deep .nx-calendar-nav { width: 44px; }
 .nx-datetimepicker-sheet-host ::deep .nx-calendar-grids:focus-visible { outline: none; }
-
-.nx-datetimepicker-sheet-list {
-    width: 100%;
-    max-width: 420px;
-}
-
-.nx-datetimepicker-sheet-list .nx-timepicker-item {
-    min-height: 48px;
-    justify-content: center;
-    font-size: 17px;
-}
-
-.nx-datetimepicker-sheet-list .nx-timepicker-item:focus { outline: none; }
-.nx-datetimepicker-sheet-list .nx-timepicker-item:focus-visible {
-    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
-    outline-offset: -2px;
-}
-
-.nx-datetimepicker-sheet-list .nx-timepicker-item-selected {
-    background: var(--nx-calendar-selected-bg);
-    color: var(--nx-calendar-selected-fg);
-}

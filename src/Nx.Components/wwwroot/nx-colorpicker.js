@@ -8,6 +8,7 @@ import { open as openPopup, close as closePopup } from './nx-popup.js';
 const grids = new WeakMap();
 
 export function open(field, popup, body, dotNet) {
+    if (!field || !popup) return;
     close(field);
     openPopup(field, popup, body, 460, dotNet, 'OnOutsidePress');
     const onKeyDown = e => {

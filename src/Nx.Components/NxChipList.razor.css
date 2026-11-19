@@ -24,14 +24,14 @@
     padding: 0 10px;
     border: 1px solid transparent;
     border-radius: 999px;
-    background: var(--nx-chip-bg);
-    color: var(--nx-chip-fg);
+    background: var(--nx-chip-bg, var(--nx-accent-subtle));
+    color: var(--nx-chip-fg, var(--nx-fg));
     line-height: 1.2;
 }
 .nx-chiplist-chip:has(.nx-chiplist-remove) { padding-right: 3px; }
 .nx-chiplist-chip:focus { outline: none; }
 .nx-chiplist-chip:focus-visible {
-    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color, var(--nx-accent));
     outline-offset: 1px;
 }
 

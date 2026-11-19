@@ -67,7 +67,7 @@
         <div class="demo-tree-detail" id="drag-log">
             <strong>Last move</strong>
             <span>@lastMove</span>
-            <NxButton Size="NxButtonSize.Small" OnClick="Reset">Reset</NxButton>
+            <NxButton Size="NxSize.Small" OnClick="Reset">Reset</NxButton>
         </div>
     </div>
     @* /code *@
@@ -80,8 +80,8 @@
     @* code *@
     <div class="demo-stage demo-stage-column">
         <div class="demo-row">
-            <NxButton id="nested-expand" Size="NxButtonSize.Small" OnClick="() => nested!.ExpandAllAsync()">Expand all</NxButton>
-            <NxButton id="nested-collapse" Size="NxButtonSize.Small" OnClick="() => nested!.CollapseAllAsync()">Collapse all</NxButton>
+            <NxButton id="nested-expand" Size="NxSize.Small" OnClick="() => nested!.ExpandAllAsync()">Expand all</NxButton>
+            <NxButton id="nested-collapse" Size="NxSize.Small" OnClick="() => nested!.CollapseAllAsync()">Collapse all</NxButton>
         </div>
         <NxTreeView @ref="nested" Id="nested-tree" Data="DemoTree.Drawings" Children="f => f.Children" ItemText="f => f.Name"
                     SelectionMode="NxTreeSelectionMode.None" AriaLabel="Drawings" Class="demo-tree-box" />

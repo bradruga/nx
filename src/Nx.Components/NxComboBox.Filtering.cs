@@ -43,6 +43,7 @@ public partial class NxComboBox<TItem, TValue>
         if (overlayOpen)
             CloseOverlayState();
         isOpen = false;
+        measureFailed = false;
         isFiltering = false;
         activeRow = -1;
         closePending = true;
@@ -125,6 +126,23 @@ public partial class NxComboBox<TItem, TValue>
         itemCount = index;
     }
 
+    // A Value set before the provider's list had loaded gets its item (and the field its text) now.
+    private void SelectLoadedValue()
+    {
+        if (Multiple || hasSelection || customText is not null || EqualityComparer<TValue>.Default.Equals(Value, default))
+            return;
+        foreach (var item in source)
+        {
+            if (!EqualityComparer<TValue>.Default.Equals(ValueOf(item), Value))
+                continue;
+            SetSelection(item);
+            if (!isFiltering)
+                inputText = DisplayText;
+            syncPending = SelectedItemChanged.HasDelegate && !EqualityComparer<TItem>.Default.Equals(SelectedItem, item);
+            return;
+        }
+    }
+
     private async Task LoadAsync(string filter, bool debounce)
     {
         providerCts?.Cancel();
@@ -140,6 +158,7 @@ public partial class NxComboBox<TItem, TValue>
             if (cts.IsCancellationRequested)
                 return;
             source = items.ToList();
+            SelectLoadedValue();
         }
         catch (OperationCanceledException)
         {

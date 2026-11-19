@@ -55,6 +55,28 @@ public partial class NxComboBox<TItem, TValue>
         syncPending = !ReferenceEquals(before, chips) && (
             (ValuesChanged.HasDelegate && !(Values ?? []).SequenceEqual(ChipValues())) ||
             (SelectedItemsChanged.HasDelegate && !(SelectedItems ?? []).SequenceEqual(ChipItems())));
+
+        lookupPending = CanLookUp && chips.Any(c => !c.HasItem && c.Value is not null);
+    }
+
+    /// <summary>Asks <see cref="ItemByValue"/> for each chip that has only a value, one call at a time.</summary>
+    private async Task ApplyChipLookupsAsync()
+    {
+        var changed = false;
+        foreach (var value in chips.Where(c => !c.HasItem && c.Value is not null).Select(c => c.Value!).ToList())
+        {
+            var item = await LookUp(value);
+            if (disposed)
+                return;
+            var index = chips.FindIndex(c => !c.HasItem && EqualityComparer<TValue>.Default.Equals(c.Value, value));
+            if (item is null || index < 0)
+                continue;
+            chips = [.. chips];
+            chips[index] = new Chip(value, item, true);
+            changed = true;
+        }
+        if (changed)
+            syncPending = SelectedItemsChanged.HasDelegate && !(SelectedItems ?? []).SequenceEqual(ChipItems());
     }
 
     private List<Chip> ResolveValues(IEnumerable<TValue> values)

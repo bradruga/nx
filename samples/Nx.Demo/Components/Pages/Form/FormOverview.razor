@@ -19,12 +19,12 @@
     <div class="demo-stage demo-stage-column">
         <NxForm Id="overview-form" Model="pour" Columns="2" OnValidSubmit="Save">
             <ChildContent>
-                <NxFormItem Field="@nameof(PourForm.Name)" ColSpan="2" />
-                <NxFormItem Field="@nameof(PourForm.PourDate)" />
-                <NxFormItem Field="@nameof(PourForm.StartTime)" />
-                <NxFormItem Field="@nameof(PourForm.Volume)" />
-                <NxFormItem Field="@nameof(PourForm.Status)" />
-                <NxFormItem Field="@nameof(PourForm.PumpTruck)" ColSpan="2" />
+                <NxFormItem For="() => pour.Name" ColSpan="2" />
+                <NxFormItem For="() => pour.PourDate" />
+                <NxFormItem For="() => pour.StartTime" />
+                <NxFormItem For="() => pour.Volume" />
+                <NxFormItem For="() => pour.Status" />
+                <NxFormItem For="() => pour.PumpTruck" ColSpan="2" />
             </ChildContent>
             <Buttons>
                 <NxButton id="overview-save" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Save pour</NxButton>
@@ -60,7 +60,7 @@
         <table class="doc-table">
             <thead><tr><th>Part</th><th>Rendered as</th></tr></thead>
             <tbody>
-                <tr><td>Item label</td><td>A <code>&lt;label for&gt;</code> pointing at the editor's id (<code>{form id}-{Field}</code>).</td></tr>
+                <tr><td>Item label</td><td>A <code>&lt;label for&gt;</code> pointing at the editor's id (<code>{form id}-{property}</code>).</td></tr>
                 <tr><td>Group</td><td>A <code>&lt;fieldset&gt;</code> with a <code>&lt;legend&gt;</code>.</td></tr>
                 <tr><td>Messages</td><td>A polite live region per field; editors set <code>aria-invalid</code>.</td></tr>
                 <tr><td>Enter</td><td>Submits, as in any form; <code>SubmitOnEnter="false"</code> turns that off.</td></tr>
@@ -81,12 +81,12 @@
         """
         <NxForm Model="pour" Columns="2" OnValidSubmit="SaveAsync">
             <ChildContent>
-                <NxFormItem Field="@nameof(PourForm.Name)" ColSpan="2" />
-                <NxFormItem Field="@nameof(PourForm.PourDate)" />
-                <NxFormItem Field="@nameof(PourForm.StartTime)" />
-                <NxFormItem Field="@nameof(PourForm.Volume)" />
-                <NxFormItem Field="@nameof(PourForm.Status)" />
-                <NxFormItem Field="@nameof(PourForm.PumpTruck)" ColSpan="2" />
+                <NxFormItem For="() => pour.Name" ColSpan="2" />
+                <NxFormItem For="() => pour.PourDate" />
+                <NxFormItem For="() => pour.StartTime" />
+                <NxFormItem For="() => pour.Volume" />
+                <NxFormItem For="() => pour.Status" />
+                <NxFormItem For="() => pour.PumpTruck" ColSpan="2" />
             </ChildContent>
             <Buttons>
                 <NxButton Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Save pour</NxButton>

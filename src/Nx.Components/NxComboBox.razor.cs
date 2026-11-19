@@ -8,7 +8,8 @@ using Microsoft.JSInterop;
 //   NxComboBox.razor            — markup: field, popup, mobile overlay, rows
 //   NxComboBox.razor.cs         — parameters, state, lifecycle, JS interop
 //   NxComboBox.Filtering.cs     — BuildRows, LoadAsync (DataProvider), the initial highlight
-//   NxComboBox.Selection.cs     — single-select: select, clear, custom values, Value/SelectedItem sync
+//   NxComboBox.Virtualization.cs — VirtualizeThreshold: the measured row height and its probe render
+//   NxComboBox.Selection.cs     — single-select: select, clear, custom values, Value/SelectedItem sync, ItemByValue
 //   NxComboBox.Multiple.cs      — Multiple: chips, toggling, Values/SelectedItems sync
 //   NxComboBox.Keyboard.cs      — keys, focus, blur, clicks
 //   NxComboBox.Mobile.cs        — the full-screen overlay and viewport tracking
@@ -20,7 +21,7 @@ namespace Nx.Components;
 /// A text input with a filterable dropdown list. Items come from <see cref="Data"/> or an async
 /// <see cref="DataProvider"/>; bind the chosen value with <c>@bind-Value</c>, the chosen item with
 /// <c>@bind-SelectedItem</c>, or both. Opt in to <see cref="Multiple"/> selection or a multi-column
-/// list with <see cref="Columns"/>; on a phone the list opens full screen (<see cref="MobileMode"/>).
+/// list with <see cref="Columns"/>, or to a full-screen list on phones with <see cref="MobileMode"/>.
 /// </summary>
 /// <typeparam name="TItem">The list item type.</typeparam>
 /// <typeparam name="TValue">The bound value type, read from each item by <see cref="ItemValue"/>.</typeparam>
@@ -36,8 +37,9 @@ public partial class NxComboBox<TItem, TValue> : IAsyncDisposable
     // ── JS interop ────────────────────────────────────────────────────────────
     // nx-combobox.js places the popup (it is position: fixed so dialogs and scroll containers do not
     // clip it, which needs viewport measurement), cancels the browser default for arrow, page,
-    // Enter, Escape and (when it toggles) Space keys, scrolls the active option into view, locks page
-    // scroll under the mobile overlay and reports when the viewport crosses MobileBreakpoint.
+    // Enter, Escape and (when it toggles) Space keys, scrolls the active option into view, measures the
+    // row height a virtualized list pins its rows to, locks page scroll under the mobile overlay and
+    // reports when the viewport crosses MobileBreakpoint.
     // Outside click needs no JS: the input keeps focus while the popup is used (mousedown is
     // cancelled there), so any click elsewhere blurs it, and blur closes the list.
 
@@ -95,10 +97,16 @@ public partial class NxComboBox<TItem, TValue> : IAsyncDisposable
     /// <summary>
     /// Loads items for the typed text instead of <see cref="Data"/>: called when the list opens and,
     /// after <see cref="DebounceDelay"/>, as the user types. Returns the matching items; the
-    /// provider does the filtering. Set <c>@bind-SelectedItem</c> too, so the current item's text
-    /// can be shown before the list has ever loaded.
+    /// provider does the filtering. Set <see cref="ItemByValue"/> or <c>@bind-SelectedItem</c> too, so the
+    /// current item's text can be shown before the list has ever loaded.
     /// </summary>
     [Parameter] public Func<NxComboBoxRequest, Task<IEnumerable<TItem>>>? DataProvider { get; set; }
+
+    /// <summary>
+    /// With <see cref="DataProvider"/>, finds the item of a bound value the list has not loaded, so the field shows
+    /// its text straight away. Return <c>null</c> when there is none. Called once per value.
+    /// </summary>
+    [Parameter] public Func<TValue, Task<TItem?>>? ItemByValue { get; set; }
 
     /// <summary>With <see cref="DataProvider"/>, milliseconds to wait after typing before loading. Default: <c>300</c>.</summary>
     [Parameter] public int DebounceDelay { get; set; } = 300;
@@ -194,10 +202,10 @@ public partial class NxComboBox<TItem, TValue> : IAsyncDisposable
 
     // ── Mobile ────────────────────────────────────────────────────────────────
 
-    /// <summary>When the list opens as a full-screen overlay instead of a popup. Default: <see cref="NxComboBoxMobileMode.Auto"/>.</summary>
-    [Parameter] public NxComboBoxMobileMode MobileMode { get; set; } = NxComboBoxMobileMode.Auto;
+    /// <summary>When the list opens as a full-screen overlay instead of a popup. Default: <see cref="NxMobileMode.Never"/>.</summary>
+    [Parameter] public NxMobileMode MobileMode { get; set; } = NxMobileMode.Never;
 
-    /// <summary>With <see cref="NxComboBoxMobileMode.Auto"/>, the viewport width in pixels at or below which the overlay is used. Default: <c>600</c>.</summary>
+    /// <summary>With <see cref="NxMobileMode.Auto"/>, the viewport width in pixels at or below which the overlay is used. Default: <c>600</c>.</summary>
     [Parameter] public int MobileBreakpoint { get; set; } = 600;
 
     /// <summary>The overlay's accessible name and search placeholder. Default: <see cref="Placeholder"/>, else "Search".</summary>
@@ -224,13 +232,17 @@ public partial class NxComboBox<TItem, TValue> : IAsyncDisposable
     [Parameter] public string NoDataText { get; set; } = "No matches";
 
     /// <summary>
-    /// Renders only the visible items, so lists of tens of thousands stay fast. Every item is then
-    /// <see cref="ItemHeight"/> pixels tall, including group headers.
+    /// Row count from which the list renders only the rows in view, so lists of tens of thousands stay fast.
+    /// Every row is then one height, group headers included (see <see cref="ItemHeight"/>). <c>0</c> always
+    /// virtualizes, <see cref="int.MaxValue"/> never does. Default: <c>200</c>.
     /// </summary>
-    [Parameter] public bool Virtualize { get; set; }
+    [Parameter] public int VirtualizeThreshold { get; set; } = 200;
 
-    /// <summary>Row height in pixels under <see cref="Virtualize"/>. Default: <c>34</c>.</summary>
-    [Parameter] public float ItemHeight { get; set; } = 34;
+    /// <summary>
+    /// Row height in pixels of a virtualized list. Default: measured from the rendered rows the first time
+    /// such a list opens.
+    /// </summary>
+    [Parameter] public float? ItemHeight { get; set; }
 
     /// <summary>Largest popup height in pixels; it shrinks further to fit the viewport. Default: <c>300</c>.</summary>
     [Parameter] public int PopupMaxHeight { get; set; } = 300;
@@ -309,10 +321,6 @@ public partial class NxComboBox<TItem, TValue> : IAsyncDisposable
         ? "nx-combobox-input"
         : $"nx-combobox-input {validation.CssClass}";
 
-    private string ItemStyle => Virtualize
-        ? $"height: {ItemHeight.ToString(System.Globalization.CultureInfo.InvariantCulture)}px"
-        : "";
-
     /// <summary>The typed text the default templates highlight, or empty.</summary>
     private string HighlightText => isFiltering && CustomFilter is null ? FilterText.Trim() : "";
 
@@ -377,6 +385,9 @@ public partial class NxComboBox<TItem, TValue> : IAsyncDisposable
             inputText = DisplayText;
     }
 
+    /// <inheritdoc />
+    protected override Task OnParametersSetAsync() => lookupPending ? ApplyLookupsAsync() : Task.CompletedTask;
+
     /// <summary>The text the field shows while the list is closed.</summary>
     private string DisplayText => Multiple ? "" : hasSelection ? TextOf(selectedItem!) : customText ?? "";
 
@@ -387,13 +398,14 @@ public partial class NxComboBox<TItem, TValue> : IAsyncDisposable
         {
             module = await JS.InvokeAsync<IJSObjectReference>("import", ModulePath);
             await module.InvokeVoidAsync("init", input);
-            if (MobileMode == NxComboBoxMobileMode.Auto && module is not null)
-            {
-                selfReference = DotNetObjectReference.Create(this);
-                isNarrow = await module.InvokeAsync<bool>("watchViewport", field, selfReference, MobileBreakpoint);
-                if (isNarrow)
-                    StateHasChanged();
-            }
+        }
+        // Not only on the first render: MobileMode may become Auto later.
+        if (MobileMode == NxMobileMode.Auto && selfReference is null && module is not null)
+        {
+            selfReference = DotNetObjectReference.Create(this);
+            isNarrow = await module.InvokeAsync<bool>("watchViewport", field, selfReference, MobileBreakpoint);
+            if (isNarrow)
+                StateHasChanged();
         }
         if (syncPending)
         {
@@ -412,6 +424,13 @@ public partial class NxComboBox<TItem, TValue> : IAsyncDisposable
 
         await AfterRenderOverlayAsync();
 
+        // The probe render waits for its measurement; the render that follows is placed and scrolled.
+        if (isOpen && Probing)
+        {
+            await MeasureItemHeightAsync();
+            return;
+        }
+
         if (isOpen && !overlayOpen && !popupPlaced)
         {
             popupPlaced = true;
@@ -422,7 +441,7 @@ public partial class NxComboBox<TItem, TValue> : IAsyncDisposable
         if (isOpen && scrollPending)
         {
             scrollPending = false;
-            await module.InvokeVoidAsync("scrollToIndex", overlayOpen ? overlayList : list, activeRow, ItemHeight);
+            await module.InvokeVoidAsync("scrollToIndex", overlayOpen ? overlayList : list, activeRow, ShouldVirtualize ? RowHeight : 0);
         }
     }
 
@@ -443,7 +462,7 @@ public partial class NxComboBox<TItem, TValue> : IAsyncDisposable
                     await module.InvokeVoidAsync("lockScroll", false);
                 await module.DisposeAsync();
             }
-            catch (JSDisconnectedException)
+            catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
             {
                 // The circuit is gone; the browser cleaned up with it.
             }

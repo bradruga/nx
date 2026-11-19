@@ -18,10 +18,11 @@
                 <tr><td>Filterable</td><td>bool</td><td>true</td><td>Typing filters. False: no typing, letters jump to items.</td></tr>
                 <tr><td>Filter / CustomFilter / FilterAllColumns</td><td></td><td>Contains / — / true</td><td>As NxComboBox.</td></tr>
                 <tr><td>Data / DataProvider / DebounceDelay</td><td></td><td></td><td>As NxComboBox.</td></tr>
+                <tr><td>ItemByValue</td><td>Func&lt;TValue, Task&lt;TItem?&gt;&gt;?</td><td>—</td><td>With DataProvider: finds the item of each bound value the list has not loaded, so its chip shows the item's text.</td></tr>
                 <tr><td>ItemText / ItemValue / ItemGroup</td><td></td><td></td><td>As NxComboBox.</td></tr>
                 <tr><td>ItemTemplate / GroupHeaderTemplate / Columns / ColumnDefinitions</td><td></td><td></td><td>As NxComboBox.</td></tr>
-                <tr><td>Virtualize / ItemHeight / PopupWidth / PopupMaxHeight</td><td></td><td></td><td>As NxComboBox.</td></tr>
-                <tr><td>MobileMode / MobileBreakpoint / MobileTitle</td><td></td><td>Auto / 600 / —</td><td>Full-screen sheet; toggles apply on Done.</td></tr>
+                <tr><td>VirtualizeThreshold / ItemHeight / PopupWidth / PopupMaxHeight</td><td></td><td></td><td>As NxComboBox.</td></tr>
+                <tr><td>MobileMode / MobileBreakpoint / MobileTitle</td><td></td><td>Never / 600 / —</td><td>Full-screen sheet (<code>NxMobileMode</code> Never, Auto or Always); toggles apply on Done.</td></tr>
                 <tr><td>Placeholder / Clearable / NoDataText</td><td></td><td></td><td>As NxComboBox; Clearable clears every item.</td></tr>
                 <tr><td>Loading / Disabled / ReadOnly / Id / Class / Style</td><td></td><td></td><td>As NxComboBox.</td></tr>
             </tbody>

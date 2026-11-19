@@ -6,19 +6,19 @@
 <div class="doc-section">
     <h2>Generated Editors</h2>
     <p class="doc-note">
-        <code>Field</code> alone is enough: each item picks the editor for its property's type and binds it. The model updates
+        <code>For</code> alone is enough: each item picks the editor for its property's type and binds it. The model updates
         as you edit (shown live beside the form, or under it on a phone).
     </p>
     @* code *@
     <div class="demo-stage demo-form-split">
         <NxForm Id="generated-form" EditContext="pourContext" Columns="2">
-            <NxFormItem Field="@nameof(PourForm.Name)" ColSpan="2" />
-            <NxFormItem Field="@nameof(PourForm.Volume)" />
-            <NxFormItem Field="@nameof(PourForm.Trucks)" />
-            <NxFormItem Field="@nameof(PourForm.PourDate)" />
-            <NxFormItem Field="@nameof(PourForm.StartTime)" />
-            <NxFormItem Field="@nameof(PourForm.Status)" />
-            <NxFormItem Field="@nameof(PourForm.PumpTruck)" />
+            <NxFormItem For="() => pour.Name" ColSpan="2" />
+            <NxFormItem For="() => pour.Volume" />
+            <NxFormItem For="() => pour.Trucks" />
+            <NxFormItem For="() => pour.PourDate" />
+            <NxFormItem For="() => pour.StartTime" />
+            <NxFormItem For="() => pour.Status" />
+            <NxFormItem For="() => pour.PumpTruck" />
         </NxForm>
         <pre class="doc-code demo-form-model" id="generated-model">@PourText</pre>
     </div>
@@ -35,13 +35,13 @@
     @* code *@
     <div class="demo-stage demo-stage-column">
         <NxForm Id="columns-form" Model="contact" Columns="12" ColumnSpacing="12px">
-            <NxFormItem Field="@nameof(ContactForm.FirstName)" ColSpan="4" Label="First*" />
-            <NxFormItem Field="@nameof(ContactForm.MiddleName)" ColSpan="4" Label="Middle" />
-            <NxFormItem Field="@nameof(ContactForm.LastName)" ColSpan="4" Label="Last*" />
-            <NxFormItem Field="@nameof(ContactForm.Title)" ColSpan="6" />
-            <NxFormItem Field="@nameof(ContactForm.Company)" ColSpan="6" />
-            <NxFormItem Field="@nameof(ContactForm.Phone)" ColSpan="6" />
-            <NxFormItem Field="@nameof(ContactForm.Email)" ColSpan="6" />
+            <NxFormItem For="() => contact.FirstName" ColSpan="4" Label="First*" />
+            <NxFormItem For="() => contact.MiddleName" ColSpan="4" Label="Middle" />
+            <NxFormItem For="() => contact.LastName" ColSpan="4" Label="Last*" />
+            <NxFormItem For="() => contact.Title" ColSpan="6" />
+            <NxFormItem For="() => contact.Company" ColSpan="6" />
+            <NxFormItem For="() => contact.Phone" ColSpan="6" />
+            <NxFormItem For="() => contact.Email" ColSpan="6" />
         </NxForm>
     </div>
     @* /code *@
@@ -55,17 +55,41 @@
     <div class="demo-stage demo-stage-column">
         <NxForm Id="groups-form" Model="contact" Columns="2">
             <NxFormGroup Label="Site contact">
-                <NxFormItem Field="@nameof(ContactForm.SiteContactName)" Label="Name" />
-                <NxFormItem Field="@nameof(ContactForm.SiteContactPhone)" Label="Phone" />
+                <NxFormItem For="() => contact.SiteContactName" Label="Name" />
+                <NxFormItem For="() => contact.SiteContactPhone" Label="Phone" />
             </NxFormGroup>
             <NxFormGroup Label="Other contact" Columns="3">
-                <NxFormItem Field="@nameof(ContactForm.OtherContactName)" Label="Name" ColSpan="2" />
-                <NxFormItem Field="@nameof(ContactForm.OtherContactPhone)" Label="Phone" />
+                <NxFormItem For="() => contact.OtherContactName" Label="Name" ColSpan="2" />
+                <NxFormItem For="() => contact.OtherContactPhone" Label="Phone" />
             </NxFormGroup>
         </NxForm>
     </div>
     @* /code *@
     <DocExampleCode Key="groups" />
+</div>
+
+<div class="doc-section">
+    <h2>Nested Fields</h2>
+    <p class="doc-note">
+        <code>For</code> reaches into the objects the model holds: the editor binds to the nested property and shows its
+        messages, and its id carries the path (<code>nested-form-Site-City</code>).
+    </p>
+    @* code *@
+    <div class="demo-stage demo-stage-column">
+        <NxForm Id="nested-form" Model="job" Columns="2">
+            <NxFormItem For="() => job.Name" ColSpan="2" />
+            <NxFormGroup Label="Site">
+                <NxFormItem For="() => job.Site.City" />
+                <NxFormItem For="() => job.Site.State" />
+            </NxFormGroup>
+            <NxFormGroup Label="Billing">
+                <NxFormItem For="() => job.Billing.City" />
+                <NxFormItem For="() => job.Billing.State" />
+            </NxFormGroup>
+        </NxForm>
+    </div>
+    @* /code *@
+    <DocExampleCode Key="nested-fields" />
 </div>
 
 <div class="doc-section">
@@ -77,10 +101,10 @@
     @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:640px">
         <NxForm Id="horizontal-form" Model="pour2" Orientation="NxOrientation.Horizontal">
-            <NxFormItem Field="@nameof(PourForm.Name)" />
-            <NxFormItem Field="@nameof(PourForm.PourDate)" />
-            <NxFormItem Field="@nameof(PourForm.Volume)" />
-            <NxFormItem Field="@nameof(PourForm.PumpTruck)" />
+            <NxFormItem For="() => pour2.Name" />
+            <NxFormItem For="() => pour2.PourDate" />
+            <NxFormItem For="() => pour2.Volume" />
+            <NxFormItem For="() => pour2.PumpTruck" />
         </NxForm>
     </div>
     @* /code *@
@@ -96,11 +120,11 @@
     @* code *@
     <div class="demo-stage demo-stage-column">
         <NxForm Id="custom-form" Model="contact" Columns="2">
-            <NxFormItem Field="@nameof(ContactForm.CustomerId)" Label="Customer" Id="custom-customer">
+            <NxFormItem For="() => contact.CustomerId" Label="Customer" Id="custom-customer">
                 <NxComboBox Id="custom-customer" Data="SampleData.Customers" ItemText="c => c.Name" ItemValue="c => (int?)c.Id"
                             @bind-Value="contact.CustomerId" Placeholder="Search customers" Clearable="true" />
             </NxFormItem>
-            <NxFormItem Field="@nameof(ContactForm.PONumber)" Label="PO number" Id="custom-po">
+            <NxFormItem For="() => contact.PONumber" Label="PO number" Id="custom-po">
                 <NxTextBox Id="custom-po" @bind-Value="contact.PONumber">
                     <Prefix><NxIcon Icon="NxIcons.File" /></Prefix>
                 </NxTextBox>
@@ -108,7 +132,7 @@
             <NxFormItem Label="Notes" Id="custom-notes" ColSpan="2">
                 <NxTextArea Id="custom-notes" @bind-Value="notes" AutoResize="true" MaxRows="5" />
             </NxFormItem>
-            <NxFormItem Field="@nameof(ContactForm.SendUpdates)" ColSpan="2">
+            <NxFormItem For="() => contact.SendUpdates" ColSpan="2">
                 <NxToggleSwitch @bind-Value="contact.SendUpdates" Label="Send schedule updates by email" />
             </NxFormItem>
         </NxForm>
@@ -128,14 +152,14 @@
         <NxForm Id="layout-form" Model="pour3">
             <div class="demo-form-layout">
                 <div class="demo-form-layout-main">
-                    <NxFormItem Field="@nameof(PourForm.Name)" />
-                    <NxFormItem Field="@nameof(PourForm.Notes)" Id="layout-notes">
+                    <NxFormItem For="() => pour3.Name" />
+                    <NxFormItem For="() => pour3.Notes" Id="layout-notes">
                         <NxTextArea Id="layout-notes" @bind-Value="pour3.Notes" Rows="4" />
                     </NxFormItem>
                 </div>
                 <aside class="demo-form-layout-side">
-                    <NxFormItem Field="@nameof(PourForm.Status)" />
-                    <NxFormItem Field="@nameof(PourForm.Trucks)" />
+                    <NxFormItem For="() => pour3.Status" />
+                    <NxFormItem For="() => pour3.Trucks" />
                 </aside>
             </div>
         </NxForm>
@@ -155,10 +179,10 @@
         <NxForm @ref="validationForm" Id="validation-form" Model="newContact" Columns="2" SubmitOnEnter="false"
                 OnValidSubmit="() => validationResult = Saved()" OnInvalidSubmit="() => validationResult = Fix()">
             <ChildContent>
-                <NxFormItem Field="@nameof(ContactForm.FirstName)" Label="First name" />
-                <NxFormItem Field="@nameof(ContactForm.LastName)" Label="Last name" />
-                <NxFormItem Field="@nameof(ContactForm.Email)" />
-                <NxFormItem Field="@nameof(ContactForm.Phone)" />
+                <NxFormItem For="() => newContact.FirstName" Label="First name" />
+                <NxFormItem For="() => newContact.LastName" Label="Last name" />
+                <NxFormItem For="() => newContact.Email" />
+                <NxFormItem For="() => newContact.Phone" />
             </ChildContent>
             <Buttons>
                 <NxButton id="validation-submit" Type="NxButtonType.Submit" Variant="NxButtonVariant.Primary">Add contact</NxButton>
@@ -181,8 +205,8 @@
         <NxForm Id="custom-validator-form" Model="reachable" Columns="2" OnValidSubmit="() => reachResult = Saved()">
             <Validation><ReachableValidator /></Validation>
             <ChildContent>
-                <NxFormItem Field="@nameof(ContactForm.Phone)" />
-                <NxFormItem Field="@nameof(ContactForm.Email)" />
+                <NxFormItem For="() => reachable.Phone" />
+                <NxFormItem For="() => reachable.Email" />
             </ChildContent>
             <Buttons>
                 <NxButton id="reach-submit" Type="NxButtonType.Submit">Save</NxButton>
@@ -220,6 +244,7 @@
     readonly PourForm messageModel = new() { Trucks = 20 };
     readonly ContactForm contact = new() { FirstName = "Dana", LastName = "Ortiz", Title = "Project manager", Company = "Baldwin Paving" };
     readonly ContactForm newContact = new(), reachable = new();
+    readonly JobForm job = new();
     NxForm? validationForm;
     string? notes;
     string validationResult = "Not submitted", reachResult = "Not saved";

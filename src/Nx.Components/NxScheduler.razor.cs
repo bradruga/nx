@@ -1,6 +1,4 @@
-using System.Collections.Concurrent;
 using System.Globalization;
-using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
@@ -9,13 +7,13 @@ namespace Nx.Components;
 /// <summary>
 /// A read-only week calendar: items from <see cref="Data"/> placed by their start and end on seven day columns, side by
 /// side where they overlap, split at midnight when they run overnight, with work hours shaded and Today / previous /
-/// next week. Fields are read by name. Scoped to what ERP's shift schedule uses: one
+/// next week. Fields are read with lambdas. Scoped to what ERP's shift schedule uses: one
 /// week view, no creating, editing or deleting.
 /// </summary>
 /// <typeparam name="TItem">The item type.</typeparam>
 /// <example>
 /// <code>
-/// &lt;NxScheduler Data="appointments" @bind-Date="week" WorkDayStart="new(7, 0)" WorkDayEnd="new(19, 0)" Height="600px"&gt;
+/// &lt;NxScheduler Data="appointments" ItemStart="a =&gt; a.Start" ItemEnd="a =&gt; a.End" @bind-Date="week" WorkDayStart="new(7, 0)" WorkDayEnd="new(19, 0)" Height="600px"&gt;
 ///     &lt;ItemTemplate&gt;@context.ShiftName&lt;/ItemTemplate&gt;
 /// &lt;/NxScheduler&gt;
 /// </code>
@@ -26,7 +24,6 @@ public partial class NxScheduler<TItem>
     // nx-scheduler.js only scrolls the hours to the start of the work day when the calendar first shows.
 
     private const string ModulePath = "./_content/Nx.Components/nx-scheduler.js";
-    private static readonly ConcurrentDictionary<(Type, string), Func<object, object?>> Getters = new();
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -34,17 +31,17 @@ public partial class NxScheduler<TItem>
 
     // ── Data ──────────────────────────────────────────────────────────────────
 
-    /// <summary>The items. Each needs a start and an end (<c>DateTime</c> or <c>DateTimeOffset</c>).</summary>
+    /// <summary>The items. Each needs a start and an end.</summary>
     [Parameter] public IEnumerable<TItem>? Data { get; set; }
 
-    /// <summary>The property holding an item's start, by name. Default: <c>Start</c>.</summary>
-    [Parameter] public string StartField { get; set; } = "Start";
+    /// <summary>An item's start; an item without one is not shown. Required.</summary>
+    [Parameter, EditorRequired] public Func<TItem, DateTime?>? ItemStart { get; set; }
 
-    /// <summary>The property holding an item's end, by name. Default: <c>End</c>.</summary>
-    [Parameter] public string EndField { get; set; } = "End";
+    /// <summary>An item's end; an item without one is not shown. Required.</summary>
+    [Parameter, EditorRequired] public Func<TItem, DateTime?>? ItemEnd { get; set; }
 
-    /// <summary>The property holding an item's title, by name. Default: <c>Title</c>.</summary>
-    [Parameter] public string TitleField { get; set; } = "Title";
+    /// <summary>An item's title. Default: none.</summary>
+    [Parameter] public Func<TItem, string?>? ItemTitle { get; set; }
 
     /// <summary>An item's content in place of its title and time; the context is the item.</summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
@@ -180,7 +177,7 @@ public partial class NxScheduler<TItem>
         var segments = new List<Segment>();
         foreach (var item in Data ?? [])
         {
-            if (item is null || ToDateTime(Get(item, StartField, true)) is not { } start || ToDateTime(Get(item, EndField, true)) is not { } end || end <= start)
+            if (item is null || ItemStart!(item) is not { } start || ItemEnd!(item) is not { } end || end <= start)
                 continue;
             var s = start < from ? from : start;
             var e = end > to ? to : end;
@@ -231,7 +228,7 @@ public partial class NxScheduler<TItem>
                 var width = 100.0 / s.Columns;
                 var style = string.Create(CultureInfo.InvariantCulture,
                     $"top: {top:0.###}%; height: {height:0.###}%; left: {s.Column * width:0.###}%; width: {width:0.###}%");
-                var title = Convert.ToString(Get(s.Item!, TitleField), Formats) ?? "";
+                var title = ItemTitle?.Invoke(s.Item) ?? "";
                 var endText = s.ItemEnd.Date == s.ItemStart.Date
                     ? s.ItemEnd.ToString("t", Formats)
                     : $"{s.ItemEnd.ToString("ddd", Formats)} {s.ItemEnd.ToString("t", Formats)}";
@@ -242,26 +239,14 @@ public partial class NxScheduler<TItem>
         ];
     }
 
-    private static DateTime? ToDateTime(object? value) => value switch
-    {
-        DateTime d => d,
-        DateTimeOffset o => o.LocalDateTime,
-        _ => null
-    };
-
-    // A missing start or end property throws; a missing title (the default "Title") just shows none.
-    private static object? Get(object item, string? field, bool required = false)
-    {
-        if (string.IsNullOrEmpty(field))
-            return null;
-        var info = item.GetType().GetProperty(field, BindingFlags.Public | BindingFlags.Instance);
-        if (info is null && required)
-            throw new InvalidOperationException($"NxScheduler: {item.GetType().Name} has no public property '{field}'.");
-        var getter = Getters.GetOrAdd((item.GetType(), field), _ => info is null ? _ => null : o => info.GetValue(o));
-        return getter(item);
-    }
-
     // ── Lifecycle and navigation ──────────────────────────────────────────────
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (ItemStart is null || ItemEnd is null)
+            throw new InvalidOperationException("NxScheduler needs ItemStart and ItemEnd.");
+    }
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)

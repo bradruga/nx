@@ -148,7 +148,7 @@
         "window" => @<div class="home-window-preview" aria-hidden="true">
             <div class="home-window-titlebar"><span>Edit pour</span><span class="home-window-x">×</span></div>
             <div class="home-window-body">P-1042 · North wall</div>
-            <div class="home-window-footer"><NxButton Size="NxButtonSize.Small" tabindex="-1">Cancel</NxButton><NxButton Size="NxButtonSize.Small" Variant="NxButtonVariant.Primary" tabindex="-1">Save</NxButton></div>
+            <div class="home-window-footer"><NxButton Size="NxSize.Small" tabindex="-1">Cancel</NxButton><NxButton Size="NxSize.Small" Variant="NxButtonVariant.Primary" tabindex="-1">Save</NxButton></div>
         </div>,
         "tabstrip" => @<NxTabStrip AriaLabel="Job" Style="width:260px">
             <NxTab Title="Details"><span class="home-tab-text">Job 55120</span></NxTab>
@@ -171,8 +171,8 @@
         </NxAutoComplete>,
         "datetimepicker" => @<NxDateTimePicker Label="Gate opens" @bind-Value="gateOpens" TimeStep="15" Style="width:240px" />,
         "form" => @<NxForm Model="homeForm" Columns="2" Style="width:280px">
-            <NxFormItem Field="@nameof(PourForm.Trucks)" />
-            <NxFormItem Field="@nameof(PourForm.Status)" />
+            <NxFormItem For="() => homeForm.Trucks" />
+            <NxFormItem For="() => homeForm.Status" />
         </NxForm>,
         "icon" => @<div class="demo-row">
             <NxIcon Icon="NxIcons.Plus" Size="NxIconSize.XLarge" />
@@ -198,7 +198,7 @@
         "dialog" => @<div class="home-window-preview" aria-hidden="true">
             <div class="home-window-titlebar"><span>Delete pour</span><span class="home-window-x">×</span></div>
             <div class="home-window-body">Delete pour P-1042?</div>
-            <div class="home-window-footer"><NxButton Size="NxButtonSize.Small" Variant="NxButtonVariant.Danger" tabindex="-1">Delete</NxButton><NxButton Size="NxButtonSize.Small" tabindex="-1">Cancel</NxButton></div>
+            <div class="home-window-footer"><NxButton Size="NxSize.Small" Variant="NxButtonVariant.Danger" tabindex="-1">Delete</NxButton><NxButton Size="NxSize.Small" tabindex="-1">Cancel</NxButton></div>
         </div>,
         "mediaquery" => @<div class="home-mq" aria-hidden="true"><code>(min-width: 992px)</code><strong>true</strong></div>,
         "treeview" => @<NxTreeView Data="DemoTree.Permissions" ItemId="n => n.Id" ParentId="n => n.ParentId" ItemText="n => n.Text"
@@ -208,8 +208,8 @@
             <NxLoader Type="NxLoaderType.Pulsing" />
         </div>,
         "chart" => @<NxChart Height="140px" Width="260px" LegendPosition="NxChartLegendPosition.None" ShowTooltips="false" AriaLabel="Loads per day">
-            <NxChartSeries Name="Loads" Data="DemoCharts.Days.TakeLast(14)" Field="@nameof(YardDay.Loads)" CategoryField="@nameof(YardDay.Date)" Markers="false" />
-            <NxChartSeries Name="Hours" Type="NxChartSeriesType.Area" Data="DemoCharts.Days.TakeLast(14)" Field="@nameof(YardDay.Hours)" CategoryField="@nameof(YardDay.Date)" />
+            <NxChartSeries Name="Loads" Data="DemoCharts.Days.TakeLast(14)" Value="d => d.Loads" ItemCategory="d => d.Date" Markers="false" />
+            <NxChartSeries Name="Hours" Type="NxChartSeriesType.Area" Data="DemoCharts.Days.TakeLast(14)" Value="d => d.Hours" ItemCategory="d => d.Date" />
             <NxChartCategoryAxis Visible="false" />
             <NxChartValueAxis Visible="false" />
         </NxChart>,
@@ -223,8 +223,8 @@
         "treelist" => @<NxTreeList Data="DemoYard.Locations" ItemId="l => l.ResourceId" ParentId="l => l.CurrentContainerId" ExpandedItems="HomeYard"
                                    SelectionMode="NxTreeSelectionMode.None" Height="132px" AriaLabel="Yard" Style="width:250px">
             <Columns>
-                <NxTreeListColumn Field="@nameof(YardLocation.Name)" Title="Location" Width="120px" />
-                <NxTreeListColumn Field="@nameof(YardLocation.AggregatePieceCount)" Title="Pieces" Width="64px" />
+                <NxTreeListColumn Value="l => l.Name" Title="Location" Width="120px" />
+                <NxTreeListColumn Value="l => l.AggregatePieceCount" Title="Pieces" Width="64px" />
             </Columns>
         </NxTreeList>,
         "scheduler" => @<div class="home-scheduler" aria-hidden="true">@foreach (var d in new[] { "Mon", "Tue", "Wed" }) { <span class="home-scheduler-day"><b>@d</b><i class="home-shift-day">Day</i><i class="home-shift-swing">Swing</i></span> }</div>,

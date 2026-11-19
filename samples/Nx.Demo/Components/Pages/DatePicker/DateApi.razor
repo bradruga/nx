@@ -8,10 +8,10 @@
         <table class="doc-table doc-api-table">
             <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
             <tbody>
-                <tr><td>Value</td><td>TValue?</td><td>—</td><td>Use <code>@@bind-Value</code>. DateOnly, DateTime, or nullable. A DateTime keeps its time.</td></tr>
+                <tr><td>Value</td><td>TValue?</td><td>—</td><td>Use <code>@@bind-Value</code>. DateOnly, DateTime, DateTimeOffset, or nullable. A DateTime keeps its time; a DateTimeOffset its time and offset, and one set on an empty field takes the browser's offset on that date.</td></tr>
                 <tr><td>Min / Max</td><td>DateOnly?</td><td>none</td><td>Pickable range. Typed dates outside it move to the nearest limit.</td></tr>
                 <tr><td>IsDateDisabled</td><td>Func&lt;DateOnly, bool&gt;?</td><td>—</td><td>Dates that cannot be picked; typing one reverts.</td></tr>
-                <tr><td>Format</td><td>string</td><td>"d"</td><td>.NET date format while not focused. All-number formats also set the typing order.</td></tr>
+                <tr><td>Format</td><td>string</td><td>"d"</td><td>.NET date format while not focused. All-number formats also set the typing order. The edit form is swapped in by the browser on focus.</td></tr>
                 <tr><td>Culture</td><td>CultureInfo?</td><td>current</td><td>Typing order and separator, names, first day of week, week numbering.</td></tr>
                 <tr><td>ShowCalendar</td><td>bool</td><td>true</td><td><code>false</code>: no button or popup, a typed date only.</td></tr>
                 <tr><td>ShowWeekNumbers</td><td>bool</td><td>false</td><td>Week column in the calendar.</td></tr>

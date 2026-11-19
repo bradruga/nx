@@ -1,6 +1,4 @@
-using System.Collections.Concurrent;
 using System.Globalization;
-using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -11,12 +9,13 @@ namespace Nx.Components;
 /// Browses a read-only tree of folders and files: a folder tree, a breadcrumb, the open folder as a grid or tiles, sort
 /// (folders always first, as Explorer), a details pane, and a search that matches anywhere in a name below the open
 /// folder. Double-click, Enter, or a tap on a touch screen opens: folders navigate, files raise <see cref="OnOpen"/>.
-/// Bound to a flat list by field name (<c>Id</c>, <c>ParentId</c>, <c>Name</c>, <c>Extension</c>…).
+/// Bound to a flat list with lambdas (<c>ItemId</c>, <c>ParentId</c>, <c>ItemName</c>, <c>ItemIsDirectory</c>…).
 /// </summary>
 /// <typeparam name="TItem">The entry type.</typeparam>
 /// <example>
 /// <code>
-/// &lt;NxFileManager Data="entries" @bind-Folder="folder" @bind-SelectedItem="selected"
+/// &lt;NxFileManager Data="entries" ItemId="e =&gt; e.Id" ParentId="e =&gt; e.ParentId" ItemName="e =&gt; e.Name"
+///                ItemIsDirectory="e =&gt; e.IsDirectory" @bind-Folder="folder" @bind-SelectedItem="selected"
 ///                OnOpen="OpenFileAsync" OnDownload="DownloadAsync" Height="100%" /&gt;
 /// </code>
 /// </example>
@@ -27,7 +26,6 @@ public partial class NxFileManager<TItem> : IAsyncDisposable
 
     private const string ModulePath = "./_content/Nx.Components/nx-input.js";
     private static readonly string[] ListKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Home", "End"];
-    private static readonly ConcurrentDictionary<(Type, string), PropertyInfo?> Properties = new();
     private static readonly NxFileManagerSort[] SortChoices = Enum.GetValues<NxFileManagerSort>();
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
@@ -74,29 +72,29 @@ public partial class NxFileManager<TItem> : IAsyncDisposable
     /// <summary>Every folder and file, flat: each names its parent by id.</summary>
     [Parameter] public IEnumerable<TItem>? Data { get; set; }
 
-    /// <summary>The property holding an entry's id. Default: <c>Id</c>.</summary>
-    [Parameter] public string IdField { get; set; } = "Id";
+    /// <summary>An entry's unique id. Required.</summary>
+    [Parameter, EditorRequired] public Func<TItem, object>? ItemId { get; set; }
 
-    /// <summary>The property holding its parent folder's id; <c>null</c> at the top. Default: <c>ParentId</c>.</summary>
-    [Parameter] public string ParentIdField { get; set; } = "ParentId";
+    /// <summary>Its parent folder's id; <c>null</c> (or not passed) at the top.</summary>
+    [Parameter] public Func<TItem, object?>? ParentId { get; set; }
 
-    /// <summary>The property holding its name, without the extension for a file. Default: <c>Name</c>.</summary>
-    [Parameter] public string NameField { get; set; } = "Name";
+    /// <summary>Its name, without the extension for a file. Required.</summary>
+    [Parameter, EditorRequired] public Func<TItem, string>? ItemName { get; set; }
 
-    /// <summary>The property holding a file's extension (<c>.pdf</c>). Default: <c>Extension</c>.</summary>
-    [Parameter] public string ExtensionField { get; set; } = "Extension";
+    /// <summary>A file's extension (<c>.pdf</c>).</summary>
+    [Parameter] public Func<TItem, string?>? ItemExtension { get; set; }
 
-    /// <summary>The property telling a folder from a file. Default: <c>IsDirectory</c>.</summary>
-    [Parameter] public string IsDirectoryField { get; set; } = "IsDirectory";
+    /// <summary>Tells a folder from a file. Required.</summary>
+    [Parameter, EditorRequired] public Func<TItem, bool>? ItemIsDirectory { get; set; }
 
-    /// <summary>The property holding a file's size in bytes. Default: <c>Size</c>.</summary>
-    [Parameter] public string SizeField { get; set; } = "Size";
+    /// <summary>A file's size in bytes.</summary>
+    [Parameter] public Func<TItem, long?>? ItemSize { get; set; }
 
-    /// <summary>The property holding when it was modified. Default: <c>DateModified</c>.</summary>
-    [Parameter] public string DateModifiedField { get; set; } = "DateModified";
+    /// <summary>When it was modified.</summary>
+    [Parameter] public Func<TItem, DateTime?>? ItemDateModified { get; set; }
 
-    /// <summary>The property holding when it was created. Default: <c>DateCreated</c>.</summary>
-    [Parameter] public string DateCreatedField { get; set; } = "DateCreated";
+    /// <summary>When it was created.</summary>
+    [Parameter] public Func<TItem, DateTime?>? ItemDateCreated { get; set; }
 
     // ── Where and what ────────────────────────────────────────────────────────
 
@@ -232,9 +230,9 @@ public partial class NxFileManager<TItem> : IAsyncDisposable
 
     // ── The folder tree (an NxTreeView of the folders) ────────────────────────
 
-    private object IdOf(TItem item) => Read(item, IdField, required: true)!;
-    private object? ParentOf(TItem item) => Read(item, ParentIdField);
-    private string NameOf(TItem item) => Convert.ToString(Read(item, NameField, required: true), Formats) ?? "";
+    private object IdOf(TItem item) => ItemId!(item);
+    private object? ParentOf(TItem item) => ParentId?.Invoke(item);
+    private string NameOf(TItem item) => ItemName!(item) ?? "";
     private TItem? CurrentItem => current is null ? default : current.Item;
     private IEnumerable<TItem> FolderItems => byId.Values.Where(n => n.IsDirectory).Select(n => n.Item);
     private IEnumerable<TItem> ExpandedFolderItems => expandedIds.Where(byId.ContainsKey).Select(id => byId[id].Item).ToList();
@@ -300,6 +298,8 @@ public partial class NxFileManager<TItem> : IAsyncDisposable
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        if (ItemId is null || ItemName is null || ItemIsDirectory is null)
+            throw new InvalidOperationException("NxFileManager needs ItemId, ItemName and ItemIsDirectory.");
         Build();
         if (!initialized)
             view = View;
@@ -339,12 +339,11 @@ public partial class NxFileManager<TItem> : IAsyncDisposable
             if (item is null)
                 continue;
             var id = IdOf(item);
-            var node = new Node(item, id, ParentOf(item), NameOf(item), Read(item, ExtensionField) as string,
-                Read(item, IsDirectoryField, required: true) is true)
+            var node = new Node(item, id, ParentOf(item), NameOf(item), ItemExtension?.Invoke(item), ItemIsDirectory!(item))
             {
-                Size = Read(item, SizeField) switch { long l => l, int i => i, null => null, var v => Convert.ToInt64(v, CultureInfo.InvariantCulture) },
-                Modified = ToDate(Read(item, DateModifiedField)),
-                Created = ToDate(Read(item, DateCreatedField))
+                Size = ItemSize?.Invoke(item),
+                Modified = ItemDateModified?.Invoke(item),
+                Created = ItemDateCreated?.Invoke(item)
             };
             node.Index = map.Count;
             map.TryAdd(id, node);
@@ -364,21 +363,6 @@ public partial class NxFileManager<TItem> : IAsyncDisposable
         }
         byId = map;
         roots = top;
-    }
-
-    private static DateTime? ToDate(object? value) => value switch
-    {
-        DateTime d => d,
-        DateTimeOffset o => o.LocalDateTime,
-        _ => null
-    };
-
-    private static object? Read(TItem item, string field, bool required = false)
-    {
-        var info = Properties.GetOrAdd((item!.GetType(), field), key => key.Item1.GetProperty(key.Item2, BindingFlags.Public | BindingFlags.Instance));
-        if (info is null && required)
-            throw new InvalidOperationException($"NxFileManager: {item.GetType().Name} has no public property '{field}'.");
-        return info?.GetValue(item);
     }
 
     /// <inheritdoc />
@@ -516,7 +500,7 @@ public partial class NxFileManager<TItem> : IAsyncDisposable
                 await module.InvokeVoidAsync("dispose", list);
             await module.DisposeAsync();
         }
-        catch (JSDisconnectedException)
+        catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
         {
             // The circuit is gone; the browser cleaned up with it.
         }

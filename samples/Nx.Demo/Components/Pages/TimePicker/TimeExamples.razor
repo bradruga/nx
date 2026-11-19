@@ -43,8 +43,9 @@
 <div class="doc-section">
     <h2>Time Types</h2>
     <p class="doc-note">
-        Bind <code>TimeOnly</code>, <code>TimeSpan</code> or <code>DateTime</code>, nullable or not. A <code>DateTime</code> keeps
-        its date. Seconds are dropped.
+        Bind <code>TimeOnly</code>, <code>TimeSpan</code>, <code>DateTime</code> or <code>DateTimeOffset</code>, nullable or not.
+        A <code>DateTime</code> keeps its date; a <code>DateTimeOffset</code> its date and offset, and one set on an empty field
+        is today at the offset of the browser's time zone. Seconds are dropped.
     </p>
     @* code *@
     <div class="demo-stage">
@@ -56,6 +57,10 @@
             <div>
                 <NxTimePicker Id="type-datetime" Label="DateTime (keeps Oct 23)" @bind-Value="stamp" Culture="EnUs" />
                 <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="type-datetime-value">Value: <strong>@stamp.ToString("yyyy-MM-dd HH:mm")</strong></span></div>
+            </div>
+            <div>
+                <NxTimePicker Id="type-offset" Label="DateTimeOffset (keeps +09:00)" @bind-Value="offsetStamp" Culture="EnUs" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="type-offset-value">Value: <strong>@offsetStamp.ToString("yyyy-MM-dd HH:mm zzz")</strong></span></div>
             </div>
         </div>
     </div>
@@ -80,8 +85,11 @@
 <div class="doc-section">
     <h2>Phone Sheet</h2>
     <p class="doc-note">
-        At 600px and below the clock button opens a full-screen list with 48px rows, scrolled to the current time.
-        <code>MobileMode="Always"</code> forces it here.
+        At 600px and below the clock button opens a full-screen sheet with hour, minute and AM/PM columns (24-hour: hour and
+        minute) of 48px rows, standing on the current time. The minute column lists every 5 minutes whatever the
+        <code>Step</code> (every <code>Step</code> when it is under 5), so a time off the step is three taps; other minutes are
+        typed. Taps change nothing until <strong>Done</strong>; Back discards them. Times outside <code>Min</code> and
+        <code>Max</code> are disabled. <code>MobileMode="Always"</code> forces the sheet here.
     </p>
     @* code *@
     <div class="demo-stage demo-stage-narrow">
@@ -130,6 +138,7 @@
     TimeOnly? pourStart = new(7, 0);
     TimeSpan span = new(9, 45, 0);
     DateTime stamp = new(2026, 10, 23, 16, 0, 0);
+    DateTimeOffset offsetStamp = new(2026, 10, 23, 16, 0, 0, TimeSpan.FromHours(9));
     TimeOnly? clearable = new TimeOnly(12, 0);
     TimeOnly fixedTime = new(8, 0);
     TimeOnly? sheetTime;

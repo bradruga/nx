@@ -39,8 +39,8 @@ public partial class NxDropDownButton : IAsyncDisposable
     /// <summary>Visual style, as NxButton. Default: <see cref="NxButtonVariant.Secondary"/>.</summary>
     [Parameter] public NxButtonVariant Variant { get; set; } = NxButtonVariant.Secondary;
 
-    /// <summary>Size, as NxButton. Default: <see cref="NxButtonSize.Medium"/>.</summary>
-    [Parameter] public NxButtonSize Size { get; set; } = NxButtonSize.Medium;
+    /// <summary>Size, as NxButton. Default: <see cref="NxSize.Medium"/>.</summary>
+    [Parameter] public NxSize Size { get; set; } = NxSize.Medium;
 
     /// <summary>Shows the down arrow after the label. Default: <c>true</c>.</summary>
     [Parameter] public bool ShowArrow { get; set; } = true;
@@ -124,7 +124,7 @@ public partial class NxDropDownButton : IAsyncDisposable
             await inputModule.InvokeVoidAsync("dispose", anchor);
             await inputModule.DisposeAsync();
         }
-        catch (JSDisconnectedException)
+        catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
         {
             // The circuit is gone; the browser cleaned up with it.
         }

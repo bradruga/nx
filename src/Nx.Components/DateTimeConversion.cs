@@ -4,20 +4,34 @@ namespace Nx.Components;
 
 /// <summary>
 /// Converts an <see cref="NxDateTimePicker{TValue}"/>'s bound <typeparamref name="TValue"/> to and from <see cref="DateTime"/>.
-/// Supports <see cref="DateTime"/>, nullable or not.
+/// Supports <see cref="DateTime"/> and <see cref="DateTimeOffset"/>, nullable or not.
 /// </summary>
 internal static class DateTimeConversion<TValue>
 {
+    private static readonly Type Underlying = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
+
     public static readonly bool IsNullable = Nullable.GetUnderlyingType(typeof(TValue)) is not null;
-    public static readonly bool IsSupported = (Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue)) == typeof(DateTime);
+    public static readonly bool IsOffset = Underlying == typeof(DateTimeOffset);
+    public static readonly bool IsSupported = Underlying == typeof(DateTime) || IsOffset;
 
-    public static DateTime? ToDateTime(TValue? value) => value is DateTime d ? d : null;
+    /// <summary>The date and time as shown: a <see cref="DateTimeOffset"/>'s own local parts.</summary>
+    public static DateTime? ToDateTime(TValue? value) => value switch
+    {
+        DateTime d       => d,
+        DateTimeOffset d => d.DateTime,
+        _                => null
+    };
 
-    /// <summary>A value for <paramref name="dateTime"/>, with the <see cref="DateTimeKind"/> of <paramref name="previous"/>.</summary>
-    public static TValue? FromDateTime(DateTime? dateTime, TValue? previous)
+    /// <summary>
+    /// A value for <paramref name="dateTime"/>, with the <see cref="DateTimeKind"/> of <paramref name="previous"/>; a
+    /// <see cref="DateTimeOffset"/> keeps its offset, else takes the offset of <paramref name="zone"/> at that time.
+    /// </summary>
+    public static TValue? FromDateTime(DateTime? dateTime, TValue? previous, BrowserTimeZone zone)
     {
         if (dateTime is not DateTime d)
             return default;
+        if (IsOffset)
+            return (TValue)(object)zone.At(d, previous is DateTimeOffset o ? o : null);
         var kind = previous is DateTime p ? p.Kind : DateTimeKind.Unspecified;
         return (TValue)(object)DateTime.SpecifyKind(d, kind);
     }

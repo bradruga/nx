@@ -90,8 +90,8 @@
 
 .nx-switch-loading .nx-switch-track { cursor: progress; }
 
-.nx-switch-invalid .nx-switch-track { box-shadow: 0 0 0 1.5px var(--nx-invalid); }
-.nx-switch-invalid .nx-switch-label { color: var(--nx-invalid); }
+.nx-switch-invalid .nx-switch-track { box-shadow: 0 0 0 1.5px var(--nx-invalid, var(--nx-danger)); }
+.nx-switch-invalid .nx-switch-label { color: var(--nx-invalid, var(--nx-danger)); }
 
 @media (prefers-reduced-motion: reduce) {
     .nx-switch-thumb, .nx-switch-track { transition: none; }

@@ -9,7 +9,8 @@
     <div class="demo-playground">
         <div class="demo-preview">
             <div class="demo-preview-inner demo-preview-inner-full demo-preview-inner-stretch">
-                <NxScheduler Id="playground-scheduler" Data="DemoShifts.Week(pgDate)" Date="pgDate" DateChanged="Moved" StartTime="Hour(pgStart)"
+                <NxScheduler Id="playground-scheduler" Data="DemoShifts.Week(pgDate)" ItemStart="s => s.Start" ItemEnd="s => s.End" ItemTitle="s => s.Title"
+                             Date="pgDate" DateChanged="Moved" StartTime="Hour(pgStart)"
                              EndTime="@(pgEnd >= 24 ? new TimeOnly(23, 59) : Hour(pgEnd))" WorkDayStart="Hour(pgWorkStart)" WorkDayEnd="Hour(pgWorkEnd)"
                              SlotDuration="pgSlot" SlotDivisions="pgDivisions" Height="@pgHeight" AriaLabel="@OrNull(pgAriaLabel)"
                              ItemTemplate="@(pgTemplate ? ShiftTemplate : null)" />
@@ -79,7 +80,7 @@
     {
         get
         {
-            var attrs = new List<string> { "Data=\"shifts\"", "@bind-Date=\"week\"" };
+            var attrs = new List<string> { "Data=\"shifts\"", "ItemStart=\"s => s.Start\" ItemEnd=\"s => s.End\" ItemTitle=\"s => s.Title\"", "@bind-Date=\"week\"" };
             if (pgStart != 0) attrs.Add($"StartTime=\"new({pgStart}, 0)\"");
             if (pgEnd < 24) attrs.Add($"EndTime=\"new({pgEnd}, 0)\"");
             if (pgWorkStart != 8) attrs.Add($"WorkDayStart=\"new({pgWorkStart}, 0)\"");

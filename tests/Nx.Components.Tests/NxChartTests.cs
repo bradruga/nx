@@ -40,6 +40,9 @@ public class NxChartTests : BunitContext
         b.CloseComponent();
     };
 
+    /// <summary>A series' lambda, typed for a parameter passed as an object.</summary>
+    private static Func<T, object?> F<T>(Func<T, object?> read) => read;
+
     private static RenderFragment All(params RenderFragment[] children) => b =>
     {
         for (var i = 0; i < children.Length; i++)
@@ -56,7 +59,7 @@ public class NxChartTests : BunitContext
         });
 
     private static RenderFragment LoadsLine(params (string, object?)[] more) =>
-        Child<NxChartSeries>([("Name", "Loads"), ("Data", Days), ("Field", "Loads"), ("CategoryField", "Date"), .. more]);
+        Child<NxChartSeries<Day>>([("Name", "Loads"), ("Data", Days), ("Value", F<Day>(d => d.Loads)), ("ItemCategory", F<Day>(d => d.Date)), .. more]);
 
     private static List<string> Texts(IRenderedComponent<NxChart> cut, string selector) =>
         cut.FindAll(selector).Select(e => e.TextContent).ToList();
@@ -117,7 +120,7 @@ public class NxChartTests : BunitContext
     {
         var cut = RenderChart(All(
             LoadsLine(("Axis", "count")),
-            Child<NxChartSeries>(("Name", "Hours"), ("Type", NxChartSeriesType.Area), ("Data", Days), ("Field", "Hours"), ("CategoryField", "Date"), ("Axis", "hours")),
+            Child<NxChartSeries<Day>>(("Name", "Hours"), ("Type", NxChartSeriesType.Area), ("Data", Days), ("Value", F<Day>(d => d.Hours)), ("ItemCategory", F<Day>(d => d.Date)), ("Axis", "hours")),
             Child<NxChartValueAxis>(("Name", "count")),
             Child<NxChartValueAxis>(("Name", "hours"), ("LabelFormat", "0.0"))));
 
@@ -130,12 +133,12 @@ public class NxChartTests : BunitContext
     public void CategoryAxis_CategoriesLabelsStepAndTitle()
     {
         var cut = RenderChart(All(
-            Child<NxChartSeries>(("Data", new[] { 1, 2, 3, 4 })),
+            Child<NxChartSeries<int>>(("Data", new[] { 1, 2, 3, 4 })),
             Child<NxChartCategoryAxis>(("Categories", new[] { "Mon", "Tue", "Wed", "Thu" }), ("LabelStep", 2), ("Title", "Day"))));
         Assert.That(Texts(cut, ".nx-chart-labels text"), Does.Contain("Mon").And.Contain("Wed").And.Not.Contain("Tue").And.Contain("Day"));
 
         var labels = RenderChart(All(
-            Child<NxChartSeries>(("Data", new[] { 1, 2, 3 })),
+            Child<NxChartSeries<int>>(("Data", new[] { 1, 2, 3 })),
             Child<NxChartCategoryAxis>(("Categories", new[] { "a", "b", "c" }), ("Labels", new string?[] { "Week 1", "", null }))));
         Assert.That(Texts(labels, ".nx-chart-labels text").Where(t => !char.IsDigit(t[0])), Is.EqualTo(new[] { "Week 1" }));
     }
@@ -145,7 +148,7 @@ public class NxChartTests : BunitContext
     {
         var items = new[] { new Day(new DateTime(2026, 5, 3), 4, null), new Day(new DateTime(2026, 5, 20), 6, null), new Day(new DateTime(2026, 7, 2), 5, null) };
         var cut = RenderChart(All(
-            Child<NxChartSeries>(("Type", NxChartSeriesType.Column), ("Data", items), ("Field", "Loads"), ("CategoryField", "Date"), ("Aggregate", NxChartAggregate.Sum)),
+            Child<NxChartSeries<Day>>(("Type", NxChartSeriesType.Column), ("Data", items), ("Value", F<Day>(d => d.Loads)), ("ItemCategory", F<Day>(d => d.Date)), ("Aggregate", NxChartAggregate.Sum)),
             Child<NxChartCategoryAxis>(("BaseUnit", NxChartBaseUnit.Months))));
 
         Assert.That(Texts(cut, ".nx-chart-labels text"), Does.Contain("May 26").And.Contain("Jun 26").And.Contain("Jul 26"));
@@ -162,14 +165,14 @@ public class NxChartTests : BunitContext
         var b = new[] { 5, 5 };
         var cats = Child<NxChartCategoryAxis>(("Categories", new[] { "x", "y" }));
         var side = RenderChart(All(
-            Child<NxChartSeries>(("Type", NxChartSeriesType.Column), ("Data", a)),
-            Child<NxChartSeries>(("Type", NxChartSeriesType.Column), ("Data", b)), cats));
+            Child<NxChartSeries<int>>(("Type", NxChartSeriesType.Column), ("Data", a)),
+            Child<NxChartSeries<int>>(("Type", NxChartSeriesType.Column), ("Data", b)), cats));
         var rects = side.FindAll("rect.nx-chart-bar").Select(r => (X: Num(r, "x"), Y: Num(r, "y"), H: Num(r, "height"))).ToList();
         Assert.That(rects[2].X, Is.GreaterThan(rects[0].X), "the second series sits beside the first");
 
         var stacked = RenderChart(All(
-            Child<NxChartSeries>(("Type", NxChartSeriesType.Column), ("Data", a), ("Stacked", true)),
-            Child<NxChartSeries>(("Type", NxChartSeriesType.Column), ("Data", b), ("Stacked", true)), cats));
+            Child<NxChartSeries<int>>(("Type", NxChartSeriesType.Column), ("Data", a), ("Stacked", true)),
+            Child<NxChartSeries<int>>(("Type", NxChartSeriesType.Column), ("Data", b), ("Stacked", true)), cats));
         var s = stacked.FindAll("rect.nx-chart-bar").Select(r => (X: Num(r, "x"), Y: Num(r, "y"), H: Num(r, "height"))).ToList();
         Assert.That(s[2].X, Is.EqualTo(s[0].X).Within(0.01), "stacked: same slot");
         Assert.That(s[2].Y + s[2].H, Is.EqualTo(s[0].Y).Within(0.01), "the second sits on top of the first");
@@ -181,7 +184,7 @@ public class NxChartTests : BunitContext
     public void Bars_Horizontal_WidthByValue_Labels()
     {
         var data = new[] { new Slice("Rebar", 1200), new Slice("Strand", 600) };
-        var cut = RenderChart(Child<NxChartSeries>(("Type", NxChartSeriesType.Bar), ("Data", data), ("Field", "Count"), ("CategoryField", "Name"),
+        var cut = RenderChart(Child<NxChartSeries<Slice>>(("Type", NxChartSeriesType.Bar), ("Data", data), ("Value", F<Slice>(s => s.Count)), ("ItemCategory", F<Slice>(s => s.Name)),
             ("ShowLabels", true), ("LabelFormat", "N0")));
 
         var bars = cut.FindAll("rect.nx-chart-bar");
@@ -195,7 +198,7 @@ public class NxChartTests : BunitContext
     public async Task Pie_SlicesLegendPercentage()
     {
         var data = new[] { new Slice("North", 300), new Slice("South", 100, "#123456") };
-        var cut = RenderChart(Child<NxChartSeries>(("Type", NxChartSeriesType.Pie), ("Data", data), ("Field", "Count"), ("CategoryField", "Name"), ("ColorField", "Color")),
+        var cut = RenderChart(Child<NxChartSeries<Slice>>(("Type", NxChartSeriesType.Pie), ("Data", data), ("Value", F<Slice>(s => s.Count)), ("ItemCategory", F<Slice>(s => s.Name)), ("ItemColor", (Func<Slice, string?>)(s => s.Color))),
             p => p.Add(x => x.LegendPosition, NxChartLegendPosition.Right));
 
         var slices = cut.FindAll("path.nx-chart-slice");
@@ -214,7 +217,7 @@ public class NxChartTests : BunitContext
     [Test]
     public async Task Legend_HidesAndShowsASeries()
     {
-        var cut = RenderChart(All(LoadsLine(), Child<NxChartSeries>(("Name", "Other"), ("Data", Days), ("Field", "Loads"), ("CategoryField", "Date"))));
+        var cut = RenderChart(All(LoadsLine(), Child<NxChartSeries<Day>>(("Name", "Other"), ("Data", Days), ("Value", F<Day>(d => d.Loads)), ("ItemCategory", F<Day>(d => d.Date)))));
         var items = cut.FindAll(".nx-chart-legend-item");
         Assert.That(items.Select(i => i.GetAttribute("aria-pressed")), Is.EqualTo(new[] { "true", "true" }));
 
@@ -255,7 +258,7 @@ public class NxChartTests : BunitContext
     public async Task Keys_MoveAlongAndAcross_EnterClicks()
     {
         NxChartPoint? clicked = null;
-        var cut = RenderChart(All(LoadsLine(), Child<NxChartSeries>(("Name", "Other"), ("Data", Days), ("Field", "Loads"), ("CategoryField", "Date"))),
+        var cut = RenderChart(All(LoadsLine(), Child<NxChartSeries<Day>>(("Name", "Other"), ("Data", Days), ("Value", F<Day>(d => d.Loads)), ("ItemCategory", F<Day>(d => d.Date)))),
             p => p.Add(x => x.OnSeriesClick, e => clicked = e));
         var plot = () => cut.Find(".nx-chart-plot");
 
@@ -314,14 +317,7 @@ public class NxChartTests : BunitContext
     }
 
     [Test]
-    public void UnknownField_Throws()
-    {
-        var ex = Assert.Throws<InvalidOperationException>(() => RenderChart(Child<NxChartSeries>(("Data", Days), ("Field", "Nope"))));
-        Assert.That(ex!.Message, Does.Contain("Nope"));
-    }
-
-    [Test]
-    public void SeriesOutsideAChart_Throws() => Assert.Throws<InvalidOperationException>(() => Render<NxChartSeries>());
+    public void SeriesOutsideAChart_Throws() => Assert.Throws<InvalidOperationException>(() => Render<NxChartSeries<int>>());
 
     // ── The model, read from the screen-reader table (one row per category) ──
 
@@ -332,7 +328,7 @@ public class NxChartTests : BunitContext
         [.. cut.FindAll(".nx-chart-sr tbody tr").Select(r => r.Children.Select(c => c.TextContent).ToArray())];
 
     private static RenderFragment Readings(Reading[] items, params (string, object?)[] more) =>
-        Child<NxChartSeries>([("Data", items), ("Field", "Value"), ("CategoryField", "At"), .. more]);
+        Child<NxChartSeries<Reading>>([("Data", items), ("Value", F<Reading>(r => r.Value)), ("ItemCategory", F<Reading>(r => r.At)), .. more]);
 
     private static double[] ValueTicks(IRenderedComponent<NxChart> cut) =>
         [.. cut.FindAll(".nx-chart-labels text").Where(t => t.GetAttribute("text-anchor") == "end")
@@ -403,7 +399,7 @@ public class NxChartTests : BunitContext
     public void DateAxis_DateOnlyCategories_AreDates()
     {
         var items = new[] { new Shipped(new DateOnly(2026, 10, 1), 3), new Shipped(new DateOnly(2026, 10, 3), 4) };
-        var cut = RenderChart(Child<NxChartSeries>(("Data", items), ("Field", "Tons"), ("CategoryField", "On")));
+        var cut = RenderChart(Child<NxChartSeries<Shipped>>(("Data", items), ("Value", F<Shipped>(s => s.Tons)), ("ItemCategory", F<Shipped>(s => s.On))));
 
         Assert.That(Table(cut).Select(r => r[0]), Is.EqualTo(new[] { "10/1", "10/2", "10/3" }));
     }
@@ -422,8 +418,8 @@ public class NxChartTests : BunitContext
         var a = new[] { new Slice("Rebar", 1), new Slice("Strand", 2) };
         var b = new[] { new Slice("Mesh", 3), new Slice("Rebar", 4) };
         var cut = RenderChart(All(
-            Child<NxChartSeries>(("Type", NxChartSeriesType.Column), ("Data", a), ("Field", "Count"), ("CategoryField", "Name")),
-            Child<NxChartSeries>(("Type", NxChartSeriesType.Column), ("Data", b), ("Field", "Count"), ("CategoryField", "Name"))));
+            Child<NxChartSeries<Slice>>(("Type", NxChartSeriesType.Column), ("Data", a), ("Value", F<Slice>(s => s.Count)), ("ItemCategory", F<Slice>(s => s.Name))),
+            Child<NxChartSeries<Slice>>(("Type", NxChartSeriesType.Column), ("Data", b), ("Value", F<Slice>(s => s.Count)), ("ItemCategory", F<Slice>(s => s.Name)))));
 
         Assert.That(Table(cut), Is.EqualTo(new[] { new[] { "Rebar", "1", "4" }, new[] { "Strand", "2", "" }, new[] { "Mesh", "", "3" } }));
     }
@@ -431,7 +427,7 @@ public class NxChartTests : BunitContext
     [Test]
     public void PlainNumbers_NoCategories_NumberedFromOne_NaNIsAGap()
     {
-        var cut = RenderChart(Child<NxChartSeries>(("Data", new[] { 1.5, double.NaN, 3 })));
+        var cut = RenderChart(Child<NxChartSeries<double>>(("Data", new[] { 1.5, double.NaN, 3 })));
 
         Assert.That(Table(cut), Is.EqualTo(new[] { new[] { "1", "1.5" }, new[] { "2", "" }, new[] { "3", "3" } }));
     }
@@ -441,8 +437,8 @@ public class NxChartTests : BunitContext
     {
         var cats = Child<NxChartCategoryAxis>(("Categories", new[] { "x", "y" }));
         var cut = RenderChart(All(
-            Child<NxChartSeries>(("Name", "Small"), ("Data", new[] { 8, 10 })),
-            Child<NxChartSeries>(("Name", "Big"), ("Data", new[] { 90, 100 })), cats));
+            Child<NxChartSeries<int>>(("Name", "Small"), ("Data", new[] { 8, 10 })),
+            Child<NxChartSeries<int>>(("Name", "Big"), ("Data", new[] { 90, 100 })), cats));
         Assert.That(ValueTicks(cut).Max(), Is.EqualTo(100));
 
         await cut.FindAll(".nx-chart-legend-item")[1].ClickAsync(new MouseEventArgs());
@@ -453,7 +449,7 @@ public class NxChartTests : BunitContext
     [Test]
     public void Legend_VisibleInLegendFalse_LeftOut()
     {
-        var cut = RenderChart(All(LoadsLine(), Child<NxChartSeries>(("Name", "Target"), ("Data", Days), ("Field", "Loads"), ("CategoryField", "Date"), ("VisibleInLegend", false))));
+        var cut = RenderChart(All(LoadsLine(), Child<NxChartSeries<Day>>(("Name", "Target"), ("Data", Days), ("Value", F<Day>(d => d.Loads)), ("ItemCategory", F<Day>(d => d.Date)), ("VisibleInLegend", false))));
 
         Assert.That(Texts(cut, ".nx-chart-legend-text"), Is.EqualTo(new[] { "Loads" }));
         Assert.That(cut.FindAll(".nx-chart-sr thead th"), Has.Count.EqualTo(3), "still drawn and in the table");
@@ -462,7 +458,7 @@ public class NxChartTests : BunitContext
     [Test]
     public void Palette_GoesRoundAfterEight()
     {
-        var series = Enumerable.Range(0, 9).Select(i => Child<NxChartSeries>(("Name", $"S{i}"), ("Data", new[] { i }))).ToArray();
+        var series = Enumerable.Range(0, 9).Select(i => Child<NxChartSeries<int>>(("Name", $"S{i}"), ("Data", new[] { i }))).ToArray();
         var cut = RenderChart(All(series));
 
         var swatches = cut.FindAll(".nx-chart-swatch").Select(s => s.GetAttribute("style")).ToList();
@@ -475,8 +471,8 @@ public class NxChartTests : BunitContext
     public void Columns_StackedNegative_HangsBelowZero()
     {
         var cut = RenderChart(All(
-            Child<NxChartSeries>(("Type", NxChartSeriesType.Column), ("Data", new[] { 10 }), ("Stacked", true)),
-            Child<NxChartSeries>(("Type", NxChartSeriesType.Column), ("Data", new[] { -5 }), ("Stacked", true))));
+            Child<NxChartSeries<int>>(("Type", NxChartSeriesType.Column), ("Data", new[] { 10 }), ("Stacked", true)),
+            Child<NxChartSeries<int>>(("Type", NxChartSeriesType.Column), ("Data", new[] { -5 }), ("Stacked", true))));
 
         var rects = cut.FindAll("rect.nx-chart-bar");
         Assert.That(Num(rects[1], "y"), Is.EqualTo(Num(rects[0], "y") + Num(rects[0], "height")).Within(0.01), "both meet at zero");
@@ -484,11 +480,11 @@ public class NxChartTests : BunitContext
     }
 
     [Test]
-    public void Columns_ColorField_ColorsEachColumn()
+    public void Columns_ItemColor_ColorsEachColumn()
     {
         var data = new[] { new Slice("Rebar", 2, "#aa0000"), new Slice("Strand", 1) };
-        var cut = RenderChart(Child<NxChartSeries>(("Type", NxChartSeriesType.Column), ("Data", data), ("Field", "Count"), ("CategoryField", "Name"),
-            ("ColorField", "Color"), ("Color", "green")));
+        var cut = RenderChart(Child<NxChartSeries<Slice>>(("Type", NxChartSeriesType.Column), ("Data", data), ("Value", F<Slice>(s => s.Count)), ("ItemCategory", F<Slice>(s => s.Name)),
+            ("ItemColor", (Func<Slice, string?>)(s => s.Color)), ("Color", "green")));
 
         var rects = cut.FindAll("rect.nx-chart-bar");
         Assert.That(rects[0].GetAttribute("style"), Is.EqualTo("fill: #aa0000"));
@@ -500,7 +496,7 @@ public class NxChartTests : BunitContext
     {
         var cut = RenderChart(All(
             LoadsLine(("Axis", "count")),
-            Child<NxChartSeries>(("Name", "Hours"), ("Data", Days), ("Field", "Hours"), ("CategoryField", "Date"), ("Axis", "hours")),
+            Child<NxChartSeries<Day>>(("Name", "Hours"), ("Data", Days), ("Value", F<Day>(d => d.Hours)), ("ItemCategory", F<Day>(d => d.Date)), ("Axis", "hours")),
             Child<NxChartValueAxis>(("Name", "count"), ("Visible", false)),
             Child<NxChartValueAxis>(("Name", "hours"), ("LabelFormat", "0.0"))));
 
@@ -513,7 +509,7 @@ public class NxChartTests : BunitContext
     public void Pie_CategoriesFromTheAxis_PaletteColors()
     {
         var cut = RenderChart(All(
-            Child<NxChartSeries>(("Type", NxChartSeriesType.Pie), ("Data", new[] { 3, 1 })),
+            Child<NxChartSeries<int>>(("Type", NxChartSeriesType.Pie), ("Data", new[] { 3, 1 })),
             Child<NxChartCategoryAxis>(("Categories", new[] { "Open", "Closed" }))));
 
         Assert.That(Texts(cut, ".nx-chart-legend-text"), Is.EqualTo(new[] { "Open", "Closed" }));
@@ -525,7 +521,7 @@ public class NxChartTests : BunitContext
     public async Task Pie_LegendHidesASlice_ShareOfTheRest()
     {
         var data = new[] { new Slice("North", 300), new Slice("South", 100) };
-        var cut = RenderChart(Child<NxChartSeries>(("Type", NxChartSeriesType.Pie), ("Data", data), ("Field", "Count"), ("CategoryField", "Name")));
+        var cut = RenderChart(Child<NxChartSeries<Slice>>(("Type", NxChartSeriesType.Pie), ("Data", data), ("Value", F<Slice>(s => s.Count)), ("ItemCategory", F<Slice>(s => s.Name))));
 
         await cut.FindAll(".nx-chart-legend-item")[0].ClickAsync(new MouseEventArgs());
         await cut.FindComponent<NxChartSurface>().Instance.OnHover(0, 1);

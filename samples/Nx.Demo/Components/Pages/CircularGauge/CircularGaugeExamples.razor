@@ -12,7 +12,7 @@
             <CenterTemplate>@(context >= 100 ? "Done" : "Loading…")</CenterTemplate>
         </NxCircularGauge>
         <div class="demo-row">
-            <NxButton id="loading-start" Size="NxButtonSize.Small" OnClick="StartAsync" Disabled="running">Load</NxButton>
+            <NxButton id="loading-start" Size="NxSize.Small" OnClick="StartAsync" Disabled="running">Load</NxButton>
             <span class="demo-value" id="loading-value">@loaded%</span>
         </div>
     </div>

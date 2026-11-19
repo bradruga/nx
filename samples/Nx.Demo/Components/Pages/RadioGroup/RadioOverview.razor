@@ -6,8 +6,8 @@
 <div class="doc-section">
     <h2>What It Is</h2>
     <p class="doc-note">
-        <code>NxRadioGroup&lt;TValue&gt;</code> picks one value from a few visible options. List them with <code>Data</code> — enum
-        values, strings — or declare <code>NxRadioButton</code> children for full control of each label. It is built on native radio
+        <code>NxRadioGroup&lt;TItem, TValue&gt;</code> picks one value from a few visible options. List them with <code>Data</code> — enum
+        values, strings, or records read with <code>ItemText</code> and <code>ItemValue</code> — or declare <code>NxRadioButton</code> children for full control of each label. It is built on native radio
         inputs sharing one name, so the browser gives it the standard keyboard model: one tab stop for the whole group, and arrow keys
         that move and check.
     </p>
@@ -16,7 +16,7 @@
 <div class="doc-section">
     <h2>Basic Usage</h2>
     <div class="demo-stage demo-stage-column">
-        <NxRadioGroup Id="overview-radio" @bind-Value="shift" Label="Shift">
+        <NxRadioGroup TItem="Shift" TValue="Shift" Id="overview-radio" @bind-Value="shift" Label="Shift">
             <NxRadioButton Value="Shift.Day" Label="Day (6:00–14:30)" />
             <NxRadioButton Value="Shift.Swing" Label="Swing (14:30–23:00)" />
             <NxRadioButton Value="Shift.Night" Label="Night (23:00–6:00)" />
@@ -52,7 +52,7 @@
 
     const string basicCode =
         """
-        <NxRadioGroup @bind-Value="crew.Shift" Label="Shift">
+        <NxRadioGroup TItem="Shift" TValue="Shift" @bind-Value="crew.Shift" Label="Shift">
             <NxRadioButton Value="Shift.Day" Label="Day (6:00–14:30)" />
             <NxRadioButton Value="Shift.Swing" Label="Swing (14:30–23:00)" />
             <NxRadioButton Value="Shift.Night" Label="Night (23:00–6:00)" />

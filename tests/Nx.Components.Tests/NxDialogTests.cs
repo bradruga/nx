@@ -309,6 +309,56 @@ public class NxDialogTests : BunitContext
         Assert.That(progress.IsClosed, Is.True);
     }
 
+    // ── With an NxWindowHost ──────────────────────────────────────────────────
+
+    [Test]
+    public async Task WindowHost_TakesNxDialog_ButNotInlineNorTheServicesDialogs()
+    {
+        var cut = Render(b =>
+        {
+            b.OpenElement(0, "div");
+            b.AddAttribute(1, "id", "page");
+            b.OpenComponent<NxDialog>(2);
+            b.AddComponentParameter(3, "Visible", true);
+            b.AddComponentParameter(4, "Id", "hosted");
+            b.CloseComponent();
+            b.OpenComponent<NxDialog>(5);
+            b.AddComponentParameter(6, "Visible", true);
+            b.AddComponentParameter(7, "Id", "inline");
+            b.AddComponentParameter(8, "Inline", true);
+            b.CloseComponent();
+            b.CloseElement();
+            b.OpenElement(9, "div");
+            b.AddAttribute(10, "id", "dialogs");
+            b.OpenComponent<NxDialogHost>(11);
+            b.CloseComponent();
+            b.CloseElement();
+            b.OpenElement(12, "div");
+            b.AddAttribute(13, "id", "windows");
+            b.OpenComponent<NxWindowHost>(14);
+            b.CloseComponent();
+            b.CloseElement();
+        });
+
+        Assert.That(cut.FindAll("#windows #hosted.nx-dialog"), Has.Count.EqualTo(1));
+        Assert.That(cut.FindAll("#page #inline.nx-dialog"), Has.Count.EqualTo(1));
+
+        // The dialog host keeps its own dialogs, so their content still gets the NxDialogReference it cascades.
+        var dialog = service.Open(new NxDialogOptions
+        {
+            Id = "from-service",
+            Content = b =>
+            {
+                b.OpenComponent<CloseFromInside>(0);
+                b.CloseComponent();
+            }
+        });
+        cut.WaitForState(() => cut.FindAll("#from-service").Count == 1);
+        Assert.That(cut.FindAll("#dialogs #from-service"), Has.Count.EqualTo(1));
+        await cut.Find("#from-service button.inside").ClickAsync(new MouseEventArgs());
+        Assert.That(await dialog.Result, Is.False);
+    }
+
     [Test]
     public async Task HostDispose_DismissesOpenDialogs()
     {

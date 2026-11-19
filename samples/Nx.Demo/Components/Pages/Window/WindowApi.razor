@@ -22,10 +22,11 @@
                 <tr><td>Footer</td><td>RenderFragment?</td><td>—</td><td>Action buttons, end-aligned.</td></tr>
                 <tr><td>Size</td><td>NxWindowSize</td><td>Medium</td><td>Auto, Small 400, Medium 600, Large 900 px.</td></tr>
                 <tr><td>Width / Height</td><td>string?</td><td>—</td><td>Any CSS length; Width overrides Size.</td></tr>
-                <tr><td>Left / Top</td><td>string?</td><td>centered</td><td>Position from the viewport's top-left corner.</td></tr>
+                <tr><td>Left / Top</td><td>string?</td><td>centered</td><td>Position from the viewport's top-left corner, any CSS length; applied when the window opens.</td></tr>
                 <tr><td>Draggable</td><td>bool</td><td>true</td><td>Move by the title bar; it stays on screen.</td></tr>
                 <tr><td>Resizable</td><td>bool</td><td>false</td><td>Handles on every edge and corner.</td></tr>
                 <tr><td>MinWidth / MinHeight</td><td>int</td><td>240 / 120</td><td>Resize limits in px.</td></tr>
+                <tr><td>Inline</td><td>bool</td><td>false</td><td>Keeps the window where it is declared even when the layout has an <code>NxWindowHost</code>. Content drawn in the host loses the cascading values (an <code>EditContext</code> from an <code>EditForm</code> around the window), inherited CSS and event bubbling of its place in the page.</td></tr>
                 <tr><td>Id / Class</td><td>string?</td><td>—</td><td>On the window element; other attributes go there too.</td></tr>
             </tbody>
         </table>
@@ -41,6 +42,8 @@
                 <tr><td>OnClosing</td><td>NxWindowClosingEventArgs</td><td>Before the user closes it; set <code>Cancel</code> to keep it open.</td></tr>
                 <tr><td>VisibleChanged</td><td>bool</td><td>The user closed it: close button, Esc, backdrop, <code>CloseAsync()</code>.</td></tr>
                 <tr><td>MinimizedChanged / MaximizedChanged</td><td>bool</td><td>A title-bar button or double click changed the state.</td></tr>
+                <tr><td>OnMoved</td><td>NxWindowMovedEventArgs</td><td>A drag ended, or a resize moved the left or top edge: <code>Left</code> and <code>Top</code> in px, to pass back as <code>Left</code> / <code>Top</code>.</td></tr>
+                <tr><td>OnResized</td><td>NxWindowResizedEventArgs</td><td>A resize ended: <code>Width</code> and <code>Height</code> in px, to pass back as <code>Width</code> / <code>Height</code>.</td></tr>
             </tbody>
         </table>
     </div>
@@ -58,6 +61,17 @@
             </tbody>
         </table>
     </div>
+</div>
+
+<div class="doc-section">
+    <h2>NxWindowHost</h2>
+    <p class="doc-note">
+        Optional, no parameters. Put one <code>&lt;NxWindowHost /&gt;</code> in the layout after the page content and register it
+        with <code>services.AddNxDialogs()</code>: every <code>NxWindow</code> and <code>NxDialog</code> is then drawn in the host,
+        clear of any ancestor with a <code>transform</code>, a <code>filter</code> or clipping. Without a host, and for a window
+        with <code>Inline="true"</code>, windows are drawn where they are declared. Dialogs opened by
+        <code>NxDialogService</code> are drawn by <code>NxDialogHost</code> either way.
+    </p>
 </div>
 
 <div class="doc-section">

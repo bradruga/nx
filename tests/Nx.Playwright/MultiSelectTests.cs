@@ -166,12 +166,35 @@ public class MultiSelectTests : PageTest
     {
         await using var context = await Browser.NewContextAsync(new() { ViewportSize = new() { Width = 390, Height = 844 }, HasTouch = true, IsMobile = true });
         var page = await context.NewPageAsync();
-        await page.GotoAsync(_baseUrl + "/multiselect/overview");
+        await page.GotoAsync(_baseUrl + "/multiselect/examples");
         await Expect(page.Locator(".layout-container[data-interactive=true]")).ToBeVisibleAsync();
 
         Assert.That(await page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= window.innerWidth"), Is.True);
-        await page.Locator(".nx-multiselect:has(#overview-multi) .nx-combobox-field").TapAsync();
+        await page.Locator(".nx-multiselect:has(#sheet-auto) .nx-combobox-field").TapAsync();
         await Expect(page.Locator(".nx-combobox-overlay .nx-combobox-overlay-done")).ToBeVisibleAsync();
+    }
+
+    [Test]
+    public async Task Phone_DefaultIsThePopup()
+    {
+        await using var context = await Browser.NewContextAsync(new() { ViewportSize = new() { Width = 390, Height = 844 }, HasTouch = true, IsMobile = true });
+        var page = await context.NewPageAsync();
+        await page.GotoAsync(_baseUrl + "/multiselect/overview");
+        await Expect(page.Locator(".layout-container[data-interactive=true]")).ToBeVisibleAsync();
+
+        await page.Locator(".nx-multiselect:has(#overview-multi) .nx-combobox-toggle").TapAsync();
+        await Expect(page.Locator(".nx-combobox-popup")).ToBeVisibleAsync();
+        await Expect(page.Locator(".nx-combobox-overlay")).ToHaveCountAsync(0);
+    }
+
+    [Test]
+    public async Task ItemByValue_ChipsShowNamesBeforeTheListLoads()
+    {
+        await GoToPage();
+
+        await Expect(Page.Locator(".nx-multiselect:has(#provider-multi) .nx-combobox-chip-text"))
+            .ToHaveTextAsync(new[] { "Brookside Utilities", "Lakeshore Excavation" });
+        await Expect(Page.Locator("#provider-value")).ToHaveTextAsync("Values: [3, 12]");
     }
 
     [Test]
@@ -253,14 +276,14 @@ public class MultiSelectTests : PageTest
         await GoToPage();
         var host = Page.Locator(".nx-multiselect:has(#group-multi)");
         await host.ScrollIntoViewIfNeededAsync();
-        // Select everyone through the sheet so the chips are as wide as they get.
+        // Select everyone so the chips are as wide as they get.
         await Field("group-multi").ClickAsync();
-        var sheet = Page.Locator(".nx-combobox-overlay");
-        await Expect(sheet).ToBeVisibleAsync();
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Popup).ToBeVisibleAsync();
         foreach (var name in new[] { "Dana Ortiz", "Priya Raman", "Hannah O'Neill", "Victor Moreau" })
-            await sheet.Locator("[role=option]", new() { HasText = name }).ClickAsync();
-        await sheet.GetByRole(AriaRole.Button, new() { Name = "Done" }).ClickAsync();
-        await Expect(sheet).ToHaveCountAsync(0);
+            await Popup.Locator("[role=option]", new() { HasText = name }).ClickAsync();
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(Popup).ToHaveCountAsync(0);
         await Expect(host.Locator(".nx-combobox-chip-more")).ToHaveTextAsync("+3 more");
 
         var overflow = await Page.EvaluateAsync<double[]>(@"() => {

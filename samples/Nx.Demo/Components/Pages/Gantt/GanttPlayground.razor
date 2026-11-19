@@ -9,19 +9,21 @@
     <div class="demo-playground">
         <div class="demo-preview">
             <div class="demo-preview-inner demo-preview-inner-full demo-preview-inner-stretch">
-                <NxGantt TItem="ScheduleTask" Id="playground-gantt" Data="tasks" Dependencies="@(pgLinks ? links : null)" SlotWidth="pgSlot"
+                <NxGantt TItem="ScheduleTask" Id="playground-gantt" Data="tasks"
+                         ItemId="t => t.Id" ParentId="t => t.ParentId" ItemTitle="t => t.Title" ItemStart="t => t.Start" ItemEnd="t => t.End"
+                         Dependencies="@(pgLinks ? links : null)" SlotWidth="pgSlot"
                          TreeListWidth="@pgTreeWidth" TreeListWidthChanged="w => pgTreeWidth = w" Sortable="pgSortable" FilterRow="pgFilterRow"
                          DayHeaderDateFormat="@pgDayFormat" Height="@pgHeight" AriaLabel="@OrNull(pgAriaLabel)"
                          Editable="pgEditable" OnEdit="t => pgEdits++" OnUpdate="Updated">
                     <Columns>
-                        <NxGanttColumn Field="@nameof(ScheduleTask.Title)" Title="Task" Width="200px" Expandable="true">
+                        <NxGanttColumn Value="t => t.Title" Title="Task" Width="200px" Expandable="true">
                             <EditorTemplate><NxTextBox @bind-Value="context.Title" Immediate="true" aria-label="Task" /></EditorTemplate>
                         </NxGanttColumn>
                         @if (pgResources)
                         {
-                            <NxGanttColumn Field="@nameof(ScheduleTask.Resources)" Width="130px" />
+                            <NxGanttColumn Value="t => t.Resources" Title="Resources" Width="130px" />
                         }
-                        <NxGanttColumn Field="@nameof(ScheduleTask.Start)" Width="100px" DisplayFormat="{0:MM/dd/yy}" />
+                        <NxGanttColumn Value="t => t.Start" Title="Start" Width="100px" DisplayFormat="{0:MM/dd/yy}" />
                     </Columns>
                 </NxGantt>
             </div>
@@ -77,7 +79,8 @@
 
     void Updated(NxGanttUpdateArgs<ScheduleTask> args)
     {
-        args.Apply();
+        if (args.Start is { } start) args.Item.Start = start;
+        if (args.End is { } end) args.Item.End = end;
         DemoGantt.Rollup(tasks);
         pgUpdates++;
     }
@@ -85,7 +88,7 @@
     static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s;
 
     readonly List<ScheduleTask> tasks = DemoGantt.Tasks();
-    readonly List<ScheduleLink> links = DemoGantt.Links();
+    readonly List<NxGanttDependency> links = DemoGantt.Links();
     double pgSlot = 30;
     string pgTreeWidth = "40%", pgDayFormat = "{0:%d}", pgHeight = "520px", pgAriaLabel = "";
     bool pgLinks = true, pgSortable, pgFilterRow, pgResources = true;
@@ -95,7 +98,7 @@
     {
         get
         {
-            var attrs = new List<string> { "Data=\"tasks\"" };
+            var attrs = new List<string> { "Data=\"tasks\"", "ItemId=\"t => t.Id\" ParentId=\"t => t.ParentId\" ItemTitle=\"t => t.Title\" ItemStart=\"t => t.Start\" ItemEnd=\"t => t.End\"" };
             if (pgLinks) attrs.Add("Dependencies=\"links\"");
             if (pgSlot != 30) attrs.Add($"SlotWidth=\"{pgSlot}\"");
             attrs.Add($"@bind-TreeListWidth=\"treeWidth\" (now {pgTreeWidth})");

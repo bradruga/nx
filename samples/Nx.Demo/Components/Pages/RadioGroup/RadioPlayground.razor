@@ -4,14 +4,14 @@
 
 <div class="doc-section">
     <h2>Playground</h2>
-    <p class="doc-note">Every parameter, live. The group is bound to a string from a list of finishes.</p>
+    <p class="doc-note">Every parameter, live. The group is bound to a string: the name of a finish, from strings, records or declared buttons.</p>
 
     <div class="demo-playground">
         <div class="demo-preview">
             <div class="demo-preview-inner demo-preview-inner-stretch">
                 @if (pgDeclared)
                 {
-                    <NxRadioGroup Id="playground-radio" @bind-Value="pgValue" @bind-Value:after="() => pgChanges++"
+                    <NxRadioGroup TItem="string" TValue="string" Id="playground-radio" @bind-Value="pgValue" @bind-Value:after="() => pgChanges++"
                                   Label="@LabelOrNull" Orientation="pgOrientation" Disabled="pgDisabled">
                         @foreach (var finish in Finishes)
                         {
@@ -19,9 +19,17 @@
                         }
                     </NxRadioGroup>
                 }
+                else if (pgRecords)
+                {
+                    <NxRadioGroup Id="playground-radio" Data="FinishRecords" ItemText="f => f.Name" ItemValue="f => f.Name"
+                                  @bind-Value="pgValue" @bind-Value:after="() => pgChanges++"
+                                  Label="@LabelOrNull" Orientation="pgOrientation" Disabled="pgDisabled"
+                                  ItemDisabled="@(pgDisableOne ? f => f.Name == Finishes[2] : null)"
+                                  ItemTemplate="@(pgTemplate ? FinishRecordTemplate : null)" />
+                }
                 else
                 {
-                    <NxRadioGroup TValue="string" Id="playground-radio" Data="Finishes" @bind-Value="pgValue" @bind-Value:after="() => pgChanges++"
+                    <NxRadioGroup TItem="string" TValue="string" Id="playground-radio" Data="Finishes" @bind-Value="pgValue" @bind-Value:after="() => pgChanges++"
                                   Label="@LabelOrNull" Orientation="pgOrientation" Disabled="pgDisabled"
                                   ItemDisabled="@(pgDisableOne ? f => f == Finishes[2] : null)"
                                   ItemTemplate="@(pgTemplate ? FinishTemplate : null)" />
@@ -38,8 +46,9 @@
             <div class="demo-control">
                 <span>Items from</span>
                 <div class="demo-segmented" role="group" aria-label="Items from">
-                    <button type="button" id="pg-data" aria-pressed="@(!pgDeclared ? "true" : "false")" @onclick="() => pgDeclared = false">Data</button>
-                    <button type="button" id="pg-declared" aria-pressed="@(pgDeclared ? "true" : "false")" @onclick="() => pgDeclared = true">Declared</button>
+                    <button type="button" id="pg-data" aria-pressed="@(pgSource == "data" ? "true" : "false")" @onclick="@(() => pgSource = "data")">Data</button>
+                    <button type="button" id="pg-records" aria-pressed="@(pgRecords ? "true" : "false")" @onclick="@(() => pgSource = "records")">Records</button>
+                    <button type="button" id="pg-declared" aria-pressed="@(pgDeclared ? "true" : "false")" @onclick="@(() => pgSource = "declared")">Declared</button>
                 </div>
             </div>
             <label class="demo-control"><span>Disable "@Finishes[2]"</span><input type="checkbox" id="pg-disable-one" @bind="pgDisableOne" /></label>
@@ -72,12 +81,22 @@
 @code {
     static readonly string[] Finishes = ["Smooth form", "Broom", "Exposed aggregate", "Sandblast"];
 
+    sealed record Finish(string Name, string Code);
+
+    static readonly Finish[] FinishRecords = [.. Finishes.Select((f, i) => new Finish(f, $"F{i + 1}"))];
+
     static readonly RenderFragment<string> FinishTemplate = f =>
         @<text><span class="demo-swatch demo-swatch-@(Array.IndexOf(Finishes, f))"></span>@f</text>;
 
+    static readonly RenderFragment<Finish> FinishRecordTemplate = f =>
+        @<text><span class="demo-swatch demo-swatch-@(Array.IndexOf(FinishRecords, f))"></span>@f.Name <span class="demo-item-meta">@f.Code</span></text>;
+
     string? pgValue = Finishes[0];
     string pgLabel = "Finish";
-    bool pgDeclared, pgDisableOne, pgTemplate, pgDisabled;
+    string pgSource = "data";
+    bool pgDeclared => pgSource == "declared";
+    bool pgRecords => pgSource == "records";
+    bool pgDisableOne, pgTemplate, pgDisabled;
     NxOrientation pgOrientation = NxOrientation.Vertical;
     int pgChanges;
 
@@ -88,17 +107,19 @@
         get
         {
             var attrs = new List<string>();
-            if (!pgDeclared) attrs.Add("Data=\"finishes\"");
+            if (pgDeclared) attrs.Add("TItem=\"string\" TValue=\"string\"");
+            else attrs.Add("Data=\"finishes\"");
+            if (pgRecords) attrs.Add("ItemText=\"f => f.Name\" ItemValue=\"f => f.Name\"");
             attrs.Add("@bind-Value=\"finish\"");
             if (LabelOrNull is { } l) attrs.Add($"Label=\"{l}\"");
             if (pgOrientation != NxOrientation.Vertical) attrs.Add("Orientation=\"NxOrientation.Horizontal\"");
-            if (pgDisableOne && !pgDeclared) attrs.Add($"ItemDisabled=\"f => f == \\\"{Finishes[2]}\\\"\"");
+            if (pgDisableOne && !pgDeclared) attrs.Add($"ItemDisabled=\"f => {(pgRecords ? "f.Name" : "f")} == \\\"{Finishes[2]}\\\"\"");
             if (pgDisabled) attrs.Add("Disabled=\"true\"");
             var open = "<NxRadioGroup " + string.Join("\n              ", attrs);
             if (pgDeclared)
                 return open + ">\n    @foreach (var f in finishes)\n    {\n        <NxRadioButton Value=\"f\" Label=\"@f\" />\n    }\n</NxRadioGroup>";
             if (pgTemplate)
-                return open + ">\n    <ItemTemplate Context=\"f\"><Swatch Finish=\"@f\" /> @f</ItemTemplate>\n</NxRadioGroup>";
+                return open + ">\n    <ItemTemplate Context=\"f\"><Swatch Finish=\"@f\" /> " + (pgRecords ? "@f.Name" : "@f") + "</ItemTemplate>\n</NxRadioGroup>";
             return open + " />";
         }
     }

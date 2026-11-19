@@ -16,6 +16,21 @@ export function preventKeys(element, keys) {
     states.set(element, { ...(states.get(element) ?? {}), onKeyDown });
 }
 
+// Escape clears a clearable field (in .NET). Cancelling the key's default here marks it as used, so an NxWindow
+// around the field does not also close on that press. The clear button is in the field exactly while there is
+// something to clear: Escape in an empty field is left alone and still closes the window.
+export function escapeClears(input) {
+    if (!input) return;
+    const state = states.get(input) ?? {};
+    if (!state.onEscape) {
+        state.onEscape = e => {
+            if (e.key === 'Escape' && input.closest('.nx-field-box')?.querySelector('.nx-field-clear')) e.preventDefault();
+        };
+        input.addEventListener('keydown', state.onEscape);
+    }
+    states.set(input, state);
+}
+
 // Roving tabindex: arrow keys move focus between a group's enabled items (wrapping), Home and End
 // jump to the ends. Done in the browser so fast key presses never outrun a server round trip. In a
 // radiogroup, the item focused is also clicked, so selection follows focus like native radios.
@@ -171,6 +186,7 @@ export function dispose(element) {
     }
     if (state.onMask) element.removeEventListener('input', state.onMask);
     if (state.onResize) element.removeEventListener('input', state.onResize);
+    if (state.onEscape) element.removeEventListener('keydown', state.onEscape);
     if (state.onEditMask) {
         element.removeEventListener('beforeinput', state.onEditMask);
         element.removeEventListener('focus', state.onEditFocus);

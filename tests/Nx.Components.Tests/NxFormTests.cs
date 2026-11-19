@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -42,6 +43,18 @@ public class NxFormTests : BunitContext
         public string PONumber { get; set; } = "";
 
         public Guid Key { get; set; }
+
+        public Address Site { get; } = new();
+
+        public Address Billing { get; } = new();
+    }
+
+    private sealed class Address
+    {
+        [StringLength(5, ErrorMessage = "5 letters at most.")]
+        public string? City { get; set; }
+
+        public int? Lot { get; set; }
     }
 
     [SetUp]
@@ -52,22 +65,45 @@ public class NxFormTests : BunitContext
             JSInterop.SetupModule($"./_content/Nx.Components/{path}").Mode = JSRuntimeMode.Loose;
     }
 
-    /// <summary>Items as markup would declare them: one NxFormItem per entry, with its parameters.</summary>
+    /// <summary>Items as markup would declare them: one NxFormItem per entry (a property, or a path like Site.City), with its parameters.</summary>
     private static RenderFragment Items(params (string Field, object? Extra)[] items) => builder =>
     {
-        var seq = 0;
-        foreach (var (field, extra) in items)
-        {
-            builder.OpenComponent<NxFormItem>(seq++);
-            builder.AddComponentParameter(seq++, nameof(NxFormItem.Field), field);
-            if (extra is not null)
-            {
-                foreach (var property in extra.GetType().GetProperties())
-                    builder.AddComponentParameter(seq++, property.Name, property.GetValue(extra));
-            }
-            builder.CloseComponent();
-        }
+        builder.OpenComponent<ModelItems>(0);
+        builder.AddComponentParameter(1, nameof(ModelItems.Items), items);
+        builder.CloseComponent();
     };
+
+    /// <summary>Builds each item's For on the form's model, which markup's lambdas would capture.</summary>
+    private sealed class ModelItems : ComponentBase
+    {
+        [CascadingParameter] public EditContext EditContext { get; set; } = default!;
+        [Parameter] public (string Field, object? Extra)[] Items { get; set; } = [];
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            var seq = 0;
+            foreach (var (field, extra) in Items)
+            {
+                builder.OpenComponent<NxFormItem>(seq++);
+                builder.AddComponentParameter(seq++, nameof(NxFormItem.For), For(EditContext.Model, field));
+                if (extra is not null)
+                {
+                    foreach (var property in extra.GetType().GetProperties())
+                        builder.AddComponentParameter(seq++, property.Name, property.GetValue(extra));
+                }
+                builder.CloseComponent();
+            }
+        }
+    }
+
+    /// <summary>What the compiler makes of <c>() => model.Site.City</c>: a value type comes boxed.</summary>
+    private static Expression<Func<object?>> For(object model, string path)
+    {
+        Expression body = Expression.Constant(model);
+        foreach (var name in path.Split('.'))
+            body = Expression.Property(body, name);
+        return Expression.Lambda<Func<object?>>(body.Type.IsValueType ? Expression.Convert(body, typeof(object)) : body);
+    }
 
     private static RenderFragment Fields(params string[] fields) => Items(fields.Select(f => (f, (object?)null)).ToArray());
 
@@ -157,10 +193,106 @@ public class NxFormTests : BunitContext
     }
 
     [Test]
-    public void UnknownField_Throws()
+    public void For_NotAProperty_Throws()
     {
-        var ex = Assert.Throws<InvalidOperationException>(() => RenderForm(new Pour(), Fields("Nope")));
-        Assert.That(ex!.Message, Does.Contain("no public property 'Nope'"));
+        var model = new Pour();
+        var ex = Assert.Throws<InvalidOperationException>(() => Render<NxFormItem>(p => p
+            .AddCascadingValue(new EditContext(model))
+            .Add(x => x.For, () => model.ToString())));
+        Assert.That(ex!.Message, Does.Contain("must name a property"));
+    }
+
+    // ── Nested fields ─────────────────────────────────────────────────────────
+
+    [Test]
+    public void Nested_EditorByTheNestedPropertysType_IdCarriesThePath()
+    {
+        var cut = RenderForm(new Pour(), Fields("Site.City", "Site.Lot", "Billing.City"));
+
+        Assert.That(cut.FindAll(".nx-form-label").Select(l => l.TextContent), Is.EqualTo(new[] { "City", "Lot", "City" }));
+        Assert.That(cut.FindAll(".nx-form-label").Select(l => l.GetAttribute("for")), Is.EqualTo(new[] { "f-Site-City", "f-Site-Lot", "f-Billing-City" }));
+        Assert.That(cut.FindAll(".nx-textbox #f-Site-City"), Has.Count.EqualTo(1));
+        Assert.That(cut.FindAll(".nx-numeric #f-Site-Lot"), Has.Count.EqualTo(1));
+    }
+
+    [Test]
+    public void Nested_EditingWritesTheNestedObject_AndNotifiesItsField()
+    {
+        var model = new Pour();
+        var cut = RenderForm(model, Fields("Site.City", "Billing.City"));
+        var changed = new List<FieldIdentifier>();
+        cut.Instance.EditContext!.OnFieldChanged += (_, e) => changed.Add(e.FieldIdentifier);
+
+        cut.Find("#f-Billing-City").Input("Fargo");
+        cut.Find("#f-Billing-City").Change("Fargo");
+
+        Assert.That(model.Billing.City, Is.EqualTo("Fargo"));
+        Assert.That(model.Site.City, Is.Null);
+        Assert.That(changed, Is.EqualTo(new[] { new FieldIdentifier(model.Billing, nameof(Address.City)) }));
+        Assert.That(cut.Find("#f-Billing-City").GetAttribute("value"), Is.EqualTo("Fargo"));
+    }
+
+    [Test]
+    public void Nested_ShowsTheNestedFieldsMessages_UnderItsOwnItem()
+    {
+        var cut = RenderForm(new Pour(), Fields("Site.City", "Billing.City"));
+
+        cut.Find("#f-Site-City").Input("Moorhead");
+        cut.Find("#f-Site-City").Change("Moorhead");
+
+        var items = cut.FindAll(".nx-form-item");
+        Assert.That(items[0].QuerySelector(".nx-validation-message")!.TextContent.Trim(), Is.EqualTo("5 letters at most."));
+        Assert.That(items[1].QuerySelectorAll(".nx-validation-message"), Is.Empty);
+        Assert.That(cut.Find("#f-Site-City").GetAttribute("aria-invalid"), Is.EqualTo("true"));
+    }
+
+    [Test]
+    public async Task Nested_UntouchedInvalidField_BlocksSubmit_ThenClearsWhenFixed()
+    {
+        var model = new Pour { Name = "Slab" };
+        model.Site.City = "Moorhead";
+        var cut = RenderForm(model, Fields("Site.City", "Billing.City"));
+
+        var valid = true;
+        await cut.InvokeAsync(() => valid = cut.Instance.IsValid());
+
+        Assert.That(valid, Is.False);
+        Assert.That(cut.FindAll(".nx-validation-message").Select(m => m.TextContent.Trim()), Is.EqualTo(new[] { "5 letters at most." }));
+
+        cut.Find("#f-Site-City").Input("Fargo");
+        cut.Find("#f-Site-City").Change("Fargo");
+        await cut.InvokeAsync(() => valid = cut.Instance.IsValid());
+
+        Assert.That(valid, Is.True);
+        Assert.That(cut.FindAll(".nx-validation-message"), Is.Empty);
+    }
+
+    [Test]
+    public void Nested_CompiledLambda_ReadsThroughTheClosure()
+    {
+        var model = new Pour();
+        model.Site.City = "Fargo";
+        var cut = Render<NxFormItem>(p => p
+            .AddCascadingValue(new EditContext(model))
+            .Add(x => x.For, () => model.Site.City));
+
+        Assert.That(cut.Find("#nx-form-Site-City").GetAttribute("value"), Is.EqualTo("Fargo"));
+
+        var number = Render<NxFormItem>(p => p
+            .AddCascadingValue(new EditContext(model))
+            .Add(x => x.For, () => model.Trucks));
+        Assert.That(number.FindAll(".nx-numeric #nx-form-Trucks"), Has.Count.EqualTo(1));
+    }
+
+    [Test]
+    public void Nested_ObjectNotSet_RendersNoEditor()
+    {
+        Pour? missing = null;
+        var cut = Render<NxFormItem>(p => p
+            .AddCascadingValue(new EditContext(new Pour()))
+            .Add(x => x.For, () => missing!.Site.City));
+
+        Assert.That(cut.FindAll(".nx-form-editor > *"), Is.Empty);
     }
 
     [Test]
@@ -462,19 +594,6 @@ public class NxFormTests : BunitContext
         Assert.That(cut.Find(".nx-validation-message svg").GetAttribute("aria-hidden"), Is.EqualTo("true"));
     }
 
-    [Test]
-    public async Task ValidationMessage_FieldOnTheFormModel()
-    {
-        var model = new Pour();
-        var context = new EditContext(model);
-        var store = new ValidationMessageStore(context);
-        var cut = Render<NxValidationMessage>(p => p.AddCascadingValue(context).Add(x => x.Field, nameof(Pour.Name)));
-
-        store.Add(context.Field(nameof(Pour.Name)), "Name is required.");
-        await cut.InvokeAsync(context.NotifyValidationStateChanged);
-
-        Assert.That(cut.Find(".nx-validation-message").TextContent.Trim(), Is.EqualTo("Name is required."));
-    }
 
     [Test]
     public async Task ValidationMessage_ClearsWhenTheFieldIsValid()

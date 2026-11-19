@@ -9,10 +9,10 @@
 
     [CascadingParameter] private NxGantt<TItem>? Gantt { get; set; }
 
-    /// <summary>The property shown, by name (<c>nameof</c>); also what the column sorts and filters on.</summary>
-    [Parameter] public string? Field { get; set; }
+    /// <summary>The value shown; also what the column sorts and filters on.</summary>
+    [Parameter] public Func<TItem, object?>? Value { get; set; }
 
-    /// <summary>The header text. Default: <see cref="Field"/>.</summary>
+    /// <summary>The header text.</summary>
     [Parameter] public string? Title { get; set; }
 
     /// <summary>The column's width in pixels (<c>"120px"</c>). Default: <c>120px</c>.</summary>
@@ -33,7 +33,7 @@
     /// <summary>A filter box for the column in the filter row. Default: <c>true</c>.</summary>
     [Parameter] public bool Filterable { get; set; } = true;
 
-    /// <summary>The cell's content in place of the field's value.</summary>
+    /// <summary>The cell's content in place of <see cref="Value"/>.</summary>
     [Parameter] public RenderFragment<TItem>? Template { get; set; }
 
     /// <summary>The cell while it is edited; bind it to the item, the Gantt raises <c>OnUpdate</c> when the cell is left.</summary>
@@ -47,7 +47,7 @@
     {
         if (Gantt is null)
             throw new InvalidOperationException("NxGanttColumn must be placed inside an NxGantt's Columns.");
-        var column = new NxGantt<TItem>.Column(this, Field, Title, Width, DisplayFormat, Expandable, Visible, Editable, Filterable,
+        var column = new NxGantt<TItem>.Column(this, Value, Title, Width, DisplayFormat, Expandable, Visible, Editable, Filterable,
             Template, EditorTemplate, HeaderTemplate);
         Gantt.SetColumn(registered, column);
         registered = column;

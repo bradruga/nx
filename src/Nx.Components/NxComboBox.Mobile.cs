@@ -18,9 +18,9 @@ public partial class NxComboBox<TItem, TValue>
     /// <summary>Whether a tap opens the full-screen overlay rather than the popup.</summary>
     private bool UseOverlay => MobileMode switch
     {
-        NxComboBoxMobileMode.Always => true,
-        NxComboBoxMobileMode.Never  => false,
-        _                           => isNarrow
+        NxMobileMode.Always => true,
+        NxMobileMode.Never  => false,
+        _                   => isNarrow
     };
 
     private string OverlayTitle => MobileTitle ?? Placeholder ?? "Search";

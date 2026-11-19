@@ -23,7 +23,7 @@
                 <NxCheckBox TValue="bool" @bind-Value="poured" Label="Poured" />
                 <NxCheckBox TValue="bool" @bind-Value="stripped" Label="Stripped" />
                 <NxCheckBox TValue="bool" @bind-Value="shipped" Label="Shipped" />
-                <NxButton id="overview-apply" Size="NxButtonSize.Small" Variant="NxButtonVariant.Primary" OnClick="() => open = false">Apply</NxButton>
+                <NxButton id="overview-apply" Size="NxSize.Small" Variant="NxButtonVariant.Primary" OnClick="() => open = false">Apply</NxButton>
             </div>
         </NxPopup>
         <span class="demo-value" id="overview-state">@(open ? "Open" : "Closed")</span>

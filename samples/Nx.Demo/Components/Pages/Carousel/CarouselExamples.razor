@@ -39,7 +39,7 @@
             <span class="demo-value" id="spotlight-state">@(viewerOpen ? $"Viewing {opened?.Project} — rotation stopped" : "Rotating every 4 s")</span>
             @if (viewerOpen)
             {
-                <NxButton id="spotlight-close" Size="NxButtonSize.Small" OnClick="() => viewerOpen = false">Close viewer</NxButton>
+                <NxButton id="spotlight-close" Size="NxSize.Small" OnClick="() => viewerOpen = false">Close viewer</NxButton>
             }
         </div>
     </div>
@@ -57,9 +57,9 @@
             <Template><DemoSlideView Slide="context" /></Template>
         </NxCarousel>
         <div class="demo-row">
-            <NxButton id="code-prev" Size="NxButtonSize.Small" OnClick="() => stepper!.PreviousAsync()">Previous</NxButton>
-            <NxButton id="code-next" Size="NxButtonSize.Small" OnClick="() => stepper!.NextAsync()">Next</NxButton>
-            <NxButton id="code-last" Size="NxButtonSize.Small" OnClick="() => codePage = DemoSlides.Projects.Count">Last</NxButton>
+            <NxButton id="code-prev" Size="NxSize.Small" OnClick="() => stepper!.PreviousAsync()">Previous</NxButton>
+            <NxButton id="code-next" Size="NxSize.Small" OnClick="() => stepper!.NextAsync()">Next</NxButton>
+            <NxButton id="code-last" Size="NxSize.Small" OnClick="() => codePage = DemoSlides.Projects.Count">Last</NxButton>
             <span class="demo-value" id="code-page">Page <strong>@codePage</strong></span>
         </div>
     </div>

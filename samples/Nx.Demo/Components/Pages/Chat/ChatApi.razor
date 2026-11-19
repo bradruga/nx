@@ -10,13 +10,13 @@
             <tbody>
                 <tr><td>Data</td><td>IEnumerable&lt;TItem&gt;?</td><td>—</td><td>The messages, oldest first.</td></tr>
                 <tr><td>AuthorId</td><td>string?</td><td>—</td><td>The user: messages with this author id are on the right.</td></tr>
-                <tr><td>IdField</td><td>string?</td><td>—</td><td>A message's unique id, to keep its markup through updates.</td></tr>
-                <tr><td>AuthorIdField</td><td>string?</td><td>—</td><td>A message's author id.</td></tr>
-                <tr><td>AuthorNameField</td><td>string?</td><td>—</td><td>The author's name, over their messages; also their initials.</td></tr>
-                <tr><td>AuthorImageUrlField</td><td>string?</td><td>—</td><td>The author's picture; initials or an icon without one.</td></tr>
-                <tr><td>TextField</td><td>string?</td><td>—</td><td>The text, shown as plain text with its line breaks.</td></tr>
-                <tr><td>TimestampField</td><td>string?</td><td>—</td><td>When it was sent (<code>DateTime</code> / <code>DateTimeOffset</code>): times and day lines.</td></tr>
-                <tr><td>IsTypingField</td><td>string?</td><td>—</td><td>Marks a "typing" message, shown as moving dots.</td></tr>
+                <tr><td>ItemId</td><td>Func&lt;TItem, object?&gt;?</td><td>—</td><td>A message's unique id, to keep its markup through updates.</td></tr>
+                <tr><td>ItemAuthorId</td><td>Func&lt;TItem, object?&gt;?</td><td>—</td><td>A message's author id, compared with <code>AuthorId</code> as text.</td></tr>
+                <tr><td>ItemAuthorName</td><td>Func&lt;TItem, string?&gt;?</td><td>—</td><td>The author's name, over their messages; also their initials.</td></tr>
+                <tr><td>ItemAuthorImageUrl</td><td>Func&lt;TItem, string?&gt;?</td><td>—</td><td>The author's picture; initials or an icon without one.</td></tr>
+                <tr><td>ItemText</td><td>Func&lt;TItem, string?&gt;?</td><td>—</td><td>The text, shown as plain text with its line breaks.</td></tr>
+                <tr><td>ItemTimestamp</td><td>Func&lt;TItem, object?&gt;?</td><td>—</td><td>When it was sent (<code>DateTime</code> / <code>DateTimeOffset</code>): times and day lines.</td></tr>
+                <tr><td>ItemIsTyping</td><td>Func&lt;TItem, bool&gt;?</td><td>—</td><td>Marks a "typing" message, shown as moving dots.</td></tr>
                 <tr><td>MessageContentTemplate</td><td>RenderFragment&lt;NxChatMessageContext&lt;TItem&gt;&gt;?</td><td>the text</td><td>A bubble's content: <code>Message</code>, <code>IsOwn</code>, <code>IsTyping</code>.</td></tr>
                 <tr><td>MessageWidthMode</td><td>NxChatMessageWidthMode</td><td>Standard</td><td>Standard (¾ of the width) or Full.</td></tr>
                 <tr><td>Height / Width</td><td>string?</td><td>500px / —</td><td>CSS sizes; <code>100%</code> fills a container with a height.</td></tr>

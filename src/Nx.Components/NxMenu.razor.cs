@@ -145,7 +145,7 @@ public partial class NxMenu : IAsyncDisposable
                     await module.InvokeVoidAsync("close", MenuId, false);
                 await module.DisposeAsync();
             }
-            catch (JSDisconnectedException)
+            catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
             {
                 // The circuit is gone; the browser cleaned up with it.
             }

@@ -422,12 +422,18 @@ public class NxDateRangePickerTests : BunitContext
     }
 
     [Test]
-    public async Task Format_ShowsWhileNotFocused_EditTextWhileFocused()
+    public async Task Format_ShowsWhileNotFocused_EditTextSwappedInByTheBrowserOnFocus()
     {
         var cut = RenderBound(new Bound { Start = new(2026, 10, 19) }, p => p.Add(x => x.Format, "MMM d, yyyy"));
         Assert.That(cut.Find("#r-start").GetAttribute("value"), Is.EqualTo("Oct 19, 2026"));
+        Assert.That(cut.Find("#r-start").GetAttribute("data-nx-edit"), Is.EqualTo("10/19/2026"));
+        Assert.That(cut.Find("#r-end").GetAttribute("data-nx-edit"), Is.EqualTo(""));
+        Assert.That(module.Invocations.Count(i => i.Identifier == "editOnFocus"), Is.EqualTo(2), "one per field");
 
+        // A swap rendered from here would land a round trip late; nx-input.js swaps and raises input.
         await cut.Find("#r-start").FocusAsync(new FocusEventArgs());
+        Assert.That(cut.Find("#r-start").GetAttribute("value"), Is.EqualTo("Oct 19, 2026"));
+        await cut.Find("#r-start").InputAsync(new ChangeEventArgs { Value = "10/19/2026" });
         Assert.That(cut.Find("#r-start").GetAttribute("value"), Is.EqualTo("10/19/2026"));
 
         await cut.Find("#r-start").BlurAsync(new FocusEventArgs());
@@ -584,5 +590,34 @@ public class NxDateRangePickerTests : BunitContext
 
         Assert.That(cut.Find("#v-end").GetAttribute("aria-invalid"), Is.EqualTo("true"));
         Assert.That(cut.Find("#v-start").HasAttribute("aria-invalid"), Is.False);
+    }
+
+    // ── DateTimeOffset ────────────────────────────────────────────────────────
+
+    [Test]
+    public async Task DateTimeOffset_StartKeepsItsOffset_EmptyEndTakesTheBrowsers()
+    {
+        module.Setup<BrowserZone>("timeZone").SetResult(new BrowserZone("America/Chicago", -360));
+        DateTimeOffset? start = new DateTimeOffset(2026, 10, 19, 8, 0, 0, TimeSpan.FromHours(2)), end = null;
+        IRenderedComponent<NxDateRangePicker<DateTimeOffset?>>? cut = null;
+        cut = Render<NxDateRangePicker<DateTimeOffset?>>(p => p
+            .Add(x => x.Culture, EnUs)
+            .Add(x => x.Id, "r")
+            .Add(x => x.StartValue, start)
+            .Add(x => x.EndValue, end)
+            .Add(x => x.StartValueChanged, (DateTimeOffset? v) => { start = v; cut?.Render(q => q.Add(x => x.StartValue, v)); })
+            .Add(x => x.EndValueChanged, (DateTimeOffset? v) => { end = v; cut?.Render(q => q.Add(x => x.EndValue, v)); }));
+        Assert.That(cut.Find("#r-start").GetAttribute("value"), Is.EqualTo("10/19/2026"));
+
+        foreach (var (id, text) in new[] { ("r-start", "10/20/2026"), ("r-end", "12/1/2026") })
+        {
+            await cut.Find($"#{id}").TriggerEventAsync("oninput", new ChangeEventArgs { Value = text });
+            await cut.Find($"#{id}").TriggerEventAsync("onchange", new ChangeEventArgs { Value = text });
+        }
+
+        Assert.That(start, Is.EqualTo(new DateTimeOffset(2026, 10, 20, 8, 0, 0, TimeSpan.FromHours(2))));
+        Assert.That(start!.Value.Offset, Is.EqualTo(TimeSpan.FromHours(2)));
+        Assert.That(end, Is.EqualTo(new DateTimeOffset(2026, 12, 1, 0, 0, 0, TimeSpan.FromHours(-6))));
+        Assert.That(end!.Value.Offset, Is.EqualTo(TimeSpan.FromHours(-6)), "standard time in December");
     }
 }

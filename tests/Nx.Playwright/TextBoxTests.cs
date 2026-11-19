@@ -156,6 +156,71 @@ public class TextBoxTests : PageTest
         await Expect(input).ToHaveValueAsync("");
     }
 
+    // ── Escape in a window ────────────────────────────────────────────────────
+
+    private ILocator EscapeWindow => Page.Locator("#escape-window");
+
+    private async Task OpenEscapeWindowAsync()
+    {
+        await GoToPage();
+        await Page.Locator("#escape-open").ScrollIntoViewIfNeededAsync();
+        await Page.Locator("#escape-open").ClickAsync();
+        await Expect(EscapeWindow).ToBeVisibleAsync();
+    }
+
+    [TestCase("escape-name")]
+    [TestCase("escape-phone")]
+    [TestCase("escape-limit")]
+    [TestCase("escape-city")]
+    [TestCase("escape-notes")]
+    public async Task EscapeInWindow_FirstClearsTheField_SecondClosesTheWindow(string id)
+    {
+        await OpenEscapeWindowAsync();
+        var input = Page.Locator($"#{id}");
+        await input.FocusAsync();
+        await Expect(input).Not.ToHaveValueAsync("");
+
+        await Page.Keyboard.PressAsync("Escape");
+
+        // The masked box keeps its empty mask while focused; every other field is empty.
+        await Expect(input).ToHaveValueAsync(id == "escape-phone" ? "(___) ___-____" : "");
+        await Expect(EscapeWindow.Locator($".nx-field-box:has(#{id}) .nx-field-clear, .nx-combobox-field:has(#{id}) .nx-combobox-clear")).ToHaveCountAsync(0);
+        // The window is told to close in the same turn as the key, so a wrongly closed one is gone by now.
+        await Page.WaitForTimeoutAsync(300);
+        await Expect(EscapeWindow).ToBeVisibleAsync();
+        await Expect(input).ToBeFocusedAsync();
+
+        await Page.Keyboard.PressAsync("Escape");
+
+        await Expect(EscapeWindow).ToHaveCountAsync(0);
+    }
+
+    [Test]
+    public async Task EscapeInWindow_NotClearableField_ClosesAtOnce_KeepingItsText()
+    {
+        await OpenEscapeWindowAsync();
+        await Page.Locator("#escape-reference").FocusAsync();
+
+        await Page.Keyboard.PressAsync("Escape");
+
+        await Expect(EscapeWindow).ToHaveCountAsync(0);
+        await Page.Locator("#escape-open").ClickAsync();
+        await Expect(Page.Locator("#escape-reference")).ToHaveValueAsync("REF-118");
+    }
+
+    [Test]
+    public async Task EscapeInWindow_EmptyClearableField_ClosesAtOnce()
+    {
+        await OpenEscapeWindowAsync();
+        var name = Page.Locator("#escape-name");
+        await name.FillAsync("");
+        await Expect(TextBox("escape-name").Locator(".nx-textbox-clear")).ToHaveCountAsync(0);
+
+        await Page.Keyboard.PressAsync("Escape");
+
+        await Expect(EscapeWindow).ToHaveCountAsync(0);
+    }
+
     [Test]
     public async Task ClearButton_IsSkippedByTab()
     {

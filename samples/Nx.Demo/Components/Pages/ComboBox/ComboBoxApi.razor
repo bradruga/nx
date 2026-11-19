@@ -10,6 +10,7 @@
             <tbody>
                 <tr><td>Data</td><td>IEnumerable&lt;TItem&gt;?</td><td>—</td><td>The items, filtered in memory.</td></tr>
                 <tr><td>DataProvider</td><td>Func&lt;NxComboBoxRequest, Task&lt;IEnumerable&lt;TItem&gt;&gt;&gt;?</td><td>—</td><td>Loads matches for the typed text.</td></tr>
+                <tr><td>ItemByValue</td><td>Func&lt;TValue, Task&lt;TItem?&gt;&gt;?</td><td>—</td><td>With DataProvider: finds the item of a bound value the list has not loaded, so the field shows its text straight away. Called once per value.</td></tr>
                 <tr><td>DebounceDelay</td><td>int (ms)</td><td>300</td><td>Wait after typing before calling the provider.</td></tr>
                 <tr><td>ItemText</td><td>Func&lt;TItem, string&gt;?</td><td>ToString()</td><td>Displayed and filtered text; the field always shows it.</td></tr>
                 <tr><td>ItemValue</td><td>Func&lt;TItem, TValue&gt;?</td><td>the item</td><td>The bound value.</td></tr>
@@ -28,7 +29,7 @@
                 <tr><td>Filter</td><td>NxComboBoxFilter</td><td>Contains</td><td>Contains, StartsWith, None.</td></tr>
                 <tr><td>CustomFilter</td><td>Func&lt;TItem, string, bool&gt;?</td><td>—</td><td>Replaces Filter.</td></tr>
                 <tr><td>AllowCustomValue</td><td>bool</td><td>false</td><td>Keep unmatched text. TValue must be string; not with Multiple.</td></tr>
-                <tr><td>MobileMode</td><td>NxComboBoxMobileMode</td><td>Auto</td><td>Auto, Always, Never: when to open the full-screen overlay.</td></tr>
+                <tr><td>MobileMode</td><td>NxMobileMode</td><td>Never</td><td>Never, Auto, Always: when to open the full-screen overlay instead of the popup.</td></tr>
                 <tr><td>MobileBreakpoint</td><td>int (px)</td><td>600</td><td>Viewport width at or below which Auto uses the overlay.</td></tr>
                 <tr><td>MobileTitle</td><td>string?</td><td>Placeholder</td><td>Overlay name and search placeholder.</td></tr>
                 <tr><td>Placeholder</td><td>string?</td><td>—</td><td>Shown while nothing is selected.</td></tr>
@@ -37,7 +38,8 @@
                 <tr><td>SelectedItemTemplate</td><td>RenderFragment&lt;TItem&gt;?</td><td>—</td><td>The choice, shown in the field when not focused.</td></tr>
                 <tr><td>GroupHeaderTemplate</td><td>RenderFragment&lt;string&gt;?</td><td>—</td><td>Group header content.</td></tr>
                 <tr><td>NoDataText</td><td>string</td><td>"No matches"</td><td>Shown when nothing matches.</td></tr>
-                <tr><td>Virtualize / ItemHeight</td><td>bool / float</td><td>false / 34</td><td>Render only visible rows of a fixed height.</td></tr>
+                <tr><td>VirtualizeThreshold</td><td>int</td><td>200</td><td>Row count from which only the rows in view are rendered, all one height. 0 = always, int.MaxValue = never.</td></tr>
+                <tr><td>ItemHeight</td><td>float? (px)</td><td>measured</td><td>Row height of a virtualized list. Default: measured from the rows the first time such a list opens.</td></tr>
                 <tr><td>PopupMaxHeight</td><td>int (px)</td><td>300</td><td>Largest popup height; shrinks to fit the window.</td></tr>
                 <tr><td>Loading</td><td>bool</td><td>false</td><td>Show the loading state.</td></tr>
                 <tr><td>Disabled / ReadOnly</td><td>bool</td><td>false</td><td>Native disabled / read-only, list does not open.</td></tr>

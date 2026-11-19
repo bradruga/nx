@@ -8,7 +8,7 @@
     <p class="doc-note">
         <code>NxTreeList</code> is a tree with columns: <code>NxTreeView</code>'s expand, select and keyboard, with each row
         laid out as cells under a header. It takes a flat list as ERP's data comes — an id and a parent id per item — and
-        each column shows a property by name or a template. The tree column takes the room the others leave, so every row
+        each column shows a value or a template. The tree column takes the room the others leave, so every row
         lines up however deep it sits. It has no sorting, filtering, paging or editing: for those, use NxGrid.
     </p>
 </div>
@@ -21,8 +21,8 @@
                     @bind-SelectedItems="selected" ExpandedItems="startExpanded" Height="320px" AriaLabel="Yard locations"
                     Style="width:100%; max-width:440px">
             <Columns>
-                <NxTreeListColumn Field="@nameof(YardLocation.Name)" Title="Location" Width="200px" Expandable="true" />
-                <NxTreeListColumn Field="@nameof(YardLocation.AggregatePieceCount)" Title="# Pieces" Width="100px" />
+                <NxTreeListColumn Value="l => l.Name" Title="Location" Width="200px" Expandable="true" />
+                <NxTreeListColumn Value="l => l.AggregatePieceCount" Title="# Pieces" Width="100px" />
             </Columns>
         </NxTreeList>
         <span class="demo-value" id="overview-selected">@(selected.FirstOrDefault() is { } l ? $"{l.Name}: {l.AggregatePieceCount} pieces" : "Click on a location to see pieces")</span>
@@ -57,8 +57,8 @@
         <NxTreeList Data="locations" ItemId="l => l.ResourceId" ParentId="l => l.CurrentContainerId"
                     @bind-SelectedItems="selected" ExpandedItems="startExpanded" Height="100%">
             <Columns>
-                <NxTreeListColumn Field="@nameof(Location.Name)" Title="Location" Width="200px" Expandable="true" />
-                <NxTreeListColumn Field="@nameof(Location.AggregatePieceCount)" Title="# Pieces" Width="100px" />
+                <NxTreeListColumn Value="l => l.Name" Title="Location" Width="200px" Expandable="true" />
+                <NxTreeListColumn Value="l => l.AggregatePieceCount" Title="# Pieces" Width="100px" />
             </Columns>
         </NxTreeList>
         """;

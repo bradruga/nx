@@ -79,7 +79,7 @@ public sealed class NxMediaQuery : ComponentBase, IAsyncDisposable
                     await module.InvokeVoidAsync("unwatch", id);
                 await module.DisposeAsync();
             }
-            catch (JSDisconnectedException)
+            catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
             {
                 // The circuit is gone; the browser cleaned up with it.
             }

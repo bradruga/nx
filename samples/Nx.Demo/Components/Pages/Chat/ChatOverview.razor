@@ -16,9 +16,9 @@
 <div class="doc-section">
     <h2>Basic Usage</h2>
     <div class="demo-stage demo-stage-column">
-        <NxChat Id="overview-chat" Data="messages" AuthorId="@DemoChat.Me" IdField="@nameof(ChatMessage.Id)"
-                AuthorIdField="@nameof(ChatMessage.AuthorId)" AuthorNameField="@nameof(ChatMessage.AuthorName)"
-                TextField="@nameof(ChatMessage.Text)" TimestampField="@nameof(ChatMessage.Sent)"
+        <NxChat Id="overview-chat" Data="messages" AuthorId="@DemoChat.Me" ItemId="m => m.Id"
+                ItemAuthorId="m => m.AuthorId" ItemAuthorName="m => m.AuthorName"
+                ItemText="m => m.Text" ItemTimestamp="m => m.Sent"
                 OnSendMessage="Send" Height="420px" AriaLabel="Crew chat" Style="width:100%; max-width:560px" />
     </div>
     <DocCode Code="@basicCode" />
@@ -48,9 +48,9 @@
 
     const string basicCode =
         """
-        <NxChat Data="messages" AuthorId="@userId" IdField="@nameof(ChatMessage.Id)"
-                AuthorIdField="@nameof(ChatMessage.AuthorId)" AuthorNameField="@nameof(ChatMessage.AuthorName)"
-                TextField="@nameof(ChatMessage.Text)" TimestampField="@nameof(ChatMessage.Sent)"
+        <NxChat Data="messages" AuthorId="@userId" ItemId="m => m.Id"
+                ItemAuthorId="m => m.AuthorId" ItemAuthorName="m => m.AuthorName"
+                ItemText="m => m.Text" ItemTimestamp="m => m.Sent"
                 OnSendMessage="e => messages.Add(new ChatMessage { AuthorId = userId, Text = e.Message })" />
         """;
 }

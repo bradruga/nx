@@ -37,7 +37,7 @@
             <label class="demo-control">
                 <span>Size</span>
                 <select id="pg-size" @bind="pgSize">
-                    @foreach (var s in Enum.GetValues<NxButtonSize>())
+                    @foreach (var s in Enum.GetValues<NxSize>())
                     {
                         <option value="@s">@s</option>
                     }
@@ -64,7 +64,7 @@
 @code {
     readonly IReadOnlyList<NxMenuItem> items = DemoMenus.ExportItems();
     NxButtonVariant pgVariant = NxButtonVariant.Secondary;
-    NxButtonSize pgSize = NxButtonSize.Medium;
+    NxSize pgSize = NxSize.Medium;
     bool pgLabel = true, pgIcon, pgArrow = true, pgFullWidth, pgDisabled, pgAlignEnd;
     string picked = "—";
 
@@ -76,7 +76,7 @@
         {
             var attrs = new List<string> { "Items=\"items\"", "OnItemClick=\"ExportAsync\"" };
             if (pgVariant != NxButtonVariant.Secondary) attrs.Add($"Variant=\"NxButtonVariant.{pgVariant}\"");
-            if (pgSize != NxButtonSize.Medium) attrs.Add($"Size=\"NxButtonSize.{pgSize}\"");
+            if (pgSize != NxSize.Medium) attrs.Add($"Size=\"NxSize.{pgSize}\"");
             if (pgIcon) attrs.Add("Icon=\"@downloadIcon\"");
             if (!pgLabel) attrs.Add("AriaLabel=\"Export\"");
             if (!pgArrow) attrs.Add("ShowArrow=\"false\"");

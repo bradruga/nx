@@ -14,11 +14,11 @@ public class NxRadioGroupTests : BunitContext
     [SetUp]
     public void SetUp() => JSInterop.Mode = JSRuntimeMode.Loose;
 
-    private IRenderedComponent<NxRadioGroup<Shift>> RenderData(List<Shift> raised, Shift initial,
-        Action<ComponentParameterCollectionBuilder<NxRadioGroup<Shift>>>? configure = null)
+    private IRenderedComponent<NxRadioGroup<Shift, Shift>> RenderData(List<Shift> raised, Shift initial,
+        Action<ComponentParameterCollectionBuilder<NxRadioGroup<Shift, Shift>>>? configure = null)
     {
-        IRenderedComponent<NxRadioGroup<Shift>>? cut = null;
-        cut = Render<NxRadioGroup<Shift>>(p =>
+        IRenderedComponent<NxRadioGroup<Shift, Shift>>? cut = null;
+        cut = Render<NxRadioGroup<Shift, Shift>>(p =>
         {
             p.Add(x => x.Data, Enum.GetValues<Shift>());
             p.Add(x => x.Value, initial);
@@ -45,7 +45,7 @@ public class NxRadioGroupTests : BunitContext
         }
     };
 
-    private static List<bool> CheckedStates<T>(IRenderedComponent<NxRadioGroup<T>> cut) =>
+    private static List<bool> CheckedStates<T>(IRenderedComponent<NxRadioGroup<T, T>> cut) =>
         cut.FindAll("input[type=radio]").Select(i => i.HasAttribute("checked")).ToList();
 
     // ── Rendering ─────────────────────────────────────────────────────────────
@@ -84,12 +84,81 @@ public class NxRadioGroupTests : BunitContext
     [Test]
     public void Declarative_Items()
     {
-        var cut = Render<NxRadioGroup<string>>(p => p
+        var cut = Render<NxRadioGroup<string, string>>(p => p
             .Add(x => x.Value, "b")
             .Add(x => x.ChildContent, Declared(("a", "Alpha", false), ("b", "Beta", false))));
 
         Assert.That(cut.FindAll(".nx-radio-label").Select(l => l.TextContent), Is.EqualTo(new[] { "Alpha", "Beta" }));
         Assert.That(CheckedStates(cut), Is.EqualTo(new[] { false, true }));
+    }
+
+    private sealed record Crew(int Id, string Name);
+
+    private static readonly Crew[] Crews = [new(10, "North"), new(20, "South"), new(30, "Yard")];
+
+    [Test]
+    public async Task Records_ItemTextAndItemValue_BindTheValue()
+    {
+        var raised = new List<int>();
+        var cut = Render<NxRadioGroup<Crew, int>>(p => p
+            .Add(x => x.Data, Crews)
+            .Add(x => x.ItemText, c => c.Name)
+            .Add(x => x.ItemValue, c => c.Id)
+            .Add(x => x.ItemDisabled, c => c.Id == 30)
+            .Add(x => x.Value, 20)
+            .Add(x => x.ValueChanged, (int v) => raised.Add(v)));
+
+        Assert.That(cut.FindAll(".nx-radio-label").Select(l => l.TextContent), Is.EqualTo(new[] { "North", "South", "Yard" }));
+        Assert.That(cut.FindAll("input").Select(i => i.HasAttribute("checked")), Is.EqualTo(new[] { false, true, false }));
+        Assert.That(cut.FindAll("input").Select(i => i.HasAttribute("disabled")), Is.EqualTo(new[] { false, false, true }));
+
+        await cut.FindAll("input")[0].ChangeAsync(new ChangeEventArgs { Value = "on" });
+
+        Assert.That(raised, Is.EqualTo(new[] { 10 }));
+    }
+
+    [Test]
+    public void Records_ItemTemplate_ReceivesTheRecord()
+    {
+        var cut = Render<NxRadioGroup<Crew, int>>(p => p
+            .Add(x => x.Data, Crews)
+            .Add(x => x.ItemValue, c => c.Id)
+            .Add(x => x.ItemTemplate, c => b => b.AddMarkupContent(0, $"<b>{c.Name}</b> #{c.Id}")));
+
+        Assert.That(cut.FindAll(".nx-radio-label")[2].TextContent, Is.EqualTo("Yard #30"));
+    }
+
+    [Test]
+    public void Records_WithoutItemValue_Throw()
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => Render<NxRadioGroup<Crew, int>>(p => p.Add(x => x.Data, Crews)));
+
+        Assert.That(error!.Message, Does.Contain("ItemValue"));
+    }
+
+    [Test]
+    public void PlainValues_BindANullableValue_WithoutItemValue()
+    {
+        var cut = Render<NxRadioGroup<Shift, Shift?>>(p => p
+            .Add(x => x.Data, Enum.GetValues<Shift>())
+            .Add(x => x.Value, Shift.Night));
+
+        Assert.That(cut.FindAll("input").Select(i => i.HasAttribute("checked")), Is.EqualTo(new[] { false, false, true }));
+    }
+
+    [Test]
+    public void DataItems_ThenDeclaredButtons_ShareTheGroup()
+    {
+        var cut = Render<NxRadioGroup<Crew, string>>(p => p
+            .Add(x => x.Data, Crews)
+            .Add(x => x.ItemText, c => c.Name)
+            .Add(x => x.ItemValue, c => c.Name)
+            .Add(x => x.Value, "other")
+            .Add(x => x.ChildContent, Declared(("other", "Other", false))));
+
+        Assert.That(cut.FindAll(".nx-radio-label").Select(l => l.TextContent), Is.EqualTo(new[] { "North", "South", "Yard", "Other" }));
+        Assert.That(cut.FindAll("input").Select(i => i.HasAttribute("checked")), Is.EqualTo(new[] { false, false, false, true }));
+        Assert.That(cut.FindAll("input").Select(i => i.GetAttribute("name")).Distinct().Count(), Is.EqualTo(1));
     }
 
     [Test]
@@ -146,7 +215,7 @@ public class NxRadioGroupTests : BunitContext
     public async Task Declared_Change_RaisesItsValue()
     {
         var raised = new List<string?>();
-        var cut = Render<NxRadioGroup<string>>(p => p
+        var cut = Render<NxRadioGroup<string, string>>(p => p
             .Add(x => x.Value, "a")
             .Add(x => x.ValueChanged, (string? v) => raised.Add(v))
             .Add(x => x.ChildContent, Declared(("a", "Alpha", false), ("b", "Beta", false))));
@@ -170,7 +239,7 @@ public class NxRadioGroupTests : BunitContext
     [Test]
     public void DataAndDeclared_DeclaredRenderAfterData()
     {
-        var cut = Render<NxRadioGroup<string>>(p => p
+        var cut = Render<NxRadioGroup<string, string>>(p => p
             .Add(x => x.Data, new[] { "a" })
             .Add(x => x.ChildContent, Declared(("z", "Other", false))));
 
@@ -180,7 +249,7 @@ public class NxRadioGroupTests : BunitContext
     [Test]
     public void ExternalValueChange_MovesTheCheck_EvenForDeclaredItems()
     {
-        var cut = Render<NxRadioGroup<string>>(p => p
+        var cut = Render<NxRadioGroup<string, string>>(p => p
             .Add(x => x.Value, "a")
             .Add(x => x.ChildContent, Declared(("a", "Alpha", false), ("b", "Beta", false))));
 
@@ -196,7 +265,7 @@ public class NxRadioGroupTests : BunitContext
         Assert.That(cut.FindAll("input")[2].HasAttribute("disabled"), Is.True);
         Assert.That(cut.FindAll(".nx-radio")[2].ClassList, Does.Contain("nx-radio-disabled"));
 
-        var declared = Render<NxRadioGroup<string>>(p => p
+        var declared = Render<NxRadioGroup<string, string>>(p => p
             .Add(x => x.ChildContent, Declared(("a", "Alpha", false), ("b", "Beta", true))));
         Assert.That(declared.FindAll("input").Select(i => i.HasAttribute("disabled")), Is.EqualTo(new[] { false, true }));
     }
@@ -236,12 +305,12 @@ public class NxRadioGroupTests : BunitContext
         var context = new EditContext(model);
         var host = Render<CascadingValue<EditContext>>(p => p
             .Add(x => x.Value, context)
-            .AddChildContent<NxRadioGroup<Shift?>>(c => c
+            .AddChildContent<NxRadioGroup<Shift?, Shift?>>(c => c
                 .Add(x => x.Data, new Shift?[] { Shift.Day, Shift.Night })
                 .Add(x => x.Value, model.Shift)
                 .Add(x => x.ValueChanged, (Shift? v) => model.Shift = v)
                 .Add(x => x.ValueExpression, () => model.Shift)));
-        var cut = host.FindComponent<NxRadioGroup<Shift?>>();
+        var cut = host.FindComponent<NxRadioGroup<Shift?, Shift?>>();
 
         await cut.FindAll("input")[0].ChangeAsync(new ChangeEventArgs { Value = "on" });
         Assert.That(context.IsModified(context.Field(nameof(Model.Shift))), Is.True);
@@ -261,7 +330,7 @@ public class NxRadioGroupTests : BunitContext
         var context = new EditContext(model);
         var host = Render<CascadingValue<EditContext>>(p => p
             .Add(x => x.Value, context)
-            .AddChildContent<NxRadioGroup<Shift?>>(c => c
+            .AddChildContent<NxRadioGroup<Shift?, Shift?>>(c => c
                 .Add(x => x.Value, model.Shift)
                 .Add(x => x.ValueExpression, () => model.Shift)
                 .Add(x => x.ChildContent, b =>
@@ -270,7 +339,7 @@ public class NxRadioGroupTests : BunitContext
                     b.AddAttribute(1, nameof(NxRadioButton<Shift?>.Value), (Shift?)Shift.Day);
                     b.CloseComponent();
                 })));
-        var cut = host.FindComponent<NxRadioGroup<Shift?>>();
+        var cut = host.FindComponent<NxRadioGroup<Shift?, Shift?>>();
 
         var store = new ValidationMessageStore(context);
         store.Add(context.Field(nameof(Model.Shift)), "Pick a shift.");

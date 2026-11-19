@@ -5,7 +5,7 @@
 
 <div class="doc-section">
     <h2>Playground</h2>
-    <p class="doc-note">Every parameter, live. The picker is bound to a <code>DateOnly?</code>; switch the type to try <code>DateTime</code>.</p>
+    <p class="doc-note">Every parameter, live. The picker is bound to a <code>DateOnly?</code>; switch the type to try <code>DateTime</code> or <code>DateTimeOffset?</code>.</p>
 
     <div class="demo-playground">
         <div class="demo-preview">
@@ -13,6 +13,15 @@
                 @if (pgType == "DateTime")
                 {
                     <NxDatePicker @key="@($"dt-{pgKey}")" TValue="DateTime" Id="playground-datepicker" @bind-Value="pgDateTime"
+                                  Format="@pgFormat" Culture="Culture" Min="MinOrNull" Max="MaxOrNull" IsDateDisabled="DisabledRule"
+                                  ShowCalendar="pgCalendar" ShowWeekNumbers="pgWeeks" FirstDayOfWeek="FirstDay" ShowTodayButton="pgToday"
+                                  Label="@LabelOrNull" Placeholder="@PlaceholderOrNull"
+                                  Clearable="pgClearable" ReadOnly="pgReadOnly" Disabled="pgDisabled" AutoFocus="pgAutoFocus"
+                                  MobileMode="pgMobile" @bind-Value:after="Changed" />
+                }
+                else if (pgType == "DateTimeOffset?")
+                {
+                    <NxDatePicker @key="@($"dto-{pgKey}")" TValue="DateTimeOffset?" Id="playground-datepicker" @bind-Value="pgOffset"
                                   Format="@pgFormat" Culture="Culture" Min="MinOrNull" Max="MaxOrNull" IsDateDisabled="DisabledRule"
                                   ShowCalendar="pgCalendar" ShowWeekNumbers="pgWeeks" FirstDayOfWeek="FirstDay" ShowTodayButton="pgToday"
                                   Label="@LabelOrNull" Placeholder="@PlaceholderOrNull"
@@ -30,7 +39,7 @@
                 }
             </div>
             <div class="demo-row">
-                <span class="demo-value" id="playground-value">Value: <strong>@CurrentValue</strong></span>
+                <span class="demo-value" id="playground-value" data-type="@pgType">Value: <strong>@CurrentValue</strong></span>
                 <span class="demo-counter" id="playground-changes">ValueChanged × @pgChanges</span>
             </div>
         </div>
@@ -42,6 +51,7 @@
                 <select id="pg-type" @bind="pgType" @bind:after="Remount">
                     <option value="DateOnly?">DateOnly?</option>
                     <option value="DateTime">DateTime</option>
+                    <option value="DateTimeOffset?">DateTimeOffset?</option>
                 </select>
             </label>
             <label class="demo-control"><span>Min (yyyy-MM-dd)</span><input type="text" id="pg-min" @bind="pgMin" /></label>
@@ -121,6 +131,7 @@
     string pgType = "DateOnly?";
     DateOnly? pgDateOnly = new(2026, 10, 23);
     DateTime pgDateTime = new(2026, 10, 23, 9, 0, 0);
+    DateTimeOffset? pgOffset;
     string pgMin = "", pgMax = "", pgDisabledDates = "", pgFormat = "d", pgCulture = "en-US", pgFirstDay = "";
     string pgLabel = "Pour date", pgPlaceholder = "";
     bool pgCalendar = true, pgWeeks, pgToday = true, pgClearable, pgReadOnly, pgDisabled, pgAutoFocus;
@@ -143,6 +154,7 @@
 
     string CurrentValue => pgType == "DateTime"
         ? pgDateTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)
+        : pgType == "DateTimeOffset?" ? pgOffset?.ToString("yyyy-MM-dd HH:mm zzz", CultureInfo.InvariantCulture) ?? "null"
         : pgDateOnly?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "null";
 
     void Changed() => pgChanges++;

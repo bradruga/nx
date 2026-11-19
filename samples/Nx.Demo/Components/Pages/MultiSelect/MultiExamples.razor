@@ -79,11 +79,12 @@
 
 <div class="doc-section">
     <h2>Columns &amp; Long Lists</h2>
+    <p class="doc-note">From <code>VirtualizeThreshold</code> rows (200 by default) only the rows in view are rendered.</p>
     @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:560px">
         <label class="demo-field-label" for="virtual-multi">Parts (50,000, virtualized)</label>
         <NxMultiSelect Id="virtual-multi" Data="SampleData.Parts" ItemText="p => p.Number" ItemValue="p => p.Id" @bind-Values="parts"
-                       Virtualize="true" SummaryThreshold="3" PopupWidth="420px" Placeholder="Search parts">
+                       SummaryThreshold="3" PopupWidth="420px" Placeholder="Search parts">
             <Columns>
                 <NxComboBoxColumn Field="p => p.Number" Header="Part" Width="90px" />
                 <NxComboBoxColumn Field="p => p.Description" Header="Description" />
@@ -95,17 +96,39 @@
 </div>
 
 <div class="doc-section">
+    <h2>Data Provider</h2>
+    <p class="doc-note">
+        With a <code>DataProvider</code> the items are unknown until the list opens. <code>ItemByValue</code> finds the item
+        of each bound value, so the chips show names instead of ids from the start.
+    </p>
+    @* code *@
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <label class="demo-field-label" for="provider-multi">Customers (remote)</label>
+        <NxMultiSelect Id="provider-multi" TItem="Customer" TValue="int" DataProvider="SearchCustomers" ItemByValue="FindCustomer"
+                       ItemText="c => c.Name" ItemValue="c => c.Id" @bind-Values="remoteCustomers" Placeholder="Search customers" />
+        <div class="demo-row"><span class="demo-value" id="provider-value">Values: <strong>[@string.Join(", ", remoteCustomers)]</strong></span></div>
+    </div>
+    @* /code *@
+    <DocExampleCode Key="data-provider" />
+</div>
+
+<div class="doc-section">
     <h2>Phone Sheet</h2>
     <p class="doc-note">
-        At 600px and below the list opens full screen with a search box; toggles apply on <strong>Done</strong> and Back discards
-        them. <code>MobileMode="Always"</code> forces it here.
+        Opt in with <code>MobileMode</code>: the list opens full screen with a search box; toggles apply on <strong>Done</strong>
+        and Back discards them. <code>Auto</code> uses it at 600px and below, as on the second field; <code>Always</code>
+        forces it, as on the first.
     </p>
     @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:560px">
         <label class="demo-field-label" for="sheet-multi">Plants</label>
-        <NxMultiSelect Id="sheet-multi" TItem="string" TValue="string" Data="Plants" @bind-Values="sheetPlants" MobileMode="NxComboBoxMobileMode.Always"
+        <NxMultiSelect Id="sheet-multi" TItem="string" TValue="string" Data="Plants" @bind-Values="sheetPlants" MobileMode="NxMobileMode.Always"
                        MobileTitle="Plants" SelectAll="true" />
         <div class="demo-row"><span class="demo-value" id="sheet-value">Values: <strong>[@string.Join(", ", sheetPlants)]</strong></span></div>
+        <label class="demo-field-label" for="sheet-auto">Plants (sheet on a phone)</label>
+        <NxMultiSelect Id="sheet-auto" TItem="string" TValue="string" Data="Plants" @bind-Values="autoPlants" MobileMode="NxMobileMode.Auto"
+                       MobileTitle="Plants" />
+        <div class="demo-row"><span class="demo-value" id="sheet-auto-value">Values: <strong>[@string.Join(", ", autoPlants)]</strong></span></div>
     </div>
     @* /code *@
     <DocExampleCode Key="phone-sheet" />
@@ -136,12 +159,17 @@
     static readonly string[] Plants = ["Albany", "Bethlehem", "Hartford", "Newburgh", "Syracuse", "Worcester"];
     static readonly string[] Shifts = ["Day", "Swing", "Night", "Weekend"];
 
-    IEnumerable<string> states = [], plants = [], shifts = ["Day", "Night"], sheetPlants = [];
-    IEnumerable<int> inspectors = [], team = [2, 7], parts = [];
+    IEnumerable<string> states = [], plants = [], shifts = ["Day", "Night"], sheetPlants = [], autoPlants = [];
+    IEnumerable<int> inspectors = [], team = [2, 7], parts = [], remoteCustomers = [3, 12];
     string result = "Not run";
     readonly ReportForm report = new();
 
     void Submit() => result = $"Report for {string.Join(", ", report.Plants)}";
+
+    static Task<IEnumerable<Customer>> SearchCustomers(NxComboBoxRequest request) =>
+        SampleData.SearchCustomersAsync(request.Filter, 500, request.CancellationToken);
+
+    static Task<Customer?> FindCustomer(int id) => Task.FromResult(SampleData.Customers.FirstOrDefault(c => c.Id == id));
 
     class ReportForm
     {

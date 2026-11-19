@@ -16,9 +16,6 @@ public sealed class ScheduleTask
     public int Days => (int)Math.Round((End - Start).TotalDays);
 }
 
-/// <summary>A link between two tasks, with the Gantt's default field names.</summary>
-public sealed record ScheduleLink(int PredecessorId, int SuccessorId, NxGanttDependencyType Type = NxGanttDependencyType.FinishStart);
-
 /// <summary>A precast project: design, production and erection, starting this week.</summary>
 public static class DemoGantt
 {
@@ -57,7 +54,7 @@ public static class DemoGantt
         }
     }
 
-    public static List<ScheduleLink> Links() =>
+    public static List<NxGanttDependency> Links() =>
     [
         new(2, 3), new(3, 5), new(5, 6), new(6, 7), new(7, 9), new(9, 10)
     ];

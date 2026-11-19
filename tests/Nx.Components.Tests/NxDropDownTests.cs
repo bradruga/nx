@@ -403,7 +403,6 @@ public class NxDropDownTests : BunitContext
             .Add(x => x.Data, Enumerable.Range(1, 10_000))
             .Add(x => x.ItemText, i => $"P{i:00000}")
             .Add(x => x.ItemValue, i => i)
-            .Add(x => x.Virtualize, true)
             .Add(x => x.ValueChanged, (int? v) => { raised.Add(v); cut!.Render(q => q.Add(x => x.Value, v)); }));
 
         await KeyAsync(cut, "Enter");
@@ -417,11 +416,49 @@ public class NxDropDownTests : BunitContext
     }
 
     [Test]
+    public async Task VirtualizeThreshold_AndItemHeight_ReachTheList()
+    {
+        var cut = RenderBound([], configure: p => p
+            .Add(x => x.VirtualizeThreshold, 3)
+            .Add(x => x.ItemHeight, 40f));
+
+        await KeyAsync(cut, "Enter");
+
+        Assert.That(cut.Find("[role=listbox]").ClassList, Does.Contain("nx-combobox-list-virtual"));
+        Assert.That(cut.Find("[role=option]").GetAttribute("style"), Does.Contain("height: 40px"));
+    }
+
+    [Test]
+    public void ItemByValue_ShowsTheTextBeforeTheListLoads()
+    {
+        var cut = Render<NxDropDown<Plant, int?>>(p => p
+            .Add(x => x.DataProvider, _ => Task.FromResult<IEnumerable<Plant>>(Plants))
+            .Add(x => x.ItemByValue, id => Task.FromResult(Plants.FirstOrDefault(i => i.Id == id)))
+            .Add(x => x.ItemText, i => i.Name)
+            .Add(x => x.ItemValue, i => i.Id)
+            .Add(x => x.Value, 3));
+
+        Assert.That(cut.Find("input").GetAttribute("value"), Is.EqualTo("Hartford"));
+    }
+
+    [Test]
+    public async Task PhoneSheet_IsOptIn()
+    {
+        var cut = RenderBound([]);
+
+        await cut.InvokeAsync(() => cut.FindComponent<NxComboBox<Plant, int?>>().Instance.OnViewportChanged(true));
+        await cut.Find(".nx-combobox-field").ClickAsync(new MouseEventArgs());
+
+        Assert.That(cut.FindAll(".nx-combobox-overlay"), Is.Empty);
+        Assert.That(cut.FindAll(".nx-combobox-popup"), Has.Count.EqualTo(1));
+    }
+
+    [Test]
     public async Task PhoneSheet_NoSearchBox_ListTakesKeys()
     {
         var raised = new List<int?>();
         var cut = RenderBound(raised, configure: p => p
-            .Add(x => x.MobileMode, NxComboBoxMobileMode.Always)
+            .Add(x => x.MobileMode, NxMobileMode.Always)
             .Add(x => x.MobileTitle, "Plant")
             .Add(x => x.DefaultText, "No plant"));
 

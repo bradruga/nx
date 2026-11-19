@@ -45,7 +45,7 @@
             <label class="demo-control">
                 <span>Size</span>
                 <select id="pg-size" @bind="pgSize">
-                    @foreach (var s in Enum.GetValues<NxButtonSize>())
+                    @foreach (var s in Enum.GetValues<NxSize>())
                     {
                         <option value="@s">@s</option>
                     }
@@ -82,7 +82,7 @@
     static RenderFragment Icon(NxIconData icon) => @<NxIcon Icon="icon" />;
 
     NxToolBarOverflow pgOverflow = NxToolBarOverflow.Menu;
-    NxButtonSize pgSize = NxButtonSize.Medium;
+    NxSize pgSize = NxSize.Medium;
     NxButtonVariant pgVariant = NxButtonVariant.Primary;
     int pgWidth = 600, pgClicks;
     bool pgIcons = true, pgSeparator = true, pgSpacer = true, pgShowPrint = true, pgDisableCopy;
@@ -100,7 +100,7 @@
         {
             var attrs = new List<string> { "AriaLabel=\"Document\"" };
             if (pgOverflow != NxToolBarOverflow.Menu) attrs.Add($"Overflow=\"NxToolBarOverflow.{pgOverflow}\"");
-            if (pgSize != NxButtonSize.Medium) attrs.Add($"Size=\"NxButtonSize.{pgSize}\"");
+            if (pgSize != NxSize.Medium) attrs.Add($"Size=\"NxSize.{pgSize}\"");
             string Button(string text, string extra = "") => $"    <NxToolBarButton Text=\"{text}\"{(pgIcons ? " Icon=\"@icon\"" : "")}{extra} OnClick=\"…\" />";
             var lines = new List<string> { "<NxToolBar " + string.Join(" ", attrs) + ">", Button("New"), Button("Copy", pgDisableCopy ? " Disabled=\"true\"" : "") };
             if (pgSeparator) lines.Add("    <NxToolBarSeparator />");

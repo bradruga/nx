@@ -24,6 +24,9 @@ export function init(input) {
         } else if ((e.key === 'Enter' || e.key === 'Escape') && open) {
             e.preventDefault();
             if (e.key === 'Escape') navigated = false;
+        } else if (e.key === 'Escape' && input.closest('.nx-combobox-field')?.querySelector('.nx-combobox-clear')) {
+            // Escape on a closed list clears; marked as used, so a window around it does not close on the same press.
+            e.preventDefault();
         } else if (e.key === ' ' && open && navigated && input.dataset.nxMultiple === 'true') {
             e.preventDefault();
         }
@@ -44,8 +47,20 @@ export function dispose(input, field) {
     unwatchViewport(field);
 }
 
+// Height of the tallest row in the list: the one height a virtualized list pins every row to.
+// 0 when there is nothing to measure.
+export function measureItemHeight(list) {
+    let height = 0;
+    if (list) {
+        for (const row of list.querySelectorAll('.nx-combobox-item, .nx-combobox-group'))
+            height = Math.max(height, row.getBoundingClientRect().height);
+    }
+    return height;
+}
+
 // Brings option `index` into view. A rendered option scrolls itself; under virtualization the
 // option may not exist yet, so the list is scrolled by row arithmetic and Virtualize renders it.
+// `itemHeight` is the virtualized list's row height, 0 for a list that renders every row.
 export function scrollToIndex(list, index, itemHeight) {
     if (!list || index < 0) return;
     const option = list.querySelector(`[data-row="${index}"]`);
@@ -53,6 +68,7 @@ export function scrollToIndex(list, index, itemHeight) {
         option.scrollIntoView({ block: 'nearest' });
         return;
     }
+    if (!(itemHeight > 0)) return;
     // A multi-column list has a sticky header above the rows, covering their top.
     const header = list.querySelector('.nx-combobox-columns-header');
     const offset = header ? header.offsetHeight : 0;

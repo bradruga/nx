@@ -9,14 +9,17 @@
         <code>NxFileManager</code> browses a read-only tree of folders and files: a folder tree, a breadcrumb, the open folder
         as a grid or tiles, sorting with folders first as Explorer does, a details pane, and a search that matches anywhere in
         a name below the open folder. Double-click, Enter or a tap on a touch screen opens: a folder navigates, a file raises
-        <code>OnOpen</code>. It reads a flat list by field name, so ERP's project files bind as they are.
+        <code>OnOpen</code>. It reads a flat list with lambdas, so ERP's project files bind as they are.
     </p>
 </div>
 
 <div class="doc-section">
     <h2>Basic Usage</h2>
     <div class="demo-stage demo-stage-column">
-        <NxFileManager TItem="FileEntry" Id="overview-files" Data="DemoFiles.Project" @bind-Folder="folder" @bind-SelectedItem="selected"
+        <NxFileManager TItem="FileEntry" Id="overview-files" Data="DemoFiles.Project"
+                       ItemId="e => e.Id" ParentId="e => e.ParentId" ItemName="e => e.Name" ItemExtension="e => e.Extension"
+                       ItemIsDirectory="e => e.IsDirectory" ItemSize="e => e.Size" ItemDateModified="e => e.DateModified" ItemDateCreated="e => e.DateCreated"
+                       @bind-Folder="folder" @bind-SelectedItem="selected"
                        OnOpen="Open" OnDownload="Download"
                        RootName="Route 9 Bridge" Height="460px" Style="width:100%" />
         <div class="demo-row">
@@ -55,7 +58,10 @@
 
     const string basicCode =
         """
-        <NxFileManager Data="entries" @bind-Folder="folder" @bind-SelectedItem="selected"
+        <NxFileManager Data="entries"
+                       ItemId="e => e.Id" ParentId="e => e.ParentId" ItemName="e => e.Name" ItemExtension="e => e.Extension"
+                       ItemIsDirectory="e => e.IsDirectory" ItemSize="e => e.Size" ItemDateModified="e => e.DateModified" ItemDateCreated="e => e.DateCreated"
+                       @bind-Folder="folder" @bind-SelectedItem="selected"
                        OnOpen="OpenFileAsync" OnDownload="DownloadAsync" RootName="@ProjectName" Height="100%" />
         """;
 }

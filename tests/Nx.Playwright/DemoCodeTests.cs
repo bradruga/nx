@@ -61,7 +61,7 @@ public class DemoCodeTests : PageTest
         await Expect(toggle).ToHaveAttributeAsync("aria-expanded", "true");
         await Expect(toggle).ToHaveTextAsync("Hide code");
         await Expect(section.Locator(".doc-code")).ToHaveTextAsync(
-            "<NxButton Variant=\"NxButtonVariant.Primary\" FullWidth=\"true\" Size=\"NxButtonSize.Large\">Sign in</NxButton>\n" +
+            "<NxButton Variant=\"NxButtonVariant.Primary\" FullWidth=\"true\" Size=\"NxSize.Large\">Sign in</NxButton>\n" +
             "<NxButton FullWidth=\"true\">Create an account</NxButton>");
 
         await toggle.ClickAsync();

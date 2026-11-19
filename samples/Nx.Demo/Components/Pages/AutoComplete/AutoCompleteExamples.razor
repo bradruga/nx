@@ -76,11 +76,11 @@
 
 <div class="doc-section">
     <h2>50,000 Suggestions</h2>
-    <p class="doc-note"><code>Virtualize</code> renders only the rows in view, so a long list stays fast.</p>
+    <p class="doc-note">From <code>VirtualizeThreshold</code> suggestions (200 by default) only the rows in view are rendered, so a long list stays fast.</p>
     @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <label class="demo-field-label" for="part-search">Part</label>
-        <NxAutoComplete Id="part-search" Data="SampleData.Parts" ItemText="p => p.Description" @bind-Value="part" Virtualize="true" MinLength="2" Placeholder="e.g. vault 48" />
+        <NxAutoComplete Id="part-search" Data="SampleData.Parts" ItemText="p => p.Description" @bind-Value="part" MinLength="2" Placeholder="e.g. vault 48" />
         <span class="demo-value" id="part-value">Part: <strong>@part</strong></span>
     </div>
     @* /code *@

@@ -33,9 +33,9 @@
             }
         </NxTileLayout>
         <div class="demo-row">
-            <NxButton id="edit-save" Size="NxButtonSize.Small" OnClick="Save">Save layout</NxButton>
-            <NxButton id="edit-restore" Size="NxButtonSize.Small" Disabled="saved is null" OnClick="Restore">Restore saved</NxButton>
-            <NxButton id="edit-show" Size="NxButtonSize.Small" Disabled="cards.All(c => c.Visible)" OnClick="ShowAll">Show hidden</NxButton>
+            <NxButton id="edit-save" Size="NxSize.Small" OnClick="Save">Save layout</NxButton>
+            <NxButton id="edit-restore" Size="NxSize.Small" Disabled="saved is null" OnClick="Restore">Restore saved</NxButton>
+            <NxButton id="edit-show" Size="NxSize.Small" Disabled="cards.All(c => c.Visible)" OnClick="ShowAll">Show hidden</NxButton>
             <span class="demo-value" id="edit-log">@last</span>
         </div>
         <pre class="doc-code" id="edit-state">@stateText</pre>

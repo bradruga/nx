@@ -6,14 +6,14 @@ namespace Nx.Components;
 /// <summary>
 /// An <c>EditForm</c> that lays out <see cref="NxFormItem"/>s (and <see cref="NxFormGroup"/>s) in a grid of
 /// <see cref="Columns"/>, labels above or beside them, one column on a narrow screen. Items name a property of
-/// <see cref="Model"/> and render a fitting Nx editor, or take your own; each shows its validation messages.
+/// <see cref="Model"/> (or of an object it holds) and render a fitting Nx editor, or take your own; each shows its validation messages.
 /// Validates with DataAnnotations unless <see cref="Validation"/> holds other validators.
 /// </summary>
 /// <example>
 /// <code>
 /// &lt;NxForm Model="order" Columns="2" OnValidSubmit="SaveAsync"&gt;
-///     &lt;NxFormItem Field="@@nameof(Order.Customer)" /&gt;
-///     &lt;NxFormItem Field="@@nameof(Order.PourDate)" Label="Pour date" /&gt;
+///     &lt;NxFormItem For="() =&gt; order.Customer" /&gt;
+///     &lt;NxFormItem For="() =&gt; order.PourDate" Label="Pour date" /&gt;
 ///     &lt;Buttons&gt;&lt;NxButton Type="NxButtonType.Submit"&gt;Save&lt;/NxButton&gt;&lt;/Buttons&gt;
 /// &lt;/NxForm&gt;
 /// </code>
@@ -72,7 +72,7 @@ public partial class NxForm
     /// <summary>Enter in a text field submits the form, as browsers do. <c>false</c> turns that off. Default: <c>true</c>.</summary>
     [Parameter] public bool SubmitOnEnter { get; set; } = true;
 
-    /// <summary>The form's <c>id</c>; generated editors get <c>{Id}-{Field}</c>.</summary>
+    /// <summary>The form's <c>id</c>; generated editors get <c>{Id}-{property}</c>.</summary>
     [Parameter] public string? Id { get; set; }
 
     /// <summary>Extra CSS class on the form.</summary>

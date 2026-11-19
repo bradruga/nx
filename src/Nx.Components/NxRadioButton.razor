@@ -19,7 +19,7 @@
     private readonly string generatedId = $"nx-radio-{Guid.NewGuid():N}"[..17];
     private ElementReference input;
 
-    [CascadingParameter] private NxRadioGroup<TValue>? Group { get; set; }
+    [CascadingParameter] private IRadioGroup<TValue>? Group { get; set; }
 
     /// <summary>The value the group takes when this button is checked.</summary>
     [Parameter, EditorRequired] public TValue? Value { get; set; }

@@ -7,7 +7,7 @@
     height: var(--nx-progressbar-height);
     overflow: hidden;
     border-radius: var(--nx-progressbar-radius);
-    background: var(--nx-progressbar-track);
+    background: var(--nx-progressbar-track, var(--nx-surface-active));
     font-family: var(--nx-font-family);
     font-size: var(--nx-font-size-sm);
     font-weight: 600;
@@ -17,7 +17,7 @@
 .nx-progressbar-fill {
     position: absolute;
     inset: 0 auto 0 0;
-    background: var(--nx-progressbar-fill);
+    background: var(--nx-progressbar-fill, var(--nx-accent));
     transition: width 0.3s ease;
 }
 
@@ -29,13 +29,13 @@
     align-items: center;
     justify-content: center;
     padding: 0 8px;
-    color: var(--nx-progressbar-label);
+    color: var(--nx-progressbar-label, var(--nx-fg));
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.nx-progressbar-label-on-fill { color: var(--nx-progressbar-label-on-fill); }
+.nx-progressbar-label-on-fill { color: var(--nx-progressbar-label-on-fill, var(--nx-accent-fg)); }
 
 .nx-progressbar-thin { height: var(--nx-progressbar-thin-height); }
 .nx-progressbar-thin .nx-progressbar-label { display: none; }

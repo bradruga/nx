@@ -27,7 +27,7 @@
 }
 .nx-chart-plot:focus { outline: none; }
 .nx-chart-plot:focus-visible {
-    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color, var(--nx-accent));
     outline-offset: 2px;
 }
 
@@ -48,7 +48,7 @@
 }
 
 /* The texts are built in code (Razor reads a bare <text> as its own tag), so they need ::deep. */
-.nx-chart-labels ::deep text { fill: var(--nx-chart-label); }
+.nx-chart-labels ::deep text { fill: var(--nx-chart-label, var(--nx-fg-muted)); }
 .nx-chart-labels ::deep .nx-chart-axis-title { fill: var(--nx-fg); font-weight: 600; }
 .nx-chart-value-labels ::deep text { fill: var(--nx-fg); font-weight: 500; }
 
@@ -95,7 +95,7 @@
     padding: 6px 10px;
     border: 1px solid var(--nx-border);
     border-radius: var(--nx-radius);
-    background: var(--nx-popup-bg);
+    background: var(--nx-popup-bg, var(--nx-surface));
     box-shadow: var(--nx-shadow-popup);
     color: var(--nx-fg);
     font-size: var(--nx-font-size-sm);
@@ -142,7 +142,7 @@
 }
 .nx-chart-legend-item:hover { background: var(--nx-surface-hover); }
 .nx-chart-legend-item:focus { outline: none; }
-.nx-chart-legend-item:focus-visible { outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color); }
+.nx-chart-legend-item:focus-visible { outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color, var(--nx-accent)); }
 .nx-chart-legend-off { color: var(--nx-fg-subtle); }
 .nx-chart-legend-off .nx-chart-swatch { opacity: 0.3; }
 

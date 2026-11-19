@@ -129,7 +129,7 @@
                     </dl>
                     @if (!item.IsDirectory && OnDownload.HasDelegate)
                     {
-                        <NxButton Size="NxButtonSize.Small" Icon="@Icon(NxIcons.Download)" OnClick="() => DownloadAsync(item)">Download</NxButton>
+                        <NxButton Size="NxSize.Small" Icon="@Icon(NxIcons.Download)" OnClick="() => DownloadAsync(item)">Download</NxButton>
                     }
                 }
                 else

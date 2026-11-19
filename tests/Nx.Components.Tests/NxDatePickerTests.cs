@@ -100,16 +100,33 @@ public class NxDatePickerTests : BunitContext
     }
 
     [Test]
-    public async Task Focus_ShowsFixedWidthEditText()
+    public async Task Focus_FixedWidthEditTextIsSwappedInByTheBrowser_NotFromHere()
     {
         var cut = RenderBound<DateOnly?>([], new DateOnly(2026, 1, 5), p => p.Add(x => x.Format, "MMM d, yyyy"));
         Assert.That(Text(cut), Is.EqualTo("Jan 5, 2026"));
+        Assert.That(cut.Find("input").GetAttribute("data-nx-edit"), Is.EqualTo("01/05/2026"));
+        Assert.That(module.Invocations.Any(i => i.Identifier == "editOnFocus" && !(bool)i.Arguments[1]!), Is.True);
 
+        // A swap rendered from here would land a round trip late, on whatever was typed by then.
         await cut.Find("input").FocusAsync(new FocusEventArgs());
+        Assert.That(Text(cut), Is.EqualTo("Jan 5, 2026"));
+
+        // nx-input.js swaps the text and raises input, which @bind carries here.
+        await cut.Find("input").InputAsync(new ChangeEventArgs { Value = "01/05/2026" });
         Assert.That(Text(cut), Is.EqualTo("01/05/2026"));
 
         await cut.Find("input").BlurAsync(new FocusEventArgs());
         Assert.That(Text(cut), Is.EqualTo("Jan 5, 2026"));
+    }
+
+    [Test]
+    public void EditText_NotOfferedWhenReadOnlyOrDisabled()
+    {
+        var readOnly = RenderBound<DateOnly?>([], Oct23, p => p.Add(x => x.ReadOnly, true));
+        var disabled = RenderBound<DateOnly?>([], Oct23, p => p.Add(x => x.Disabled, true), id: "dp2");
+
+        Assert.That(readOnly.Find("input").HasAttribute("data-nx-edit"), Is.False);
+        Assert.That(disabled.Find("input").HasAttribute("data-nx-edit"), Is.False);
     }
 
     [Test]
@@ -632,5 +649,119 @@ public class NxDatePickerTests : BunitContext
 
         Assert.That(cut.Find("input").GetAttribute("aria-invalid"), Is.EqualTo("true"));
         Assert.That(cut.Find(".nx-datepicker").ClassList, Does.Contain("nx-datepicker-invalid"));
+    }
+
+    // ── DateTimeOffset ────────────────────────────────────────────────────────
+
+    private void BrowserZoneIs(string? id, int offsetMinutes) =>
+        module.Setup<BrowserZone>("timeZone").SetResult(new BrowserZone(id, offsetMinutes));
+
+    [Test]
+    public async Task DateTimeOffset_KeepsTimeOfDayAndOffsetOfThePreviousValue()
+    {
+        BrowserZoneIs("America/Chicago", -360);
+        var raised = new List<DateTimeOffset>();
+        var cut = RenderBound(raised, new DateTimeOffset(2026, 10, 23, 14, 30, 0, TimeSpan.FromHours(2)));
+        Assert.That(Text(cut), Is.EqualTo("10/23/2026"));
+
+        await TypeAndCommitAsync(cut, "1/5/2026");
+
+        Assert.That(raised.Single(), Is.EqualTo(new DateTimeOffset(2026, 1, 5, 14, 30, 0, TimeSpan.FromHours(2))));
+        Assert.That(raised.Single().Offset, Is.EqualTo(TimeSpan.FromHours(2)));
+    }
+
+    [Test]
+    public async Task DateTimeOffset_Empty_TakesTheBrowsersOffsetOnThePickedDate()
+    {
+        BrowserZoneIs("America/Chicago", -360);
+        var raised = new List<DateTimeOffset?>();
+        var cut = RenderBound<DateTimeOffset?>(raised);
+
+        await TypeAndCommitAsync(cut, "7/15/2026");
+        Assert.That(raised.Last(), Is.EqualTo(new DateTimeOffset(2026, 7, 15, 0, 0, 0, TimeSpan.FromHours(-5))));
+        Assert.That(raised.Last()!.Value.Offset, Is.EqualTo(TimeSpan.FromHours(-5)), "daylight time in July");
+
+        // The next date keeps the offset the value now has.
+        await TypeAndCommitAsync(cut, "1/15/2026");
+        Assert.That(raised.Last()!.Value.Offset, Is.EqualTo(TimeSpan.FromHours(-5)));
+    }
+
+    [Test]
+    public async Task DateTimeOffset_Empty_WinterDateTakesStandardTime()
+    {
+        BrowserZoneIs("America/Chicago", -300);
+        var raised = new List<DateTimeOffset?>();
+        var cut = RenderBound<DateTimeOffset?>(raised);
+
+        await TypeAndCommitAsync(cut, "1/15/2026");
+
+        Assert.That(raised.Single()!.Value.Offset, Is.EqualTo(TimeSpan.FromHours(-6)));
+    }
+
+    [Test]
+    public async Task DateTimeOffset_ZoneTheServerDoesNotKnow_UsesTheBrowsersOffsetNow()
+    {
+        BrowserZoneIs("Mars/Olympus_Mons", 330);
+        var raised = new List<DateTimeOffset?>();
+        var cut = RenderBound<DateTimeOffset?>(raised);
+
+        await TypeAndCommitAsync(cut, "7/15/2026");
+
+        Assert.That(raised.Single()!.Value.Offset, Is.EqualTo(new TimeSpan(5, 30, 0)));
+    }
+
+    [Test]
+    public async Task DateTimeOffset_BeforeTheBrowserAnswers_UsesTheServersOffset()
+    {
+        var raised = new List<DateTimeOffset?>();
+        var cut = RenderBound<DateTimeOffset?>(raised);     // loose mode: timeZone answers nothing
+
+        await TypeAndCommitAsync(cut, "7/15/2026");
+
+        Assert.That(raised.Single()!.Value.Offset, Is.EqualTo(TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 7, 15))));
+    }
+
+    [Test]
+    public async Task DateTimeOffset_NonNullableDefault_CountsAsEmpty()
+    {
+        BrowserZoneIs("America/Chicago", -360);
+        var raised = new List<DateTimeOffset>();
+        var cut = RenderBound(raised, default(DateTimeOffset));
+
+        await TypeAndCommitAsync(cut, "7/15/2026");
+
+        Assert.That(raised.Single().Offset, Is.EqualTo(TimeSpan.FromHours(-5)));
+    }
+
+    [Test]
+    public async Task DateTimeOffset_MinMaxAndDisabledDates_CompareOnTheDateShown()
+    {
+        BrowserZoneIs("America/Chicago", -360);
+        var raised = new List<DateTimeOffset?>();
+        // 11 PM on the 23rd at -10:00 is already the 24th in UTC: the picker shows, and limits by, the 23rd.
+        var cut = RenderBound<DateTimeOffset?>(raised, new DateTimeOffset(2026, 10, 23, 23, 0, 0, TimeSpan.FromHours(-10)), p => p
+            .Add(x => x.Max, new DateOnly(2026, 10, 25))
+            .Add(x => x.IsDateDisabled, d => d.Day == 24));
+        Assert.That(Text(cut), Is.EqualTo("10/23/2026"));
+
+        await TypeAndCommitAsync(cut, "10/24/2026");
+        Assert.That(raised, Is.Empty, "the 24th is disabled");
+
+        await TypeAndCommitAsync(cut, "10/30/2026");
+        Assert.That(raised.Single(), Is.EqualTo(new DateTimeOffset(2026, 10, 25, 23, 0, 0, TimeSpan.FromHours(-10))));
+    }
+
+    [Test]
+    public async Task DateTimeOffset_CalendarPick()
+    {
+        BrowserZoneIs("America/Chicago", -360);
+        var raised = new List<DateTimeOffset?>();
+        var cut = RenderBound<DateTimeOffset?>(raised, new DateTimeOffset(2026, 10, 23, 9, 15, 0, TimeSpan.FromHours(1)));
+
+        await KeyAsync(cut, "ArrowDown", alt: true);
+        await cut.Find("[data-date='2026-10-27']").ClickAsync(new MouseEventArgs());
+
+        Assert.That(raised.Single(), Is.EqualTo(new DateTimeOffset(2026, 10, 27, 9, 15, 0, TimeSpan.FromHours(1))));
+        Assert.That(raised.Single()!.Value.Offset, Is.EqualTo(TimeSpan.FromHours(1)));
     }
 }

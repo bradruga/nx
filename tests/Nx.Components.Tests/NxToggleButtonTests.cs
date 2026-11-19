@@ -87,11 +87,11 @@ public class NxToggleButtonTests : BunitContext
     [Test]
     public void VariantSizeClass_PassThrough_DefaultsLeftToTheGroup()
     {
-        var own = RenderBound([], configure: p => p.AddChildContent("x").Add(x => x.Variant, NxButtonVariant.Ghost).Add(x => x.Size, NxButtonSize.Small).Add(x => x.Class, "mine"));
+        var own = RenderBound([], configure: p => p.AddChildContent("x").Add(x => x.Variant, NxButtonVariant.Ghost).Add(x => x.Size, NxSize.Small).Add(x => x.Class, "mine"));
         Assert.That(own.Find("button").ClassList, Does.Contain("nx-button-ghost").And.Contain("nx-button-sm").And.Contain("mine"));
 
         var grouped = Render<NxButtonGroup>(p => p
-            .Add(x => x.Size, NxButtonSize.Large)
+            .Add(x => x.Size, NxSize.Large)
             .Add(x => x.ChildContent, (RenderFragment)(b =>
             {
                 b.OpenComponent<NxToggleButton>(0);

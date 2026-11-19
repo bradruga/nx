@@ -420,6 +420,32 @@ public class NxTextBoxTests : BunitContext
     }
 
     [Test]
+    public void Clearable_JsMarksTheClearingEscapeAsUsed()
+    {
+        var module = JSInterop.SetupModule("./_content/Nx.Components/nx-input.js");
+        module.Mode = JSRuntimeMode.Loose;
+
+        var cut = Render<NxTextBox>(p => p.Add(x => x.Clearable, true));
+        cut.Render(p => p.Add(x => x.Value, "Acme"));
+
+        Assert.That(module.Invocations.Count(i => i.Identifier == "escapeClears"), Is.EqualTo(1));
+    }
+
+    [Test]
+    public void Clearable_TurnedOnLater_JsIsAttachedThen()
+    {
+        var module = JSInterop.SetupModule("./_content/Nx.Components/nx-input.js");
+        module.Mode = JSRuntimeMode.Loose;
+
+        var cut = Render<NxTextBox>();
+        Assert.That(JSInterop.Invocations, Is.Empty);
+
+        cut.Render(p => p.Add(x => x.Clearable, true));
+
+        Assert.That(module.Invocations.Count(i => i.Identifier == "escapeClears"), Is.EqualTo(1));
+    }
+
+    [Test]
     public async Task Keyboard_Escape_NotClearable_DoesNothing()
     {
         var values = new List<string?>();

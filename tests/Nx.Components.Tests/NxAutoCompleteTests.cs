@@ -326,8 +326,7 @@ public class NxAutoCompleteTests : BunitContext
     public async Task Virtualize_RendersAWindow()
     {
         var cut = Render<NxAutoComplete<string>>(p => p
-            .Add(x => x.Data, Enumerable.Range(1, 10_000).Select(i => $"Part {i}"))
-            .Add(x => x.Virtualize, true));
+            .Add(x => x.Data, Enumerable.Range(1, 10_000).Select(i => $"Part {i}")));
 
         await TypeAsync(cut, "part");
 

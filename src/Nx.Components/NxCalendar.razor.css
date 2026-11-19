@@ -64,7 +64,7 @@
 
 .nx-calendar-grids:focus { outline: none; }
 .nx-calendar-grids:focus-visible {
-    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color, var(--nx-accent));
     outline-offset: var(--nx-focus-ring-offset);
 }
 
@@ -132,28 +132,28 @@
 .nx-calendar-other .nx-calendar-day { color: var(--nx-fg-subtle); }
 
 .nx-calendar-today .nx-calendar-day {
-    border-color: var(--nx-calendar-today-border);
+    border-color: var(--nx-calendar-today-border, var(--nx-accent));
     font-weight: 600;
 }
 
 /* The keyboard's cell: drawn while the calendar has keyboard focus, or in a picker once a key has moved it. */
 .nx-calendar-focusable .nx-calendar-grids:focus-visible .nx-calendar-focused .nx-calendar-day,
 .nx-calendar-keyboard:not(.nx-calendar-focusable) .nx-calendar-focused .nx-calendar-day {
-    box-shadow: inset 0 0 0 2px var(--nx-focus-ring-color);
+    box-shadow: inset 0 0 0 2px var(--nx-focus-ring-color, var(--nx-accent));
 }
 
 /* Range between start and end: a continuous band. */
 .nx-calendar-in-range,
 .nx-calendar-range-start,
-.nx-calendar-range-end { background: var(--nx-calendar-range-bg); }
+.nx-calendar-range-end { background: var(--nx-calendar-range-bg, var(--nx-accent-subtle)); }
 .nx-calendar-range-start { border-radius: var(--nx-radius) 0 0 var(--nx-radius); }
 .nx-calendar-range-end { border-radius: 0 var(--nx-radius) var(--nx-radius) 0; }
 .nx-calendar-in-range .nx-calendar-day { border-radius: 0; }
 
 .nx-calendar-selected .nx-calendar-day,
 .nx-calendar-selected:hover .nx-calendar-day {
-    background: var(--nx-calendar-selected-bg);
-    color: var(--nx-calendar-selected-fg);
+    background: var(--nx-calendar-selected-bg, var(--nx-accent));
+    color: var(--nx-calendar-selected-fg, var(--nx-accent-fg));
     font-weight: 600;
 }
 

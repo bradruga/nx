@@ -15,8 +15,8 @@
             </div>
             <div class="demo-row">
                 <span class="demo-counter" id="playground-changes">ValueChanged × @pgChanges</span>
-                <NxButton id="playground-set" Size="NxButtonSize.Small" OnClick="SetFromCode">Set Value from code</NxButton>
-                <NxButton id="playground-clear" Size="NxButtonSize.Small" OnClick="() => pgValue = null">Clear</NxButton>
+                <NxButton id="playground-set" Size="NxSize.Small" OnClick="SetFromCode">Set Value from code</NxButton>
+                <NxButton id="playground-clear" Size="NxSize.Small" OnClick="() => pgValue = null">Clear</NxButton>
             </div>
             <pre class="doc-code demo-editor-html" id="playground-html">@(string.IsNullOrEmpty(pgValue) ? "\"\"" : pgValue)</pre>
         </div>

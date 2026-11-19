@@ -31,7 +31,7 @@
         <table class="doc-table doc-api-table">
             <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
             <tbody>
-                <tr><td>Field</td><td>string?</td><td>—</td><td>The property shown, by name (<code>nameof</code>).</td></tr>
+                <tr><td>Value</td><td>Func&lt;TItem, object?&gt;?</td><td>—</td><td>The value shown: <code>Value="l =&gt; l.Name"</code>.</td></tr>
                 <tr><td>Title</td><td>string?</td><td>—</td><td>The header; also read before the cell's value.</td></tr>
                 <tr><td>Width</td><td>string?</td><td>—</td><td>Fixed width; for the tree column, its least width (it takes the rest).</td></tr>
                 <tr><td>Expandable</td><td>bool</td><td>first column</td><td>Holds the tree's arrows and indent; it is drawn first.</td></tr>

@@ -16,6 +16,7 @@
                                 Id="playground-combo"
                                 Data="@(pgSource == "data" ? PlaygroundData : null)"
                                 DataProvider="@(pgSource == "provider" ? PlaygroundProvider : null)"
+                                ItemByValue="@(pgItemByValue ? FindByCode : null)"
                                 ItemText="c => c.Name"
                                 ItemValue="c => c.Code"
                                 ItemGroup="@(pgGroup ? c => c.Region : null)"
@@ -33,7 +34,8 @@
                                 Clearable="pgClearable"
                                 Placeholder="@(string.IsNullOrWhiteSpace(pgPlaceholder) ? null : pgPlaceholder)"
                                 NoDataText="@pgNoData"
-                                Virtualize="pgVirtualize"
+                                VirtualizeThreshold="pgThreshold"
+                                ItemHeight="@(pgItemHeight > 0 ? pgItemHeight : null)"
                                 Loading="pgLoading"
                                 Disabled="pgDisabled"
                                 ReadOnly="pgReadOnly"
@@ -62,7 +64,7 @@
             <label class="demo-control">
                 <span>MobileMode</span>
                 <select id="pg-mobile" @bind="pgMobile" @bind:after="Remount">
-                    @foreach (var m in Enum.GetValues<NxComboBoxMobileMode>())
+                    @foreach (var m in Enum.GetValues<NxMobileMode>())
                     {
                         <option value="@m">@m</option>
                     }
@@ -78,9 +80,11 @@
                 </div>
             </div>
             <label class="demo-control"><span>Provider latency (ms)</span><input type="number" min="0" step="100" @bind="pgLatency" disabled="@(pgSource != "provider")" /></label>
+            <label class="demo-control"><span>ItemByValue (remounts with a Value set)</span><input type="checkbox" id="pg-item-by-value" @bind="pgItemByValue" @bind:after="PresetValue" disabled="@(pgSource != "provider" || pgMultiple)" /></label>
             <label class="demo-control"><span>×1000 rows (Data)</span><input type="checkbox" id="pg-large" @bind="pgLarge" /></label>
             <label class="demo-control"><span>ItemGroup (Region)</span><input type="checkbox" id="pg-group" @bind="pgGroup" /></label>
-            <label class="demo-control"><span>Virtualize</span><input type="checkbox" id="pg-virtualize" @bind="pgVirtualize" /></label>
+            <label class="demo-control"><span>VirtualizeThreshold</span><input type="number" id="pg-threshold" min="0" @bind="pgThreshold" /></label>
+            <label class="demo-control"><span>ItemHeight (0 = measured)</span><input type="number" id="pg-item-height" min="0" @bind="pgItemHeight" /></label>
 
             <div class="demo-controls-title">Filtering</div>
             <label class="demo-control">
@@ -123,7 +127,8 @@
     // ── Playground ─────────────────────────────────────────────────────────────
     string pgSource = "data";
     int pgLatency = 600, pgKey;
-    bool pgLarge, pgGroup, pgVirtualize, pgCustomFilter, pgAllowCustom, pgClearable = true;
+    bool pgLarge, pgGroup, pgItemByValue, pgCustomFilter, pgAllowCustom, pgClearable = true;
+    int pgThreshold = 200, pgItemHeight;
     bool pgItemTemplate, pgSelectedTemplate, pgLoading, pgReadOnly, pgDisabled;
     string pgPlaceholder = "Search customers";
     string pgNoData = "No matches";
@@ -133,7 +138,7 @@
     bool pgMultiple, pgColumns;
     int pgMaxChips;
     IEnumerable<string> pgValues = [];
-    NxComboBoxMobileMode pgMobile = NxComboBoxMobileMode.Auto;
+    NxMobileMode pgMobile = NxMobileMode.Never;
 
     static readonly List<NxComboBoxColumnDefinition<Customer>> PlaygroundColumns =
     [
@@ -154,9 +159,20 @@
     Task<IEnumerable<Customer>> PlaygroundProvider(NxComboBoxRequest request) =>
         SampleData.SearchCustomersAsync(request.Filter, pgLatency, request.CancellationToken);
 
+    static Task<Customer?> FindByCode(string code) => Task.FromResult(SampleData.Customers.FirstOrDefault(c => c.Code == code));
+
+    // A value the new instance has no item for: with ItemByValue the field shows its name, without it stays empty.
+    void PresetValue()
+    {
+        pgValue = SampleData.Customers[5].Code;
+        pgItem = null;
+        pgKey++;
+    }
+
     void SetSource(string source)
     {
         pgSource = source;
+        pgItemByValue = false;
         pgKey++;
     }
 
@@ -176,6 +192,7 @@
                 "ItemText=\"c => c.Name\"",
                 "ItemValue=\"c => c.Code\"",
             };
+            if (pgItemByValue) attrs.Insert(1, "ItemByValue=\"FindByCodeAsync\"");
             if (pgGroup) attrs.Add("ItemGroup=\"c => c.Region\"");
             if (pgMultiple)
             {
@@ -189,14 +206,15 @@
                 attrs.Add("@bind-SelectedItem=\"customer\"");
             }
             if (pgColumns) attrs.Add("ColumnDefinitions=\"customerColumns\"");
-            if (pgMobile != NxComboBoxMobileMode.Auto) attrs.Add($"MobileMode=\"NxComboBoxMobileMode.{pgMobile}\"");
+            if (pgMobile != NxMobileMode.Never) attrs.Add($"MobileMode=\"NxMobileMode.{pgMobile}\"");
             if (pgCustomFilter) attrs.Add("CustomFilter=\"MatchCodeOrName\"");
             else if (pgFilter != NxComboBoxFilter.Contains) attrs.Add($"Filter=\"NxComboBoxFilter.{pgFilter}\"");
             if (pgAllowCustom && !pgMultiple) attrs.Add("AllowCustomValue=\"true\"");
             if (pgClearable) attrs.Add("Clearable=\"true\"");
             if (!string.IsNullOrWhiteSpace(pgPlaceholder)) attrs.Add($"Placeholder=\"{pgPlaceholder}\"");
             if (pgNoData != "No matches") attrs.Add($"NoDataText=\"{pgNoData}\"");
-            if (pgVirtualize) attrs.Add("Virtualize=\"true\"");
+            if (pgThreshold != 200) attrs.Add($"VirtualizeThreshold=\"{pgThreshold}\"");
+            if (pgItemHeight > 0) attrs.Add($"ItemHeight=\"{pgItemHeight}\"");
             if (pgLoading) attrs.Add("Loading=\"true\"");
             if (pgReadOnly) attrs.Add("ReadOnly=\"true\"");
             if (pgDisabled) attrs.Add("Disabled=\"true\"");

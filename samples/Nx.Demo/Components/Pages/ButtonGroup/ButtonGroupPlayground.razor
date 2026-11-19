@@ -44,7 +44,7 @@
                 <span>Size</span>
                 <select id="pg-size" @bind="pgSizeText">
                     <option value="">(each button's)</option>
-                    @foreach (var s in Enum.GetValues<NxButtonSize>())
+                    @foreach (var s in Enum.GetValues<NxSize>())
                     {
                         <option value="@s">@s</option>
                     }
@@ -76,7 +76,7 @@
     int pgClicks;
 
     NxButtonVariant? pgVariant => Enum.TryParse<NxButtonVariant>(pgVariantText, out var v) ? v : null;
-    NxButtonSize? pgSize => Enum.TryParse<NxButtonSize>(pgSizeText, out var s) ? s : null;
+    NxSize? pgSize => Enum.TryParse<NxSize>(pgSizeText, out var s) ? s : null;
 
     string PlaygroundCode
     {
@@ -85,7 +85,7 @@
             var attrs = new List<string>();
             if (OrNull(pgAriaLabel) is { } a) attrs.Add($"AriaLabel=\"{a}\"");
             if (pgVariant is { } v) attrs.Add($"Variant=\"NxButtonVariant.{v}\"");
-            if (pgSize is { } s) attrs.Add($"Size=\"NxButtonSize.{s}\"");
+            if (pgSize is { } s) attrs.Add($"Size=\"NxSize.{s}\"");
             if (pgFullWidth) attrs.Add("FullWidth=\"true\"");
             if (pgDisabled) attrs.Add("Disabled=\"true\"");
             var buttons = pgIcons

@@ -10,7 +10,7 @@
     <div class="demo-stage demo-stage-column" style="max-width:560px">
         <NxProgressBar id="count-bar" Value="processed" Max="Chunks" AriaLabel="Transcript" />
         <div class="demo-row">
-            <NxButton id="count-start" Size="NxButtonSize.Small" Variant="NxButtonVariant.Primary" OnClick="ProcessAsync" Disabled="running">Process transcript</NxButton>
+            <NxButton id="count-start" Size="NxSize.Small" Variant="NxButtonVariant.Primary" OnClick="ProcessAsync" Disabled="running">Process transcript</NxButton>
             <span class="demo-value" id="count-value">@processed of @Chunks chunks</span>
         </div>
     </div>
@@ -49,7 +49,7 @@
     <div class="demo-stage demo-stage-column" style="max-width:560px">
         <div class="demo-row demo-row-spread" style="max-width:none"><strong>Safety briefing</strong><span id="thin-step">Slide @slide of @Slides</span></div>
         <NxProgressBar id="thin-bar" Value="slide" Max="Slides" Thin="true" AriaLabel="Slides" />
-        <NxButtonGroup AriaLabel="Slides" Size="NxButtonSize.Small">
+        <NxButtonGroup AriaLabel="Slides" Size="NxSize.Small">
             <NxButton id="thin-back" Disabled="slide <= 1" OnClick="() => slide--">Back</NxButton>
             <NxButton id="thin-next" Disabled="slide >= Slides" OnClick="() => slide++">Next</NxButton>
         </NxButtonGroup>

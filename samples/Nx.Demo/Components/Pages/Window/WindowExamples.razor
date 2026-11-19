@@ -194,6 +194,55 @@
     <DocExampleCode Key="a-form-in-a-window" />
 </div>
 
+<div class="doc-section">
+    <h2>Remembered Size &amp; Position</h2>
+    <p class="doc-note">
+        <code>OnMoved</code> and <code>OnResized</code> report where a drag or a resize ended, in px. Save them and pass them
+        back as <code>Left</code>, <code>Top</code>, <code>Width</code> and <code>Height</code>: move and resize the window
+        below, close it, and it opens again where you left it.
+    </p>
+    @* code *@
+    <div class="demo-stage">
+        <div class="demo-row">
+            <NxButton id="open-saved" OnClick="() => savedOpen = true">Open notes</NxButton>
+            <span class="demo-value" id="saved-place">Position: <strong>@(savedLeft is null ? "centered" : $"{savedLeft}, {savedTop}")</strong></span>
+            <span class="demo-value" id="saved-size">Size: <strong>@(savedWidth is null ? "default" : $"{savedWidth} × {savedHeight}")</strong></span>
+        </div>
+    </div>
+    @* /code *@
+    @* code *@
+    <NxWindow Id="saved-window" @bind-Visible="savedOpen" Title="Notes" Modal="false" Resizable="true" Size="NxWindowSize.Small"
+              Left="@savedLeft" Top="@savedTop" Width="@savedWidth" Height="@savedHeight"
+              OnMoved="@(e => (savedLeft, savedTop) = ($"{e.Left}px", $"{e.Top}px"))"
+              OnResized="@(e => (savedWidth, savedHeight) = ($"{e.Width}px", $"{e.Height}px"))">
+        <p>Drag me by the title bar and pull my edges, then close me.</p>
+    </NxWindow>
+    @* /code *@
+    <DocExampleCode Key="remembered-size-and-position" />
+</div>
+
+<div class="doc-section">
+    <h2>Window Host</h2>
+    <p class="doc-note">
+        A window is fixed to the viewport, but an ancestor with a CSS <code>transform</code> or <code>filter</code> takes the
+        viewport's place: the window is then positioned inside that ancestor and clipped by it. Put one
+        <code>&lt;NxWindowHost /&gt;</code> in the layout and every window is drawn there instead, wherever it is declared.
+        This site has one, so the window below covers the page although its panel is transformed and clips.
+    </p>
+    <div class="demo-stage" id="host-panel" style="transform: translateZ(0); overflow: hidden;">
+        <NxButton id="open-hosted" OnClick="() => hostedOpen = true">Open from a transformed panel</NxButton>
+        <NxWindow Id="hosted-window" @bind-Visible="hostedOpen" Title="Drawn in the host" Size="NxWindowSize.Small">
+            <p>Declared inside the panel, drawn in the layout's host: centered in the viewport, nothing cut off.</p>
+        </NxWindow>
+    </div>
+    <p class="doc-note">
+        A window in the host is no longer inside the markup around it, so it loses that place's cascading values (the
+        <code>EditContext</code> of an <code>EditForm</code> around the window), inherited CSS (a theme class on a panel) and
+        event bubbling. <code>Inline="true"</code> keeps one window where it is declared; without a host every window is.
+    </p>
+    <DocCode Code="@hostCode" />
+</div>
+
 <DocPager Slug="window" Page="examples" />
 
 @code {
@@ -203,7 +252,8 @@
     const string Lorem = "Precast wall panel P-1042, 8 in. thick, 12 × 30 ft, two lifting inserts, form release applied. Ships on the 6:00 truck.";
 
     bool modalOpen, aOpen, bOpen, sizeOpen, explicitOpen, actionsOpen, actionsMinimized, actionsMaximized;
-    bool backdropOpen, guardedOpen, dirty = true, outerOpen, innerOpen, formOpen;
+    bool backdropOpen, guardedOpen, dirty = true, outerOpen, innerOpen, formOpen, savedOpen, hostedOpen;
+    string? savedLeft, savedTop, savedWidth, savedHeight;
     string first = "", second = "", note = "", crew = "North crew";
     NxWindowSize size = NxWindowSize.Medium;
     int refreshes;
@@ -252,6 +302,26 @@
         """
         <NxWindow @bind-Visible="open" Title="Details" Size="NxWindowSize.Large">…</NxWindow>
         <NxWindow @bind-Visible="open" Width="720px" Height="420px" Left="40px" Top="80px">…</NxWindow>
+        """;
+
+    const string hostCode =
+        """
+        // Program.cs
+        builder.Services.AddNxDialogs();
+
+        @* MainLayout.razor, after the page content *@
+        @Body
+        <NxWindowHost />
+
+        @* Any page: declared inside a transformed, clipping panel, drawn in the host *@
+        <div style="transform: translateZ(0); overflow: hidden;">
+            <NxWindow @bind-Visible="open" Title="Drawn in the host">…</NxWindow>
+        </div>
+
+        @* A window that needs the form around it stays in place *@
+        <EditForm Model="order">
+            <NxWindow @bind-Visible="open" Inline="true">…</NxWindow>
+        </EditForm>
         """;
 
     const string closingCode =

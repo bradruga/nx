@@ -9,11 +9,12 @@
             <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
             <tbody>
                 <tr><td>Value</td><td>TValue?</td><td>—</td><td>Use <code>@@bind-Value</code>.</td></tr>
-                <tr><td>Data</td><td>IEnumerable&lt;TValue&gt;?</td><td>—</td><td>Values to list as buttons.</td></tr>
-                <tr><td>ItemText</td><td>Func&lt;TValue, string&gt;?</td><td>ToString()</td><td>Label for a Data item.</td></tr>
-                <tr><td>ItemDisabled</td><td>Func&lt;TValue, bool&gt;?</td><td>—</td><td>Disables Data items.</td></tr>
-                <tr><td>ItemTemplate</td><td>RenderFragment&lt;TValue&gt;?</td><td>—</td><td>Label markup for Data items.</td></tr>
-                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>NxRadioButton children, after Data items.</td></tr>
+                <tr><td>Data</td><td>IEnumerable&lt;TItem&gt;?</td><td>—</td><td>Records or plain values to list as buttons.</td></tr>
+                <tr><td>ItemText</td><td>Func&lt;TItem, string&gt;?</td><td>ToString()</td><td>Label for a Data item.</td></tr>
+                <tr><td>ItemValue</td><td>Func&lt;TItem, TValue&gt;?</td><td>the item</td><td>The value a Data item binds. Optional when TItem is TValue.</td></tr>
+                <tr><td>ItemDisabled</td><td>Func&lt;TItem, bool&gt;?</td><td>—</td><td>Disables Data items.</td></tr>
+                <tr><td>ItemTemplate</td><td>RenderFragment&lt;TItem&gt;?</td><td>—</td><td>Label markup for Data items.</td></tr>
+                <tr><td>ChildContent</td><td>RenderFragment?</td><td>—</td><td>NxRadioButton children, after Data items. Without Data, set <code>TItem</code> and <code>TValue</code> on the group.</td></tr>
                 <tr><td>Label</td><td>string?</td><td>—</td><td>Caption; names the group.</td></tr>
                 <tr><td>Orientation</td><td>NxOrientation</td><td>Vertical</td><td>Vertical or Horizontal.</td></tr>
                 <tr><td>Disabled</td><td>bool</td><td>false</td><td>Disables every button.</td></tr>

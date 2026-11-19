@@ -224,9 +224,9 @@ public class DemoSectionsTests : PageTest
     {
         await GoToAsync("/combobox/examples");
 
-        // Simple List uses the default MobileMode: the overlay only below 600 px of viewport.
-        await OpenFrameAsync("simple-list", "phone");
-        await Frame.Locator("#simple-combo").ClickAsync();
+        // The third field has MobileMode Auto: the overlay only below 600 px of viewport.
+        await OpenFrameAsync("mobile-overlay", "phone");
+        await Frame.Locator("#mobile-auto").ClickAsync();
         await Expect(Frame.Locator(".nx-combobox-overlay")).ToBeVisibleAsync();
 
         // The same frame at desktop width opens the ordinary popup.
@@ -234,8 +234,8 @@ public class DemoSectionsTests : PageTest
         await Expect(Frame.Locator(".nx-combobox-overlay")).ToBeHiddenAsync();
         await Dialog.Locator(".ds-frame-device[data-device=desktop]").ClickAsync();
         await Page.WaitForFunctionAsync("() => document.querySelector('.ds-frame-iframe').contentWindow.innerWidth === 1280");
-        await Frame.Locator("#simple-combo").ClickAsync();
-        await Frame.Locator("#simple-combo").PressAsync("ArrowDown");
+        await Frame.Locator("#mobile-auto").ClickAsync();
+        await Frame.Locator("#mobile-auto").PressAsync("ArrowDown");
         await Expect(Frame.Locator(".nx-combobox-popup")).ToBeVisibleAsync();
         await Expect(Dialog.Locator(".ds-frame-size")).ToContainTextAsync("shown at");
     }

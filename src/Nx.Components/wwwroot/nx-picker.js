@@ -1,11 +1,12 @@
 // Interop for NxDatePicker, NxDateRangePicker, NxTimePicker and NxDateTimePicker. Placing the popup, locking
 // scroll under the phone sheet and watching the viewport come from nx-popup.js; masking typed times comes
-// from nx-input.js. Here: the keys the open popup takes over from the input, and stepping a date's parts.
+// and swapping in the edit text on focus come from nx-input.js. Here: the keys the open popup takes over from the
+// input, stepping a date's parts, the browser's time zone, and the phone sheet's time columns.
 
 import { open as openPopup, close as closePopup, unwatchViewport } from './nx-popup.js';
-import { mask, preventKeys, dispose as disposeInput } from './nx-input.js';
+import { mask, preventKeys, editOnFocus, roving, dispose as disposeInput } from './nx-input.js';
 export { watchViewport, unwatchViewport, lockScroll } from './nx-popup.js';
-export { mask, preventKeys };
+export { mask, preventKeys, editOnFocus };
 
 const states = new WeakMap();
 const steppers = new WeakMap();
@@ -14,6 +15,7 @@ const steppers = new WeakMap();
 const boxOf = input => input.closest('.nx-field-box') ?? input;
 
 export function open(input, popup, body, maxHeight, dotNet, outsideMethod) {
+    if (!input) return;
     return openPopup(boxOf(input), popup, body, maxHeight, dotNet, outsideMethod);
 }
 
@@ -127,4 +129,28 @@ export function disposeStepper(input) {
     const state = input && steppers.get(input);
     if (state?.onKeyDown) input.removeEventListener('keydown', state.onKeyDown);
     steppers.delete(input);
+}
+
+// The browser's time zone, for the offset of a new DateTimeOffset: its IANA name (.NET works out the offset on the
+// picked date) and, should the server not know that zone, the offset right now in minutes east of UTC.
+export function timeZone() {
+    return { id: Intl.DateTimeFormat().resolvedOptions().timeZone ?? null, offset: -new Date().getTimezoneOffset() };
+}
+
+// NxTimeColumns (the phone sheet's hour, minute and AM/PM columns): each column is one tab stop whose arrow keys
+// move between its options, opens with its selected option in the middle, and the first column takes focus.
+export function initColumns(container) {
+    if (!container) return;
+    const columns = [...container.querySelectorAll('[role="listbox"]')];
+    for (const column of columns) {
+        roving(column, '[role="option"]');
+        column.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'center' });
+    }
+    (columns[0]?.querySelector('[aria-selected="true"]') ?? columns[0]?.querySelector('[role="option"]:not(:disabled)'))?.focus({ preventScroll: true });
+}
+
+// After a pick moved another column's selection (an hour that pulled the minute to Min), bring it into view.
+export function revealColumns(container) {
+    for (const selected of container?.querySelectorAll('[role="option"][aria-selected="true"]') ?? [])
+        selected.scrollIntoView({ block: 'nearest' });
 }

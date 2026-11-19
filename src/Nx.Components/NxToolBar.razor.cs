@@ -42,8 +42,8 @@ public partial class NxToolBar : IAsyncDisposable
     /// <summary>What happens to buttons that do not fit. Default: <see cref="NxToolBarOverflow.Menu"/>.</summary>
     [Parameter] public NxToolBarOverflow Overflow { get; set; } = NxToolBarOverflow.Menu;
 
-    /// <summary>The buttons' size, unless a button sets its own. Default: <see cref="NxButtonSize.Medium"/>.</summary>
-    [Parameter] public NxButtonSize Size { get; set; } = NxButtonSize.Medium;
+    /// <summary>The buttons' size, unless a button sets its own. Default: <see cref="NxSize.Medium"/>.</summary>
+    [Parameter] public NxSize Size { get; set; } = NxSize.Medium;
 
     /// <summary>The toolbar's accessible name.</summary>
     [Parameter] public string? AriaLabel { get; set; }
@@ -163,7 +163,7 @@ public partial class NxToolBar : IAsyncDisposable
                 await module.InvokeVoidAsync("dispose", bar);
                 await module.DisposeAsync();
             }
-            catch (JSDisconnectedException)
+            catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
             {
                 // The circuit is gone; the browser cleaned up with it.
             }

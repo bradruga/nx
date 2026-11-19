@@ -218,6 +218,8 @@ public class EditorTests : PageTest
 
         var picker = Page.Locator(".nx-editor-tablepicker");
         await Expect(picker).ToBeVisibleAsync();
+        // The picker takes keys once nx-editor.js has opened it, a round trip after it shows; its label says so.
+        await Expect(picker.Locator(".nx-editor-tablepicker-label")).ToHaveTextAsync("1 × 1 table");
         await Page.Keyboard.PressAsync("ArrowRight");
         await Page.Keyboard.PressAsync("ArrowDown");
         await Expect(picker.Locator(".nx-editor-tablepicker-label")).ToHaveTextAsync("2 × 2 table");

@@ -7,7 +7,7 @@
     max-width: 100%;
     border: 1px solid var(--nx-border);
     border-radius: var(--nx-radius);
-    background: var(--nx-editor-bg);
+    background: var(--nx-editor-bg, var(--nx-surface));
     font-family: var(--nx-font-family);
     font-size: var(--nx-font-size);
     color: var(--nx-fg);
@@ -18,12 +18,12 @@
 
 .nx-editor:focus-within {
     border-color: var(--nx-accent);
-    box-shadow: var(--nx-focus-ring-inset);
+    box-shadow: var(--nx-focus-ring-inset, 0 0 0 1px var(--nx-accent));
 }
 
 .nx-editor-invalid,
 .nx-editor-invalid:hover,
-.nx-editor-invalid:focus-within { border-color: var(--nx-invalid); }
+.nx-editor-invalid:focus-within { border-color: var(--nx-invalid, var(--nx-danger)); }
 
 .nx-editor-disabled { opacity: var(--nx-disabled-opacity); }
 .nx-editor-disabled,
@@ -100,7 +100,7 @@
 .nx-editor-content ::deep blockquote {
     margin: 0 0 0.6em;
     padding-left: 12px;
-    border-left: 3px solid var(--nx-editor-quote-border);
+    border-left: 3px solid var(--nx-editor-quote-border, var(--nx-border));
     color: var(--nx-fg-muted);
 }
 
@@ -124,7 +124,7 @@
     position: absolute;
     z-index: 1;
     box-sizing: border-box;
-    outline: 2px solid var(--nx-editor-image-outline);
+    outline: 2px solid var(--nx-editor-image-outline, var(--nx-accent));
     pointer-events: none;
 }
 
@@ -133,9 +133,9 @@
     width: var(--nx-editor-image-handle-size);
     height: var(--nx-editor-image-handle-size);
     box-sizing: border-box;
-    border: 2px solid var(--nx-editor-image-outline);
+    border: 2px solid var(--nx-editor-image-outline, var(--nx-accent));
     border-radius: 2px;
-    background: var(--nx-editor-image-handle-bg);
+    background: var(--nx-editor-image-handle-bg, var(--nx-surface));
     pointer-events: auto;
     touch-action: none;
 }

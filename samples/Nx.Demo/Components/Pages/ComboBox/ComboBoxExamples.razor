@@ -41,9 +41,9 @@
             </div>
         </div>
         <div class="demo-row">
-            <NxButton id="value-set-11" Size="NxButtonSize.Small" OnClick="() => customerId = 11">Set Value = 11</NxButton>
-            <NxButton id="value-set-item" Size="NxButtonSize.Small" OnClick="() => customer = SampleData.Customers[3]">Set SelectedItem = Cape Cod</NxButton>
-            <NxButton id="value-clear" Size="NxButtonSize.Small" Variant="NxButtonVariant.Ghost" OnClick="() => { customerId = null; customer = null; }">Clear from code</NxButton>
+            <NxButton id="value-set-11" Size="NxSize.Small" OnClick="() => customerId = 11">Set Value = 11</NxButton>
+            <NxButton id="value-set-item" Size="NxSize.Small" OnClick="() => customer = SampleData.Customers[3]">Set SelectedItem = Cape Cod</NxButton>
+            <NxButton id="value-clear" Size="NxSize.Small" Variant="NxButtonVariant.Ghost" OnClick="() => { customerId = null; customer = null; }">Clear from code</NxButton>
         </div>
     </div>
     <DocCode Code="@valueCode" />
@@ -137,21 +137,62 @@
 </div>
 
 <div class="doc-section">
+    <h2>Value Before the List Loads</h2>
+    <p class="doc-note">
+        A <code>DataProvider</code> has no items until its list opens, so a bound <code>Value</code> has no text to show.
+        <code>ItemByValue</code> finds that one item: it is called once for a value the list has not loaded, and the field
+        shows its text straight away. The second field has the same value and no <code>ItemByValue</code>, so it has no text
+        to show.
+    </p>
+    @* code *@
+    <div class="demo-stage">
+        <div class="demo-form-grid demo-form-grid-2">
+            <div>
+                <label class="demo-field-label" for="lookup-combo">Customer (ItemByValue)</label>
+                <NxComboBox Id="lookup-combo" TItem="Customer" TValue="int?" DataProvider="LoadCustomers" ItemByValue="FindCustomer"
+                            ItemText="c => c.Name" ItemValue="c => c.Id" @bind-Value="lookupId" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="lookup-value">Value: <strong>@(lookupId?.ToString() ?? "null")</strong></span></div>
+            </div>
+            <div>
+                <label class="demo-field-label" for="lookup-none">Customer (provider only)</label>
+                <NxComboBox Id="lookup-none" TItem="Customer" TValue="int?" DataProvider="LoadCustomers"
+                            ItemText="c => c.Name" ItemValue="c => c.Id" @bind-Value="lookupNoneId" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="lookup-none-value">Value: <strong>@(lookupNoneId?.ToString() ?? "null")</strong></span></div>
+            </div>
+        </div>
+    </div>
+    @* /code *@
+    <DocExampleCode Key="value-before-the-list-loads" />
+    <DocCode Code="@lookupCode" />
+</div>
+
+<div class="doc-section">
     <h2>Virtualization</h2>
     <p class="doc-note">
-        With <code>Virtualize</code>, only the visible rows are rendered, so this list of
-        <strong>@SampleData.Parts.Count.ToString("N0")</strong> parts opens and scrolls instantly. Rows are a fixed
-        <code>ItemHeight</code> (34 px by default). Keyboard navigation and <kbd class="doc-kbd">PgDn</kbd> scroll the list to
-        keep the highlighted row in view.
+        A list of <code>VirtualizeThreshold</code> rows or more (200 by default) renders only the rows in view, so this list of
+        <strong>@SampleData.Parts.Count.ToString("N0")</strong> parts opens and scrolls instantly; nothing to switch on. Every
+        row is then one height, measured from the rows the first time such a list opens, or set with <code>ItemHeight</code>.
+        Keyboard navigation and <kbd class="doc-kbd">PgDn</kbd> scroll the list to keep the highlighted row in view. The
+        second list has taller rows from an <code>ItemTemplate</code> and virtualizes from 50 rows.
     </p>
     <div class="demo-stage">
-        <div class="demo-form-grid">
+        <div class="demo-form-grid demo-form-grid-2">
             <div>
                 <label class="demo-field-label" for="virtual-combo">Part</label>
                 <NxComboBox Id="virtual-combo" Data="SampleData.Parts" ItemText="@(p => $"{p.Number}  {p.Description}")" ItemValue="p => p.Id"
-                            Virtualize="true" @bind-Value="partId" Placeholder="50,000 parts — type to filter" Clearable="true" />
+                            @bind-Value="partId" Placeholder="50,000 parts — type to filter" Clearable="true" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="virtual-value">Value: <strong>@(partId?.ToString() ?? "null")</strong></span></div>
             </div>
-            <div class="demo-row" style="align-self:end"><span class="demo-value" id="virtual-value">Value: <strong>@(partId?.ToString() ?? "null")</strong></span></div>
+            <div>
+                <label class="demo-field-label" for="virtual-template">Part (two-line rows, measured)</label>
+                <NxComboBox Id="virtual-template" Data="SampleData.Parts" ItemText="p => p.Number" ItemValue="p => p.Id"
+                            VirtualizeThreshold="50" @bind-Value="templatePartId" Placeholder="Type to filter">
+                    <ItemTemplate Context="p">
+                        <span class="demo-person"><strong>@p.Number</strong><span>@p.Description</span></span>
+                    </ItemTemplate>
+                </NxComboBox>
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="virtual-template-value">Value: <strong>@(templatePartId?.ToString() ?? "null")</strong></span></div>
+            </div>
         </div>
     </div>
     <DocCode Code="@virtualCode" />
@@ -264,7 +305,7 @@
             </div>
             <div>
                 <label class="demo-field-label" for="columns-parts">Part (50,000, virtualized)</label>
-                <NxComboBox Id="columns-parts" Data="SampleData.Parts" ItemText="p => p.Number" ItemValue="p => p.Id" Virtualize="true"
+                <NxComboBox Id="columns-parts" Data="SampleData.Parts" ItemText="p => p.Number" ItemValue="p => p.Id"
                             ColumnDefinitions="PartColumns" PopupWidth="460px" @bind-Value="columnsPartId" Placeholder="Number, description or category" />
                 <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="columns-part-value">Value: <strong>@(columnsPartId?.ToString() ?? "null")</strong></span></div>
             </div>
@@ -318,11 +359,12 @@
 <div class="doc-section">
     <h2>Mobile Overlay</h2>
     <p class="doc-note">
-        On a phone the list opens full screen: a search box at the top that takes focus, a back button, and the list in the rest
-        of the screen — virtualized and multi-column when configured. Picking an item closes it; back and
-        <kbd class="doc-kbd">Esc</kbd> close without a change; with <code>Multiple</code>, Done commits. It switches on below
-        <code>MobileBreakpoint</code> (600 px) by default; <code>MobileMode="Always"</code> forces it, as on these two, so you can
-        try it on a desktop.
+        Opt in with <code>MobileMode</code> and the list opens full screen: a search box at the top that takes focus, a back
+        button, and the list in the rest of the screen — virtualized and multi-column when configured. Picking an item closes
+        it; back and <kbd class="doc-kbd">Esc</kbd> close without a change; with <code>Multiple</code>, Done commits.
+        <code>MobileMode="Auto"</code> uses it at <code>MobileBreakpoint</code> (600 px) and below, as on the third field;
+        <code>Always</code> forces it, as on the first two, so you can try it on a desktop. The default, <code>Never</code>,
+        keeps the popup on every screen.
     </p>
     @* code *@
     <div class="demo-stage">
@@ -330,15 +372,20 @@
             <div>
                 <label class="demo-field-label" for="mobile-combo">Customer (overlay)</label>
                 <NxComboBox Id="mobile-combo" Data="SampleData.Customers" ItemText="c => c.Name" ItemValue="c => c.Id"
-                            MobileMode="NxComboBoxMobileMode.Always" MobileTitle="Find a customer" @bind-Value="mobileCustomerId" />
+                            MobileMode="NxMobileMode.Always" MobileTitle="Find a customer" @bind-Value="mobileCustomerId" />
                 <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="mobile-value">Value: <strong>@(mobileCustomerId?.ToString() ?? "null")</strong></span></div>
             </div>
             <div>
                 <label class="demo-field-label" for="mobile-multi">Parts (overlay, Multiple, columns)</label>
-                <NxComboBox Id="mobile-multi" Data="SampleData.Parts" ItemText="p => p.Number" ItemValue="p => p.Id" Virtualize="true"
+                <NxComboBox Id="mobile-multi" Data="SampleData.Parts" ItemText="p => p.Number" ItemValue="p => p.Id"
                             ColumnDefinitions="PartColumns" Multiple="true" MaxVisibleChips="2" @bind-Values="mobilePartIds"
-                            MobileMode="NxComboBoxMobileMode.Always" MobileTitle="Find parts" />
+                            MobileMode="NxMobileMode.Always" MobileTitle="Find parts" />
                 <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="mobile-multi-values">Values: <strong>[@string.Join(", ", mobilePartIds)]</strong></span></div>
+            </div>
+            <div>
+                <label class="demo-field-label" for="mobile-auto">State (overlay on a phone)</label>
+                <NxComboBox Id="mobile-auto" Data="SampleData.States" MobileMode="NxMobileMode.Auto" MobileTitle="Find a state" @bind-Value="mobileState" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="mobile-auto-value">Value: <strong>@(mobileState ?? "null")</strong></span></div>
             </div>
         </div>
     </div>
@@ -400,11 +447,18 @@
     Customer? providerCustomer;
     EventLog? providerLog;
     int providerCalls;
-    int? partId;
+    int? lookupId = 12, lookupNoneId = 12;
+    int? partId, templatePartId;
+    string? mobileState;
     int? groupedId, groupedEmployee;
     int? assigneeId = 3;
     string? shipVia;
     string? positionState, clipState;
+
+    static Task<IEnumerable<Customer>> LoadCustomers(NxComboBoxRequest request) =>
+        SampleData.SearchCustomersAsync(request.Filter, 700, request.CancellationToken);
+
+    static Task<Customer?> FindCustomer(int? id) => Task.FromResult(SampleData.Customers.FirstOrDefault(c => c.Id == id));
 
     async Task<IEnumerable<Customer>> SearchCustomers(NxComboBoxRequest request)
     {
@@ -538,10 +592,29 @@
         }
         """;
 
+    const string lookupCode =
+        """
+        @code {
+            int? customerId = 12;   // set before the list has loaded
+
+            async Task<IEnumerable<Customer>> LoadCustomers(NxComboBoxRequest request) =>
+                await api.SearchCustomersAsync(request.Filter, request.CancellationToken);
+
+            async Task<Customer?> FindCustomer(int? id) => await api.GetCustomerAsync(id);
+        }
+        """;
+
     const string virtualCode =
         """
+        @* 200 rows or more virtualize by themselves *@
         <NxComboBox Data="parts" ItemText="p => p.Number + ' ' + p.Description" ItemValue="p => p.Id"
-                    Virtualize="true" @bind-Value="partId" />
+                    @bind-Value="partId" />
+
+        @* from 50 rows; the two-line rows are measured *@
+        <NxComboBox Data="parts" ItemText="p => p.Number" ItemValue="p => p.Id"
+                    VirtualizeThreshold="50" @bind-Value="partId">
+            <ItemTemplate Context="p"><strong>@p.Number</strong> <span>@p.Description</span></ItemTemplate>
+        </NxComboBox>
         """;
 
     const string templateCode =

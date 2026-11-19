@@ -43,7 +43,7 @@
     box-sizing: border-box;
     width: max-content;
     max-width: calc(100vw - 16px);
-    background: var(--nx-popup-bg);
+    background: var(--nx-popup-bg, var(--nx-surface));
     border: 1px solid var(--nx-border);
     border-radius: var(--nx-radius);
     box-shadow: var(--nx-shadow-popup);

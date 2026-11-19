@@ -19,9 +19,9 @@
         {
             @FormEditors.Render(this, model, property, EditorId, CheckBoxLabel, Disabled)
         }
-        @if (Field is not null && model is not null)
+        @if (property is not null && model is not null)
         {
-            <NxValidationMessage Model="model" Field="@Field" />
+            <NxValidationMessage For="For" />
         }
     </div>
 </div>

@@ -1,6 +1,7 @@
 @namespace Nx.Components
 @implements IDisposable
 
+@* Inline: this host is in the layout already, and the content needs the NxDialogReference cascaded here. *@
 @foreach (var dialog in Dialogs.OpenDialogs)
 {
     var options = dialog.Options;
@@ -16,6 +17,7 @@
                   Resizable="options.Resizable"
                   Maximizable="options.Maximizable"
                   FullScreenOnPhone="options.FullScreenOnPhone"
+                  Inline="true"
                   Id="@dialog.Id"
                   Class="@options.Class"
                   aria-describedby="@(options.Message is null ? null : $"{dialog.Id}-message")"
@@ -42,7 +44,7 @@
 
 @foreach (var progress in Dialogs.Progresses())
 {
-    <NxDialog @key="progress" Visible="true" Title="@progress.Title" Closable="false" Id="@progress.Id" Class="nx-dialog-progress">
+    <NxDialog @key="progress" Visible="true" Title="@progress.Title" Closable="false" Inline="true" Id="@progress.Id" Class="nx-dialog-progress">
         <div class="nx-dialog-progress-body" role="status">
             <NxLoader Size="NxSize.Large" AriaLabel="@progress.Title" />
             <span class="nx-dialog-progress-text">@progress.Text</span>

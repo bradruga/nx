@@ -11,10 +11,10 @@
     @* code *@
     <div class="demo-stage demo-stage-column">
         <NxChart Id="axes-chart" Height="340px" LegendPosition="NxChartLegendPosition.Bottom" AriaLabel="Yard activity">
-            <NxChartSeries Name="Loads" Data="DemoCharts.Days" Field="@nameof(YardDay.Loads)" CategoryField="@nameof(YardDay.Date)" />
-            <NxChartSeries Name="Pieces / 10" Data="Tenths" Field="@nameof(YardDay.Pieces)" CategoryField="@nameof(YardDay.Date)" />
+            <NxChartSeries Name="Loads" Data="DemoCharts.Days" Value="d => d.Loads" ItemCategory="d => d.Date" />
+            <NxChartSeries Name="Pieces / 10" Data="Tenths" Value="d => d.Pieces" ItemCategory="d => d.Date" />
             <NxChartSeries Name="Crane hours" Type="NxChartSeriesType.Area" Axis="hours" Data="DemoCharts.Days"
-                           Field="@nameof(YardDay.Hours)" CategoryField="@nameof(YardDay.Date)" />
+                           Value="d => d.Hours" ItemCategory="d => d.Date" />
             <NxChartValueAxis Name="count" Title="Number" LabelFormat="#,0" />
             <NxChartValueAxis Name="hours" Title="Hours" LabelFormat="0.0" />
         </NxChart>
@@ -32,14 +32,14 @@
     @* code *@
     <div class="demo-stage demo-stage-column">
         <NxChart Id="control-chart" Title="Slump" Height="300px" OnSeriesClick="Picked">
-            <NxChartSeries Name="Slump (in)" Data="DemoCharts.Slumps" Field="@nameof(SlumpTest.Slump)" CategoryField="@nameof(SlumpTest.Index)" Color="#4472C4">
+            <NxChartSeries Name="Slump (in)" Data="DemoCharts.Slumps" Value="t => t.Slump" ItemCategory="t => t.Index" Color="#4472C4">
                 <TooltipTemplate>Test @(((SlumpTest)context.DataItem!).Ticket): <strong>@context.FormattedValue in</strong></TooltipTemplate>
             </NxChartSeries>
-            <NxChartSeries Name="Mean" Data="DemoCharts.Slumps" Field="@nameof(SlumpTest.Mean)" CategoryField="@nameof(SlumpTest.Index)"
+            <NxChartSeries Name="Mean" Data="DemoCharts.Slumps" Value="t => t.Mean" ItemCategory="t => t.Index"
                            Color="red" DashType="NxChartDashType.Dot" Markers="false" />
-            <NxChartSeries Name="95U" Data="DemoCharts.Slumps" Field="@nameof(SlumpTest.Upper)" CategoryField="@nameof(SlumpTest.Index)"
+            <NxChartSeries Name="95U" Data="DemoCharts.Slumps" Value="t => t.Upper" ItemCategory="t => t.Index"
                            Color="rgba(255,0,0,0.5)" Markers="false" />
-            <NxChartSeries Name="95L" Data="DemoCharts.Slumps" Field="@nameof(SlumpTest.Lower)" CategoryField="@nameof(SlumpTest.Index)"
+            <NxChartSeries Name="95L" Data="DemoCharts.Slumps" Value="t => t.Lower" ItemCategory="t => t.Index"
                            Color="rgba(255,0,0,0.5)" Markers="false" />
             <NxChartValueAxis NarrowRange="true" LabelFormat="0.0" />
         </NxChart>
@@ -84,7 +84,7 @@
             @foreach (var plant in Plants)
             {
                 <NxChartSeries Type="NxChartSeriesType.Column" Name="@plant" Data="DemoCharts.PlantMonths.Where(p => p.Plant == plant)"
-                               Field="@nameof(PlantMonth.Loads)" CategoryField="@nameof(PlantMonth.Month)" Stacked="stacked" Aggregate="NxChartAggregate.Sum" />
+                               Value="m => m.Loads" ItemCategory="m => m.Month" Stacked="stacked" Aggregate="NxChartAggregate.Sum" />
             }
             <NxChartCategoryAxis BaseUnit="NxChartBaseUnit.Months" Title="Month" />
             <NxChartValueAxis Title="Loads" />
@@ -100,8 +100,8 @@
     @* code *@
     <div class="demo-stage demo-stage-column">
         <NxChart Id="bar-chart" Height="280px" LegendPosition="NxChartLegendPosition.None" AriaLabel="Inventory on hand">
-            <NxChartSeries Type="NxChartSeriesType.Bar" Name="On hand" Data="DemoCharts.Inventory" Field="@nameof(Share.Count)"
-                           CategoryField="@nameof(Share.Name)" ShowLabels="true" LabelFormat="N0" />
+            <NxChartSeries Type="NxChartSeriesType.Bar" Name="On hand" Data="DemoCharts.Inventory" Value="s => s.Count"
+                           ItemCategory="s => s.Name" ShowLabels="true" LabelFormat="N0" />
             <NxChartValueAxis LabelFormat="N0" Title="Quantity" />
         </NxChart>
     </div>
@@ -118,7 +118,7 @@
     @* code *@
     <div class="demo-stage demo-stage-column">
         <NxChart Id="pie-chart" Title="Pieces by location" Height="300px" LegendPosition="NxChartLegendPosition.Right">
-            <NxChartSeries Type="NxChartSeriesType.Pie" Data="DemoCharts.Yards" Field="@nameof(Share.Count)" CategoryField="@nameof(Share.Name)">
+            <NxChartSeries Type="NxChartSeriesType.Pie" Data="DemoCharts.Yards" Value="s => s.Count" ItemCategory="s => s.Name">
                 <TooltipTemplate>@context.SeriesName: <strong>@context.FormattedValue</strong> (@context.Percentage?.ToString("P1"))</TooltipTemplate>
             </NxChartSeries>
         </NxChart>

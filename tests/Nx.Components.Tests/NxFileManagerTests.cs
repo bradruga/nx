@@ -39,11 +39,23 @@ public class NxFileManagerTests : BunitContext
         new() { Id = "d3", Name = "Archive", IsDirectory = true },
     ];
 
+    private static void Lambdas(ComponentParameterCollectionBuilder<NxFileManager<Entry>> p)
+    {
+        p.Add(x => x.ItemId, e => e.Id);
+        p.Add(x => x.ParentId, e => e.ParentId);
+        p.Add(x => x.ItemName, e => e.Name);
+        p.Add(x => x.ItemExtension, e => e.Extension);
+        p.Add(x => x.ItemIsDirectory, e => e.IsDirectory);
+        p.Add(x => x.ItemSize, e => e.Size);
+        p.Add(x => x.ItemDateModified, e => e.DateModified);
+    }
+
     private IRenderedComponent<NxFileManager<Entry>> RenderFiles(Action<ComponentParameterCollectionBuilder<NxFileManager<Entry>>>? configure = null) =>
         Render<NxFileManager<Entry>>(p =>
         {
             p.Add(x => x.Id, "fm");
             p.Add(x => x.Data, Files);
+            Lambdas(p);
             p.Add(x => x.Culture, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
             configure?.Invoke(p);
         });
@@ -168,7 +180,7 @@ public class NxFileManagerTests : BunitContext
         Assert.That(none.FindAll("[data-nx-filemanager=download]"), Is.Empty);
 
         Entry? downloaded = null;
-        var cut = Render<NxFileManager<Entry>>(p => p.Add(x => x.Id, "fm2").Add(x => x.Data, Files).Add(x => x.OnDownload, (Entry e) => downloaded = e));
+        var cut = Render<NxFileManager<Entry>>(p => { Lambdas(p); p.Add(x => x.Id, "fm2").Add(x => x.Data, Files).Add(x => x.OnDownload, (Entry e) => downloaded = e); });
         Assert.That(cut.Find("[data-nx-filemanager=download]").HasAttribute("disabled"), Is.True);
         await cut.FindAll("[role=option]")[2].ClickAsync(new MouseEventArgs());
         await cut.Find("[data-nx-filemanager=download]").ClickAsync(new MouseEventArgs());
@@ -461,12 +473,12 @@ public class NxFileManagerTests : BunitContext
     }
 
     [Test]
-    public void Empty_And_MissingField()
+    public void Empty_And_MissingLambda()
     {
-        var cut = Render<NxFileManager<Entry>>(p => p.Add(x => x.Data, Array.Empty<Entry>()).Add(x => x.EmptyText, "Nothing yet"));
+        var cut = Render<NxFileManager<Entry>>(p => { Lambdas(p); p.Add(x => x.Data, Array.Empty<Entry>()).Add(x => x.EmptyText, "Nothing yet"); });
         Assert.That(cut.Find(".nx-filemanager-empty").TextContent, Is.EqualTo("Nothing yet"));
 
         Assert.Throws<InvalidOperationException>(() =>
-            Render<NxFileManager<Entry>>(p => p.Add(x => x.Data, Files).Add(x => x.IsDirectoryField, "IsFolder")));
+            Render<NxFileManager<Entry>>(p => p.Add(x => x.Data, Files).Add(x => x.ItemId, e => e.Id).Add(x => x.ItemName, e => e.Name)));
     }
 }

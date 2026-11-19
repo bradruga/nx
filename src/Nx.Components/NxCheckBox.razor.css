@@ -21,7 +21,7 @@
     height: var(--nx-check-size);
     margin-top: calc((20px - var(--nx-check-size)) / 2);
     padding: 0;
-    border: 1.5px solid var(--nx-check-border);
+    border: 1.5px solid var(--nx-check-border, var(--nx-border-hover));
     border-radius: var(--nx-radius-sm);
     background: var(--nx-surface);
     color: var(--nx-accent-fg);
@@ -58,5 +58,5 @@
 }
 .nx-checkbox-readonly .nx-checkbox-label { cursor: default; }
 
-.nx-checkbox-invalid .nx-checkbox-box { border-color: var(--nx-invalid); }
-.nx-checkbox-invalid .nx-checkbox-label { color: var(--nx-invalid); }
+.nx-checkbox-invalid .nx-checkbox-box { border-color: var(--nx-invalid, var(--nx-danger)); }
+.nx-checkbox-invalid .nx-checkbox-label { color: var(--nx-invalid, var(--nx-danger)); }

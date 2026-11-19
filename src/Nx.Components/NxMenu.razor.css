@@ -19,7 +19,7 @@
     margin: 0;
     padding: 4px;
     list-style: none;
-    background: var(--nx-popup-bg);
+    background: var(--nx-popup-bg, var(--nx-surface));
     color: var(--nx-fg);
     border: 1px solid var(--nx-border);
     border-radius: var(--nx-radius);
@@ -49,10 +49,10 @@
     -webkit-tap-highlight-color: transparent;
 }
 
-.nx-menu-item:focus { outline: none; background: var(--nx-item-active-bg); }
+.nx-menu-item:focus { outline: none; background: var(--nx-item-active-bg, var(--nx-accent-subtle)); }
 /* The ring is the keyboard's: nx-menu.js marks the menu while keys drive it (the pointer's item is only tinted). */
-.nx-menu-keyboard .nx-menu-item:focus-visible { box-shadow: inset 0 0 0 2px var(--nx-focus-ring-color); }
-.nx-menu-item[aria-expanded="true"] { background: var(--nx-item-hover-bg); }
+.nx-menu-keyboard .nx-menu-item:focus-visible { box-shadow: inset 0 0 0 2px var(--nx-focus-ring-color, var(--nx-accent)); }
+.nx-menu-item[aria-expanded="true"] { background: var(--nx-item-hover-bg, var(--nx-surface-hover)); }
 
 .nx-menu-item-disabled { color: var(--nx-fg-subtle); cursor: default; }
 .nx-menu-item-disabled:focus { background: transparent; }

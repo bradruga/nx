@@ -50,6 +50,56 @@ public partial class NxComboBox<TItem, TValue>
         ClearSelectionState();
         if (AllowCustomValue && value is string text)
             customText = text;
+
+        if (CanLookUp && !EqualityComparer<TValue>.Default.Equals(value, default))
+        {
+            var lookup = LookUp(value!);
+            if (lookup.IsCompletedSuccessfully && lookup.Result is { } found)
+                SetSelection(found);
+            else
+                lookupPending = true;
+        }
+    }
+
+    // ── ItemByValue ───────────────────────────────────────────────────────────
+
+    private readonly List<(TValue Value, Task<TItem?> Task)> lookups = [];
+    private bool lookupPending;
+
+    private bool CanLookUp => DataProvider is not null && ItemByValue is not null;
+
+    /// <summary>The <see cref="ItemByValue"/> call for a value: made once, then reused. A failed call is made again.</summary>
+    private Task<TItem?> LookUp(TValue value)
+    {
+        lookups.RemoveAll(l => l.Task.IsFaulted || l.Task.IsCanceled);
+        var index = lookups.FindIndex(l => EqualityComparer<TValue>.Default.Equals(l.Value, value));
+        if (index >= 0)
+            return lookups[index].Task;
+        var task = ItemByValue!(value);
+        lookups.Add((value, task));
+        return task;
+    }
+
+    /// <summary>Gives the selection its item once <see cref="ItemByValue"/> has answered; the caller renders.</summary>
+    private async Task ApplyLookupsAsync()
+    {
+        lookupPending = false;
+        if (Multiple)
+        {
+            await ApplyChipLookupsAsync();
+            return;
+        }
+        var value = Value;
+        if (hasSelection || EqualityComparer<TValue>.Default.Equals(value, default))
+            return;
+        var item = await LookUp(value!);
+        // The answer may be late: the value moved on, or the list loaded and the user picked.
+        if (item is null || disposed || hasSelection || !EqualityComparer<TValue>.Default.Equals(Value, value))
+            return;
+        SetSelection(item);
+        if (!isOpen)
+            inputText = DisplayText;
+        syncPending = SelectedItemChanged.HasDelegate && !EqualityComparer<TItem>.Default.Equals(SelectedItem, item);
     }
 
     private void SetSelection(TItem item)

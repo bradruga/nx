@@ -3,8 +3,8 @@
 
 <div @attributes="AdditionalAttributes" id="@Id" class="@CssClass" style="@OuterStyle">
     <div class="nx-scheduler-toolbar">
-        <NxButton Size="NxButtonSize.Small" OnClick="TodayAsync" Disabled="IsThisWeek" data-nx-scheduler="today">Today</NxButton>
-        <NxButtonGroup Size="NxButtonSize.Small">
+        <NxButton Size="NxSize.Small" OnClick="TodayAsync" Disabled="IsThisWeek" data-nx-scheduler="today">Today</NxButton>
+        <NxButtonGroup Size="NxSize.Small">
             <NxButton Icon="@PreviousIcon" AriaLabel="Previous week" Title="Previous week" OnClick="() => MoveAsync(-7)" data-nx-scheduler="previous" />
             <NxButton Icon="@NextIcon" AriaLabel="Next week" Title="Next week" OnClick="() => MoveAsync(7)" data-nx-scheduler="next" />
         </NxButtonGroup>

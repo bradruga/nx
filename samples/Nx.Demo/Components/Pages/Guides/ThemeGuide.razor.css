@@ -27,8 +27,7 @@
 .theme-control-hint { font-size: 12px; color: var(--fg-secondary); }
 
 /* The sample carries its own tokens: the inline style sets the builder's values; the light class restates the
-   light theme (this site may be dark); the alias tokens are restated so they read the sample's values,
-   not the ones resolved on :root. */
+   light theme (this site may be dark). */
 .theme-sample {
     display: flex;
     flex-direction: column;
@@ -41,33 +40,6 @@
     color: var(--nx-fg);
     font-family: var(--nx-font-family);
     font-size: var(--nx-font-size);
-
-    --nx-invalid:               var(--nx-danger);
-    --nx-focus-ring-color:      var(--nx-accent);
-    --nx-focus-ring-inset:      0 0 0 1px var(--nx-accent);
-    --nx-popup-bg:              var(--nx-surface);
-    --nx-popup-border:          var(--nx-border);
-    --nx-item-hover-bg:         var(--nx-surface-hover);
-    --nx-item-active-bg:        var(--nx-accent-subtle);
-    --nx-item-selected-fg:      var(--nx-accent);
-    --nx-group-header-fg:       var(--nx-fg-muted);
-    --nx-popup-header-bg:       var(--nx-surface-hover);
-    --nx-check-border:          var(--nx-border-hover);
-    --nx-toggle-selected-bg:    var(--nx-accent-subtle);
-    --nx-toggle-selected-border: var(--nx-accent);
-    --nx-toggle-selected-fg:    var(--nx-accent);
-    --nx-chip-bg:               var(--nx-accent-subtle);
-    --nx-chip-fg:               var(--nx-fg);
-    --nx-calendar-selected-bg:  var(--nx-accent);
-    --nx-calendar-selected-fg:  var(--nx-accent-fg);
-    --nx-calendar-range-bg:     var(--nx-accent-subtle);
-    --nx-calendar-today-border: var(--nx-accent);
-    --nx-tab-active-fg:         var(--nx-accent);
-    --nx-tab-indicator:         var(--nx-accent);
-    --nx-validation-color:      var(--nx-invalid);
-    --nx-slider-track:          var(--nx-surface-active);
-    --nx-slider-fill:           var(--nx-accent);
-    --nx-slider-thumb-bg:       var(--nx-surface);
 }
 
 .theme-sample-light {

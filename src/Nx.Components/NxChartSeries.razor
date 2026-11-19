@@ -1,4 +1,6 @@
 @namespace Nx.Components
+@typeparam TItem
+@implements IChartSeries
 @implements IDisposable
 
 @* A series registers with its NxChart and renders nothing: the chart draws every series together. *@
@@ -12,17 +14,17 @@
     /// <summary>The series' name, in the legend and the tooltip.</summary>
     [Parameter] public string? Name { get; set; }
 
-    /// <summary>The items: objects read through <see cref="Field"/>, or plain numbers.</summary>
-    [Parameter] public System.Collections.IEnumerable? Data { get; set; }
+    /// <summary>The items: objects read through <see cref="Value"/>, or plain numbers.</summary>
+    [Parameter] public IEnumerable<TItem>? Data { get; set; }
 
-    /// <summary>The property holding an item's value. Not set: the items are the values.</summary>
-    [Parameter] public string? Field { get; set; }
+    /// <summary>An item's value (any number). Not set: the items are the values.</summary>
+    [Parameter] public Func<TItem, object?>? Value { get; set; }
 
-    /// <summary>The property holding an item's category (text or a date). Not set: items line up with the axis' <c>Categories</c>.</summary>
-    [Parameter] public string? CategoryField { get; set; }
+    /// <summary>An item's category (text or a date). Not set: items line up with the axis' <c>Categories</c>.</summary>
+    [Parameter] public Func<TItem, object?>? ItemCategory { get; set; }
 
-    /// <summary>The property holding an item's own color, e.g. a pie slice's.</summary>
-    [Parameter] public string? ColorField { get; set; }
+    /// <summary>An item's own color, e.g. a pie slice's.</summary>
+    [Parameter] public Func<TItem, string?>? ItemColor { get; set; }
 
     /// <summary>The series' color. Default: the next of <c>--nx-chart-1</c> … <c>--nx-chart-8</c>.</summary>
     [Parameter] public string? Color { get; set; }
@@ -65,6 +67,19 @@
 
     /// <summary>The tooltip of this series' points. Default: the chart's <c>TooltipTemplate</c>, else name and value.</summary>
     [Parameter] public RenderFragment<NxChartPoint>? TooltipTemplate { get; set; }
+
+    bool IChartSeries.HasCategory => ItemCategory is not null;
+
+    IEnumerable<(object? Item, object? Value, object? Category, string? Color)> IChartSeries.Read()
+    {
+        foreach (var item in Data ?? [])
+        {
+            if (item is null)
+                yield return (null, null, null, null);
+            else
+                yield return (item, Value is null ? item : Value(item), ItemCategory?.Invoke(item), ItemColor?.Invoke(item));
+        }
+    }
 
     /// <inheritdoc />
     protected override void OnInitialized()

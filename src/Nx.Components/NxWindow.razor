@@ -1,5 +1,13 @@
 @namespace Nx.Components
 
+@{
+    // In a host the window's own place stays empty: its outlet there draws this same markup (RenderInHost).
+    if (host is not null && !drawingInHost)
+    {
+        RefreshHost();
+        return;
+    }
+}
 @if (Visible)
 {
     @* No style attribute on the backdrop or the window: nx-window.js owns their position, size and z-index. *@

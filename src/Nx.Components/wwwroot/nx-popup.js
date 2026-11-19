@@ -14,6 +14,7 @@ const viewports = new WeakMap();
 // `body` is the part that scrolls (a list) or simply the popup's content (a calendar).
 // With `dotNet` and `outsideMethod`, a pointer press outside field and popup calls that method.
 export function open(field, popup, body, maxHeight, dotNet, outsideMethod) {
+    if (!field || !popup) return;
     const place = () => {
         const rect = field.getBoundingClientRect();
         const viewportH = window.innerHeight;
@@ -76,6 +77,7 @@ export function close(field) {
 // Tells the component whether the viewport is at or below the breakpoint, now and whenever that
 // changes, so a tap can open the full-screen sheet instead of the popup.
 export function watchViewport(field, dotNet, breakpoint) {
+    if (!field) return false;   // removed from the page before this call arrived
     unwatchViewport(field);
     const query = window.matchMedia(`(max-width: ${breakpoint}px)`);
     const onChange = e => dotNet.invokeMethodAsync('OnViewportChanged', e.matches);

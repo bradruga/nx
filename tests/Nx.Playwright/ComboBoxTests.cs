@@ -42,6 +42,33 @@ public class ComboBoxTests : PageTest
     private Task ExpectActiveAsync(string id, string text) =>
         Expect(List(id).Locator(".nx-combobox-item-active")).ToHaveTextAsync(text);
 
+    /// <summary>
+    /// The height of a virtualized list's first row and the gap to the second, read in one frame once both are there:
+    /// Virtualize settles on its window over a few renders (row 0 comes and goes), and a popup above its field grows meanwhile.
+    /// </summary>
+    private async Task<(double Height, double Gap)> FirstRowsAsync(ILocator list)
+    {
+        await Expect(list.Locator("[data-row='1']")).ToBeVisibleAsync();
+        var rows = await Page.WaitForFunctionAsync(@"el => {
+            const a = el.querySelector('[data-row=""0""]'), b = el.querySelector('[data-row=""1""]');
+            if (!a || !b) return null;
+            const first = a.getBoundingClientRect(), second = b.getBoundingClientRect();
+            return [first.height, second.top - first.bottom];
+        }", await list.ElementHandleAsync());
+        var m = await rows.JsonValueAsync<double[]>();
+        return (m[0], m[1]);
+    }
+
+    /// <summary>Whether <paramref name="row"/> lies wholly inside <paramref name="list"/>'s box, to the pixel.</summary>
+    private async Task ExpectInsideAsync(ILocator row, ILocator list, float topInset = 0)
+    {
+        await Expect(row).ToBeInViewportAsync();
+        var outer = await BoxAsync(list);
+        var inner = await BoxAsync(row);
+        Assert.That(inner.Top, Is.GreaterThanOrEqualTo(outer.Top + topInset - 1));
+        Assert.That(inner.Bottom, Is.LessThanOrEqualTo(outer.Bottom + 1));
+    }
+
     private static async Task<(float Top, float Bottom, float Left, float Right)> BoxAsync(ILocator locator)
     {
         var b = await locator.BoundingBoxAsync() ?? throw new InvalidOperationException("Element has no bounding box");
@@ -76,7 +103,6 @@ public class ComboBoxTests : PageTest
 
         await Page.Locator("#pg-large").CheckAsync();
         await Page.Locator("#pg-group").CheckAsync();
-        await Page.Locator("#pg-virtualize").CheckAsync();
         await OpenAsync("playground-combo");
 
         await Input("playground-combo").PressSequentiallyAsync("kiewit northeast #77");
@@ -323,6 +349,85 @@ public class ComboBoxTests : PageTest
 
         await Page.Keyboard.PressAsync("Enter");
         await Expect(Page.Locator("#virtual-value")).ToHaveTextAsync("Value: 51");
+    }
+
+    [Test]
+    public async Task Virtualize_RowsKeepTheirMeasuredHeight_SameAsAPlainList()
+    {
+        await GoToPage();
+
+        await OpenAsync("simple-combo");
+        var plain = await BoxAsync(Options("simple-combo").First);
+        await Page.Keyboard.PressAsync("Escape");
+
+        await OpenAsync("virtual-combo");
+        var (height, gap) = await FirstRowsAsync(List("virtual-combo"));
+        Assert.That(height, Is.EqualTo(plain.Bottom - plain.Top).Within(0.5));
+        Assert.That(gap, Is.EqualTo(0).Within(0.5), "rows are stacked without gaps");
+        await Expect(List("virtual-combo")).Not.ToHaveClassAsync(new System.Text.RegularExpressions.Regex("nx-combobox-list-measuring"));
+    }
+
+    [Test]
+    public async Task Virtualize_TallTemplateRows_AreMeasured_AndKeyboardScrollStaysRight()
+    {
+        await GoToPage();
+
+        await OpenAsync("virtual-template");
+        await Expect(Options("virtual-template").First).ToBeVisibleAsync();
+        Assert.That(await Options("virtual-template").CountAsync(), Is.InRange(3, 100), "virtualization did not limit the rendered rows");
+        var (height, gap) = await FirstRowsAsync(List("virtual-template"));
+        Assert.That(height, Is.GreaterThan(36), "two-line rows are taller than the default row");
+        Assert.That(gap, Is.EqualTo(0).Within(0.5));
+        // No row's content is clipped by the pinned height.
+        Assert.That(await Options("virtual-template").First.EvaluateAsync<bool>("el => el.scrollHeight <= el.clientHeight + 1"), Is.True);
+
+        // Far down the list: the row arithmetic uses the measured height, so the active row is rendered and in view.
+        var active = List("virtual-template").Locator(".nx-combobox-item-active");
+        for (var i = 0; i < 30; i++)
+            await Page.Keyboard.PressAsync("PageDown");
+        await Expect(active).ToHaveAttributeAsync("aria-posinset", "301");
+        await ExpectInsideAsync(active, List("virtual-template"));
+
+        for (var i = 0; i < 3; i++)
+            await Page.Keyboard.PressAsync("PageUp");
+        await Expect(active).ToHaveAttributeAsync("aria-posinset", "271");
+        await ExpectInsideAsync(active, List("virtual-template"));
+
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(Page.Locator("#virtual-template-value")).ToHaveTextAsync("Value: 271");
+    }
+
+    [Test]
+    public async Task Virtualize_ReopenedOnASelectionFarDown_ShowsIt()
+    {
+        await GoToPage();
+
+        await Input("virtual-template").FillAsync("P-40000");
+        await Expect(Options("virtual-template")).ToHaveCountAsync(1);
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(Page.Locator("#virtual-template-value")).ToHaveTextAsync("Value: 40000");
+
+        await OpenAsync("virtual-template");
+        var active = List("virtual-template").Locator(".nx-combobox-item-active");
+        await Expect(active).ToHaveAttributeAsync("aria-posinset", "40000");
+        await ExpectInsideAsync(active, List("virtual-template"));
+    }
+
+    [Test]
+    public async Task ItemByValue_ShowsTheNameBeforeTheListLoads()
+    {
+        await GoToPage();
+
+        await Expect(Input("lookup-combo")).ToHaveValueAsync("Lakeshore Excavation");
+        await Expect(Input("lookup-none")).ToHaveValueAsync("");
+        await Expect(Page.Locator("#lookup-value")).ToHaveTextAsync("Value: 12");
+
+        // The looked-up item is the selection: it is the highlighted row once the list loads.
+        await OpenAsync("lookup-combo");
+        await ExpectActiveAsync("lookup-combo", "Lakeshore Excavation");
+        await Options("lookup-combo").Filter(new() { HasText = "Brookside Utilities" }).ClickAsync();
+        await Expect(Page.Locator("#lookup-value")).ToHaveTextAsync("Value: 3");
+        await Expect(Input("lookup-combo")).ToHaveValueAsync("Brookside Utilities");
     }
 
     [Test]
@@ -787,11 +892,64 @@ public class ComboBoxTests : PageTest
     }
 
     [Test]
+    public async Task Mobile_VirtualizedOverlay_RowsKeepTheTouchHeight()
+    {
+        await GoToPage();
+
+        await Field("mobile-multi").ClickAsync();
+        await Expect(Overlay.Locator("[role=option]").First).ToBeVisibleAsync();
+        Assert.That(await Overlay.Locator("[role=option]").CountAsync(), Is.LessThan(100), "virtualization did not limit the rendered rows");
+        var (height, gap) = await FirstRowsAsync(Overlay.Locator(".nx-combobox-overlay-list"));
+        Assert.That(height, Is.GreaterThanOrEqualTo(44));
+        Assert.That(gap, Is.EqualTo(0).Within(0.5));
+
+        await Expect(Overlay.Locator(".nx-combobox-overlay-search")).ToBeFocusedAsync();
+        for (var i = 0; i < 20; i++)
+            await Page.Keyboard.PressAsync("PageDown");
+        var active = Overlay.Locator(".nx-combobox-item-active");
+        await Expect(active).ToHaveAttributeAsync("aria-posinset", "201");
+        var header = await BoxAsync(Overlay.Locator(".nx-combobox-columns-header"));
+        await ExpectInsideAsync(active, Overlay.Locator(".nx-combobox-overlay-list"), topInset: header.Bottom - header.Top);
+    }
+
+    [Test]
+    public async Task Mobile_PhoneViewport_DefaultIsThePopup()
+    {
+        await Page.SetViewportSizeAsync(390, 844);
+        await Page.GotoAsync(_baseUrl + "/combobox/examples");
+        await Expect(Page.Locator(".layout-container[data-interactive=true]")).ToBeVisibleAsync();
+
+        await Input("simple-combo").ClickAsync();
+        await Page.Keyboard.PressAsync("ArrowDown");
+
+        await Expect(Popup).ToBeVisibleAsync();
+        await Expect(Overlay).ToHaveCountAsync(0);
+        await Expect(Input("simple-combo")).Not.ToHaveAttributeAsync("readonly", "");
+    }
+
+    [Test]
+    public async Task Mobile_PhoneViewport_AutoExampleUsesOverlay()
+    {
+        await Page.SetViewportSizeAsync(390, 844);
+        await Page.GotoAsync(_baseUrl + "/combobox/examples");
+        await Expect(Page.Locator(".layout-container[data-interactive=true]")).ToBeVisibleAsync();
+        await Expect(Input("mobile-auto")).ToHaveAttributeAsync("readonly", "");
+
+        await Field("mobile-auto").ClickAsync();
+        await Expect(Overlay).ToBeVisibleAsync();
+        await Overlay.GetByRole(AriaRole.Option, new() { Name = "Vermont", Exact = true }).ClickAsync();
+
+        await Expect(Page.Locator("#mobile-auto-value")).ToHaveTextAsync("Value: Vermont");
+    }
+
+    [Test]
     public async Task Mobile_PhoneViewport_AutoModeUsesOverlay_AndLocksPageScroll()
     {
         await Page.SetViewportSizeAsync(390, 844);
         await Page.GotoAsync(_baseUrl + "/combobox/playground");
         await Expect(Page.Locator(".layout-container[data-interactive=true]")).ToBeVisibleAsync();
+        await Expect(Input("playground-combo")).Not.ToHaveAttributeAsync("readonly", "");
+        await Page.Locator("#pg-mobile").SelectOptionAsync("Auto");
         await Expect(Input("playground-combo")).ToHaveAttributeAsync("readonly", "");
 
         await Field("playground-combo").ClickAsync();

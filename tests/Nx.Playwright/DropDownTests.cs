@@ -189,18 +189,44 @@ public class DropDownTests : PageTest
     {
         await using var context = await Browser.NewContextAsync(new() { ViewportSize = new() { Width = 390, Height = 844 }, HasTouch = true, IsMobile = true });
         var page = await context.NewPageAsync();
-        await page.GotoAsync(_baseUrl + "/dropdown/overview");
+        await page.GotoAsync(_baseUrl + "/dropdown/examples");
         await Expect(page.Locator(".layout-container[data-interactive=true]")).ToBeVisibleAsync();
 
         Assert.That(await page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= window.innerWidth"), Is.True);
-        await page.Locator(".nx-dropdown:has(#overview-ship) .nx-combobox-field").TapAsync();
+        await page.Locator(".nx-dropdown:has(#sheet-auto) .nx-combobox-field").TapAsync();
         var overlay = page.Locator(".nx-combobox-overlay");
         await Expect(overlay).ToBeVisibleAsync();
-        var row = overlay.GetByRole(AriaRole.Option, new() { Name = "Flatbed", Exact = true });
+        var row = overlay.GetByRole(AriaRole.Option, new() { Name = "Hartford", Exact = true });
         Assert.That((await row.BoundingBoxAsync())!.Height, Is.GreaterThanOrEqualTo(44));
         await row.TapAsync();
 
+        await Expect(page.Locator("#sheet-auto-value")).ToHaveTextAsync("Value: Hartford");
+    }
+
+    [Test]
+    public async Task Phone_DefaultIsThePopup()
+    {
+        await using var context = await Browser.NewContextAsync(new() { ViewportSize = new() { Width = 390, Height = 844 }, HasTouch = true, IsMobile = true });
+        var page = await context.NewPageAsync();
+        await page.GotoAsync(_baseUrl + "/dropdown/overview");
+        await Expect(page.Locator(".layout-container[data-interactive=true]")).ToBeVisibleAsync();
+
+        await page.Locator(".nx-dropdown:has(#overview-ship) .nx-combobox-field").TapAsync();
+        var popup = page.Locator(".nx-combobox-popup");
+        await Expect(popup).ToBeVisibleAsync();
+        await Expect(page.Locator(".nx-combobox-overlay")).ToHaveCountAsync(0);
+        await popup.GetByRole(AriaRole.Option, new() { Name = "Flatbed", Exact = true }).TapAsync();
+
         await Expect(page.Locator("#overview-ship-value")).ToHaveTextAsync("Value: Flatbed");
+    }
+
+    [Test]
+    public async Task ItemByValue_ShowsTheNameBeforeTheListLoads()
+    {
+        await GoToPage();
+
+        await Expect(Field("lookup-dropdown")).ToHaveValueAsync("Lakeshore Excavation");
+        await Expect(Field("provider-dropdown")).ToHaveValueAsync("");
     }
 
     [Test]

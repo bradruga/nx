@@ -61,10 +61,10 @@ public class NxButtonGroupTests : BunitContext
     {
         var cut = Render<NxButtonGroup>(p => p
             .Add(x => x.Variant, NxButtonVariant.Ghost)
-            .Add(x => x.Size, NxButtonSize.Small)
+            .Add(x => x.Size, NxSize.Small)
             .Add(x => x.ChildContent, Buttons(
                 b => b.Text("Plain"),
-                b => b.Text("Own").Set(nameof(NxButton.Variant), NxButtonVariant.Primary).Set(nameof(NxButton.Size), NxButtonSize.Large),
+                b => b.Text("Own").Set(nameof(NxButton.Variant), NxButtonVariant.Primary).Set(nameof(NxButton.Size), NxSize.Large),
                 b => b.Text("Secondary").Set(nameof(NxButton.Variant), NxButtonVariant.Secondary))));
 
         var buttons = cut.FindAll("button");
@@ -102,8 +102,8 @@ public class NxButtonGroupTests : BunitContext
     [Test]
     public void GroupChange_ReachesButtons()
     {
-        var cut = Render<NxButtonGroup>(p => p.Add(x => x.Size, NxButtonSize.Small).Add(x => x.ChildContent, Buttons(b => b.Text("A"))));
-        cut.Render(p => p.Add(x => x.Size, NxButtonSize.Large));
+        var cut = Render<NxButtonGroup>(p => p.Add(x => x.Size, NxSize.Small).Add(x => x.ChildContent, Buttons(b => b.Text("A"))));
+        cut.Render(p => p.Add(x => x.Size, NxSize.Large));
         Assert.That(cut.Find("button").ClassList, Does.Contain("nx-button-lg"));
     }
 
@@ -137,7 +137,7 @@ public class NxButtonGroupTests : BunitContext
     public void VariantAndSize_DoNotReachAMenuButton_ItKeepsItsOwn()
     {
         // QUESTIONS #114: menu buttons pass their own Variant and Size; only Disabled comes from the group.
-        var cut = Render<NxButtonGroup>(p => p.Add(x => x.Variant, NxButtonVariant.Ghost).Add(x => x.Size, NxButtonSize.Small).Add(x => x.ChildContent, MenuButton()));
+        var cut = Render<NxButtonGroup>(p => p.Add(x => x.Variant, NxButtonVariant.Ghost).Add(x => x.Size, NxSize.Small).Add(x => x.ChildContent, MenuButton()));
 
         Assert.That(cut.Find(".nx-dropdownbutton button").ClassList, Does.Contain("nx-button-secondary").And.Contain("nx-button-md"));
     }

@@ -12,7 +12,7 @@ namespace Nx.Components;
 /// phone. The first pick sets the start, the second the end. Same typing, format, limits and validation as
 /// <see cref="NxDatePicker{TValue}"/>. Bind with <c>@bind-StartValue</c> and <c>@bind-EndValue</c>.
 /// </summary>
-/// <typeparam name="TValue">The bound date type: <see cref="DateTime"/> or <see cref="DateOnly"/>, nullable or not.</typeparam>
+/// <typeparam name="TValue">The bound date type: <see cref="DateTime"/>, <see cref="DateTimeOffset"/> or <see cref="DateOnly"/>, nullable or not.</typeparam>
 /// <example>
 /// <code>
 /// &lt;NxDateRangePicker Label="Pour window" @bind-StartValue="job.PourFrom" @bind-EndValue="job.PourTo" /&gt;
@@ -21,8 +21,9 @@ namespace Nx.Components;
 public partial class NxDateRangePicker<TValue> : IAsyncDisposable
 {
     // ── JS interop ────────────────────────────────────────────────────────────
-    // As NxDatePicker, through nx-picker.js. The popup spans both fields and closes on a pointer press
-    // outside them, since focus moving between the two inputs must not close it.
+    // As NxDatePicker, through nx-picker.js (the edit text of each field is swapped in by the browser on focus).
+    // The popup spans both fields and closes on a pointer press outside them, since focus moving between the two
+    // inputs must not close it.
 
     private const string ModulePath = "./_content/Nx.Components/nx-picker.js";
     private const int PopupMaxHeight = 480;
@@ -40,6 +41,7 @@ public partial class NxDateRangePicker<TValue> : IAsyncDisposable
 
     private readonly FieldValidation startValidation;
     private readonly FieldValidation endValidation;
+    private readonly BrowserTimeZone zone = new();
     private readonly string generatedId = $"nx-daterange-{Guid.NewGuid():N}"[..22];
     private readonly Side start = new();
     private readonly Side end = new();
@@ -51,6 +53,7 @@ public partial class NxDateRangePicker<TValue> : IAsyncDisposable
     private NxCalendar? calendar;
     private DateFormatter formatter = null!;
     private bool activeEnd;             // the next pick sets the end
+    private bool editOnFocusApplied;
     private bool isNarrow;
     private bool popupOpen, popupPlaced, closePending;
     private bool sheetOpen, sheetFocusPending, scrollLockPending;
@@ -220,6 +223,13 @@ public partial class NxDateRangePicker<TValue> : IAsyncDisposable
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // Removed while its start-up calls were still on their way: the module or the circuit is gone, nothing to set up.
+        try { await AfterRenderAsync(firstRender); }
+        catch (Exception gone) when (gone is JSDisconnectedException or ObjectDisposedException or OperationCanceledException) { }
+    }
+
+    private async Task AfterRenderAsync(bool firstRender)
+    {
         if (firstRender)
         {
             module = await JS.InvokeAsync<IJSObjectReference>("import", ModulePath);
@@ -228,6 +238,11 @@ public partial class NxDateRangePicker<TValue> : IAsyncDisposable
             selfReference = DotNetObjectReference.Create(this);
             await module.InvokeVoidAsync("init", start.Input);
             await module.InvokeVoidAsync("init", end.Input);
+            await module.InvokeVoidAsync("editOnFocus", start.Input, false);
+            await module.InvokeVoidAsync("editOnFocus", end.Input, false);
+            editOnFocusApplied = true;
+            if (DateConversion<TValue>.IsOffset)
+                await zone.LoadAsync(module);
             if (MobileMode == NxMobileMode.Auto)
             {
                 isNarrow = await module.InvokeAsync<bool>("watchViewport", fields, selfReference, MobileBreakpoint);
@@ -361,12 +376,16 @@ public partial class NxDateRangePicker<TValue> : IAsyncDisposable
             return;
         if (side == start)
         {
-            await StartValueChanged.InvokeAsync(DateConversion<TValue>.FromDate(date, StartValue));
+            if (DateConversion<TValue>.IsOffset)
+                await zone.WhenLoadedAsync();
+            await StartValueChanged.InvokeAsync(DateConversion<TValue>.FromDate(date, StartValue, zone));
             startValidation.NotifyFieldChanged();
         }
         else
         {
-            await EndValueChanged.InvokeAsync(DateConversion<TValue>.FromDate(date, EndValue));
+            if (DateConversion<TValue>.IsOffset)
+                await zone.WhenLoadedAsync();
+            await EndValueChanged.InvokeAsync(DateConversion<TValue>.FromDate(date, EndValue, zone));
             endValidation.NotifyFieldChanged();
         }
     }
@@ -449,7 +468,8 @@ public partial class NxDateRangePicker<TValue> : IAsyncDisposable
         side.HasFocus = true;
         if (popupOpen)
             activeEnd = side == end && start.Current is not null;
-        if (Editing(side) && side.Text == formatter.Display(side.Current))
+        // nx-input.js has already swapped in the edit text; only before it has loaded is that done here.
+        if (!editOnFocusApplied && Editing(side) && side.Text == formatter.Display(side.Current))
             side.Text = formatter.Edit(side.Current);
     }
 
@@ -490,7 +510,7 @@ public partial class NxDateRangePicker<TValue> : IAsyncDisposable
                     await module.InvokeVoidAsync("lockScroll", false);
                 await module.DisposeAsync();
             }
-            catch (JSDisconnectedException)
+            catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
             {
                 // The circuit is gone; the browser cleaned up with it.
             }

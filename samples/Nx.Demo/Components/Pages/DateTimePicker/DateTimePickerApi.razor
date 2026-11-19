@@ -8,11 +8,11 @@
         <table class="doc-table doc-api-table">
             <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
             <tbody>
-                <tr><td>Value</td><td>DateTime / DateTime?</td><td>—</td><td>Use <code>@@bind-Value</code>. The kind (local, UTC) is kept.</td></tr>
+                <tr><td>Value</td><td>TValue?</td><td>—</td><td>Use <code>@@bind-Value</code>. DateTime, DateTimeOffset, or nullable. A DateTime's kind (local, UTC) is kept; a DateTimeOffset keeps its offset, and one set on an empty field takes the browser's offset at that time.</td></tr>
                 <tr><td>Format</td><td>string</td><td>"g"</td><td>Any .NET date and time format; all-number 24-hour ones are masked.</td></tr>
                 <tr><td>Culture</td><td>CultureInfo?</td><td>current</td><td>Format, typing, names, AM/PM, first day of week.</td></tr>
-                <tr><td>TimeStep</td><td>int</td><td>30</td><td>Minutes between listed times.</td></tr>
-                <tr><td>Min / Max</td><td>DateTime?</td><td>—</td><td>Limits for days, listed times and typed values.</td></tr>
+                <tr><td>TimeStep</td><td>int</td><td>30</td><td>Minutes between listed times. The phone sheet's minute column lists every 5 minutes, or every TimeStep under 5.</td></tr>
+                <tr><td>Min / Max</td><td>DateTime?</td><td>—</td><td>Limits for days, listed times and typed values, compared with the date and time shown.</td></tr>
                 <tr><td>IsDateDisabled</td><td>Func&lt;DateOnly, bool&gt;?</td><td>—</td><td>Days that cannot be picked.</td></tr>
                 <tr><td>ShowWeekNumbers / FirstDayOfWeek / ShowTodayButton</td><td>bool / DayOfWeek? / bool</td><td>false / culture / true</td><td>The calendar, as NxDatePicker.</td></tr>
                 <tr><td>Label / Placeholder</td><td></td><td></td><td>As NxTextBox; the placeholder defaults to the pattern.</td></tr>
@@ -44,6 +44,7 @@
     <p class="doc-note">
         The field reads NxTextBox's variables, the calendar NxCalendar's (<code>--nx-calendar-*</code>), and the time list
         NxTimePicker's item tokens (<code>--nx-item-hover-bg</code>, <code>--nx-item-active-bg</code>, <code>--nx-item-selected-fg</code>).
+        The phone sheet's time columns mark their selection with <code>--nx-calendar-selected-bg</code> / <code>-fg</code>.
     </p>
 </div>
 

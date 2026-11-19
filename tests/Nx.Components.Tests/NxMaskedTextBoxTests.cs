@@ -118,6 +118,14 @@ public class NxMaskedTextBoxTests : BunitContext
     }
 
     [Test]
+    public void Render_JsMarksTheClearingEscapeAsUsed()
+    {
+        RenderBound([], "00-0000", "123456", p => p.Add(x => x.Clearable, true));
+
+        Assert.That(module.Invocations.Count(i => i.Identifier == "escapeClears"), Is.EqualTo(1));
+    }
+
+    [Test]
     public async Task Clear_ButtonAndEscape()
     {
         var raised = new List<string?>();

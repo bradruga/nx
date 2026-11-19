@@ -24,4 +24,4 @@
     gap: 8px 20px;
 }
 
-.nx-radiogroup-invalid .nx-radiogroup-label { color: var(--nx-invalid); }
+.nx-radiogroup-invalid .nx-radiogroup-label { color: var(--nx-invalid, var(--nx-danger)); }

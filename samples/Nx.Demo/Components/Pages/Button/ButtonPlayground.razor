@@ -42,7 +42,7 @@
             </div>
             <div class="demo-control">
                 <span>Size</span>
-                <NxToggleGroup Data="Enum.GetValues<NxButtonSize>()" @bind-Value="pgSize" Size="NxSize.Small" AriaLabel="Size" />
+                <NxToggleGroup Data="Enum.GetValues<NxSize>()" @bind-Value="pgSize" Size="NxSize.Small" AriaLabel="Size" />
             </div>
             <div class="demo-control">
                 <span>Label</span>
@@ -114,7 +114,7 @@
                 <span>Handler delay (ms)</span>
                 <NxNumericTextBox @bind-Value="pgDelay" Min="0" Step="250" aria-label="Handler delay" Style="@FieldWidth" />
             </div>
-            <NxButton id="pg-reset" Size="NxButtonSize.Small" Icon="@IconFragment("refresh")" OnClick="ResetDefaults">Reset to defaults</NxButton>
+            <NxButton id="pg-reset" Size="NxSize.Small" Icon="@IconFragment("refresh")" OnClick="ResetDefaults">Reset to defaults</NxButton>
         </div>
 
         <div class="demo-playground-code">
@@ -129,7 +129,7 @@
 @code {
     // ── Playground ─────────────────────────────────────────────────────────────
     NxButtonVariant pgVariant;
-    NxButtonSize pgSize;
+    NxSize pgSize;
     NxButtonType pgType;
     NxIconPosition pgIconPosition;
     string pgLabel = "";
@@ -154,7 +154,7 @@
     void ResetDefaults()
     {
         pgVariant = NxButtonVariant.Primary;
-        pgSize = NxButtonSize.Medium;
+        pgSize = NxSize.Medium;
         pgType = NxButtonType.Button;
         pgIconPosition = NxIconPosition.Start;
         pgLabel = "Save changes";
@@ -200,7 +200,7 @@
         {
             var attrs = new List<string>();
             if (pgVariant != NxButtonVariant.Secondary) attrs.Add($"Variant=\"NxButtonVariant.{pgVariant}\"");
-            if (pgSize != NxButtonSize.Medium) attrs.Add($"Size=\"NxButtonSize.{pgSize}\"");
+            if (pgSize != NxSize.Medium) attrs.Add($"Size=\"NxSize.{pgSize}\"");
             if (pgType != NxButtonType.Button) attrs.Add($"Type=\"NxButtonType.{pgType}\"");
             if (pgIcon) attrs.Add($"Icon=\"@{IconField}\"");
             if (pgIcon && pgIconPosition != NxIconPosition.Start && !pgIconOnly) attrs.Add("IconPosition=\"NxIconPosition.End\"");

@@ -39,7 +39,7 @@
 .nx-upload-remove:hover:not(:disabled) { color: var(--nx-danger); }
 .nx-upload-action:disabled { opacity: 0.5; cursor: not-allowed; }
 .nx-upload-action:focus { outline: none; }
-.nx-upload-action:focus-visible { outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color); }
+.nx-upload-action:focus-visible { outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color, var(--nx-accent)); }
 
 @media (pointer: coarse) {
     .nx-upload-action { width: 44px; height: 44px; }

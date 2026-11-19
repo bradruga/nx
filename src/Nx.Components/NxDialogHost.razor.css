@@ -16,7 +16,7 @@
 .nx-dialog-content-fill { height: 100%; min-height: 0; }
 
 .nx-dialog-error {
-    color: var(--nx-validation-color);
+    color: var(--nx-validation-color, var(--nx-invalid, var(--nx-danger)));
     font-size: var(--nx-validation-font-size);
 }
 

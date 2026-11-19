@@ -5,7 +5,7 @@
 @implements IDisposable
 
 <div class="site-search-host">
-    <NxDialog @bind-Visible="visible" Title="Search" Width="640px" Id="site-search" Class="site-search-dialog" CloseOnBackdropClick="true">
+    <NxDialog @bind-Visible="visible" Title="Search" Width="640px" Id="site-search" Class="site-search-dialog" CloseOnBackdropClick="true" Inline="true">
         <ChildContent>
             <div class="site-search" @onkeydown="OnKeyDown">
                 <NxComboBox TItem="SearchHit" TValue="string"
@@ -16,7 +16,6 @@
                             ItemValue="@(h => h.Entry.Url)"
                             ItemGroup="@(h => h.Group)"
                             ValueChanged="Go"
-                            MobileMode="NxComboBoxMobileMode.Never"
                             PopupMaxHeight="360"
                             NoDataText="@NoDataText"
                             Placeholder="Components, examples, parameters…"

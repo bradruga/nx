@@ -5,20 +5,20 @@ namespace Nx.Components;
 
 /// <summary>
 /// A chart drawn as SVG by .NET, with no chart library: line, area, column, bar and pie series
-/// (<see cref="NxChartSeries"/>), a category axis (<see cref="NxChartCategoryAxis"/>, plain or dates) and value axes
+/// (<see cref="NxChartSeries{TItem}"/>), a category axis (<see cref="NxChartCategoryAxis"/>, plain or dates) and value axes
 /// (<see cref="NxChartValueAxis"/>), a legend that hides and shows series, and tooltips on hover, tap or the arrow
 /// keys. It redraws to fit its container as that resizes.
 /// </summary>
 /// <example>
 /// <code>
 /// &lt;NxChart Title="Loads shipped" Height="320px"&gt;
-///     &lt;NxChartSeries Name="Loads" Data="days" Field="@nameof(Day.Loads)" CategoryField="@nameof(Day.Date)" /&gt;
+///     &lt;NxChartSeries Name="Loads" Data="days" Value="d =&gt; d.Loads" ItemCategory="d =&gt; d.Date" /&gt;
 /// &lt;/NxChart&gt;
 /// </code>
 /// </example>
 public partial class NxChart
 {
-    private readonly List<NxChartSeries> series = [];
+    private readonly List<IChartSeries> series = [];
     private readonly List<NxChartValueAxis> valueAxes = [];
     private readonly List<NxChartCategoryAxis> categoryAxes = [];
     private NxChartSurface? surface;
@@ -68,7 +68,7 @@ public partial class NxChart
     /// <summary>Measures the container again and redraws, e.g. after it was shown. Resizes are followed on their own.</summary>
     public Task RefreshAsync() => surface?.RefreshAsync() ?? Task.CompletedTask;
 
-    internal IReadOnlyList<NxChartSeries> Series => series;
+    internal IReadOnlyList<IChartSeries> Series => series;
     internal IReadOnlyList<NxChartValueAxis> ValueAxes => valueAxes;
     internal NxChartCategoryAxis? CategoryAxis => categoryAxes.FirstOrDefault();
 
@@ -83,8 +83,8 @@ public partial class NxChart
         }
     }
 
-    internal void Register(NxChartSeries item) => series.Add(item);
-    internal void Unregister(NxChartSeries item) => series.Remove(item);
+    internal void Register(IChartSeries item) => series.Add(item);
+    internal void Unregister(IChartSeries item) => series.Remove(item);
     internal void Register(NxChartValueAxis item) => valueAxes.Add(item);
     internal void Unregister(NxChartValueAxis item) => valueAxes.Remove(item);
     internal void Register(NxChartCategoryAxis item) => categoryAxes.Add(item);

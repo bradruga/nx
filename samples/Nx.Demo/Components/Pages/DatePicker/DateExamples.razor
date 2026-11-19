@@ -7,8 +7,8 @@
 <div class="doc-section">
     <h2>Date Types</h2>
     <p class="doc-note">
-        Bind a <code>DateOnly</code> or a <code>DateTime</code>, nullable or not. A <code>DateTime</code> keeps its time of day when
-        the date changes. Emptying a non-nullable field puts the last date back.
+        Bind a <code>DateOnly</code>, a <code>DateTime</code> or a <code>DateTimeOffset</code>, nullable or not. A <code>DateTime</code>
+        keeps its time of day when the date changes. Emptying a non-nullable field puts the last date back.
     </p>
     @* code *@
     <div class="demo-stage">
@@ -29,6 +29,31 @@
     </div>
     @* /code *@
     <DocExampleCode Key="date-types" />
+</div>
+
+<div class="doc-section">
+    <h2>DateTimeOffset</h2>
+    <p class="doc-note">
+        A <code>DateTimeOffset</code> shows its own date, whatever the server's time zone, and keeps its time of day and its
+        offset when the date changes. A field that starts empty takes the offset of <em>your</em> time zone on the date you
+        pick, read from the browser: daylight time for a July date, standard time for a January one. <code>Min</code>,
+        <code>Max</code> and disabled dates compare with the date shown.
+    </p>
+    @* code *@
+    <div class="demo-stage">
+        <div class="demo-form-grid demo-form-grid-2">
+            <div>
+                <NxDatePicker Id="offset-kept" Label="Tokyo delivery (keeps 18:00 +09:00)" @bind-Value="offsetKept" Culture="EnUs" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="offset-kept-value">Value: <strong>@offsetKept.ToString("yyyy-MM-dd HH:mm zzz")</strong></span></div>
+            </div>
+            <div>
+                <NxDatePicker Id="offset-empty" Label="Starts empty (your offset)" @bind-Value="offsetEmpty" Clearable="true" Culture="EnUs" />
+                <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="offset-empty-value">Value: <strong>@(offsetEmpty?.ToString("yyyy-MM-dd HH:mm zzz") ?? "null")</strong></span></div>
+            </div>
+        </div>
+    </div>
+    @* /code *@
+    <DocExampleCode Key="datetimeoffset" />
 </div>
 
 <div class="doc-section">
@@ -56,7 +81,8 @@
     <h2>Display Format</h2>
     <p class="doc-note">
         <code>Format</code> is any .NET date format and applies while the field is not focused. A format with month or day names
-        edits in the culture's short date; an all-number format edits in its own order.
+        edits in the culture's short date; an all-number format edits in its own order. The edit text is swapped in by the
+        browser the moment the field takes focus, so nothing typed right after is lost: a click puts the caret, Tab selects the date.
     </p>
     @* code *@
     <div class="demo-stage">
@@ -128,7 +154,7 @@
         <NxDatePicker @ref="dialogInput" TValue="DateTime" Id="calendar-input" Label="Date" ShowCalendar="false" @bind-Value="picked" Culture="EnUs" />
         <NxCalendar Id="calendar-grid" Value="DateOnly.FromDateTime(picked)" ValueChanged="d => picked = d?.ToDateTime(TimeOnly.MinValue) ?? picked" AriaLabel="Date" Culture="EnUs" />
         <div class="demo-row">
-            <NxButton id="calendar-focus" Size="NxButtonSize.Small" OnClick="() => dialogInput!.FocusAsync()">Focus the field</NxButton>
+            <NxButton id="calendar-focus" Size="NxSize.Small" OnClick="() => dialogInput!.FocusAsync()">Focus the field</NxButton>
             <span class="demo-value" id="calendar-value">@picked.ToString("D", EnUs)</span>
         </div>
     </div>
@@ -223,6 +249,8 @@
 
     DateOnly? typeDateOnly;
     DateTime typeDateTime = new(2026, 10, 23, 14, 30, 0);
+    DateTimeOffset offsetKept = new(2026, 10, 23, 18, 0, 0, TimeSpan.FromHours(9));
+    DateTimeOffset? offsetEmpty;
     DateOnly typeRequired = new(2026, 10, 23);
     DateOnly? maskDate = new(2026, 10, 23);
     DateOnly? formatDate = new(2026, 10, 23);

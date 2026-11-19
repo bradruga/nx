@@ -6,7 +6,7 @@
     flex-shrink: 0;
     width: var(--nx-loader-size);
     height: var(--nx-loader-size);
-    color: var(--nx-loader-color);
+    color: var(--nx-loader-color, var(--nx-accent));
     vertical-align: middle;
 }
 

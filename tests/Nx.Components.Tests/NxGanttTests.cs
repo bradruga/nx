@@ -31,8 +31,6 @@ public class NxGanttTests : BunitContext
         public DateTime End { get; set; }
     }
 
-    private sealed record Link(int PredecessorId, int SuccessorId, NxGanttDependencyType Type = NxGanttDependencyType.FinishStart);
-
     private static readonly DateTime Monday = new(2026, 11, 9);
 
     private static List<Job> Jobs() =>
@@ -46,7 +44,7 @@ public class NxGanttTests : BunitContext
     private static RenderFragment Columns(bool editor = false) => b =>
     {
         b.OpenComponent<NxGanttColumn<Job>>(0);
-        b.AddComponentParameter(1, nameof(NxGanttColumn<Job>.Field), nameof(Job.Title));
+        b.AddComponentParameter(1, nameof(NxGanttColumn<Job>.Value), (Func<Job, object?>)(j => j.Title));
         b.AddComponentParameter(2, nameof(NxGanttColumn<Job>.Title), "Task");
         b.AddComponentParameter(3, nameof(NxGanttColumn<Job>.Width), "200px");
         b.AddComponentParameter(4, nameof(NxGanttColumn<Job>.Expandable), true);
@@ -54,11 +52,13 @@ public class NxGanttTests : BunitContext
             b.AddComponentParameter(5, nameof(NxGanttColumn<Job>.EditorTemplate), (RenderFragment<Job>)(j => t => t.AddMarkupContent(0, "<input class=\"ed\" />")));
         b.CloseComponent();
         b.OpenComponent<NxGanttColumn<Job>>(10);
-        b.AddComponentParameter(11, nameof(NxGanttColumn<Job>.Field), nameof(Job.Crew));
+        b.AddComponentParameter(11, nameof(NxGanttColumn<Job>.Value), (Func<Job, object?>)(j => j.Crew));
+        b.AddComponentParameter(13, nameof(NxGanttColumn<Job>.Title), "Crew");
         b.AddComponentParameter(12, nameof(NxGanttColumn<Job>.Width), "100px");
         b.CloseComponent();
         b.OpenComponent<NxGanttColumn<Job>>(20);
-        b.AddComponentParameter(21, nameof(NxGanttColumn<Job>.Field), nameof(Job.Start));
+        b.AddComponentParameter(21, nameof(NxGanttColumn<Job>.Value), (Func<Job, object?>)(j => j.Start));
+        b.AddComponentParameter(23, nameof(NxGanttColumn<Job>.Title), "Start");
         b.AddComponentParameter(22, nameof(NxGanttColumn<Job>.DisplayFormat), "{0:MM/dd/yy}");
         b.CloseComponent();
     };
@@ -69,6 +69,11 @@ public class NxGanttTests : BunitContext
         {
             p.Add(x => x.Id, "g");
             p.Add(x => x.Data, jobs ?? Jobs());
+            p.Add(x => x.ItemId, j => j.Id);
+            p.Add(x => x.ParentId, j => j.ParentId);
+            p.Add(x => x.ItemTitle, j => j.Title);
+            p.Add(x => x.ItemStart, j => j.Start);
+            p.Add(x => x.ItemEnd, j => j.End);
             p.Add(x => x.Columns, Columns(editor));
             p.Add(x => x.Culture, CultureInfo.GetCultureInfo("en-US"));
             configure?.Invoke(p);
@@ -118,7 +123,7 @@ public class NxGanttTests : BunitContext
     [Test]
     public void Dependencies_DrawnBetweenShownBars()
     {
-        var cut = RenderGantt(p => p.Add(x => x.Dependencies, new[] { new Link(2, 3), new Link(3, 4), new Link(9, 4) }));
+        var cut = RenderGantt(p => p.Add(x => x.Dependencies, new[] { new NxGanttDependency(2, 3), new NxGanttDependency(3, 4), new NxGanttDependency(9, 4) }));
 
         var paths = cut.FindAll(".nx-gantt-links > path");
         Assert.That(paths, Has.Count.EqualTo(2));
@@ -146,9 +151,10 @@ public class NxGanttTests : BunitContext
         Assert.That(cut.FindAll(".ed"), Is.Empty);
         Assert.That(updated, Is.EqualTo(new[] { "Design 2" }));
         Assert.That(Titles(cut)[0], Is.EqualTo("Design 2"));
-        // The cell's own field, before and after, as NxGrid's cell change.
+        // The cell's own value, before and after.
         Assert.That(last!.Kind, Is.EqualTo(NxGanttUpdateKind.Edit));
-        Assert.That(last.Changes.Select(c => (c.Field, c.OldValue, c.NewValue)), Is.EqualTo(new[] { ("Title", (object?)"Design", (object?)"Design 2") }));
+        Assert.That((last.OldValue, last.NewValue), Is.EqualTo(((object?)"Design", (object?)"Design 2")));
+        Assert.That((last.Start, last.End), Is.EqualTo(((DateTime?)null, (DateTime?)null)));
     }
 
     // ── Dragging bars ─────────────────────────────────────────────────────────
@@ -166,7 +172,7 @@ public class NxGanttTests : BunitContext
     }
 
     [Test]
-    public async Task BarDrop_Move_RaisesChanges_ItemUntouchedUntilApplied()
+    public async Task BarDrop_Move_RaisesNewDates_ItemUntouched()
     {
         var jobs = Jobs();
         NxGanttUpdateArgs<Job>? args = null;
@@ -176,15 +182,8 @@ public class NxGanttTests : BunitContext
 
         Assert.That(args!.Kind, Is.EqualTo(NxGanttUpdateKind.Move));
         Assert.That(args.Item, Is.SameAs(jobs[3]));
-        Assert.That(args.Changes.Select(c => (c.Field, c.OldValue, c.NewValue)), Is.EqualTo(new[]
-        {
-            ("Start", (object?)Monday.AddDays(10), (object?)Monday.AddDays(12)),
-            ("End", (object?)Monday.AddDays(15), (object?)Monday.AddDays(17)),
-        }));
-        Assert.That(jobs[3].Start, Is.EqualTo(Monday.AddDays(10)), "the page applies the change");
-
-        args.Apply();
-        Assert.That((jobs[3].Start, jobs[3].End), Is.EqualTo((Monday.AddDays(12), Monday.AddDays(17))));
+        Assert.That((args.Start, args.End), Is.EqualTo(((DateTime?)Monday.AddDays(12), (DateTime?)Monday.AddDays(17))));
+        Assert.That((jobs[3].Start, jobs[3].End), Is.EqualTo((Monday.AddDays(10), Monday.AddDays(15))), "the page writes the dates");
     }
 
     [Test]
@@ -196,14 +195,14 @@ public class NxGanttTests : BunitContext
 
         await cut.InvokeAsync(() => cut.Instance.OnBarDrop(3, "end", -1));
         Assert.That(raised[0].Kind, Is.EqualTo(NxGanttUpdateKind.ResizeEnd));
-        Assert.That(raised[0].Changes.Select(c => (c.Field, c.NewValue)), Is.EqualTo(new[] { ("End", (object?)Monday.AddDays(14)) }));
+        Assert.That((raised[0].Start, raised[0].End), Is.EqualTo(((DateTime?)null, (DateTime?)Monday.AddDays(14))));
 
         // Pour is five days: its start can come up four at most, its end back four.
         await cut.InvokeAsync(() => cut.Instance.OnBarDrop(3, "start", 30));
         Assert.That(raised[1].Kind, Is.EqualTo(NxGanttUpdateKind.ResizeStart));
-        Assert.That(raised[1].Changes.Single().NewValue, Is.EqualTo(Monday.AddDays(14)));
+        Assert.That((raised[1].Start, raised[1].End), Is.EqualTo(((DateTime?)Monday.AddDays(14), (DateTime?)null)));
         await cut.InvokeAsync(() => cut.Instance.OnBarDrop(3, "end", -30));
-        Assert.That(raised[2].Changes.Single().NewValue, Is.EqualTo(Monday.AddDays(11)));
+        Assert.That((raised[2].Start, raised[2].End), Is.EqualTo(((DateTime?)null, (DateTime?)Monday.AddDays(11))));
 
         // A summary, or no days at all, raises nothing.
         await cut.InvokeAsync(() => cut.Instance.OnBarDrop(0, "move", 3));
@@ -221,8 +220,8 @@ public class NxGanttTests : BunitContext
         await cut.FindAll("[role=row]")[3].KeyDownAsync(new KeyboardEventArgs { Key = "ArrowLeft", AltKey = true, ShiftKey = true });
 
         Assert.That(raised.Select(a => a.Kind), Is.EqualTo(new[] { NxGanttUpdateKind.Move, NxGanttUpdateKind.ResizeEnd }));
-        Assert.That(raised[0].Changes.Select(c => c.NewValue), Is.EqualTo(new object?[] { Monday.AddDays(11), Monday.AddDays(16) }));
-        Assert.That(raised[1].Changes.Single().NewValue, Is.EqualTo(Monday.AddDays(14)));
+        Assert.That((raised[0].Start, raised[0].End), Is.EqualTo(((DateTime?)Monday.AddDays(11), (DateTime?)Monday.AddDays(16))));
+        Assert.That((raised[1].Start, raised[1].End), Is.EqualTo(((DateTime?)null, (DateTime?)Monday.AddDays(14))));
     }
 
     [Test]
@@ -354,9 +353,12 @@ public class NxGanttTests : BunitContext
     }
 
     [Test]
-    public void MissingDateField_Throws()
+    public void MissingItemStart_Throws()
     {
-        Assert.Throws<InvalidOperationException>(() => RenderGantt(p => p.Add(x => x.StartField, "From")));
+        Assert.Throws<InvalidOperationException>(() => Render<NxGantt<Job>>(p => p
+            .Add(x => x.Data, Jobs())
+            .Add(x => x.ItemId, j => j.Id)
+            .Add(x => x.ItemEnd, j => j.End)));
     }
 
     // ── Dates in other types ──────────────────────────────────────────────────
@@ -371,21 +373,20 @@ public class NxGanttTests : BunitContext
     }
 
     [Test]
-    public async Task BarDrop_DateOnlyAndOffsetFields_ChangesKeepThePropertyType()
+    public async Task BarDrop_DateOnlyAndOffsetProperties_LambdasConvert()
     {
         var plan = new Plan { Id = 1, Title = "Pour", Start = DateOnly.FromDateTime(Monday), End = new DateTimeOffset(Monday.AddDays(5)) };
         NxGanttUpdateArgs<Plan>? args = null;
         var cut = Render<NxGantt<Plan>>(p => p
             .Add(x => x.Data, new[] { plan })
+            .Add(x => x.ItemId, x => x.Id)
+            .Add(x => x.ItemStart, x => x.Start.ToDateTime(TimeOnly.MinValue))
+            .Add(x => x.ItemEnd, x => x.End?.LocalDateTime)
             .Add(x => x.OnUpdate, (NxGanttUpdateArgs<Plan> a) => args = a));
 
         await cut.InvokeAsync(() => cut.Instance.OnBarDrop(0, "move", 2));
 
-        Assert.That(args!.Changes.Select(c => c.NewValue),
-            Is.EqualTo(new object?[] { DateOnly.FromDateTime(Monday.AddDays(2)), new DateTimeOffset(Monday.AddDays(7)) }));
-        args.Apply();
-        Assert.That(plan.Start, Is.EqualTo(DateOnly.FromDateTime(Monday.AddDays(2))));
-        Assert.That(plan.End, Is.EqualTo(new DateTimeOffset(Monday.AddDays(7))));
+        Assert.That((args!.Start, args.End), Is.EqualTo(((DateTime?)Monday.AddDays(2), (DateTime?)Monday.AddDays(7))));
     }
 
     // ── Dependencies ──────────────────────────────────────────────────────────
@@ -394,11 +395,11 @@ public class NxGanttTests : BunitContext
     public void Dependencies_PathRunsBetweenTheEndsTheTypeNames()
     {
         // SlotWidth 20: Drawings is 160–280px on row 1, Pour 360–460px on row 3; rows are 36px.
-        var cut = RenderGantt(p => p.Add(x => x.SlotWidth, 20).Add(x => x.Dependencies, new object[]
+        var cut = RenderGantt(p => p.Add(x => x.SlotWidth, 20).Add(x => x.Dependencies, new[]
         {
-            new Link(2, 4),
-            new { PredecessorId = 2, SuccessorId = 4, Type = 3 },
-            new Link(2, 4, NxGanttDependencyType.FinishFinish),
+            new NxGanttDependency(2, 4),
+            new NxGanttDependency(2, 4, NxGanttDependencyType.StartStart),
+            new NxGanttDependency(2, 4, NxGanttDependencyType.FinishFinish),
         }));
 
         Assert.That(cut.FindAll(".nx-gantt-links > path").Select(p => p.GetAttribute("d")), Is.EqualTo(new[]
@@ -414,7 +415,7 @@ public class NxGanttTests : BunitContext
     {
         var cut = RenderGantt(p => p
             .Add(x => x.ExpandedItems, new List<Job>())
-            .Add(x => x.Dependencies, new[] { new Link(2, 4), new Link(1, 4) }));
+            .Add(x => x.Dependencies, new[] { new NxGanttDependency(2, 4), new NxGanttDependency(1, 4) }));
 
         Assert.That(cut.FindAll(".nx-gantt-links > path"), Has.Count.EqualTo(1));
     }
@@ -545,7 +546,7 @@ public class NxGanttTests : BunitContext
     // ── Cell editing ──────────────────────────────────────────────────────────
 
     [Test]
-    public async Task CellEdit_EscapeEnds_UnchangedRaisesNoChanges()
+    public async Task CellEdit_EscapeEnds_UnchangedRaisesEqualValues()
     {
         NxGanttUpdateArgs<Job>? last = null;
         var cut = RenderGantt(p => p.Add(x => x.OnUpdate, (NxGanttUpdateArgs<Job> a) => last = a), editor: true);
@@ -555,7 +556,7 @@ public class NxGanttTests : BunitContext
 
         Assert.That(cut.FindAll(".ed"), Is.Empty);
         Assert.That(last!.Kind, Is.EqualTo(NxGanttUpdateKind.Edit));
-        Assert.That(last.Changes, Is.Empty);
+        Assert.That((last.OldValue, last.NewValue), Is.EqualTo(((object?)"Design", (object?)"Design")));
         Assert.That(module.Invocations.Count(i => i.Identifier == "unwatchEdit"), Is.EqualTo(1));
     }
 

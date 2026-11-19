@@ -258,7 +258,7 @@ public class NxMultiSelectTests : BunitContext
     public async Task Overlay_StagesUntilDone_WithSelectAll()
     {
         var log = new List<string[]>();
-        var cut = RenderBound(log, configure: p => p.Add(x => x.MobileMode, NxComboBoxMobileMode.Always).Add(x => x.SelectAll, true));
+        var cut = RenderBound(log, configure: p => p.Add(x => x.MobileMode, NxMobileMode.Always).Add(x => x.SelectAll, true));
 
         await cut.Find(".nx-combobox-field").ClickAsync(new MouseEventArgs());
         await cut.Find(".nx-combobox-overlay [role=option]").ClickAsync(new MouseEventArgs());
@@ -339,7 +339,8 @@ public class NxMultiSelectTests : BunitContext
     public async Task Columns_WithVirtualize_GridRowsWithCheckColumn()
     {
         var cut = RenderPeople([2], p => p
-            .Add(x => x.Virtualize, true)
+            .Add(x => x.VirtualizeThreshold, 0)
+            .Add(x => x.ItemHeight, 34f)
             .Add(x => x.ColumnDefinitions, new List<NxComboBoxColumnDefinition<Person>>
             {
                 new() { Field = e => e.Name, Header = "Name" },
@@ -353,6 +354,32 @@ public class NxMultiSelectTests : BunitContext
         Assert.That(rows, Has.Count.EqualTo(4));
         Assert.That(rows[0].GetAttribute("style"), Does.Contain("height: 34px"));
         Assert.That(cut.FindAll("[role=option] .nx-combobox-check-cell .nx-combobox-check"), Has.Count.EqualTo(1));
+    }
+
+    [Test]
+    public void ItemByValue_ChipsShowTheItemsText()
+    {
+        var cut = Render<NxMultiSelect<string, int>>(p => p
+            .Add(x => x.DataProvider, _ => Task.FromResult<IEnumerable<string>>(States))
+            .Add(x => x.ItemValue, s => Array.IndexOf(States, s))
+            .Add(x => x.ItemByValue, i => Task.FromResult<string?>(States[i]))
+            .Add(x => x.Values, new[] { 0, 6 }));
+
+        cut.Render(p => p.Add(x => x.Placeholder, "States"));
+
+        Assert.That(cut.FindAll(".nx-combobox-chip-text").Select(c => c.TextContent.Trim()), Is.EqualTo(new[] { "Maine", "Vermont" }));
+    }
+
+    [Test]
+    public async Task PhoneSheet_IsOptIn()
+    {
+        var cut = RenderBound([]);
+
+        await cut.InvokeAsync(() => cut.FindComponent<NxComboBox<string, string>>().Instance.OnViewportChanged(true));
+        await KeyAsync(cut, "ArrowDown");
+
+        Assert.That(cut.FindAll(".nx-combobox-overlay"), Is.Empty);
+        Assert.That(cut.FindAll(".nx-combobox-popup"), Has.Count.EqualTo(1));
     }
 
     [Test]

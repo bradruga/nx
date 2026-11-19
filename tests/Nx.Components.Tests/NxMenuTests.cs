@@ -364,7 +364,7 @@ public class NxMenuTests : BunitContext
     public void SplitButton_VariantAndSize_ReachBothHalves()
     {
         var cut = Render<NxSplitButton>(p => p.Add(x => x.Id, "sb").Add(x => x.Items, Items())
-            .Add(x => x.Variant, NxButtonVariant.Primary).Add(x => x.Size, NxButtonSize.Small).Add(x => x.ChildContent, Text("Save")));
+            .Add(x => x.Variant, NxButtonVariant.Primary).Add(x => x.Size, NxSize.Small).Add(x => x.ChildContent, Text("Save")));
 
         foreach (var id in new[] { "sb", "sb-toggle" })
             Assert.That(cut.Find($"button#{id}").ClassList, Does.Contain("nx-button-primary").And.Contain("nx-button-sm"), id);
@@ -494,7 +494,7 @@ public class NxMenuTests : BunitContext
     public void DropDownButton_VariantSizeAndFullWidth_ReachTheButton()
     {
         var cut = Render<NxDropDownButton>(p => p.Add(x => x.Items, Items())
-            .Add(x => x.Variant, NxButtonVariant.Danger).Add(x => x.Size, NxButtonSize.Large).Add(x => x.FullWidth, true).Add(x => x.ChildContent, Text("Export")));
+            .Add(x => x.Variant, NxButtonVariant.Danger).Add(x => x.Size, NxSize.Large).Add(x => x.FullWidth, true).Add(x => x.ChildContent, Text("Export")));
 
         Assert.That(cut.Find("button").ClassList, Does.Contain("nx-button-danger").And.Contain("nx-button-lg").And.Contain("nx-button-full-width"));
     }

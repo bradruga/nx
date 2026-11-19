@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Concurrent;
 using System.Globalization;
-using System.Reflection;
 
 namespace Nx.Components;
 
@@ -11,12 +8,10 @@ namespace Nx.Components;
 /// </summary>
 internal sealed class ChartModel
 {
-    private static readonly ConcurrentDictionary<(Type, string), Func<object, object?>> Getters = new();
-
     /// <summary>A series' values, one per category (or per slice for a pie).</summary>
     public sealed class Series
     {
-        public required NxChartSeries Source { get; init; }
+        public required IChartSeries Source { get; init; }
         public required int Index { get; init; }
         public required string Color { get; init; }
         public required double?[] Values { get; init; }
@@ -68,7 +63,7 @@ internal sealed class ChartModel
     /// Builds the model. <paramref name="hidden"/> holds the series (and, for a pie, the slices) the legend switched
     /// off, by index; <paramref name="culture"/> formats labels and buckets weeks.
     /// </summary>
-    public static ChartModel Build(IReadOnlyList<NxChartSeries> series, NxChartCategoryAxis? categoryAxis,
+    public static ChartModel Build(IReadOnlyList<IChartSeries> series, NxChartCategoryAxis? categoryAxis,
         IReadOnlyList<NxChartValueAxis> valueAxes, ISet<int> hidden, CultureInfo culture, int targetTicks)
     {
         var pie = series.FirstOrDefault(s => s.Type == NxChartSeriesType.Pie);
@@ -77,7 +72,7 @@ internal sealed class ChartModel
 
         var raw = series.Select(s => Read(s)).ToList();
         var axisCategories = categoryAxis?.Categories?.Cast<object?>().ToList();
-        var anyField = series.Any(s => s.CategoryField is not null);
+        var anyField = series.Any(s => s.HasCategory);
         var isDate = categoryAxis?.Type == NxChartAxisType.Date
                      || (categoryAxis?.Type is null or NxChartAxisType.Auto && anyField
                          && raw.SelectMany(r => r.Categories).Where(c => c is not null).DefaultIfEmpty("x").All(c => AsDate(c) is not null));
@@ -102,7 +97,7 @@ internal sealed class ChartModel
         else
         {
             categories = axisCategories ?? [];
-            foreach (var r in raw.Where(r => r.Source.CategoryField is not null))
+            foreach (var r in raw.Where(r => r.Source.HasCategory))
             {
                 foreach (var c in r.Categories)
                 {
@@ -110,7 +105,7 @@ internal sealed class ChartModel
                         categories.Add(c);
                 }
             }
-            var longest = raw.Where(r => r.Source.CategoryField is null).Select(r => r.Values.Count).DefaultIfEmpty(0).Max();
+            var longest = raw.Where(r => !r.Source.HasCategory).Select(r => r.Values.Count).DefaultIfEmpty(0).Max();
             while (categories.Count < longest)
                 categories.Add((categories.Count + 1).ToString(culture));
         }
@@ -123,7 +118,7 @@ internal sealed class ChartModel
             var values = new double?[categories.Count];
             var items = new object?[categories.Count];
             var colors = new string?[categories.Count];
-            if (r.Source.CategoryField is null)
+            if (!r.Source.HasCategory)
             {
                 for (var i = 0; i < Math.Min(r.Values.Count, categories.Count); i++)
                     (values[i], items[i], colors[i]) = (r.Values[i], r.Items[i], r.Colors[i]);
@@ -233,11 +228,11 @@ internal sealed class ChartModel
         };
     }
 
-    private static ChartModel BuildPie(NxChartSeries pie, NxChartCategoryAxis? categoryAxis, ISet<int> hidden, CultureInfo culture)
+    private static ChartModel BuildPie(IChartSeries pie, NxChartCategoryAxis? categoryAxis, ISet<int> hidden, CultureInfo culture)
     {
         var r = Read(pie);
         var given = categoryAxis?.Categories?.Cast<object?>().ToList();
-        var categories = r.Values.Select((_, i) => pie.CategoryField is not null ? r.Categories[i] : given is not null && i < given.Count ? given[i] : (object)(i + 1)).ToList();
+        var categories = r.Values.Select((_, i) => pie.HasCategory ? r.Categories[i] : given is not null && i < given.Count ? given[i] : (object)(i + 1)).ToList();
         var colors = r.Colors.Select((c, i) => c ?? pie.Color ?? Palette(i)).ToArray();
         var series = new Series
         {
@@ -264,35 +259,22 @@ internal sealed class ChartModel
 
     // ── Reading items ─────────────────────────────────────────────────────────
 
-    private sealed record RawSeries(NxChartSeries Source, List<double?> Values, List<object?> Categories, List<object?> Items, List<string?> Colors);
+    private sealed record RawSeries(IChartSeries Source, List<double?> Values, List<object?> Categories, List<object?> Items, List<string?> Colors);
 
-    private static RawSeries Read(NxChartSeries s)
+    private static RawSeries Read(IChartSeries s)
     {
         var values = new List<double?>();
         var categories = new List<object?>();
         var items = new List<object?>();
         var colors = new List<string?>();
-        foreach (var item in s.Data ?? Array.Empty<object>())
+        foreach (var (item, value, category, color) in s.Read())
         {
             items.Add(item);
-            values.Add(ToDouble(s.Field is null ? item : Get(item, s.Field)));
-            categories.Add(s.CategoryField is null ? null : Get(item, s.CategoryField));
-            colors.Add(s.ColorField is null ? null : Get(item, s.ColorField)?.ToString());
+            values.Add(ToDouble(value));
+            categories.Add(category);
+            colors.Add(color);
         }
         return new RawSeries(s, values, categories, items, colors);
-    }
-
-    private static object? Get(object? item, string property)
-    {
-        if (item is null)
-            return null;
-        var getter = Getters.GetOrAdd((item.GetType(), property), key =>
-        {
-            var info = key.Item1.GetProperty(key.Item2, BindingFlags.Public | BindingFlags.Instance)
-                       ?? throw new InvalidOperationException($"NxChart: {key.Item1.Name} has no public property '{key.Item2}'.");
-            return o => info.GetValue(o);
-        });
-        return getter(item);
     }
 
     private static double? ToDouble(object? value) => value switch

@@ -12,15 +12,15 @@
                 <NxForm Id="playground-form" Model="pour" Columns="pgColumns" ColumnSpacing="@OrNull(pgSpacing)" Orientation="pgOrientation"
                         SubmitOnEnter="pgEnter" OnValidSubmit="() => pgSubmits++">
                     <ChildContent>
-                        <NxFormItem Field="@nameof(PourForm.Name)" ColSpan="pgNameSpan" Label="@OrNull(pgNameLabel)" Disabled="pgDisabled" />
-                        <NxFormItem Field="@nameof(PourForm.Volume)" />
-                        <NxFormItem Field="@nameof(PourForm.PourDate)" />
-                        <NxFormItem Field="@nameof(PourForm.Status)" />
+                        <NxFormItem For="() => pour.Name" ColSpan="pgNameSpan" Label="@OrNull(pgNameLabel)" Disabled="pgDisabled" />
+                        <NxFormItem For="() => pour.Volume" />
+                        <NxFormItem For="() => pour.PourDate" />
+                        <NxFormItem For="() => pour.Status" />
                         @if (pgGroup)
                         {
                             <NxFormGroup Label="Crew">
-                                <NxFormItem Field="@nameof(PourForm.Trucks)" />
-                                <NxFormItem Field="@nameof(PourForm.PumpTruck)" />
+                                <NxFormItem For="() => pour.Trucks" />
+                                <NxFormItem For="() => pour.PumpTruck" />
                             </NxFormGroup>
                         }
                     </ChildContent>
@@ -82,7 +82,7 @@
             if (!pgEnter) form.Add("SubmitOnEnter=\"false\"");
             form.Add("OnValidSubmit=\"SaveAsync\"");
 
-            var name = new List<string> { "Field=\"@nameof(PourForm.Name)\"" };
+            var name = new List<string> { "For=\"() => pour.Name\"" };
             if (pgNameSpan != 1) name.Add($"ColSpan=\"{pgNameSpan}\"");
             if (OrNull(pgNameLabel) is { } l) name.Add($"Label=\"{l}\"");
             if (pgDisabled) name.Add("Disabled=\"true\"");
@@ -92,15 +92,15 @@
                 "<NxForm " + string.Join(" ", form) + ">",
                 "    <ChildContent>",
                 "        <NxFormItem " + string.Join(" ", name) + " />",
-                "        <NxFormItem Field=\"@nameof(PourForm.Volume)\" />",
-                "        <NxFormItem Field=\"@nameof(PourForm.PourDate)\" />",
-                "        <NxFormItem Field=\"@nameof(PourForm.Status)\" />",
+                "        <NxFormItem For=\"() => pour.Volume\" />",
+                "        <NxFormItem For=\"() => pour.PourDate\" />",
+                "        <NxFormItem For=\"() => pour.Status\" />",
             };
             if (pgGroup)
             {
                 lines.Add("        <NxFormGroup Label=\"Crew\">");
-                lines.Add("            <NxFormItem Field=\"@nameof(PourForm.Trucks)\" />");
-                lines.Add("            <NxFormItem Field=\"@nameof(PourForm.PumpTruck)\" />");
+                lines.Add("            <NxFormItem For=\"() => pour.Trucks\" />");
+                lines.Add("            <NxFormItem For=\"() => pour.PumpTruck\" />");
                 lines.Add("        </NxFormGroup>");
             }
             lines.Add("    </ChildContent>");

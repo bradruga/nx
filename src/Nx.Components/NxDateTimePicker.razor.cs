@@ -8,11 +8,12 @@ using Microsoft.JSInterop;
 namespace Nx.Components;
 
 /// <summary>
-/// A date and time input for <see cref="DateTime"/>, nullable or not: typed in any .NET format, or picked from a
-/// popup with <see cref="NxDatePicker{TValue}"/>'s calendar beside a list of times every <see cref="TimeStep"/>
-/// minutes. Min and max are date-times. On a phone the popup is a full-screen sheet with Date and Time tabs.
+/// A date and time input for <see cref="DateTime"/> or <see cref="DateTimeOffset"/>, nullable or not: typed in any .NET
+/// format, or picked from a popup with <see cref="NxDatePicker{TValue}"/>'s calendar beside a list of times every
+/// <see cref="TimeStep"/> minutes. Min and max are date-times. On a phone the popup is a full-screen sheet with Date
+/// and Time tabs; the time is picked from hour and minute columns (<see cref="NxTimeColumns"/>).
 /// </summary>
-/// <typeparam name="TValue"><see cref="DateTime"/> or <c>DateTime?</c>.</typeparam>
+/// <typeparam name="TValue"><see cref="DateTime"/> or <see cref="DateTimeOffset"/>, nullable or not. A <see cref="DateTimeOffset"/> keeps its offset; a new one takes the browser's.</typeparam>
 /// <example>
 /// <code>
 /// &lt;NxDateTimePicker Label="Gate opens" @bind-Value="schedule.OpenTime" Format="M/d/yyyy h:mm tt" TimeStep="15" /&gt;
@@ -22,7 +23,7 @@ public partial class NxDateTimePicker<TValue> : IAsyncDisposable
 {
     // ── JS interop ────────────────────────────────────────────────────────────
     // As NxDatePicker, through nx-picker.js: the mask of an all-number format, popup placement, the keys the
-    // open popup takes over, scrolling the time list, and the sheet's scroll lock.
+    // open popup takes over, scrolling the time list, the sheet's scroll lock, and swapping in the edit text on focus.
 
     private const string ModulePath = "./_content/Nx.Components/nx-picker.js";
     private const int PopupMaxHeight = 480;
@@ -34,6 +35,7 @@ public partial class NxDateTimePicker<TValue> : IAsyncDisposable
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     private readonly FieldValidation validation;
+    private readonly BrowserTimeZone zone = new();
     private readonly string generatedId = $"nx-datetimepicker-{Guid.NewGuid():N}"[..27];
     private IJSObjectReference? module;
     private DotNetObjectReference<NxDateTimePicker<TValue>>? selfReference;
@@ -42,7 +44,6 @@ public partial class NxDateTimePicker<TValue> : IAsyncDisposable
     private ElementReference popup;
     private ElementReference popupBody;
     private ElementReference timeList;
-    private ElementReference sheetList;
     private NxCalendar? calendar;
     private DateTimeFormatter formatter = null!;
     private string? appliedMask;
@@ -50,8 +51,10 @@ public partial class NxDateTimePicker<TValue> : IAsyncDisposable
     private DateTime? current;              // the value as last seen or raised
     private List<TimeOnly> times = [];
     private int activeTime = -1;
+    private TimeOnly sheetTime;             // what the sheet's time columns show; Done commits it
     private DateTimePane pane;
     private bool hasFocus;
+    private bool editOnFocusApplied;
     private bool isNarrow;
     private bool popupOpen, popupPlaced, closePending, scrollPending;
     private bool sheetOpen, sheetFocusPending, scrollLockPending, returnFocusPending;
@@ -81,7 +84,7 @@ public partial class NxDateTimePicker<TValue> : IAsyncDisposable
     /// <summary>Returns <c>true</c> for days that cannot be picked. Typing one reverts the text.</summary>
     [Parameter] public Func<DateOnly, bool>? IsDateDisabled { get; set; }
 
-    /// <summary>Minutes between the times in the list. Typed times need not be on a step. Default: <c>30</c>.</summary>
+    /// <summary>Minutes between the times in the list. Typed times need not be on a step; the phone sheet's minute column lists every 5 minutes, or every <c>TimeStep</c> under 5. Default: <c>30</c>.</summary>
     [Parameter] public int TimeStep { get; set; } = 30;
 
     // ── Format ────────────────────────────────────────────────────────────────
@@ -206,9 +209,14 @@ public partial class NxDateTimePicker<TValue> : IAsyncDisposable
 
     private string TimeTitle => CurrentDate?.ToString("ddd, MMM d", EffectiveCulture) ?? "Time";
     private string SheetDateText => CurrentDate?.ToString("d", EffectiveCulture) ?? "—";
-    private string SheetTimeText => CurrentTime is TimeOnly t ? FormatTime(t) : "—";
+    private string SheetTimeText => pane == DateTimePane.Time ? FormatTime(sheetTime) : CurrentTime is TimeOnly t ? FormatTime(t) : "—";
+
+    // The sheet's time columns are for one day: Min and Max limit them only on their own days.
+    private TimeOnly? MinTime => Min is DateTime m && DateOnly.FromDateTime(m) == ListDate ? new TimeOnly(m.Hour, m.Minute) : null;
+    private TimeOnly? MaxTime => Max is DateTime m && DateOnly.FromDateTime(m) == ListDate ? new TimeOnly(m.Hour, m.Minute) : null;
 
     private string FormatTime(TimeOnly time) => time.ToString("t", EffectiveCulture);
+    private bool Is24Hour => !EffectiveCulture.DateTimeFormat.ShortTimePattern.Contains('h');
 
     private string TimeClass(int index, TimeOnly time) => string.Join(' ', new[]
     {
@@ -264,7 +272,7 @@ public partial class NxDateTimePicker<TValue> : IAsyncDisposable
     protected override void OnParametersSet()
     {
         if (!DateTimeConversion<TValue>.IsSupported)
-            throw new InvalidOperationException($"NxDateTimePicker supports DateTime and DateTime?; not {typeof(TValue).Name}.");
+            throw new InvalidOperationException($"NxDateTimePicker supports DateTime and DateTimeOffset, nullable or not; not {typeof(TValue).Name}.");
 
         validation.Attach(CascadedEditContext, ValueExpression);
         formatter = new DateTimeFormatter(Format, EffectiveCulture);
@@ -281,12 +289,23 @@ public partial class NxDateTimePicker<TValue> : IAsyncDisposable
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // Removed while its start-up calls were still on their way: the module or the circuit is gone, nothing to set up.
+        try { await AfterRenderAsync(firstRender); }
+        catch (Exception gone) when (gone is JSDisconnectedException or ObjectDisposedException or OperationCanceledException) { }
+    }
+
+    private async Task AfterRenderAsync(bool firstRender)
+    {
         if (firstRender)
         {
             module = await JS.InvokeAsync<IJSObjectReference>("import", ModulePath);
             if (module is null)
                 return;
             await module.InvokeVoidAsync("init", input);
+            await module.InvokeVoidAsync("editOnFocus", input, false);
+            editOnFocusApplied = true;
+            if (DateTimeConversion<TValue>.IsOffset)
+                await zone.LoadAsync(module);
             if (MobileMode == NxMobileMode.Auto)
             {
                 selfReference = DotNetObjectReference.Create(this);
@@ -330,9 +349,8 @@ public partial class NxDateTimePicker<TValue> : IAsyncDisposable
         if (sheetFocusPending && sheetOpen)
         {
             sheetFocusPending = false;
-            if (pane == DateTimePane.Time)
-                await module.InvokeVoidAsync("scrollActive", sheetList, true);
-            else if (calendar is not null)
+            // The time columns take focus themselves as they appear.
+            if (pane == DateTimePane.Date && calendar is not null)
                 await calendar.FocusAsync();
         }
         if (returnFocusPending)
@@ -395,6 +413,15 @@ public partial class NxDateTimePicker<TValue> : IAsyncDisposable
     {
         pane = which;
         sheetFocusPending = true;
+        ResetSheetTime();
+    }
+
+    /// <summary>The columns open on the value's time, else on the list's time nearest to now, within the day's limits.</summary>
+    private void ResetSheetTime()
+    {
+        sheetTime = CurrentTime ?? (times.Count > 0 ? times[NearestTime(null)] : TimeOnly.MinValue);
+        if (MinTime is TimeOnly min && sheetTime < min) sheetTime = min;
+        if (MaxTime is TimeOnly max && sheetTime > max) sheetTime = max;
     }
 
     // ── Committing ────────────────────────────────────────────────────────────
@@ -419,7 +446,9 @@ public partial class NxDateTimePicker<TValue> : IAsyncDisposable
         times = BuildTimes(ListDate);
         if (!changed)
             return;
-        await ValueChanged.InvokeAsync(DateTimeConversion<TValue>.FromDateTime(value, Value));
+        if (DateTimeConversion<TValue>.IsOffset)
+            await zone.WhenLoadedAsync();
+        await ValueChanged.InvokeAsync(DateTimeConversion<TValue>.FromDateTime(value, Value, zone));
         validation.NotifyFieldChanged();
     }
 
@@ -433,6 +462,7 @@ public partial class NxDateTimePicker<TValue> : IAsyncDisposable
         pane = DateTimePane.Time;
         activeTime = NearestTime(CurrentTime);
         scrollPending = true;
+        ResetSheetTime();
         if (sheetOpen)
             sheetFocusPending = true;
     }
@@ -525,7 +555,8 @@ public partial class NxDateTimePicker<TValue> : IAsyncDisposable
     private async Task HandleFocus(FocusEventArgs e)
     {
         hasFocus = true;
-        if (Editing && currentText == formatter.Display(current))
+        // nx-input.js has already swapped in the edit text; only before it has loaded is that done here.
+        if (!editOnFocusApplied && Editing && currentText == formatter.Display(current))
             currentText = formatter.Edit(current);
         await OnFocus.InvokeAsync(e);
     }
@@ -564,7 +595,7 @@ public partial class NxDateTimePicker<TValue> : IAsyncDisposable
                     await module.InvokeVoidAsync("lockScroll", false);
                 await module.DisposeAsync();
             }
-            catch (JSDisconnectedException)
+            catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
             {
                 // The circuit is gone; the browser cleaned up with it.
             }

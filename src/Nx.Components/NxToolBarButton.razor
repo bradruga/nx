@@ -33,7 +33,7 @@
     [Parameter] public NxButtonVariant Variant { get; set; } = NxButtonVariant.Secondary;
 
     /// <summary>The button's size. Default: the toolbar's <see cref="NxToolBar.Size"/>.</summary>
-    [Parameter] public NxButtonSize? Size { get; set; }
+    [Parameter] public NxSize? Size { get; set; }
 
     /// <summary>Greys the button out, on the bar and in the More menu.</summary>
     [Parameter] public bool Disabled { get; set; }
@@ -78,7 +78,7 @@
             if (Title is not null) parameters[nameof(NxButton.Title)] = Title;
             if (Id is not null) parameters["id"] = Id;
             parameters[nameof(NxButton.Variant)] = Variant;
-            parameters[nameof(NxButton.Size)] = Size ?? Bar?.Size ?? NxButtonSize.Medium;
+            parameters[nameof(NxButton.Size)] = Size ?? Bar?.Size ?? NxSize.Medium;
             parameters[nameof(NxButton.Disabled)] = Disabled;
             parameters[nameof(NxButton.OnClick)] = EventCallback.Factory.Create<MouseEventArgs>(this, ClickAsync);
             parameters[nameof(NxButton.Class)] = overflowed ? $"nx-toolbar-item nx-toolbar-item-overflow {Class}".TrimEnd() : $"nx-toolbar-item {Class}".TrimEnd();

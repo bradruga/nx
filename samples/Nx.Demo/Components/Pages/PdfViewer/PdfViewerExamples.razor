@@ -23,7 +23,7 @@
             @for (var i = 1; i <= Math.Max(pageCount, 1); i++)
             {
                 var target = i;
-                <NxButton id="@($"page-jump-{i}")" Size="NxButtonSize.Small" Variant="@(currentPage == target ? NxButtonVariant.Primary : NxButtonVariant.Secondary)"
+                <NxButton id="@($"page-jump-{i}")" Size="NxSize.Small" Variant="@(currentPage == target ? NxButtonVariant.Primary : NxButtonVariant.Secondary)"
                           OnClick="() => currentPage = target">Page @i</NxButton>
             }
             <span class="demo-value" id="page-value">Page @currentPage of @pageCount</span>
@@ -41,9 +41,9 @@
     @* code *@
     <div class="demo-stage demo-stage-column">
         <div class="demo-row">
-            <NxButton id="switch-report" Size="NxButtonSize.Small" OnClick="() => switched = pdf">Pour report</NxButton>
-            <NxButton id="switch-none" Size="NxButtonSize.Small" OnClick="() => switched = null">No document</NxButton>
-            <NxButton id="switch-broken" Size="NxButtonSize.Small" OnClick="() => switched = Broken">A broken file</NxButton>
+            <NxButton id="switch-report" Size="NxSize.Small" OnClick="() => switched = pdf">Pour report</NxButton>
+            <NxButton id="switch-none" Size="NxSize.Small" OnClick="() => switched = null">No document</NxButton>
+            <NxButton id="switch-broken" Size="NxSize.Small" OnClick="() => switched = Broken">A broken file</NxButton>
             <span class="demo-value" id="switch-error">@switchError</span>
         </div>
         <NxPdfViewer Id="switch-pdf" Data="switched" Tools="NxPdfViewerTools.Pager | NxPdfViewerTools.Download" NoDataText="Pick a document above"

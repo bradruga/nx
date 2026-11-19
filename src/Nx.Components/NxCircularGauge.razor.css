@@ -26,7 +26,7 @@
 .nx-gauge-track { stroke: var(--nx-gauge-track); }
 
 .nx-gauge-pointer {
-    stroke: var(--nx-gauge-pointer);
+    stroke: var(--nx-gauge-pointer, var(--nx-accent));
     transition: stroke-dashoffset var(--nx-gauge-duration) ease-out;
 }
 

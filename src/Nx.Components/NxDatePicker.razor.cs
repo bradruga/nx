@@ -8,13 +8,13 @@ using Microsoft.JSInterop;
 namespace Nx.Components;
 
 /// <summary>
-/// A date input for <see cref="DateTime"/> or <see cref="DateOnly"/>, nullable or not: a date typed freely in the
+/// A date input for <see cref="DateTime"/>, <see cref="DateTimeOffset"/> or <see cref="DateOnly"/>, nullable or not: a date typed freely in the
 /// culture's order and read when committed (<c>12/5</c> is this year's), a calendar popup (month, year and decade
 /// views) with min/max, disabled dates, week numbers and Today, and the same label and clear options as
 /// <see cref="NxTextBox"/>. Up and Down step the day, month or year under the caret; Alt+Down opens the calendar.
 /// On a phone the calendar opens as a full-screen sheet. <see cref="ShowCalendar"/> off leaves the field alone.
 /// </summary>
-/// <typeparam name="TValue">The bound date type. A <see cref="DateTime"/> keeps its time of day.</typeparam>
+/// <typeparam name="TValue">The bound date type. A <see cref="DateTime"/> keeps its time of day; a <see cref="DateTimeOffset"/> its offset too, and a new one takes the browser's.</typeparam>
 /// <example>
 /// <code>
 /// &lt;NxDatePicker Label="Pour date" @bind-Value="order.PourDate" Min="DateOnly.FromDateTime(DateTime.Today)" /&gt;
@@ -24,8 +24,9 @@ public partial class NxDatePicker<TValue> : IAsyncDisposable
 {
     // ── JS interop ────────────────────────────────────────────────────────────
     // nx-picker.js places the popup, cancels the caret moves of the keys the open calendar uses, locks page
-    // scroll under the phone sheet and, while the calendar is closed, steps the date part under the caret. Parsing and
-    // the calendar itself are C#.
+    // scroll under the phone sheet and, while the calendar is closed, steps the date part under the caret. On focus it
+    // swaps the display text for the edit text (data-nx-edit) in the browser, so the swap cannot land on typed text.
+    // Parsing and the calendar itself are C#.
 
     private const string ModulePath = "./_content/Nx.Components/nx-picker.js";
     private const int PopupMaxHeight = 480;
@@ -33,6 +34,7 @@ public partial class NxDatePicker<TValue> : IAsyncDisposable
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     private readonly FieldValidation validation;
+    private readonly BrowserTimeZone zone = new();
     private readonly string generatedId = $"nx-datepicker-{Guid.NewGuid():N}"[..23];
     private IJSObjectReference? module;
     private DotNetObjectReference<NxDatePicker<TValue>>? selfReference;
@@ -46,6 +48,7 @@ public partial class NxDatePicker<TValue> : IAsyncDisposable
     private DateFormatter formatter = null!;
     private string? appliedStepShape;
     private bool hasFocus;
+    private bool editOnFocusApplied;
     private bool isNarrow;
     private bool popupOpen, popupPlaced, closePending;
     private bool sheetOpen, sheetFocusPending, scrollLockPending, returnFocusPending;
@@ -208,12 +211,23 @@ public partial class NxDatePicker<TValue> : IAsyncDisposable
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // Removed while its start-up calls were still on their way: the module or the circuit is gone, nothing to set up.
+        try { await AfterRenderAsync(firstRender); }
+        catch (Exception gone) when (gone is JSDisconnectedException or ObjectDisposedException or OperationCanceledException) { }
+    }
+
+    private async Task AfterRenderAsync(bool firstRender)
+    {
         if (firstRender)
         {
             module = await JS.InvokeAsync<IJSObjectReference>("import", ModulePath);
             if (module is null)
                 return;
             await module.InvokeVoidAsync("init", input);
+            await module.InvokeVoidAsync("editOnFocus", input, false);
+            editOnFocusApplied = true;
+            if (DateConversion<TValue>.IsOffset)
+                await zone.LoadAsync(module);
             if (MobileMode == NxMobileMode.Auto)
             {
                 selfReference = DotNetObjectReference.Create(this);
@@ -340,7 +354,9 @@ public partial class NxDatePicker<TValue> : IAsyncDisposable
         currentText = Editing ? FormatEdit(date) : FormatDisplay(date);
         if (!changed)
             return;
-        await ValueChanged.InvokeAsync(DateConversion<TValue>.FromDate(date, Value));
+        if (DateConversion<TValue>.IsOffset)
+            await zone.WhenLoadedAsync();
+        await ValueChanged.InvokeAsync(DateConversion<TValue>.FromDate(date, Value, zone));
         validation.NotifyFieldChanged();
     }
 
@@ -409,7 +425,8 @@ public partial class NxDatePicker<TValue> : IAsyncDisposable
     private async Task HandleFocus(FocusEventArgs e)
     {
         hasFocus = true;
-        if (Editing && currentText == FormatDisplay(current))
+        // nx-input.js has already swapped in the edit text; only before it has loaded is that done here.
+        if (!editOnFocusApplied && Editing && currentText == FormatDisplay(current))
             currentText = FormatEdit(current);
         await OnFocus.InvokeAsync(e);
     }
@@ -448,7 +465,7 @@ public partial class NxDatePicker<TValue> : IAsyncDisposable
                     await module.InvokeVoidAsync("lockScroll", false);
                 await module.DisposeAsync();
             }
-            catch (JSDisconnectedException)
+            catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
             {
                 // The circuit is gone; the browser cleaned up with it.
             }

@@ -361,19 +361,128 @@ public class NxTimePickerTests : BunitContext
     }
 
     [Test]
-    public async Task Sheet_ListOfButtons_TapPicksAndCloses()
+    public async Task Sheet_Columns_TapsSetTheParts_DoneCommitsOnce()
     {
         var raised = new List<TimeOnly?>();
-        var cut = RenderBound<TimeOnly?>(raised, null, p => p.Add(x => x.MobileMode, NxMobileMode.Always).Add(x => x.Step, 60));
+        var cut = RenderBound<TimeOnly?>(raised, new TimeOnly(9, 30), p => p.Add(x => x.MobileMode, NxMobileMode.Always).Add(x => x.Label, "Arrival"));
 
         await cut.Find(".nx-timepicker-toggle").ClickAsync(new MouseEventArgs());
 
-        Assert.That(cut.FindAll(".nx-sheet button.nx-timepicker-item"), Has.Count.EqualTo(24));
-        Assert.That(module.Invocations.Any(i => i.Identifier == "scrollActive" && (bool)i.Arguments[1]!), Is.True);
-        await cut.FindAll(".nx-sheet button.nx-timepicker-item")[13].ClickAsync(new MouseEventArgs());
+        Assert.That(cut.FindAll(".nx-timepicker-popup"), Is.Empty, "no list in the sheet");
+        Assert.That(cut.Find(".nx-sheet .nx-timecolumns").GetAttribute("aria-label"), Is.EqualTo("Arrival"));
+        Assert.That(cut.FindAll(".nx-sheet [role=listbox]").Select(l => l.GetAttribute("aria-label")), Is.EqualTo(new[] { "Hour", "Minute", "AM or PM" }));
+        Assert.That(cut.FindAll(".nx-sheet [aria-selected=true]").Select(o => o.TextContent.Trim()), Is.EqualTo(new[] { "9", "30", "AM" }));
+        Assert.That(module.Invocations.Any(i => i.Identifier == "initColumns"), Is.True);
 
-        Assert.That(raised, Is.EqualTo(new TimeOnly?[] { new TimeOnly(13, 0) }));
+        await SheetOption(cut, "hours", "1").ClickAsync(new MouseEventArgs());
+        await SheetOption(cut, "minutes", "45").ClickAsync(new MouseEventArgs());
+        await SheetOption(cut, "periods", "PM").ClickAsync(new MouseEventArgs());
+        Assert.That(raised, Is.Empty, "nothing is committed until Done");
+        Assert.That(cut.Find(".nx-timepicker-sheet-value").TextContent, Is.EqualTo("1:45 PM"));
+        Assert.That(cut.Find(".nx-timepicker-sheet-value").GetAttribute("aria-live"), Is.EqualTo("polite"));
+
+        await cut.Find(".nx-timepicker-sheet-done").ClickAsync(new MouseEventArgs());
+        Assert.That(raised, Is.EqualTo(new TimeOnly?[] { new TimeOnly(13, 45) }));
         Assert.That(cut.FindAll(".nx-sheet"), Is.Empty);
+    }
+
+    private static AngleSharp.Dom.IElement SheetOption<T>(IRenderedComponent<NxTimePicker<T>> cut, string column, string text) =>
+        cut.FindAll($".nx-sheet .nx-timecolumns-{column} [role=option]").Single(o => o.TextContent.Trim() == text);
+
+    [Test]
+    public async Task Sheet_Close_DiscardsTheColumnsTime()
+    {
+        var raised = new List<TimeOnly?>();
+        var cut = RenderBound<TimeOnly?>(raised, new TimeOnly(9, 30), p => p.Add(x => x.MobileMode, NxMobileMode.Always));
+
+        await cut.Find(".nx-timepicker-toggle").ClickAsync(new MouseEventArgs());
+        await SheetOption(cut, "hours", "11").ClickAsync(new MouseEventArgs());
+        await cut.Find(".nx-sheet-close").ClickAsync(new MouseEventArgs());
+
+        Assert.That(raised, Is.Empty);
+        Assert.That(cut.Find("input").GetAttribute("value"), Is.EqualTo("9:30 AM"));
+    }
+
+    [Test]
+    public async Task Sheet_24Hour_NoPeriodColumn_MinutesEveryFive()
+    {
+        var raised = new List<TimeOnly?>();
+        var cut = RenderBound<TimeOnly?>(raised, new TimeOnly(14, 0), p => p
+            .Add(x => x.MobileMode, NxMobileMode.Always).Add(x => x.Use24Hour, true).Add(x => x.Step, 30));
+
+        await cut.Find(".nx-timepicker-toggle").ClickAsync(new MouseEventArgs());
+
+        Assert.That(cut.FindAll(".nx-sheet [role=listbox]"), Has.Count.EqualTo(2));
+        Assert.That(cut.FindAll(".nx-sheet .nx-timecolumns-hours [role=option]").Select(o => o.TextContent.Trim()).Take(3), Is.EqualTo(new[] { "00", "01", "02" }));
+        Assert.That(cut.FindAll(".nx-sheet .nx-timecolumns-hours [role=option]"), Has.Count.EqualTo(24));
+        Assert.That(cut.FindAll(".nx-sheet .nx-timecolumns-minutes [role=option]").Select(o => o.TextContent.Trim()),
+            Is.EqualTo(new[] { "00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55" }), "off the 30-minute step too");
+
+        await SheetOption(cut, "minutes", "05").ClickAsync(new MouseEventArgs());
+        await cut.Find(".nx-timepicker-sheet-done").ClickAsync(new MouseEventArgs());
+        Assert.That(raised.Single(), Is.EqualTo(new TimeOnly(14, 5)));
+    }
+
+    [Test]
+    public async Task Sheet_StepUnderFive_ListsEveryStep_OffGridValueKeepsItsRow()
+    {
+        var fine = RenderBound<TimeOnly?>([], new TimeOnly(9, 0), p => p.Add(x => x.MobileMode, NxMobileMode.Always).Add(x => x.Step, 1));
+        await fine.Find(".nx-timepicker-toggle").ClickAsync(new MouseEventArgs());
+        Assert.That(fine.FindAll(".nx-sheet .nx-timecolumns-minutes [role=option]"), Has.Count.EqualTo(60));
+
+        var odd = RenderBound<TimeOnly?>([], new TimeOnly(9, 7), p => p.Add(x => x.MobileMode, NxMobileMode.Always));
+        await odd.Find(".nx-timepicker-toggle").ClickAsync(new MouseEventArgs());
+        Assert.That(odd.FindAll(".nx-sheet .nx-timecolumns-minutes [role=option]").Select(o => o.TextContent.Trim()).Take(4),
+            Is.EqualTo(new[] { "00", "05", "07", "10" }));
+        Assert.That(odd.Find(".nx-sheet .nx-timecolumns-minutes [aria-selected=true]").TextContent.Trim(), Is.EqualTo("07"));
+
+        // Still listed after another minute is picked, so the way back is one tap.
+        await SheetOption(odd, "minutes", "10").ClickAsync(new MouseEventArgs());
+        Assert.That(odd.FindAll(".nx-sheet .nx-timecolumns-minutes [role=option]").Select(o => o.TextContent.Trim()), Does.Contain("07"));
+    }
+
+    [Test]
+    public async Task Sheet_MinMax_DisablesWhatIsOutside_PicksMoveToTheLimit()
+    {
+        var raised = new List<TimeOnly?>();
+        var cut = RenderBound<TimeOnly?>(raised, new TimeOnly(7, 15), p => p
+            .Add(x => x.MobileMode, NxMobileMode.Always)
+            .Add(x => x.Min, new TimeOnly(6, 30))
+            .Add(x => x.Max, new TimeOnly(11, 0)));
+
+        await cut.Find(".nx-timepicker-toggle").ClickAsync(new MouseEventArgs());
+
+        Assert.That(SheetOption(cut, "hours", "5").HasAttribute("disabled"), Is.True);
+        Assert.That(SheetOption(cut, "hours", "6").HasAttribute("disabled"), Is.False);
+        Assert.That(SheetOption(cut, "hours", "12").HasAttribute("disabled"), Is.True, "12 AM is midnight");
+        Assert.That(SheetOption(cut, "periods", "PM").HasAttribute("disabled"), Is.True);
+
+        await SheetOption(cut, "hours", "6").ClickAsync(new MouseEventArgs());
+        Assert.That(cut.Find(".nx-timepicker-sheet-value").TextContent, Is.EqualTo("6:30 AM"), "6:15 is before Min");
+        Assert.That(SheetOption(cut, "minutes", "15").HasAttribute("disabled"), Is.True);
+        Assert.That(module.Invocations.Any(i => i.Identifier == "revealColumns"), Is.True);
+
+        await cut.Find(".nx-timepicker-sheet-done").ClickAsync(new MouseEventArgs());
+        Assert.That(raised.Single(), Is.EqualTo(new TimeOnly(6, 30)));
+    }
+
+    [Test]
+    public async Task Sheet_Empty_OpensOnTheListsTimeNearestNow_OneTabStopAColumn()
+    {
+        var raised = new List<TimeOnly?>();
+        var cut = RenderBound<TimeOnly?>(raised, null, p => p
+            .Add(x => x.MobileMode, NxMobileMode.Always)
+            .Add(x => x.Min, new TimeOnly(23, 0)).Add(x => x.Max, new TimeOnly(23, 0)));
+
+        await cut.Find(".nx-timepicker-toggle").ClickAsync(new MouseEventArgs());
+
+        Assert.That(cut.Find(".nx-timepicker-sheet-value").TextContent, Is.EqualTo("11:00 PM"));
+        foreach (var column in cut.FindAll(".nx-sheet [role=listbox]"))
+            Assert.That(column.QuerySelectorAll("[role=option][tabindex='0']"), Has.Length.EqualTo(1));
+        Assert.That(cut.FindAll(".nx-sheet [role=option][tabindex='0']").Select(o => o.GetAttribute("aria-selected")), Is.All.EqualTo("true"));
+
+        await cut.Find(".nx-timepicker-sheet-done").ClickAsync(new MouseEventArgs());
+        Assert.That(raised.Single(), Is.EqualTo(new TimeOnly(23, 0)));
     }
 
     // ── Validation ────────────────────────────────────────────────────────────
@@ -406,5 +515,36 @@ public class NxTimePickerTests : BunitContext
 
         Assert.That(cut.Find("input").GetAttribute("aria-invalid"), Is.EqualTo("true"));
         Assert.That(cut.Find(".nx-timepicker").ClassList, Does.Contain("nx-timepicker-invalid"));
+    }
+
+    // ── DateTimeOffset ────────────────────────────────────────────────────────
+
+    [Test]
+    public async Task DateTimeOffset_KeepsItsDateAndOffset()
+    {
+        module.Setup<BrowserZone>("timeZone").SetResult(new BrowserZone("America/Chicago", -360));
+        var raised = new List<DateTimeOffset>();
+        var cut = RenderBound(raised, new DateTimeOffset(2026, 7, 9, 8, 0, 0, TimeSpan.FromHours(2)));
+        Assert.That(cut.Find("input").GetAttribute("value"), Is.EqualTo("8:00 AM"));
+
+        await TypeAndCommitAsync(cut, "4:45 PM");
+
+        Assert.That(raised.Single(), Is.EqualTo(new DateTimeOffset(2026, 7, 9, 16, 45, 0, TimeSpan.FromHours(2))));
+        Assert.That(raised.Single().Offset, Is.EqualTo(TimeSpan.FromHours(2)));
+    }
+
+    [Test]
+    public async Task DateTimeOffset_Empty_IsTodayInTheBrowsersZoneAtItsOffset()
+    {
+        module.Setup<BrowserZone>("timeZone").SetResult(new BrowserZone("Pacific/Kiritimati", 840));
+        var raised = new List<DateTimeOffset?>();
+        var cut = RenderBound<DateTimeOffset?>(raised);
+
+        await TypeAndCommitAsync(cut, "4:45 PM");
+
+        var value = raised.Single()!.Value;
+        Assert.That(value.Offset, Is.EqualTo(TimeSpan.FromHours(14)));
+        Assert.That(value.TimeOfDay, Is.EqualTo(new TimeSpan(16, 45, 0)));
+        Assert.That(value.Date, Is.EqualTo(DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(14)).Date).Or.EqualTo(DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(14)).Date.AddDays(-1)));
     }
 }

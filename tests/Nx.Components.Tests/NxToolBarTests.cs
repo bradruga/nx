@@ -135,7 +135,7 @@ public class NxToolBarTests : BunitContext
     public void ToolbarSize_ReachesButtons_UnlessTheirOwn()
     {
         var cut = Render<NxToolBar>(p => p
-            .Add(x => x.Size, NxButtonSize.Small)
+            .Add(x => x.Size, NxSize.Small)
             .Add(x => x.ChildContent, b =>
             {
                 b.OpenComponent<NxToolBarButton>(0);
@@ -145,7 +145,7 @@ public class NxToolBarTests : BunitContext
                 b.OpenComponent<NxToolBarButton>(3);
                 b.AddComponentParameter(4, nameof(NxToolBarButton.Id), "b");
                 b.AddComponentParameter(5, nameof(NxToolBarButton.Text), "B");
-                b.AddComponentParameter(6, nameof(NxToolBarButton.Size), (NxButtonSize?)NxButtonSize.Large);
+                b.AddComponentParameter(6, nameof(NxToolBarButton.Size), (NxSize?)NxSize.Large);
                 b.AddComponentParameter(7, nameof(NxToolBarButton.Variant), NxButtonVariant.Primary);
                 b.CloseComponent();
             }));

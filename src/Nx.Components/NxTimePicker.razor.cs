@@ -9,11 +9,12 @@ using Microsoft.JSInterop;
 namespace Nx.Components;
 
 /// <summary>
-/// A time input for <see cref="TimeOnly"/>, <see cref="TimeSpan"/> or <see cref="DateTime"/>, nullable or not: typed
-/// entry in 12- or 24-hour form, a list of times every <see cref="Step"/> minutes, min/max, and the same label
-/// and clear options as <see cref="NxTextBox"/>. On a phone the list opens as a full-screen sheet.
+/// A time input for <see cref="TimeOnly"/>, <see cref="TimeSpan"/>, <see cref="DateTime"/> or <see cref="DateTimeOffset"/>,
+/// nullable or not: typed entry in 12- or 24-hour form, a list of times every <see cref="Step"/> minutes, min/max, and
+/// the same label and clear options as <see cref="NxTextBox"/>. On a phone it opens as a full-screen sheet with hour
+/// and minute columns (<see cref="NxTimeColumns"/>) and Done.
 /// </summary>
-/// <typeparam name="TValue">The bound time type. A <see cref="DateTime"/> keeps its date.</typeparam>
+/// <typeparam name="TValue">The bound time type. A <see cref="DateTime"/> keeps its date; a <see cref="DateTimeOffset"/> its offset too, and a new one takes the browser's.</typeparam>
 /// <example>
 /// <code>
 /// &lt;NxTimePicker Label="Truck arrives" @bind-Value="load.Arrival" Step="15" Min="new TimeOnly(6, 0)" /&gt;
@@ -34,6 +35,7 @@ public partial class NxTimePicker<TValue> : IAsyncDisposable
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     private readonly FieldValidation validation;
+    private readonly BrowserTimeZone zone = new();
     private readonly string generatedId = $"nx-timepicker-{Guid.NewGuid():N}"[..23];
     private IJSObjectReference? module;
     private DotNetObjectReference<NxTimePicker<TValue>>? selfReference;
@@ -41,17 +43,17 @@ public partial class NxTimePicker<TValue> : IAsyncDisposable
     private ElementReference toggle;
     private ElementReference popup;
     private ElementReference list;
-    private ElementReference sheetList;
     private List<TimeOnly> times = [];
     private string currentText = "";
     private TimeOnly? current;
+    private TimeOnly sheetTime;         // what the sheet's columns show; Done commits it
     private int activeIndex = -1;
     private string? appliedMask;
     private bool hasFocus;
     private bool typedSinceNavigate;    // Enter takes the typed text rather than the highlight
     private bool isNarrow;
     private bool popupOpen, popupPlaced, closePending, scrollPending;
-    private bool sheetOpen, sheetFocusPending, scrollLockPending, returnFocusPending;
+    private bool sheetOpen, scrollLockPending, returnFocusPending;
 
     /// <summary>Creates the component.</summary>
     public NxTimePicker() => validation = new FieldValidation(StateHasChanged);
@@ -75,7 +77,7 @@ public partial class NxTimePicker<TValue> : IAsyncDisposable
     /// <summary>Latest allowed time; the list ends there. Typed times after it are moved back to it.</summary>
     [Parameter] public TimeOnly? Max { get; set; }
 
-    /// <summary>Minutes between the times in the list. Typed times need not be on a step. Default: <c>30</c>.</summary>
+    /// <summary>Minutes between the times in the list. Typed times need not be on a step; the phone sheet's minute column lists every 5 minutes, or every <c>Step</c> under 5. Default: <c>30</c>.</summary>
     [Parameter] public int Step { get; set; } = 30;
 
     // ── Format ────────────────────────────────────────────────────────────────
@@ -108,7 +110,7 @@ public partial class NxTimePicker<TValue> : IAsyncDisposable
     /// <summary>Focuses the input after it first renders.</summary>
     [Parameter] public bool AutoFocus { get; set; }
 
-    /// <summary>When the list opens as a full-screen sheet. Default: <see cref="NxMobileMode.Auto"/>.</summary>
+    /// <summary>When the picker opens as a full-screen sheet of hour and minute columns instead of the list. Default: <see cref="NxMobileMode.Auto"/>.</summary>
     [Parameter] public NxMobileMode MobileMode { get; set; } = NxMobileMode.Auto;
 
     /// <summary>With <see cref="NxMobileMode.Auto"/>, the viewport width in pixels at or below which the sheet is used. Default: <c>600</c>.</summary>
@@ -233,7 +235,7 @@ public partial class NxTimePicker<TValue> : IAsyncDisposable
     {
         if (!TimeConversion<TValue>.IsSupported)
             throw new InvalidOperationException(
-                $"NxTimePicker supports TimeOnly, TimeSpan and DateTime, nullable or not; not {typeof(TValue).Name}.");
+                $"NxTimePicker supports TimeOnly, TimeSpan, DateTime and DateTimeOffset, nullable or not; not {typeof(TValue).Name}.");
 
         validation.Attach(CascadedEditContext, ValueExpression);
         times = BuildTimes();
@@ -251,12 +253,21 @@ public partial class NxTimePicker<TValue> : IAsyncDisposable
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // Removed while its start-up calls were still on their way: the module or the circuit is gone, nothing to set up.
+        try { await AfterRenderAsync(firstRender); }
+        catch (Exception gone) when (gone is JSDisconnectedException or ObjectDisposedException or OperationCanceledException) { }
+    }
+
+    private async Task AfterRenderAsync(bool firstRender)
+    {
         if (firstRender)
         {
             module = await JS.InvokeAsync<IJSObjectReference>("import", ModulePath);
             if (module is null)
                 return;
             await module.InvokeVoidAsync("init", input);
+            if (TimeConversion<TValue>.IsOffset)
+                await zone.LoadAsync(module);
             if (MobileMode == NxMobileMode.Auto)
             {
                 selfReference = DotNetObjectReference.Create(this);
@@ -296,11 +307,6 @@ public partial class NxTimePicker<TValue> : IAsyncDisposable
             scrollLockPending = false;
             await module.InvokeVoidAsync("lockScroll", sheetOpen);
         }
-        if (sheetFocusPending && sheetOpen)
-        {
-            sheetFocusPending = false;
-            await module.InvokeVoidAsync("scrollActive", sheetList, true);
-        }
         if (returnFocusPending)
         {
             returnFocusPending = false;
@@ -326,8 +332,11 @@ public partial class NxTimePicker<TValue> : IAsyncDisposable
             return;
         if (UseSheet)
         {
+            // The columns open on the value, else on the list's time nearest to now.
+            sheetTime = current ?? times[NearestIndex(null)];
+            if (Min is TimeOnly min && sheetTime < min) sheetTime = min;
+            if (Max is TimeOnly max && sheetTime > max) sheetTime = max;
             sheetOpen = true;
-            sheetFocusPending = true;
             scrollLockPending = true;
             return;
         }
@@ -391,7 +400,9 @@ public partial class NxTimePicker<TValue> : IAsyncDisposable
         currentText = FormatDisplay(time);
         if (!changed)
             return;
-        await ValueChanged.InvokeAsync(TimeConversion<TValue>.FromTime(time, Value));
+        if (TimeConversion<TValue>.IsOffset)
+            await zone.WhenLoadedAsync();
+        await ValueChanged.InvokeAsync(TimeConversion<TValue>.FromTime(time, Value, zone));
         validation.NotifyFieldChanged();
     }
 
@@ -518,7 +529,7 @@ public partial class NxTimePicker<TValue> : IAsyncDisposable
                     await module.InvokeVoidAsync("lockScroll", false);
                 await module.DisposeAsync();
             }
-            catch (JSDisconnectedException)
+            catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
             {
                 // The circuit is gone; the browser cleaned up with it.
             }

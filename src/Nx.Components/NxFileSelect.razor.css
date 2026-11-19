@@ -29,7 +29,7 @@
 .nx-fileselect-remove:hover:not(:disabled) { background: var(--nx-surface-hover); color: var(--nx-danger); }
 .nx-fileselect-remove:disabled { opacity: 0.5; cursor: not-allowed; }
 .nx-fileselect-remove:focus { outline: none; }
-.nx-fileselect-remove:focus-visible { outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color); }
+.nx-fileselect-remove:focus-visible { outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color, var(--nx-accent)); }
 
 @media (pointer: coarse) {
     .nx-fileselect-remove { width: 44px; height: 44px; }

@@ -12,15 +12,15 @@
         <div class="nx-upload-actions">
             @if (ShowPasteButton)
             {
-                <NxButton Size="NxButtonSize.Small" Disabled="Disabled" OnClick="PasteAsync" id="@($"{InputId}-paste")">
+                <NxButton Size="NxSize.Small" Disabled="Disabled" OnClick="PasteAsync" id="@($"{InputId}-paste")">
                     <Icon><NxIcon Icon="NxIcons.Clipboard" /></Icon>
                     <ChildContent>Paste</ChildContent>
                 </NxButton>
             }
             @if (!AutoUpload && files.Any(f => f.Status == NxUploadStatus.Waiting))
             {
-                <NxButton Size="NxButtonSize.Small" Variant="NxButtonVariant.Primary" Disabled="Disabled" OnClick="UploadFilesAsync" id="@($"{InputId}-upload")">Upload</NxButton>
-                <NxButton Size="NxButtonSize.Small" Disabled="Disabled" OnClick="ClearFilesAsync" id="@($"{InputId}-clear")">Clear</NxButton>
+                <NxButton Size="NxSize.Small" Variant="NxButtonVariant.Primary" Disabled="Disabled" OnClick="UploadFilesAsync" id="@($"{InputId}-upload")">Upload</NxButton>
+                <NxButton Size="NxSize.Small" Disabled="Disabled" OnClick="ClearFilesAsync" id="@($"{InputId}-clear")">Clear</NxButton>
             }
             @if (pasteMessage is not null)
             {

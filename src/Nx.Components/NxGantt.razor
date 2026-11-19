@@ -25,10 +25,10 @@
                         var sorted = Same(column, sortColumn);
                         <div class="nx-gantt-th" style="width: @Px(WidthOf(column))" role="columnheader"
                              aria-sort="@(sorted ? (sortDescending ? "descending" : "ascending") : null)">
-                            @if (Sortable && column.Field is not null)
+                            @if (Sortable && column.Value is not null)
                             {
                                 <button type="button" class="nx-gantt-sort" @onclick="() => SortByAsync(column)">
-                                    @if (column.HeaderTemplate is not null) { @column.HeaderTemplate } else { @(column.Title ?? column.Field) }
+                                    @if (column.HeaderTemplate is not null) { @column.HeaderTemplate } else { @column.Title }
                                     @if (sorted) { <span aria-hidden="true">@(sortDescending ? " ↓" : " ↑")</span> }
                                 </button>
                             }
@@ -38,7 +38,7 @@
                             }
                             else
                             {
-                                <span class="nx-gantt-th-text">@(column.Title ?? column.Field)</span>
+                                <span class="nx-gantt-th-text">@column.Title</span>
                             }
                         </div>
                     }
@@ -49,10 +49,10 @@
                         @foreach (var column in Shown)
                         {
                             <div class="nx-gantt-th" style="width: @Px(WidthOf(column))">
-                                @if (column.Filterable && column.Field is not null)
+                                @if (column.Filterable && column.Value is not null)
                                 {
                                     <NxTextBox Value="@FilterText(column)" ValueChanged="v => FilterAsync(column, v)" Immediate="true"
-                                               DebounceDelay="250" Clearable="true" aria-label="@($"Filter {column.Title ?? column.Field}")" Class="nx-gantt-filter" />
+                                               DebounceDelay="250" Clearable="true" aria-label="@($"Filter {column.Title}")" Class="nx-gantt-filter" />
                                 }
                             </div>
                         }

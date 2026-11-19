@@ -59,7 +59,7 @@
     <p class="doc-note"><code>Size</code> on the toolbar sets every button's size; a button's <code>Variant</code> and <code>Size</code> are its own.</p>
     @* code *@
     <div class="demo-stage demo-stage-column">
-        @foreach (var size in Enum.GetValues<NxButtonSize>())
+        @foreach (var size in Enum.GetValues<NxSize>())
         {
             <NxToolBar Size="size" AriaLabel="@($"{size} toolbar")" Overflow="NxToolBarOverflow.Wrap">
                 <NxToolBarButton Text="@size.ToString()" Variant="NxButtonVariant.Ghost" />

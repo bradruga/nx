@@ -757,6 +757,148 @@ public class NxComboBoxTests : BunitContext
         Assert.That(OptionTexts(cut), Has.Count.EqualTo(7));
     }
 
+    // ── ItemByValue ───────────────────────────────────────────────────────────
+
+    private IRenderedComponent<NxComboBox<City, int?>> RenderProvider(Action<ComponentParameterCollectionBuilder<NxComboBox<City, int?>>> configure) =>
+        Render<NxComboBox<City, int?>>(p =>
+        {
+            p.Add(x => x.DataProvider, _ => Task.FromResult<IEnumerable<City>>(Cities));
+            p.Add(x => x.ItemText, c => c.Name);
+            p.Add(x => x.ItemValue, c => c.Id);
+            configure(p);
+        });
+
+    [Test]
+    public void ItemByValue_ShowsTheTextBeforeTheListLoads()
+    {
+        var asked = new List<int?>();
+        var cut = RenderProvider(p => p
+            .Add(x => x.Value, 2)
+            .Add(x => x.ItemByValue, id => { asked.Add(id); return Task.FromResult(Cities.FirstOrDefault(c => c.Id == id)); }));
+
+        Assert.That(cut.Find("input").GetAttribute("value"), Is.EqualTo("Boston"));
+        Assert.That(asked, Is.EqualTo(new int?[] { 2 }));
+    }
+
+    [Test]
+    public void ItemByValue_WithoutIt_TheFieldStaysEmpty()
+    {
+        var cut = RenderProvider(p => p.Add(x => x.Value, 2));
+
+        Assert.That(cut.Find("input").GetAttribute("value"), Is.Null.Or.Empty);
+    }
+
+    [Test]
+    public async Task ItemByValue_WithoutIt_TheFieldFillsOnceTheListLoads()
+    {
+        var cut = RenderProvider(p => p.Add(x => x.Value, 2));
+
+        await cut.Find(".nx-combobox-toggle").ClickAsync(new MouseEventArgs());
+        cut.WaitForState(() => cut.Find("input").GetAttribute("value") == "Boston");
+        await cut.Find(".nx-combobox-toggle").ClickAsync(new MouseEventArgs());
+
+        Assert.That(cut.Find("input").GetAttribute("value"), Is.EqualTo("Boston"));
+    }
+
+    [Test]
+    public async Task ItemByValue_SlowAnswer_FillsTheFieldWhenItArrives()
+    {
+        var gate = new TaskCompletionSource<City?>();
+        var cut = RenderProvider(p => p
+            .Add(x => x.Value, 2)
+            .Add(x => x.ItemByValue, _ => gate.Task));
+        Assert.That(cut.Find("input").GetAttribute("value"), Is.Null.Or.Empty);
+
+        await cut.InvokeAsync(() => gate.SetResult(Cities[1]));
+
+        cut.WaitForState(() => cut.Find("input").GetAttribute("value") == "Boston");
+    }
+
+    [Test]
+    public void ItemByValue_CalledOncePerValue_AcrossRenders()
+    {
+        var asked = new List<int?>();
+        var cut = RenderProvider(p => p
+            .Add(x => x.Value, 99)
+            .Add(x => x.ItemByValue, id => { asked.Add(id); return Task.FromResult<City?>(null); }));
+
+        cut.Render(p => p.Add(x => x.Placeholder, "City"));
+        cut.Render(p => p.Add(x => x.Placeholder, "Town"));
+
+        Assert.That(asked, Is.EqualTo(new int?[] { 99 }));
+        Assert.That(cut.Find("input").GetAttribute("value"), Is.Null.Or.Empty);
+    }
+
+    [Test]
+    public void ItemByValue_ValueChangedFromOutside_LooksUpTheNewValue()
+    {
+        var cut = RenderProvider(p => p
+            .Add(x => x.Value, 2)
+            .Add(x => x.ItemByValue, id => Task.FromResult(Cities.FirstOrDefault(c => c.Id == id))));
+
+        cut.Render(p => p.Add(x => x.Value, 5));
+
+        Assert.That(cut.Find("input").GetAttribute("value"), Is.EqualTo("Newark"));
+    }
+
+    [Test]
+    public async Task ItemByValue_LateAnswerForAnOldValue_IsDropped()
+    {
+        var gate = new TaskCompletionSource<City?>();
+        var cut = RenderProvider(p => p
+            .Add(x => x.Value, 2)
+            .Add(x => x.ItemByValue, id => id == 2 ? gate.Task : Task.FromResult(Cities.FirstOrDefault(c => c.Id == id))));
+
+        cut.Render(p => p.Add(x => x.Value, 5));
+        await cut.InvokeAsync(() => gate.SetResult(Cities[1]));
+
+        Assert.That(cut.Find("input").GetAttribute("value"), Is.EqualTo("Newark"));
+    }
+
+    [Test]
+    public void ItemByValue_BringsABoundSelectedItemAlong()
+    {
+        var items = new List<City?>();
+        var cut = RenderProvider(p => p
+            .Add(x => x.Value, 2)
+            .Add(x => x.SelectedItemChanged, (City? c) => items.Add(c))
+            .Add(x => x.ItemByValue, id => Task.FromResult(Cities.FirstOrDefault(c => c.Id == id))));
+
+        cut.WaitForState(() => items.Count == 1);
+        Assert.That(items[0], Is.EqualTo(Cities[1]));
+    }
+
+    [Test]
+    public void ItemByValue_NotCalledForData_OrWithoutAValue()
+    {
+        var asked = 0;
+        RenderCities(p => p
+            .Add(x => x.Value, 99)
+            .Add(x => x.ItemByValue, _ => { asked++; return Task.FromResult<City?>(null); }));
+        RenderProvider(p => p
+            .Add(x => x.ItemByValue, _ => { asked++; return Task.FromResult<City?>(null); }));
+
+        Assert.That(asked, Is.Zero);
+    }
+
+    [Test]
+    public void ItemByValue_Multiple_ChipsShowTheItemsText()
+    {
+        var asked = new List<int>();
+        var cut = Render<NxComboBox<City, int>>(p => p
+            .Add(x => x.DataProvider, _ => Task.FromResult<IEnumerable<City>>(Cities))
+            .Add(x => x.ItemText, c => c.Name)
+            .Add(x => x.ItemValue, c => c.Id)
+            .Add(x => x.Multiple, true)
+            .Add(x => x.Values, new[] { 2, 99, 5 })
+            .Add(x => x.ItemByValue, id => { asked.Add(id); return Task.FromResult(Cities.FirstOrDefault(c => c.Id == id)); }));
+
+        cut.Render(p => p.Add(x => x.Placeholder, "Cities"));
+
+        Assert.That(cut.FindAll(".nx-combobox-chip-text").Select(c => c.TextContent.Trim()), Is.EqualTo(new[] { "Boston", "99", "Newark" }));
+        Assert.That(asked, Is.EqualTo(new[] { 2, 99, 5 }));
+    }
+
     [Test]
     public async Task DataProvider_TypingDebouncesAndCancelsOlderRequests()
     {
@@ -840,35 +982,169 @@ public class NxComboBoxTests : BunitContext
 
     // ── Virtualization ────────────────────────────────────────────────────────
 
+    private int MeasureCalls => module.Invocations.Count(i => i.Identifier == "measureItemHeight");
+
     [Test]
     public async Task Virtualize_RendersAWindow_AndReportsFullSetSize()
     {
+        module.Setup<float>("measureItemHeight", _ => true).SetResult(30f);
         var cut = Render<NxComboBox<int, int>>(p => p
-            .Add(x => x.Data, Enumerable.Range(1, 10_000))
-            .Add(x => x.Virtualize, true));
+            .Add(x => x.Data, Enumerable.Range(1, 10_000)));
 
         await KeyAsync(cut, "ArrowDown");
 
         var options = cut.FindAll("[role=option]");
         Assert.That(options.Count, Is.GreaterThan(0).And.LessThan(200));
         Assert.That(options[0].GetAttribute("aria-setsize"), Is.EqualTo("10000"));
-        Assert.That(options[0].GetAttribute("style"), Does.Contain("height: 34px"));
-        Assert.That(cut.Find("[role=listbox]").ClassList, Does.Contain("nx-combobox-list-virtual"));
+        Assert.That(options[0].GetAttribute("style"), Does.Contain("height: 30px"));
+        var listbox = cut.Find("[role=listbox]");
+        Assert.That(listbox.ClassList, Does.Contain("nx-combobox-list-virtual"));
+        Assert.That(listbox.ClassList, Does.Not.Contain("nx-combobox-list-measuring"));
     }
 
     [Test]
     public async Task Virtualize_ScrollsActiveRowIntoView()
     {
+        module.Setup<float>("measureItemHeight", _ => true).SetResult(30f);
         var cut = Render<NxComboBox<int, int>>(p => p
-            .Add(x => x.Data, Enumerable.Range(1, 10_000))
-            .Add(x => x.Virtualize, true));
+            .Add(x => x.Data, Enumerable.Range(1, 10_000)));
 
         await KeyAsync(cut, "ArrowDown");
         await KeyAsync(cut, "PageDown");
 
         var scroll = module.Invocations.Last(i => i.Identifier == "scrollToIndex");
         Assert.That(scroll.Arguments[1], Is.EqualTo(10));
-        Assert.That(scroll.Arguments[2], Is.EqualTo(34f));
+        Assert.That(scroll.Arguments[2], Is.EqualTo(30f));
+    }
+
+    [Test]
+    public async Task Virtualize_BelowThreshold_RendersEveryRowUnpinned()
+    {
+        var cut = Render<NxComboBox<int, int>>(p => p
+            .Add(x => x.Data, Enumerable.Range(1, 199)));
+
+        await KeyAsync(cut, "ArrowDown");
+
+        var options = cut.FindAll("[role=option]");
+        Assert.That(options, Has.Count.EqualTo(199));
+        Assert.That(options[0].GetAttribute("style"), Is.Null.Or.Empty);
+        Assert.That(cut.Find("[role=listbox]").ClassList, Does.Not.Contain("nx-combobox-list-virtual"));
+        Assert.That(MeasureCalls, Is.Zero);
+        Assert.That(module.Invocations.Last(i => i.Identifier == "scrollToIndex").Arguments[2], Is.EqualTo(0f));
+    }
+
+    [Test]
+    public async Task Virtualize_AtThreshold_Virtualizes()
+    {
+        var cut = Render<NxComboBox<int, int>>(p => p
+            .Add(x => x.Data, Enumerable.Range(1, 200)));
+
+        await KeyAsync(cut, "ArrowDown");
+
+        Assert.That(cut.Find("[role=listbox]").ClassList, Does.Contain("nx-combobox-list-virtual"));
+        Assert.That(MeasureCalls, Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task Virtualize_ThresholdIsARowCount_FilteringBelowItRendersPlainly()
+    {
+        module.Setup<float>("measureItemHeight", _ => true).SetResult(30f);
+        var cut = Render<NxComboBox<int, int>>(p => p
+            .Add(x => x.Data, Enumerable.Range(1, 10_000)));
+
+        await TypeAsync(cut, "999");
+
+        var options = cut.FindAll("[role=option]");
+        Assert.That(options, Has.Count.EqualTo(19));
+        Assert.That(options[0].GetAttribute("style"), Is.Null.Or.Empty);
+        Assert.That(cut.Find("[role=listbox]").ClassList, Does.Not.Contain("nx-combobox-list-virtual"));
+    }
+
+    [Test]
+    public async Task Virtualize_MeasuresOnce_ThenKeepsTheHeight()
+    {
+        module.Setup<float>("measureItemHeight", _ => true).SetResult(30f);
+        var cut = Render<NxComboBox<int, int>>(p => p
+            .Add(x => x.Data, Enumerable.Range(1, 10_000)));
+
+        await KeyAsync(cut, "ArrowDown");
+        await KeyAsync(cut, "Escape");
+        await KeyAsync(cut, "ArrowDown");
+
+        Assert.That(MeasureCalls, Is.EqualTo(1));
+        Assert.That(cut.Find("[role=option]").GetAttribute("style"), Does.Contain("height: 30px"));
+    }
+
+    [Test]
+    public async Task Virtualize_ItemHeight_SkipsTheMeasurement()
+    {
+        var cut = Render<NxComboBox<int, int>>(p => p
+            .Add(x => x.Data, Enumerable.Range(1, 10_000))
+            .Add(x => x.ItemHeight, 40f));
+
+        await KeyAsync(cut, "ArrowDown");
+        await KeyAsync(cut, "PageDown");
+
+        Assert.That(MeasureCalls, Is.Zero);
+        Assert.That(cut.Find("[role=option]").GetAttribute("style"), Does.Contain("height: 40px"));
+        Assert.That(module.Invocations.Last(i => i.Identifier == "scrollToIndex").Arguments[2], Is.EqualTo(40f));
+    }
+
+    [Test]
+    public async Task Virtualize_NothingMeasured_RowsKeepTheirOwnHeight()
+    {
+        // Loose mode answers the measurement with 0.
+        var cut = Render<NxComboBox<int, int>>(p => p
+            .Add(x => x.Data, Enumerable.Range(1, 10_000)));
+
+        await KeyAsync(cut, "ArrowDown");
+
+        var options = cut.FindAll("[role=option]");
+        Assert.That(options.Count, Is.GreaterThan(0).And.LessThan(200));
+        Assert.That(options[0].GetAttribute("style"), Is.Null.Or.Empty);
+        Assert.That(MeasureCalls, Is.EqualTo(1));
+        Assert.That(cut.Find("[role=listbox]").ClassList, Does.Not.Contain("nx-combobox-list-measuring"));
+    }
+
+    [Test]
+    public async Task Virtualize_ThresholdMaxValue_NeverVirtualizes()
+    {
+        var cut = Render<NxComboBox<int, int>>(p => p
+            .Add(x => x.Data, Enumerable.Range(1, 500))
+            .Add(x => x.VirtualizeThreshold, int.MaxValue));
+
+        await KeyAsync(cut, "ArrowDown");
+
+        Assert.That(cut.FindAll("[role=option]"), Has.Count.EqualTo(500));
+    }
+
+    [Test]
+    public async Task Virtualize_GroupHeaders_PinnedToTheRowHeight()
+    {
+        module.Setup<float>("measureItemHeight", _ => true).SetResult(30f);
+        var cut = Render<NxComboBox<int, int>>(p => p
+            .Add(x => x.Data, Enumerable.Range(1, 1000))
+            .Add(x => x.ItemGroup, i => i <= 500 ? "Low" : "High"));
+
+        await KeyAsync(cut, "ArrowDown");
+
+        Assert.That(cut.Find(".nx-combobox-group").GetAttribute("style"), Does.Contain("height: 30px"));
+    }
+
+    [Test]
+    public async Task Virtualize_Overlay_MeasuresItsOwnRows()
+    {
+        module.Setup<float>("measureItemHeight", _ => true).SetResult(30f);
+        var cut = Render<NxComboBox<int, int>>(p => p
+            .Add(x => x.Data, Enumerable.Range(1, 10_000)));
+
+        await KeyAsync(cut, "ArrowDown");
+        await KeyAsync(cut, "Escape");
+        cut.Render(p => p.Add(x => x.MobileMode, NxMobileMode.Always));
+        await cut.Find(".nx-combobox-field").ClickAsync(new MouseEventArgs());
+
+        Assert.That(cut.FindAll(".nx-combobox-overlay [role=option]"), Is.Not.Empty);
+        Assert.That(MeasureCalls, Is.EqualTo(2));
     }
 
     // ── EditForm validation ───────────────────────────────────────────────────
@@ -1066,7 +1342,8 @@ public class NxComboBoxTests : BunitContext
     {
         var cut = RenderCities(p => p
             .Add(x => x.ColumnDefinitions, CityColumns)
-            .Add(x => x.Virtualize, true));
+            .Add(x => x.VirtualizeThreshold, 0)
+            .Add(x => x.ItemHeight, 34f));
 
         await KeyAsync(cut, "ArrowDown");
 
@@ -1092,7 +1369,7 @@ public class NxComboBoxTests : BunitContext
     [Test]
     public void Mobile_Always_FieldIsReadOnlyTapTarget()
     {
-        var cut = RenderCities(p => p.Add(x => x.MobileMode, NxComboBoxMobileMode.Always));
+        var cut = RenderCities(p => p.Add(x => x.MobileMode, NxMobileMode.Always));
 
         var input = cut.Find("input");
         Assert.That(input.HasAttribute("readonly"), Is.True);
@@ -1105,7 +1382,7 @@ public class NxComboBoxTests : BunitContext
     public async Task Mobile_TapOpensFullScreenOverlay_WithFocusedSearch()
     {
         var cut = RenderCities(p => p
-            .Add(x => x.MobileMode, NxComboBoxMobileMode.Always)
+            .Add(x => x.MobileMode, NxMobileMode.Always)
             .Add(x => x.Placeholder, "Pick a city"));
 
         await cut.Find(".nx-combobox-field").ClickAsync(new MouseEventArgs());
@@ -1125,7 +1402,7 @@ public class NxComboBoxTests : BunitContext
     public async Task Mobile_SearchFilters_PickSelectsAndCloses()
     {
         var values = new List<int?>();
-        var cut = RenderBound(values, [], p => p.Add(x => x.MobileMode, NxComboBoxMobileMode.Always));
+        var cut = RenderBound(values, [], p => p.Add(x => x.MobileMode, NxMobileMode.Always));
 
         await cut.Find(".nx-combobox-field").ClickAsync(new MouseEventArgs());
         await cut.Find(".nx-combobox-overlay-search").TriggerEventAsync("oninput", new ChangeEventArgs { Value = "wor" });
@@ -1143,7 +1420,7 @@ public class NxComboBoxTests : BunitContext
     public async Task Mobile_EnterInSearch_SelectsHighlighted()
     {
         var values = new List<int?>();
-        var cut = RenderBound(values, [], p => p.Add(x => x.MobileMode, NxComboBoxMobileMode.Always));
+        var cut = RenderBound(values, [], p => p.Add(x => x.MobileMode, NxMobileMode.Always));
 
         await cut.Find(".nx-combobox-field").ClickAsync(new MouseEventArgs());
         await cut.Find(".nx-combobox-overlay-search").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowDown" });
@@ -1158,7 +1435,7 @@ public class NxComboBoxTests : BunitContext
     public async Task Mobile_BackOrEscape_ClosesWithoutChange(string how)
     {
         var values = new List<int?>();
-        var cut = RenderBound(values, [], p => p.Add(x => x.MobileMode, NxComboBoxMobileMode.Always), initial: 1);
+        var cut = RenderBound(values, [], p => p.Add(x => x.MobileMode, NxMobileMode.Always), initial: 1);
 
         await cut.Find(".nx-combobox-field").ClickAsync(new MouseEventArgs());
         await cut.Find(".nx-combobox-overlay-search").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowDown" });
@@ -1173,9 +1450,34 @@ public class NxComboBoxTests : BunitContext
     }
 
     [Test]
-    public async Task Mobile_Auto_SwitchesWhenViewportNarrows()
+    public async Task Mobile_Default_IsThePopup_AndDoesNotWatchViewport()
     {
         var cut = RenderCities();
+
+        await cut.InvokeAsync(() => cut.Instance.OnViewportChanged(true));
+        await cut.Find(".nx-combobox-field").ClickAsync(new MouseEventArgs());
+        await KeyAsync(cut, "ArrowDown");
+
+        Assert.That(cut.Find("input").HasAttribute("readonly"), Is.False);
+        Assert.That(cut.FindAll(".nx-combobox-overlay"), Is.Empty);
+        Assert.That(cut.FindAll(".nx-combobox-popup"), Has.Count.EqualTo(1));
+        Assert.That(module.Invocations.Select(i => i.Identifier), Does.Not.Contain("watchViewport"));
+    }
+
+    [Test]
+    public void Mobile_ChangedToAutoLater_StartsWatchingViewport()
+    {
+        var cut = RenderCities();
+
+        cut.Render(p => p.Add(x => x.MobileMode, NxMobileMode.Auto));
+
+        Assert.That(module.Invocations.Count(i => i.Identifier == "watchViewport"), Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task Mobile_Auto_SwitchesWhenViewportNarrows()
+    {
+        var cut = RenderCities(p => p.Add(x => x.MobileMode, NxMobileMode.Auto));
         Assert.That(cut.Find("input").HasAttribute("readonly"), Is.False);
 
         await cut.InvokeAsync(() => cut.Instance.OnViewportChanged(true));
@@ -1187,7 +1489,7 @@ public class NxComboBoxTests : BunitContext
     [Test]
     public void Mobile_Never_DoesNotWatchViewport()
     {
-        RenderCities(p => p.Add(x => x.MobileMode, NxComboBoxMobileMode.Never));
+        RenderCities(p => p.Add(x => x.MobileMode, NxMobileMode.Never));
 
         Assert.That(module.Invocations.Select(i => i.Identifier), Does.Not.Contain("watchViewport"));
     }
@@ -1196,7 +1498,7 @@ public class NxComboBoxTests : BunitContext
     public async Task Mobile_WithColumns_OverlayShowsGrid()
     {
         var cut = RenderCities(p => p
-            .Add(x => x.MobileMode, NxComboBoxMobileMode.Always)
+            .Add(x => x.MobileMode, NxMobileMode.Always)
             .Add(x => x.ColumnDefinitions, CityColumns));
 
         await cut.Find(".nx-combobox-field").ClickAsync(new MouseEventArgs());
@@ -1478,7 +1780,7 @@ public class NxComboBoxTests : BunitContext
     public async Task Multiple_Overlay_TogglesWaitForDone()
     {
         var raised = new List<List<int>>();
-        var cut = RenderMulti(raised, p => p.Add(x => x.MobileMode, NxComboBoxMobileMode.Always), initial: [1]);
+        var cut = RenderMulti(raised, p => p.Add(x => x.MobileMode, NxMobileMode.Always), initial: [1]);
 
         await cut.Find(".nx-combobox-field").ClickAsync(new MouseEventArgs());
         await cut.FindAll(".nx-combobox-overlay [role=option]")[1].ClickAsync(new MouseEventArgs());
@@ -1495,7 +1797,7 @@ public class NxComboBoxTests : BunitContext
     public async Task Multiple_Overlay_BackDiscardsToggles()
     {
         var raised = new List<List<int>>();
-        var cut = RenderMulti(raised, p => p.Add(x => x.MobileMode, NxComboBoxMobileMode.Always), initial: [1]);
+        var cut = RenderMulti(raised, p => p.Add(x => x.MobileMode, NxMobileMode.Always), initial: [1]);
 
         await cut.Find(".nx-combobox-field").ClickAsync(new MouseEventArgs());
         await cut.FindAll(".nx-combobox-overlay [role=option]")[0].ClickAsync(new MouseEventArgs());
@@ -1508,7 +1810,7 @@ public class NxComboBoxTests : BunitContext
     [Test]
     public async Task SingleSelectOverlay_HasNoDoneButton()
     {
-        var cut = RenderCities(p => p.Add(x => x.MobileMode, NxComboBoxMobileMode.Always));
+        var cut = RenderCities(p => p.Add(x => x.MobileMode, NxMobileMode.Always));
 
         await cut.Find(".nx-combobox-field").ClickAsync(new MouseEventArgs());
 
@@ -1606,7 +1908,7 @@ public class NxComboBoxTests : BunitContext
     public async Task Mobile_MobileTitle_NamesOverlayAndSearch()
     {
         var cut = RenderCities(p => p
-            .Add(x => x.MobileMode, NxComboBoxMobileMode.Always)
+            .Add(x => x.MobileMode, NxMobileMode.Always)
             .Add(x => x.Placeholder, "City")
             .Add(x => x.MobileTitle, "Find a city"));
 

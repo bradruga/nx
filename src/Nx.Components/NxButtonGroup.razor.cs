@@ -9,7 +9,7 @@ namespace Nx.Components;
 /// </summary>
 /// <example>
 /// <code>
-/// &lt;NxButtonGroup AriaLabel="Week" Size="NxButtonSize.Small"&gt;
+/// &lt;NxButtonGroup AriaLabel="Week" Size="NxSize.Small"&gt;
 ///     &lt;NxButton OnClick="GoToToday"&gt;Today&lt;/NxButton&gt;
 ///     &lt;NxButton OnClick="PreviousWeek" AriaLabel="Previous week" Icon="…" /&gt;
 ///     &lt;NxButton OnClick="NextWeek" AriaLabel="Next week" Icon="…" /&gt;
@@ -25,7 +25,7 @@ public partial class NxButtonGroup
     [Parameter] public NxButtonVariant? Variant { get; set; }
 
     /// <summary>Size of every button that does not set its own. Default: each button's default.</summary>
-    [Parameter] public NxButtonSize? Size { get; set; }
+    [Parameter] public NxSize? Size { get; set; }
 
     /// <summary>Disables every button in the group.</summary>
     [Parameter] public bool Disabled { get; set; }

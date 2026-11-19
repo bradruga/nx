@@ -38,7 +38,6 @@
 
     /* Validation */
     --nx-valid:              #107c10;
-    --nx-invalid:            var(--nx-danger);
 
     /* Status colors (NxIcon Color) */
     --nx-success:            #107c10;
@@ -57,12 +56,9 @@
     --nx-info-active:        #075a71;
     --nx-info-fg:            #ffffff;
 
-    /* Focus: keyboard focus ring (an outline, so it follows each control's border-radius) and the
-       inset ring a text field draws while focused */
-    --nx-focus-ring-color:   var(--nx-accent);
+    /* Focus: keyboard focus ring (an outline, so it follows each control's border-radius) */
     --nx-focus-ring-width:   2px;
     --nx-focus-ring-offset:  2px;
-    --nx-focus-ring-inset:   0 0 0 1px var(--nx-accent);
 
     /* Shape and depth */
     --nx-radius:             6px;
@@ -79,41 +75,23 @@
     --nx-textarea-line-height: 20px;
 
     /* Popup (combo box list) */
-    --nx-popup-bg:           var(--nx-surface);
     --nx-popup-max-height:   280px;
-    --nx-item-hover-bg:      var(--nx-surface-hover);
-    --nx-item-active-bg:     var(--nx-accent-subtle);
-    --nx-item-selected-fg:   var(--nx-accent);
-    --nx-group-header-fg:    var(--nx-fg-muted);
-    --nx-popup-header-bg:    var(--nx-surface-hover);
     --nx-z-popup:            1000;
     --nx-z-overlay:          1100;
 
     /* Check boxes and radio buttons */
     --nx-check-size:         18px;
-    --nx-check-border:       var(--nx-border-hover);
 
     /* Toggle switch */
     --nx-switch-off-bg:      #c4c4cc;
     --nx-switch-off-fg:      #ffffff;
     --nx-switch-thumb-bg:    #ffffff;
 
-    /* Toggle group */
-    --nx-toggle-selected-bg:     var(--nx-accent-subtle);
-    --nx-toggle-selected-border: var(--nx-accent);
-    --nx-toggle-selected-fg:     var(--nx-accent);
-
     /* Chips (NxComboBox Multiple) */
-    --nx-chip-bg:            var(--nx-accent-subtle);
-    --nx-chip-fg:            var(--nx-fg);
     --nx-chip-remove-hover-bg: rgba(0, 0, 0, 0.08);
 
     /* Calendar (NxCalendar and the date pickers) */
     --nx-calendar-cell-size:     36px;
-    --nx-calendar-selected-bg:   var(--nx-accent);
-    --nx-calendar-selected-fg:   var(--nx-accent-fg);
-    --nx-calendar-range-bg:      var(--nx-accent-subtle);
-    --nx-calendar-today-border:  var(--nx-accent);
 
     /* Window (NxWindow). Below --nx-z-popup, so a combo box or date picker inside a window opens above it;
        each window opened or pressed later stacks 2 higher. */
@@ -123,15 +101,10 @@
     --nx-shadow-window:      0 24px 64px rgba(0, 0, 0, 0.22), 0 4px 12px rgba(0, 0, 0, 0.10);
 
     /* Tab strip (NxTabStrip) */
-    --nx-tab-active-fg:      var(--nx-accent);
-    --nx-tab-indicator:      var(--nx-accent);
     --nx-tab-panel-padding:  16px 0;
 
     /* Splitter (NxSplitter) */
     --nx-splitter-bar-size:      6px;
-    --nx-splitter-bar-bg:        var(--nx-surface-hover);
-    --nx-splitter-bar-hover-bg:  var(--nx-accent-subtle);
-    --nx-splitter-grip:          var(--nx-border-hover);
     --nx-splitter-pane-padding:  12px;
 
     /* Tooltip (NxTooltip); above windows, popups and sheets */
@@ -150,12 +123,10 @@
     --nx-icon-size-3xl:      48px;
 
     /* Loader (NxLoader, NxLoaderContainer). The container's overlay sits below windows. */
-    --nx-loader-color:       var(--nx-accent);
     --nx-loader-size-sm:     16px;
     --nx-loader-size-md:     28px;
     --nx-loader-size-lg:     44px;
     --nx-loader-overlay-bg:  rgba(255, 255, 255, 0.72);
-    --nx-loader-text-color:  var(--nx-fg-muted);
     --nx-z-loader:           800;
 
     /* Form (NxForm, NxFormItem, NxValidationMessage) */
@@ -164,17 +135,12 @@
     --nx-form-label-width:   160px;
     --nx-form-label-gap:     6px;
     --nx-form-group-gap:     24px;
-    --nx-validation-color:   var(--nx-invalid);
     --nx-validation-font-size: 12.5px;
 
     /* Progress bar (NxProgressBar) */
     --nx-progressbar-height:        22px;
     --nx-progressbar-thin-height:   4px;
     --nx-progressbar-radius:        999px;
-    --nx-progressbar-track:         var(--nx-surface-active);
-    --nx-progressbar-fill:          var(--nx-accent);
-    --nx-progressbar-label:         var(--nx-fg);
-    --nx-progressbar-label-on-fill: var(--nx-accent-fg);
 
     /* Color picker (NxColorPicker) */
     --nx-colorpicker-swatch-size:   20px;
@@ -186,33 +152,19 @@
     --nx-z-notification:            1150;
     --nx-notification-width:        360px;
     --nx-notification-offset:       16px;
-    --nx-notification-bg:           var(--nx-surface);
-    --nx-notification-fg:           var(--nx-fg);
-    --nx-notification-info:         var(--nx-accent);
-    --nx-notification-success:      var(--nx-success);
-    --nx-notification-warning:      var(--nx-warning);
-    --nx-notification-error:        var(--nx-danger);
     --nx-notification-neutral-bg:   #2b2b31;
     --nx-notification-neutral-fg:   #ffffff;
-
-    /* File drop zone (NxFileSelect, NxUpload) */
-    --nx-filezone-border:           var(--nx-border-hover);
-    --nx-filezone-bg:               var(--nx-surface);
 
     /* Tree (NxTreeView) */
     --nx-treeview-row-height:       32px;
     --nx-treeview-indent:           18px;
     --nx-treelist-header-height:    34px;
-    --nx-treelist-header-bg:        var(--nx-surface-hover);
     --nx-scheduler-slot-height:     40px;
     --nx-scheduler-gutter:          64px;
     --nx-scheduler-day-min-width:   96px;
-    --nx-scheduler-head-bg:         var(--nx-surface);
     --nx-scheduler-line:            #e6e6ea;
     --nx-scheduler-off-bg:          #f6f6f8;
     --nx-scheduler-today-bg:        rgba(0, 120, 212, 0.04);
-    --nx-scheduler-event-bg:        var(--nx-accent);
-    --nx-scheduler-event-fg:        var(--nx-accent-fg);
     --nx-filemanager-tree-width:    220px;
     --nx-filemanager-details-width: 220px;
     --nx-filemanager-row-height:    34px;
@@ -224,27 +176,18 @@
     --nx-gantt-row-height:          36px;
     --nx-gantt-head-height:         56px;
     --nx-gantt-filter-height:       40px;
-    --nx-gantt-head-bg:             var(--nx-surface-hover);
     --nx-gantt-line:                #e6e6ea;
     --nx-gantt-weekend-bg:          #f6f6f8;
-    --nx-gantt-today:               var(--nx-danger);
-    --nx-gantt-bar-bg:              var(--nx-accent);
-    --nx-gantt-bar-fg:              var(--nx-accent-fg);
     --nx-gantt-summary-bg:          #5f6b73;
     --nx-gantt-grip-width:          7px;
     --nx-gantt-grip-bg:             rgba(255, 255, 255, 0.35);
-    --nx-gantt-ghost-bg:            color-mix(in srgb, var(--nx-gantt-bar-bg) 14%, transparent);
     --nx-gantt-link:                #6b6b78;
 
     /* Slider (NxSlider) */
     --nx-slider-track-height:       4px;
     --nx-slider-thumb-size:         18px;
-    --nx-slider-track:              var(--nx-surface-active);
-    --nx-slider-fill:               var(--nx-accent);
-    --nx-slider-thumb-bg:           var(--nx-surface);
 
     /* Carousel (NxCarousel) */
-    --nx-carousel-bg:               var(--nx-surface-active);
     --nx-carousel-control-bg:       rgba(0, 0, 0, 0.45);
     --nx-carousel-control-fg:       #ffffff;
 
@@ -256,8 +199,6 @@
     /* Toolbar (NxToolBar) */
     --nx-toolbar-gap:               6px;
     --nx-toolbar-padding:           6px;
-    --nx-toolbar-bg:                var(--nx-surface);
-    --nx-toolbar-border:            var(--nx-border);
 
     /* Chart (NxChart): the series palette, in order, then the frame */
     --nx-chart-1:                   #0078d4;
@@ -269,33 +210,21 @@
     --nx-chart-7:                   #c2185b;
     --nx-chart-8:                   #8a6d3b;
     --nx-chart-grid:                #e6e6ea;
-    --nx-chart-label:               var(--nx-fg-muted);
     --nx-chart-area-opacity:        0.35;
 
     /* Tile layout (NxTileLayout) */
     --nx-tilelayout-gap:            16px;
-    --nx-tile-bg:                   var(--nx-surface);
-    --nx-tile-border:               var(--nx-border);
     --nx-tile-shadow:               0 1px 2px rgba(0, 0, 0, 0.06);
 
     /* Editor (NxEditor) */
-    --nx-editor-bg:                 var(--nx-surface);
     --nx-editor-min-height:         120px;
     --nx-editor-guide:              #c8c8cc;
     --nx-editor-code-bg:            #f3f3f5;
     --nx-editor-code-font:          ui-monospace, Consolas, 'Courier New', monospace;
-    --nx-editor-quote-border:       var(--nx-border);
-    --nx-editor-image-outline:      var(--nx-accent);
-    --nx-editor-image-handle-bg:    var(--nx-surface);
     --nx-editor-image-handle-size:  10px;
 
     /* Chat (NxChat) */
-    --nx-chat-bg:                   var(--nx-surface);
-    --nx-chat-own-bg:               var(--nx-accent);
-    --nx-chat-own-fg:               var(--nx-accent-fg);
     --nx-chat-other-bg:             #f0f0f3;
-    --nx-chat-other-fg:             var(--nx-fg);
-    --nx-chat-meta:                 var(--nx-fg-muted);
     --nx-chat-avatar-bg:            #d9dce3;
     --nx-chat-avatar-size:          32px;
     --nx-chat-bubble-radius:        14px;
@@ -309,13 +238,9 @@
     --nx-signature-control-hover-bg: rgba(0, 0, 0, 0.06);
 
     /* Circular gauge (NxCircularGauge) */
-    --nx-gauge-pointer:             var(--nx-accent);
     --nx-gauge-track:               #e6e6ea;
     --nx-gauge-thickness:           10;
     --nx-gauge-duration:            400ms;
-
-    /* Popup (NxPopup); its background is --nx-popup-bg above */
-    --nx-popup-border:              var(--nx-border);
 
     /* PDF viewer (NxPdfViewer) */
     --nx-pdf-bg:                    #e9e9ee;
@@ -323,6 +248,81 @@
     --nx-pdf-match:                 rgba(255, 196, 0, 0.45);
     --nx-pdf-match-current:         rgba(255, 120, 0, 0.6);
 }
+
+/* Derived tokens. These are not declared: every use reads var(--token, <source>), so an unset token takes its
+   source on the element that uses it and follows --nx-accent, --nx-surface and the rest wherever an ancestor sets
+   them (declared here, their var() would resolve once, on :root). Set one on :root or any ancestor to override it.
+   A new derived token goes in this list, and each use carries the fallback.
+
+   --nx-invalid                    var(--nx-danger)
+   --nx-focus-ring-color           var(--nx-accent)
+   --nx-focus-ring-inset           0 0 0 1px var(--nx-accent)
+   --nx-popup-bg                   var(--nx-surface)
+   --nx-item-hover-bg              var(--nx-surface-hover)
+   --nx-item-active-bg             var(--nx-accent-subtle)
+   --nx-item-selected-fg           var(--nx-accent)
+   --nx-group-header-fg            var(--nx-fg-muted)
+   --nx-popup-header-bg            var(--nx-surface-hover)
+   --nx-check-border               var(--nx-border-hover)
+   --nx-toggle-selected-bg         var(--nx-accent-subtle)
+   --nx-toggle-selected-border     var(--nx-accent)
+   --nx-toggle-selected-fg         var(--nx-accent)
+   --nx-chip-bg                    var(--nx-accent-subtle)
+   --nx-chip-fg                    var(--nx-fg)
+   --nx-calendar-selected-bg       var(--nx-accent)
+   --nx-calendar-selected-fg       var(--nx-accent-fg)
+   --nx-calendar-range-bg          var(--nx-accent-subtle)
+   --nx-calendar-today-border      var(--nx-accent)
+   --nx-tab-active-fg              var(--nx-accent)
+   --nx-tab-indicator              var(--nx-accent)
+   --nx-splitter-bar-bg            var(--nx-surface-hover)
+   --nx-splitter-bar-hover-bg      var(--nx-accent-subtle)
+   --nx-splitter-grip              var(--nx-border-hover)
+   --nx-loader-color               var(--nx-accent)
+   --nx-loader-text-color          var(--nx-fg-muted)
+   --nx-validation-color           var(--nx-invalid)
+   --nx-progressbar-track          var(--nx-surface-active)
+   --nx-progressbar-fill           var(--nx-accent)
+   --nx-progressbar-label          var(--nx-fg)
+   --nx-progressbar-label-on-fill  var(--nx-accent-fg)
+   --nx-notification-bg            var(--nx-surface)
+   --nx-notification-fg            var(--nx-fg)
+   --nx-notification-info          var(--nx-accent)
+   --nx-notification-success       var(--nx-success)
+   --nx-notification-warning       var(--nx-warning)
+   --nx-notification-error         var(--nx-danger)
+   --nx-filezone-border            var(--nx-border-hover)
+   --nx-filezone-bg                var(--nx-surface)
+   --nx-treelist-header-bg         var(--nx-surface-hover)
+   --nx-scheduler-head-bg          var(--nx-surface)
+   --nx-scheduler-event-bg         var(--nx-accent)
+   --nx-scheduler-event-fg         var(--nx-accent-fg)
+   --nx-gantt-head-bg              var(--nx-surface-hover)
+   --nx-gantt-today                var(--nx-danger)
+   --nx-gantt-bar-bg               var(--nx-accent)
+   --nx-gantt-bar-fg               var(--nx-accent-fg)
+   --nx-gantt-ghost-bg             color-mix(in srgb, var(--nx-gantt-bar-bg) 14%, transparent)
+   --nx-slider-track               var(--nx-surface-active)
+   --nx-slider-fill                var(--nx-accent)
+   --nx-slider-thumb-bg            var(--nx-surface)
+   --nx-carousel-bg                var(--nx-surface-active)
+   --nx-toolbar-bg                 var(--nx-surface)
+   --nx-toolbar-border             var(--nx-border)
+   --nx-chart-label                var(--nx-fg-muted)
+   --nx-tile-bg                    var(--nx-surface)
+   --nx-tile-border                var(--nx-border)
+   --nx-editor-bg                  var(--nx-surface)
+   --nx-editor-quote-border        var(--nx-border)
+   --nx-editor-image-outline       var(--nx-accent)
+   --nx-editor-image-handle-bg     var(--nx-surface)
+   --nx-chat-bg                    var(--nx-surface)
+   --nx-chat-own-bg                var(--nx-accent)
+   --nx-chat-own-fg                var(--nx-accent-fg)
+   --nx-chat-other-fg              var(--nx-fg)
+   --nx-chat-meta                  var(--nx-fg-muted)
+   --nx-gauge-pointer              var(--nx-accent)
+   --nx-popup-border               var(--nx-border)
+*/
 
 /* Dark theme: add class="nx-theme-dark" to <html> or any container. */
 .nx-theme-dark {
@@ -437,7 +437,7 @@
        .nx-calendar-nav, .nx-calendar-title, .nx-calendar-today-button, .nx-sheet-close, .nx-sheet-action, .nx-datepicker-sheet-clear,
        .nx-window-action, .nx-tabstrip-tab,
        .nx-checkbox-box, .nx-switch-track, .nx-radio-input, .nx-toggle):focus-visible {
-    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color, var(--nx-accent));
     outline-offset: var(--nx-focus-ring-offset);
 }
 

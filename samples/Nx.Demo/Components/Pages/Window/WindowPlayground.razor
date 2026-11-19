@@ -14,7 +14,8 @@
                           Title="@pgTitle" Icon="@(pgIcon ? Icon : null)" Modal="pgModal"
                           CloseOnEscape="pgEscape" CloseOnBackdropClick="pgBackdrop" Closable="pgClosable"
                           Minimizable="pgMinimizable" Maximizable="pgMaximizable" Draggable="pgDraggable" Resizable="pgResizable"
-                          Size="pgSize" Width="@OrNull(pgWidth)" Height="@OrNull(pgHeight)" Left="@OrNull(pgLeft)" Top="@OrNull(pgTop)">
+                          Size="pgSize" Width="@OrNull(pgWidth)" Height="@OrNull(pgHeight)" Left="@OrNull(pgLeft)" Top="@OrNull(pgTop)"
+                          Inline="pgInline" OnMoved="e => pgMoved = e" OnResized="e => pgResized = e">
                     <ChildContent>
                         <p>Window body. Tab through the fields; Esc closes when <code>CloseOnEscape</code> is on.</p>
                         <NxTextBox Id="pg-field" Label="A field" @bind-Value="pgText" />
@@ -31,6 +32,8 @@
             <div class="demo-row">
                 <span class="demo-value" id="playground-value">Visible: <strong>@(pgVisible ? "true" : "false")</strong></span>
                 <span class="demo-counter" id="playground-changes">VisibleChanged × @pgChanges</span>
+                <span class="demo-counter" id="playground-moved">OnMoved: @(pgMoved is null ? "—" : $"{pgMoved.Left}, {pgMoved.Top}")</span>
+                <span class="demo-counter" id="playground-resized">OnResized: @(pgResized is null ? "—" : $"{pgResized.Width} × {pgResized.Height}")</span>
             </div>
         </div>
 
@@ -42,6 +45,7 @@
             <label class="demo-control"><span>Closable</span><input type="checkbox" id="pg-closable" @bind="pgClosable" /></label>
             <label class="demo-control"><span>Draggable</span><input type="checkbox" id="pg-draggable" @bind="pgDraggable" /></label>
             <label class="demo-control"><span>Resizable</span><input type="checkbox" id="pg-resizable" @bind="pgResizable" /></label>
+            <label class="demo-control"><span>Inline</span><input type="checkbox" id="pg-inline" @bind="pgInline" /></label>
 
             <div class="demo-controls-title">Title bar</div>
             <label class="demo-control"><span>Title</span><input type="text" @bind="pgTitle" @bind:event="oninput" /></label>
@@ -79,7 +83,9 @@
     static string? OrNull(string s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
 
     bool pgVisible, pgModal = true, pgEscape = true, pgBackdrop, pgClosable = true, pgDraggable = true, pgResizable;
-    bool pgIcon = true, pgMinimizable, pgMaximizable, pgFooter = true;
+    bool pgIcon = true, pgMinimizable, pgMaximizable, pgFooter = true, pgInline;
+    NxWindowMovedEventArgs? pgMoved;
+    NxWindowResizedEventArgs? pgResized;
     string pgTitle = "Panel P-1042", pgText = "", pgWidth = "", pgHeight = "", pgLeft = "", pgTop = "";
     NxWindowSize pgSize = NxWindowSize.Medium;
     int pgKey, pgChanges;
@@ -106,6 +112,9 @@
             if (OrNull(pgHeight) is { } h) attrs.Add($"Height=\"{h}\"");
             if (OrNull(pgLeft) is { } l) attrs.Add($"Left=\"{l}\"");
             if (OrNull(pgTop) is { } t) attrs.Add($"Top=\"{t}\"");
+            if (pgInline) attrs.Add("Inline=\"true\"");
+            attrs.Add("OnMoved=\"e => moved = e\"");
+            attrs.Add("OnResized=\"e => resized = e\"");
             var body = "\n    <ChildContent>…</ChildContent>";
             if (pgIcon) body = "\n    <Icon>…</Icon>" + body;
             if (pgFooter) body += "\n    <Footer>\n        <NxButton>Cancel</NxButton>\n        <NxButton Variant=\"NxButtonVariant.Primary\">OK</NxButton>\n    </Footer>";

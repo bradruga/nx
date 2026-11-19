@@ -9,8 +9,8 @@
 
     [CascadingParameter] private NxTreeList<TItem>? List { get; set; }
 
-    /// <summary>The property shown in the cell, by name (<c>nameof</c>).</summary>
-    [Parameter] public string? Field { get; set; }
+    /// <summary>The value shown in the cell: <c>Value="l =&gt; l.Name"</c>.</summary>
+    [Parameter] public Func<TItem, object?>? Value { get; set; }
 
     /// <summary>The header text.</summary>
     [Parameter] public string? Title { get; set; }
@@ -21,7 +21,7 @@
     /// <summary>Holds the tree's arrows and indent. Default: the first column; only one column can.</summary>
     [Parameter] public bool Expandable { get; set; }
 
-    /// <summary>The cell's content in place of the field's value.</summary>
+    /// <summary>The cell's content in place of <see cref="Value"/>.</summary>
     [Parameter] public RenderFragment<TItem>? Template { get; set; }
 
     /// <inheritdoc />
@@ -29,7 +29,7 @@
     {
         if (List is null)
             throw new InvalidOperationException("NxTreeListColumn must be placed inside an NxTreeList's Columns.");
-        var column = new NxTreeList<TItem>.Column(Field, Title, Width, Expandable, Template);
+        var column = new NxTreeList<TItem>.Column(Value, Title, Width, Expandable, Template);
         List.SetColumn(registered, column);
         registered = column;
     }

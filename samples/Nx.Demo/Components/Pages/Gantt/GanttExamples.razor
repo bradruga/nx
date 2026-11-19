@@ -8,25 +8,27 @@
         Drag a bar to move its task, or either end to change its start or end: an outline snaps to whole days and Escape
         drops the drag. Click a title to edit it in place, double-click a row or bar for your own form, and press Delete on
         a row to remove it. Every edit arrives in <code>OnUpdate</code>, as in NxGrid: a drag has not touched the item, so
-        call <code>args.Apply()</code> or write your own dates (ERP moves them to the next working day); a cell's editor
+        write <code>args.Start</code> and <code>args.End</code> or your own dates (ERP moves them to the next working day); a cell's editor
         has already written it. Summary bars span their tasks and do not drag. <code>Editable="false"</code> turns it all off.
     </p>
     <div class="demo-stage demo-stage-column">
-        <NxGantt TItem="ScheduleTask" Id="edit-gantt" Data="editTasks" Dependencies="editLinks" Editable="editable" @bind-SelectedItems="picked"
-                 OnUpdate="Update" OnEdit="OpenForm" OnDelete="Delete" OnDependencyCreate="e => editLinks.Add(new ScheduleLink(e.Predecessor.Id, e.Successor.Id, e.Type))"
+        <NxGantt TItem="ScheduleTask" Id="edit-gantt" Data="editTasks"
+                 ItemId="t => t.Id" ParentId="t => t.ParentId" ItemTitle="t => t.Title" ItemStart="t => t.Start" ItemEnd="t => t.End"
+                 Dependencies="editLinks" Editable="editable" @bind-SelectedItems="picked"
+                 OnUpdate="Update" OnEdit="OpenForm" OnDelete="Delete" OnDependencyCreate="e => editLinks.Add(new NxGanttDependency(e.Predecessor.Id, e.Successor.Id, e.Type))"
                  TreeListWidth="400px" Height="420px" Style="width:100%">
             <ToolBarTemplate>
-                <NxButton id="edit-add" Size="NxButtonSize.Small" Disabled="!editable" OnClick="Add">Add task</NxButton>
-                <NxButton id="edit-delete" Size="NxButtonSize.Small" Disabled="@(!editable || Picked is null)" OnClick="() => Delete(Picked!)">Delete</NxButton>
+                <NxButton id="edit-add" Size="NxSize.Small" Disabled="!editable" OnClick="Add">Add task</NxButton>
+                <NxButton id="edit-delete" Size="NxSize.Small" Disabled="@(!editable || Picked is null)" OnClick="() => Delete(Picked!)">Delete</NxButton>
                 <NxCheckBox Id="edit-editable" @bind-Value="editable" Label="Editable" />
             </ToolBarTemplate>
             <Columns>
-                <NxGanttColumn Field="@nameof(ScheduleTask.Title)" Title="Task" Width="200px" Expandable="true">
+                <NxGanttColumn Value="t => t.Title" Title="Task" Width="200px" Expandable="true">
                     <EditorTemplate><NxTextBox @bind-Value="context.Title" Immediate="true" aria-label="Task" AutoFocus="true" /></EditorTemplate>
                 </NxGanttColumn>
-                <NxGanttColumn Field="@nameof(ScheduleTask.Start)" Width="90px" DisplayFormat="{0:MM/dd/yy}" />
-                <NxGanttColumn Field="@nameof(ScheduleTask.End)" Width="90px" DisplayFormat="{0:MM/dd/yy}" />
-                <NxGanttColumn Field="@nameof(ScheduleTask.Days)" Width="60px" />
+                <NxGanttColumn Value="t => t.Start" Title="Start" Width="90px" DisplayFormat="{0:MM/dd/yy}" />
+                <NxGanttColumn Value="t => t.End" Title="End" Width="90px" DisplayFormat="{0:MM/dd/yy}" />
+                <NxGanttColumn Value="t => t.Days" Title="Days" Width="60px" />
             </Columns>
         </NxGantt>
         <div class="demo-row">
@@ -61,10 +63,12 @@
     </p>
     @* code *@
     <div class="demo-stage demo-stage-column">
-        <NxGantt TItem="ScheduleTask" Id="links-gantt" Data="linkTasks" Dependencies="drawn" OnDependencyCreate="Link" TreeListWidth="260px"
+        <NxGantt TItem="ScheduleTask" Id="links-gantt" Data="linkTasks"
+                 ItemId="t => t.Id" ParentId="t => t.ParentId" ItemTitle="t => t.Title" ItemStart="t => t.Start" ItemEnd="t => t.End"
+                 Dependencies="drawn" OnDependencyCreate="Link" TreeListWidth="260px"
                  Height="360px" Style="width:100%">
             <Columns>
-                <NxGanttColumn Field="@nameof(ScheduleTask.Title)" Title="Task" Width="200px" Expandable="true" />
+                <NxGanttColumn Value="t => t.Title" Title="Task" Width="200px" Expandable="true" />
             </Columns>
         </NxGantt>
         <span class="demo-value" id="links-count">@drawn.Count links@(lastLink is null ? "" : $" · last: {lastLink}")</span>
@@ -82,23 +86,25 @@
     </p>
     @* code *@
     <div class="demo-stage demo-stage-column">
-        <NxGantt @ref="filtered" TItem="ScheduleTask" Id="filter-gantt" Data="filterTasks" Sortable="true" FilterRow="true" OnStateChanged="StateHasChanged"
+        <NxGantt @ref="filtered" TItem="ScheduleTask" Id="filter-gantt" Data="filterTasks"
+                 ItemId="t => t.Id" ParentId="t => t.ParentId" ItemTitle="t => t.Title" ItemStart="t => t.Start" ItemEnd="t => t.End"
+                 Sortable="true" FilterRow="true" OnStateChanged="StateHasChanged"
                  TreeListWidth="420px" Height="380px" Style="width:100%">
             <ToolBarTemplate>
                 @if (filtered?.HasFilter == true)
                 {
-                    <NxButton id="clear-filter" Size="NxButtonSize.Small" Variant="NxButtonVariant.Danger" OnClick="() => filtered.ClearFilterAsync()">Clear Filter</NxButton>
+                    <NxButton id="clear-filter" Size="NxSize.Small" Variant="NxButtonVariant.Danger" OnClick="() => filtered.ClearFilterAsync()">Clear Filter</NxButton>
                 }
                 @if (filtered?.HasSort == true)
                 {
-                    <NxButton id="clear-sort" Size="NxButtonSize.Small" Variant="NxButtonVariant.Danger" OnClick="() => filtered.ClearSortAsync()">Clear Sort</NxButton>
+                    <NxButton id="clear-sort" Size="NxSize.Small" Variant="NxButtonVariant.Danger" OnClick="() => filtered.ClearSortAsync()">Clear Sort</NxButton>
                 }
                 <span class="demo-value">Sort or filter to see the Clear buttons</span>
             </ToolBarTemplate>
             <Columns>
-                <NxGanttColumn Field="@nameof(ScheduleTask.Title)" Title="Task" Width="200px" Expandable="true" />
-                <NxGanttColumn Field="@nameof(ScheduleTask.Resources)" Width="130px" />
-                <NxGanttColumn Field="@nameof(ScheduleTask.Days)" Width="80px" />
+                <NxGanttColumn Value="t => t.Title" Title="Task" Width="200px" Expandable="true" />
+                <NxGanttColumn Value="t => t.Resources" Title="Resources" Width="130px" />
+                <NxGanttColumn Value="t => t.Days" Title="Days" Width="80px" />
             </Columns>
         </NxGantt>
     </div>
@@ -115,7 +121,9 @@
     </p>
     @* code *@
     <div class="demo-stage demo-stage-column">
-        <NxGantt TItem="ScheduleTask" Id="template-gantt" Data="templateTasks" Dependencies="templateLinks" SlotWidth="22" TreeListWidth="240px"
+        <NxGantt TItem="ScheduleTask" Id="template-gantt" Data="templateTasks"
+                 ItemId="t => t.Id" ParentId="t => t.ParentId" ItemTitle="t => t.Title" ItemStart="t => t.Start" ItemEnd="t => t.End"
+                 Dependencies="templateLinks" SlotWidth="22" TreeListWidth="240px"
                  Height="360px" Style="width:100%">
             <TaskTemplate>
                 <div class="demo-gantt-bar" style="background:@(string.IsNullOrEmpty(context.Color) ? "#5f6b73" : context.Color)">@context.Title · @context.Days d</div>
@@ -128,7 +136,7 @@
             <WeekHeaderTemplate>@context.ToString("MMM d, yy")</WeekHeaderTemplate>
             <DayHeaderTemplate><span title="@context.ToString("dddd, MMMM d, yyyy")">@context.ToString("ddd")[..1]</span></DayHeaderTemplate>
             <Columns>
-                <NxGanttColumn Field="@nameof(ScheduleTask.Title)" Title="Task" Width="200px" Expandable="true" />
+                <NxGanttColumn Value="t => t.Title" Title="Task" Width="200px" Expandable="true" />
             </Columns>
         </NxGantt>
     </div>
@@ -140,7 +148,7 @@
 
 @code {
     readonly List<ScheduleTask> editTasks = DemoGantt.Tasks();
-    readonly List<ScheduleLink> editLinks = DemoGantt.Links();
+    readonly List<NxGanttDependency> editLinks = DemoGantt.Links();
     IEnumerable<ScheduleTask> picked = [];
     bool editable = true;
     string log = "Drag a bar, or one of its ends";
@@ -151,7 +159,8 @@
 
     void Update(NxGanttUpdateArgs<ScheduleTask> args)
     {
-        args.Apply();
+        if (args.Start is { } start) args.Item.Start = start;
+        if (args.End is { } end) args.Item.End = end;
         DemoGantt.Rollup(editTasks);
         var task = args.Item;
         log = args.Kind == NxGanttUpdateKind.Edit
@@ -177,7 +186,7 @@
         // Children follow their parent out.
         while (editTasks.Where(t => t.ParentId is int p && gone.Contains(p)).Select(t => t.Id).Where(gone.Add).ToList().Count > 0) { }
         editTasks.RemoveAll(t => gone.Contains(t.Id));
-        editLinks.RemoveAll(l => gone.Contains(l.PredecessorId) || gone.Contains(l.SuccessorId));
+        editLinks.RemoveAll(l => gone.Contains((int)l.PredecessorId) || gone.Contains((int)l.SuccessorId));
         DemoGantt.Rollup(editTasks);
         picked = [];
         log = $"Deleted: {task.Title}";
@@ -201,28 +210,31 @@
 
     const string editCode =
         """
-        <NxGantt Data="tasks" Dependencies="links" Editable="canEdit" @bind-SelectedItems="selected"
+        <NxGantt Data="tasks"
+                 ItemId="t => t.Id" ParentId="t => t.ParentId" ItemTitle="t => t.Title" ItemStart="t => t.Start" ItemEnd="t => t.End"
+                 Dependencies="links" Editable="canEdit" @bind-SelectedItems="selected"
                  OnUpdate="SaveAsync" OnEdit="OpenTaskForm" OnDelete="DeleteAsync">
             …
         </NxGantt>
 
         async Task SaveAsync(NxGanttUpdateArgs<Task> args)
         {
-            // args.Kind: Edit (a cell), Move, ResizeStart or ResizeEnd; args.Changes: each field's old and new value.
-            args.Apply();
+            // args.Kind: Edit (a cell: args.OldValue, args.NewValue), Move, ResizeStart or ResizeEnd.
+            if (args.Start is { } start) args.Item.Start = start;
+            if (args.End is { } end) args.Item.End = end;
             await db.SaveAsync(args.Item);
         }
         """;
 
     readonly List<ScheduleTask> linkTasks = DemoGantt.Tasks(), filterTasks = DemoGantt.Tasks(), templateTasks = DemoGantt.Tasks();
-    readonly List<ScheduleLink> templateLinks = DemoGantt.Links();
-    readonly List<ScheduleLink> drawn = [];
+    readonly List<NxGanttDependency> templateLinks = DemoGantt.Links();
+    readonly List<NxGanttDependency> drawn = [];
     NxGantt<ScheduleTask>? filtered;
     string? lastLink;
 
     void Link(NxGanttDependencyCreateEventArgs<ScheduleTask> e)
     {
-        drawn.Add(new ScheduleLink(e.Predecessor.Id, e.Successor.Id, e.Type));
+        drawn.Add(new NxGanttDependency(e.Predecessor.Id, e.Successor.Id, e.Type));
         lastLink = $"{e.Predecessor.Title} → {e.Successor.Title} ({e.Type})";
     }
 }

@@ -18,26 +18,28 @@
     <h2>Basic Usage</h2>
     <p class="doc-note">Drag a bar or one of its ends to reschedule; double-click a row or bar to edit the task; click a title or date to edit it in place; drag the divider; zoom with the buttons.</p>
     <div class="demo-stage demo-stage-column">
-        <NxGantt TItem="ScheduleTask" Id="overview-gantt" Data="tasks" Dependencies="links" SlotWidth="slot" @bind-TreeListWidth="treeWidth"
+        <NxGantt TItem="ScheduleTask" Id="overview-gantt" Data="tasks"
+                 ItemId="t => t.Id" ParentId="t => t.ParentId" ItemTitle="t => t.Title" ItemStart="t => t.Start" ItemEnd="t => t.End"
+                 Dependencies="links" SlotWidth="slot" @bind-TreeListWidth="treeWidth"
                  OnEdit="Edit" OnUpdate="Update" Height="440px" Style="width:100%">
             <ToolBarTemplate>
                 <strong>Route 9 Bridge</strong>
-                <NxButtonGroup Size="NxButtonSize.Small">
+                <NxButtonGroup Size="NxSize.Small">
                     <NxButton id="overview-zoom-out" Icon="@ZoomOutIcon" AriaLabel="Zoom out" OnClick="() => slot = Math.Max(12, slot - 8)" />
                     <NxButton id="overview-zoom-in" Icon="@ZoomInIcon" AriaLabel="Zoom in" OnClick="() => slot = Math.Min(80, slot + 8)" />
                 </NxButtonGroup>
             </ToolBarTemplate>
             <Columns>
-                <NxGanttColumn Field="@nameof(ScheduleTask.Title)" Title="Task" Width="220px" Expandable="true">
+                <NxGanttColumn Value="t => t.Title" Title="Task" Width="220px" Expandable="true">
                     <EditorTemplate><NxTextBox @bind-Value="context.Title" Immediate="true" aria-label="Task" AutoFocus="true" /></EditorTemplate>
                 </NxGanttColumn>
-                <NxGanttColumn Field="@nameof(ScheduleTask.Start)" Width="100px" DisplayFormat="{0:MM/dd/yy}">
+                <NxGanttColumn Value="t => t.Start" Title="Start" Width="100px" DisplayFormat="{0:MM/dd/yy}">
                     <EditorTemplate><NxDatePicker TValue="DateTime" @bind-Value="context.Start" Format="MM/dd/yy" aria-label="Start" /></EditorTemplate>
                 </NxGanttColumn>
-                <NxGanttColumn Field="@nameof(ScheduleTask.End)" Width="100px" DisplayFormat="{0:MM/dd/yy}">
+                <NxGanttColumn Value="t => t.End" Title="End" Width="100px" DisplayFormat="{0:MM/dd/yy}">
                     <EditorTemplate><NxDatePicker TValue="DateTime" @bind-Value="context.End" Format="MM/dd/yy" aria-label="End" /></EditorTemplate>
                 </NxGanttColumn>
-                <NxGanttColumn Field="@nameof(ScheduleTask.Resources)" Width="130px" />
+                <NxGanttColumn Value="t => t.Resources" Title="Resources" Width="130px" />
             </Columns>
         </NxGantt>
         <div class="demo-row">
@@ -91,7 +93,7 @@
     static readonly RenderFragment ZoomOutIcon = @<NxIcon Icon="NxIcons.ZoomOut" />;
 
     readonly List<ScheduleTask> tasks = DemoGantt.Tasks();
-    readonly List<ScheduleLink> links = DemoGantt.Links();
+    readonly List<NxGanttDependency> links = DemoGantt.Links();
     double slot = 30;
     string? treeWidth = "45%", updated;
     ScheduleTask? editing;
@@ -99,7 +101,8 @@
 
     void Update(NxGanttUpdateArgs<ScheduleTask> args)
     {
-        args.Apply();
+        if (args.Start is { } start) args.Item.Start = start;
+        if (args.End is { } end) args.Item.End = end;
         DemoGantt.Rollup(tasks);
         updated = args.Item.Title;
     }
@@ -121,14 +124,16 @@
 
     const string basicCode =
         """
-        <NxGantt Data="tasks" Dependencies="links" SlotWidth="slot" @bind-TreeListWidth="treeWidth"
+        <NxGantt Data="tasks"
+                 ItemId="t => t.Id" ParentId="t => t.ParentId" ItemTitle="t => t.Title" ItemStart="t => t.Start" ItemEnd="t => t.End"
+                 Dependencies="links" SlotWidth="slot" @bind-TreeListWidth="treeWidth"
                  OnEdit="OpenTaskForm" OnUpdate="SaveTaskAsync" Height="100%">
             <ToolBarTemplate>…</ToolBarTemplate>
             <Columns>
-                <NxGanttColumn Field="@nameof(Task.Title)" Title="Task" Width="220px" Expandable="true">
+                <NxGanttColumn Value="t => t.Title" Title="Task" Width="220px" Expandable="true">
                     <EditorTemplate><NxTextBox @bind-Value="context.Title" /></EditorTemplate>
                 </NxGanttColumn>
-                <NxGanttColumn Field="@nameof(Task.Start)" Width="100px" DisplayFormat="{0:MM/dd/yy}" />
+                <NxGanttColumn Value="t => t.Start" Title="Start" Width="100px" DisplayFormat="{0:MM/dd/yy}" />
             </Columns>
         </NxGantt>
         """;

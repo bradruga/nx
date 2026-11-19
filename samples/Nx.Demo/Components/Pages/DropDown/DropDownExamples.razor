@@ -86,13 +86,16 @@
 
 <div class="doc-section">
     <h2>Long Lists</h2>
-    <p class="doc-note"><code>Virtualize</code> renders only the visible rows: 50,000 parts, and type-ahead still finds them.</p>
+    <p class="doc-note">
+        From <code>VirtualizeThreshold</code> rows (200 by default) the list renders only the rows in view: 50,000 parts, and
+        type-ahead still finds them. The row height is measured, or set with <code>ItemHeight</code>.
+    </p>
     @* code *@
     <div class="demo-stage demo-stage-narrow">
         <div style="width:100%">
             <label class="demo-field-label" for="virtual-dropdown">Part</label>
             <NxDropDown Id="virtual-dropdown" Data="SampleData.Parts" ItemText="p => p.Number + ' ' + p.Description" ItemValue="p => (int?)p.Id"
-                        @bind-Value="partId" Virtualize="true" Placeholder="Pick a part" />
+                        @bind-Value="partId" Placeholder="Pick a part" />
             <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="virtual-value">Value: <strong>@(partId?.ToString() ?? "null")</strong></span></div>
         </div>
     </div>
@@ -102,7 +105,10 @@
 
 <div class="doc-section">
     <h2>Data Provider</h2>
-    <p class="doc-note">A <code>DataProvider</code> loads the items when the list opens, with the loading state while it runs.</p>
+    <p class="doc-note">
+        A <code>DataProvider</code> loads the items when the list opens, with the loading state while it runs. The second
+        field starts with a value: <code>ItemByValue</code> finds its item, so the name shows before the list has loaded.
+    </p>
     @* code *@
     <div class="demo-stage demo-stage-narrow">
         <div style="width:100%">
@@ -110,6 +116,14 @@
             <NxDropDown Id="provider-dropdown" TItem="Customer" TValue="int?" DataProvider="LoadCustomers" ItemText="c => c.Name" ItemValue="c => c.Id"
                         @bind-Value="remoteCustomer" Placeholder="Pick a customer" />
             <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="provider-value">Value: <strong>@(remoteCustomer?.ToString() ?? "null")</strong></span></div>
+        </div>
+    </div>
+    <div class="demo-stage demo-stage-narrow">
+        <div style="width:100%">
+            <label class="demo-field-label" for="lookup-dropdown">Customer (remote, with a value)</label>
+            <NxDropDown Id="lookup-dropdown" TItem="Customer" TValue="int?" DataProvider="LoadCustomers" ItemByValue="FindCustomer"
+                        ItemText="c => c.Name" ItemValue="c => c.Id" @bind-Value="presetCustomer" />
+            <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="lookup-value">Value: <strong>@(presetCustomer?.ToString() ?? "null")</strong></span></div>
         </div>
     </div>
     @* /code *@
@@ -142,16 +156,24 @@
 <div class="doc-section">
     <h2>Phone Sheet</h2>
     <p class="doc-note">
-        At 600px and below the list opens as a full-screen sheet with large rows and no search box. <code>MobileMode="Always"</code>
-        forces it here.
+        Opt in with <code>MobileMode</code>: the list opens as a full-screen sheet with large rows and no search box.
+        <code>Auto</code> uses it at 600px and below, as on the second field; <code>Always</code> forces it, as on the first.
     </p>
     @* code *@
     <div class="demo-stage demo-stage-narrow">
         <div style="width:100%">
             <label class="demo-field-label" for="sheet-dropdown">Plant</label>
-            <NxDropDown Id="sheet-dropdown" TItem="string" TValue="string" Data="Plants" @bind-Value="plant" MobileMode="NxComboBoxMobileMode.Always"
+            <NxDropDown Id="sheet-dropdown" TItem="string" TValue="string" Data="Plants" @bind-Value="plant" MobileMode="NxMobileMode.Always"
                         MobileTitle="Plant" DefaultText="No plant" />
             <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="sheet-value">Value: <strong>@(plant ?? "null")</strong></span></div>
+        </div>
+    </div>
+    <div class="demo-stage demo-stage-narrow">
+        <div style="width:100%">
+            <label class="demo-field-label" for="sheet-auto">Plant (sheet on a phone)</label>
+            <NxDropDown Id="sheet-auto" TItem="string" TValue="string" Data="Plants" @bind-Value="autoPlant" MobileMode="NxMobileMode.Auto"
+                        MobileTitle="Plant" Placeholder="Pick a plant" />
+            <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="sheet-auto-value">Value: <strong>@(autoPlant ?? "null")</strong></span></div>
         </div>
     </div>
     @* /code *@
@@ -183,8 +205,8 @@
     static readonly string[] Departments = ["Engineering", "Production", "Quality", "Sales", "Shipping"];
     static readonly string[] Plants = ["Albany", "Bethlehem", "Hartford", "Newburgh", "Syracuse", "Worcester"];
 
-    string? state, department, plant, clearable = "Lowboy";
-    int? employeeId, columnsCustomer, partId, remoteCustomer;
+    string? state, department, plant, autoPlant, clearable = "Lowboy";
+    int? employeeId, columnsCustomer, partId, remoteCustomer, presetCustomer = 12;
     string result = "Not booked";
     readonly Ticket ticket = new();
 
@@ -194,6 +216,8 @@
     {
         return await SampleData.SearchCustomersAsync("", 500, request.CancellationToken);
     }
+
+    static Task<Customer?> FindCustomer(int? id) => Task.FromResult(SampleData.Customers.FirstOrDefault(c => c.Id == id));
 
     class Ticket
     {

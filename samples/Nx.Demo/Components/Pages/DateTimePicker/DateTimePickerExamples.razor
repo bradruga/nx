@@ -75,6 +75,30 @@
 </div>
 
 <div class="doc-section">
+    <h2>DateTimeOffset</h2>
+    <p class="doc-note">
+        A <code>DateTimeOffset</code> shows its own date and time, whatever the server's time zone, and keeps its offset when
+        either changes. A field that starts empty takes the offset of <em>your</em> time zone at the time you set, read from
+        the browser (daylight saving as on that day). <code>Min</code> and <code>Max</code> compare with the time shown.
+    </p>
+    @* code *@
+    <div class="demo-stage">
+        <div class="demo-form-grid demo-form-grid-2">
+            <div>
+                <NxDateTimePicker Id="offset-kept" Label="Lands in Tokyo (+09:00)" Format="M/d/yyyy h:mm tt" @bind-Value="offsetKept" />
+                <span class="demo-value" id="offset-kept-value">Value: <strong>@offsetKept.ToString("yyyy-MM-dd HH:mm zzz")</strong></span>
+            </div>
+            <div>
+                <NxDateTimePicker Id="offset-empty" Label="Starts empty (your offset)" Format="M/d/yyyy h:mm tt" Clearable="true" @bind-Value="offsetEmpty" />
+                <span class="demo-value" id="offset-empty-value">Value: <strong>@(offsetEmpty?.ToString("yyyy-MM-dd HH:mm zzz") ?? "null")</strong></span>
+            </div>
+        </div>
+    </div>
+    @* /code *@
+    <DocExampleCode Key="datetimeoffset" />
+</div>
+
+<div class="doc-section">
     <h2>State</h2>
     @* code *@
     <div class="demo-stage">
@@ -91,7 +115,8 @@
     <h2>Phone Sheet</h2>
     <p class="doc-note">
         At 600 px and below the popup is a full-screen sheet: Date and Time tabs showing the current choice, a big calendar,
-        then a list of times. <code>MobileMode="Always"</code> shows it here on any screen.
+        then hour, minute and AM/PM columns as in <code>NxTimePicker</code> — minutes every 5, so times off <code>TimeStep</code>
+        are a tap away — and Done. <code>MobileMode="Always"</code> shows it here on any screen.
     </p>
     @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
@@ -126,6 +151,8 @@
 
     DateTime? a = Base, b = Base, c = Base.AddSeconds(15), d = Base, stepped, hourly, deactivate, gate;
     DateTime restart = DateTime.Today.AddDays(1).AddHours(3);
+    DateTimeOffset offsetKept = new(2026, 10, 23, 18, 0, 0, TimeSpan.FromHours(9));
+    DateTimeOffset? offsetEmpty;
     DateTime? injury;
     readonly DateTime hireDate = DateTime.Today.AddDays(-20).AddHours(7);
     readonly DateTime now = DateTime.Today.AddHours(16);

@@ -4,17 +4,20 @@
 
 <div class="doc-section">
     <h2>Playground</h2>
-    <p class="doc-note">Every parameter, live, over the demo customers bound by id.</p>
+    <p class="doc-note">Every parameter, live, over the 20 demo customers bound by id. Lower <code>VirtualizeThreshold</code> to 20 or less to virtualize them.</p>
 
     <div class="demo-playground">
         <div class="demo-preview">
             <div class="demo-preview-inner demo-preview-inner-stretch">
                 <div style="width:100%">
                     <label class="demo-field-label" for="playground-multi">Customers</label>
-                    <NxMultiSelect @key="pgKey" Id="playground-multi" Data="SampleData.Customers" ItemText="c => c.Name" ItemValue="c => c.Id"
+                    <NxMultiSelect @key="pgKey" Id="playground-multi" TItem="Customer" TValue="int" Data="@(pgProvider ? null : SampleData.Customers)"
+                                   DataProvider="@(pgProvider ? SearchCustomers : null)" ItemByValue="@(pgItemByValue ? FindCustomer : null)"
+                                   ItemText="c => c.Name" ItemValue="c => c.Id"
                                    ItemGroup="@(pgGroup ? c => c.Region : null)" @bind-Values="pgValues" @bind-Values:after="Changed"
                                    SelectAll="pgSelectAll" MaxSelections="MaxOrNull" SummaryThreshold="SummaryOrNull" MaxVisibleChips="ChipsOrNull"
                                    Filterable="pgFilterable" Clearable="pgClearable" Placeholder="@OrNull(pgPlaceholder)"
+                                   VirtualizeThreshold="pgThreshold" ItemHeight="@(pgItemHeight > 0 ? pgItemHeight : null)"
                                    Disabled="pgDisabled" ReadOnly="pgReadOnly" MobileMode="pgMobile" />
                 </div>
             </div>
@@ -34,6 +37,10 @@
             <div class="demo-controls-title">List</div>
             <label class="demo-control"><span>Filterable</span><input type="checkbox" id="pg-filterable" @bind="pgFilterable" @bind:after="Remount" /></label>
             <label class="demo-control"><span>ItemGroup (region)</span><input type="checkbox" id="pg-group" @bind="pgGroup" /></label>
+            <label class="demo-control"><span>VirtualizeThreshold</span><input type="number" id="pg-threshold" min="0" @bind="pgThreshold" /></label>
+            <label class="demo-control"><span>ItemHeight (0 = measured)</span><input type="number" id="pg-item-height" min="0" @bind="pgItemHeight" /></label>
+            <label class="demo-control"><span>DataProvider</span><input type="checkbox" id="pg-provider" @bind="pgProvider" @bind:after="Remount" /></label>
+            <label class="demo-control"><span>ItemByValue</span><input type="checkbox" id="pg-item-by-value" @bind="pgItemByValue" @bind:after="Remount" disabled="@(!pgProvider)" /></label>
             <label class="demo-control"><span>Placeholder</span><input type="text" id="pg-placeholder" @bind="pgPlaceholder" @bind:event="oninput" /></label>
 
             <div class="demo-controls-title">Behavior</div>
@@ -43,9 +50,9 @@
             <label class="demo-control">
                 <span>MobileMode</span>
                 <select id="pg-mobile" @bind="pgMobile" @bind:after="Remount">
-                    <option value="@NxComboBoxMobileMode.Auto">Auto</option>
-                    <option value="@NxComboBoxMobileMode.Always">Always</option>
-                    <option value="@NxComboBoxMobileMode.Never">Never</option>
+                    <option value="@NxMobileMode.Never">Never</option>
+                    <option value="@NxMobileMode.Auto">Auto</option>
+                    <option value="@NxMobileMode.Always">Always</option>
                 </select>
             </label>
         </div>
@@ -64,8 +71,9 @@
 
     IEnumerable<int> pgValues = [1, 2];
     string pgMax = "", pgSummary = "", pgChips = "", pgPlaceholder = "Pick customers";
-    bool pgSelectAll = true, pgFilterable = true, pgGroup, pgClearable = true, pgReadOnly, pgDisabled;
-    NxComboBoxMobileMode pgMobile = NxComboBoxMobileMode.Auto;
+    bool pgSelectAll = true, pgFilterable = true, pgGroup, pgProvider, pgItemByValue, pgClearable = true, pgReadOnly, pgDisabled;
+    int pgThreshold = 200, pgItemHeight;
+    NxMobileMode pgMobile = NxMobileMode.Never;
     int pgKey, pgChanges;
 
     int? MaxOrNull => IntOrNull(pgMax) is int m && m > 0 ? m : null;
@@ -75,22 +83,30 @@
     void Changed() => pgChanges++;
     void Remount() => pgKey++;
 
+    static Task<IEnumerable<Customer>> SearchCustomers(NxComboBoxRequest request) =>
+        SampleData.SearchCustomersAsync(request.Filter, 500, request.CancellationToken);
+
+    static Task<Customer?> FindCustomer(int id) => Task.FromResult(SampleData.Customers.FirstOrDefault(c => c.Id == id));
+
     string PlaygroundCode
     {
         get
         {
-            var attrs = new List<string> { "Data=\"customers\"", "ItemText=\"c => c.Name\"", "ItemValue=\"c => c.Id\"", "@bind-Values=\"ids\"" };
+            var attrs = new List<string> { pgProvider ? "DataProvider=\"SearchAsync\"" : "Data=\"customers\"", "ItemText=\"c => c.Name\"", "ItemValue=\"c => c.Id\"", "@bind-Values=\"ids\"" };
+            if (pgProvider && pgItemByValue) attrs.Insert(1, "ItemByValue=\"FindAsync\"");
             if (pgSelectAll) attrs.Add("SelectAll=\"true\"");
             if (MaxOrNull is int m) attrs.Add($"MaxSelections=\"{m}\"");
             if (SummaryOrNull is int s) attrs.Add($"SummaryThreshold=\"{s}\"");
             if (ChipsOrNull is int c) attrs.Add($"MaxVisibleChips=\"{c}\"");
             if (!pgFilterable) attrs.Add("Filterable=\"false\"");
             if (pgGroup) attrs.Add("ItemGroup=\"c => c.Region\"");
+            if (pgThreshold != 200) attrs.Add($"VirtualizeThreshold=\"{pgThreshold}\"");
+            if (pgItemHeight > 0) attrs.Add($"ItemHeight=\"{pgItemHeight}\"");
             if (OrNull(pgPlaceholder) is { } p) attrs.Add($"Placeholder=\"{p}\"");
             if (pgClearable) attrs.Add("Clearable=\"true\"");
             if (pgReadOnly) attrs.Add("ReadOnly=\"true\"");
             if (pgDisabled) attrs.Add("Disabled=\"true\"");
-            if (pgMobile != NxComboBoxMobileMode.Auto) attrs.Add($"MobileMode=\"NxComboBoxMobileMode.{pgMobile}\"");
+            if (pgMobile != NxMobileMode.Never) attrs.Add($"MobileMode=\"NxMobileMode.{pgMobile}\"");
             return "<NxMultiSelect " + string.Join("\n               ", attrs) + " />";
         }
     }

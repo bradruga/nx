@@ -73,6 +73,7 @@
                        aria-controls="@(popupOpen ? CalendarId : null)"
                        aria-activedescendant="@(popupOpen && activeEnd == isEnd ? calendar?.ActiveDescendant : null)"
                        aria-invalid="@((isEnd ? endValidation : startValidation).IsInvalid ? "true" : null)"
+                       data-nx-edit="@(Editable ? formatter.Edit(side.Current) : null)"
                        @bind="side.Text"
                        @bind:event="oninput"
                        @bind:after="() => HandleInputAfter(side)"

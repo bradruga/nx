@@ -47,13 +47,13 @@ public class NxChatTests : BunitContext
             p.Add(x => x.Id, "chat");
             p.Add(x => x.Data, data);
             p.Add(x => x.AuthorId, "me");
-            p.Add(x => x.IdField, nameof(Msg.Id));
-            p.Add(x => x.AuthorIdField, nameof(Msg.Author));
-            p.Add(x => x.AuthorNameField, nameof(Msg.Name));
-            p.Add(x => x.AuthorImageUrlField, nameof(Msg.Picture));
-            p.Add(x => x.TextField, nameof(Msg.Text));
-            p.Add(x => x.TimestampField, nameof(Msg.Sent));
-            p.Add(x => x.IsTypingField, nameof(Msg.Typing));
+            p.Add(x => x.ItemId, m => m.Id);
+            p.Add(x => x.ItemAuthorId, m => m.Author);
+            p.Add(x => x.ItemAuthorName, m => m.Name);
+            p.Add(x => x.ItemAuthorImageUrl, m => m.Picture);
+            p.Add(x => x.ItemText, m => m.Text);
+            p.Add(x => x.ItemTimestamp, m => m.Sent);
+            p.Add(x => x.ItemIsTyping, m => m.Typing);
             p.Add(x => x.Culture, CultureInfo.GetCultureInfo("en-US"));
             configure?.Invoke(p);
         });
@@ -230,9 +230,9 @@ public class NxChatTests : BunitContext
         var sent = new DateTimeOffset(Today.AddHours(14).AddMinutes(5));
         var cut = Render<NxChat<OffsetMsg>>(p => p
             .Add(x => x.Data, new[] { new OffsetMsg { Author = "sam", Text = "Hi", Sent = sent } })
-            .Add(x => x.AuthorIdField, nameof(OffsetMsg.Author))
-            .Add(x => x.TextField, nameof(OffsetMsg.Text))
-            .Add(x => x.TimestampField, nameof(OffsetMsg.Sent))
+            .Add(x => x.ItemAuthorId, m => m.Author)
+            .Add(x => x.ItemText, m => m.Text)
+            .Add(x => x.ItemTimestamp, m => m.Sent)
             .Add(x => x.Culture, CultureInfo.GetCultureInfo("en-US")));
 
         Assert.That(cut.Find(".nx-chat-time").TextContent, Is.EqualTo("2:05 PM"));
@@ -280,13 +280,5 @@ public class NxChatTests : BunitContext
 
         Assert.That(module.Invocations.Count(i => i.Identifier == "scrollToBottom"), Is.EqualTo(1));
         Assert.That(module.Invocations.Count(i => i.Identifier == "dispose"), Is.EqualTo(1));
-    }
-
-    [Test]
-    public void UnknownField_Throws()
-    {
-        Assert.Throws<InvalidOperationException>(() => Render<NxChat<Msg>>(p => p
-            .Add(x => x.Data, Conversation())
-            .Add(x => x.TextField, "Body")));
     }
 }

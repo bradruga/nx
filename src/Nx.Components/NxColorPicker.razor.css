@@ -28,11 +28,11 @@
 
 .nx-colorpicker-toggle:hover { border-color: var(--nx-border-hover); }
 .nx-colorpicker-open .nx-colorpicker-toggle { border-color: var(--nx-accent); }
-.nx-colorpicker-invalid .nx-colorpicker-toggle { border-color: var(--nx-invalid); }
+.nx-colorpicker-invalid .nx-colorpicker-toggle { border-color: var(--nx-invalid, var(--nx-danger)); }
 .nx-colorpicker-toggle:focus { outline: none; }
 .nx-colorpicker-toggle:focus-visible {
     border-color: var(--nx-accent);
-    box-shadow: var(--nx-focus-ring-inset);
+    box-shadow: var(--nx-focus-ring-inset, 0 0 0 1px var(--nx-accent));
 }
 
 .nx-colorpicker-toggle:disabled {
@@ -74,7 +74,7 @@
     box-sizing: border-box;
     width: max-content;
     max-width: calc(100vw - 16px);
-    background: var(--nx-popup-bg);
+    background: var(--nx-popup-bg, var(--nx-surface));
     border: 1px solid var(--nx-border);
     border-radius: var(--nx-radius);
     box-shadow: var(--nx-shadow-popup);
@@ -112,7 +112,7 @@
     outline: 2px solid var(--nx-fg);
     outline-offset: 2px;
 }
-.nx-colorpicker-cell:focus-visible { outline-color: var(--nx-focus-ring-color); }
+.nx-colorpicker-cell:focus-visible { outline-color: var(--nx-focus-ring-color, var(--nx-accent)); }
 
 .nx-colorpicker-clear {
     display: flex;
@@ -154,7 +154,7 @@
 }
 .nx-colorpicker-tab:hover { color: var(--nx-fg); }
 .nx-colorpicker-tab:focus { outline: none; }
-.nx-colorpicker-tab:focus-visible { box-shadow: var(--nx-focus-ring-inset); }
+.nx-colorpicker-tab:focus-visible { box-shadow: var(--nx-focus-ring-inset, 0 0 0 1px var(--nx-accent)); }
 .nx-colorpicker-tab-active,
 .nx-colorpicker-tab-active:hover {
     border-bottom-color: var(--nx-accent);

@@ -7,7 +7,7 @@
 <div class="doc-section">
     <h2>What It Is</h2>
     <p class="doc-note">
-        <code>NxDatePicker&lt;TValue&gt;</code> edits a <code>DateOnly</code> or <code>DateTime</code>, nullable or not. Type the
+        <code>NxDatePicker&lt;TValue&gt;</code> edits a <code>DateOnly</code>, <code>DateTime</code> or <code>DateTimeOffset</code>, nullable or not. Type the
         date the way you would write it, in the culture's order — <em>12/5</em> is December 5 of this year in en-US, as
         <em>5.12</em> is in de-DE — and it is read when you press Enter or leave the field; or open the calendar and pick. Up and Down step the day, month or year under the caret. While you are not editing, the date shows in any .NET
         <code>Format</code>. The calendar zooms out to months and years, respects <code>Min</code>, <code>Max</code> and a
@@ -41,6 +41,7 @@
         <table class="doc-table">
             <thead><tr><th>Key / attribute</th><th>Behavior</th></tr></thead>
             <tbody>
+                <tr><td>Tab into the field</td><td>Selects the date, shown in its edit form (<em>10/23/2026</em>), so typing replaces it; a click puts the caret instead.</td></tr>
                 <tr><td>↑ / ↓ (closed)</td><td>Steps the day, month or year under the caret, wrapping within the month or year; an empty field starts from today.</td></tr>
                 <tr><td>Alt+↓</td><td>Opens the calendar at the date in the field, else today.</td></tr>
                 <tr><td>← / → (open)</td><td>Previous / next day (month or year in the zoomed-out views).</td></tr>

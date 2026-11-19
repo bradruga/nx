@@ -1,6 +1,4 @@
-using System.Collections.Concurrent;
 using System.Globalization;
-using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -9,19 +7,20 @@ namespace Nx.Components;
 
 /// <summary>
 /// A project schedule: a task list (tree columns, sorting, a filter row, cells edited in place) beside a week timeline
-/// of bars, with dependency arrows between them and a divider to share the width. Bound to a flat list by field
-/// name (<c>IdField</c>, <c>ParentIdField</c>, <c>TitleField</c>, <c>StartField</c>, <c>EndField</c>).
+/// of bars, with dependency arrows between them and a divider to share the width. Bound to a flat list with
+/// lambdas (<c>ItemId</c>, <c>ParentId</c>, <c>ItemTitle</c>, <c>ItemStart</c>, <c>ItemEnd</c>).
 /// Bars are dragged to move a task and by an edge to change its start or end; every edit arrives in <see cref="OnUpdate"/>.
 /// Editing a whole task is the page's own form, opened from <see cref="OnEdit"/>; the Gantt has none of its own.
 /// </summary>
 /// <typeparam name="TItem">The task type.</typeparam>
 /// <example>
 /// <code>
-/// &lt;NxGantt Data="tasks" IdField="@nameof(Node.Id)" ParentIdField="@nameof(Node.ParentId)" Height="600px"
+/// &lt;NxGantt Data="tasks" ItemId="t =&gt; t.Id" ParentId="t =&gt; t.ParentId" ItemTitle="t =&gt; t.Title"
+///          ItemStart="t =&gt; t.Start" ItemEnd="t =&gt; t.End" Height="600px"
 ///          Dependencies="links" OnEdit="OpenTask" OnUpdate="SaveTask"&gt;
 ///     &lt;Columns&gt;
-///         &lt;NxGanttColumn Field="@nameof(Node.Title)" Title="Node" Width="300px" Expandable="true" /&gt;
-///         &lt;NxGanttColumn Field="@nameof(Node.Start)" Width="100px" DisplayFormat="{0:MM/dd/yy}" /&gt;
+///         &lt;NxGanttColumn Value="t =&gt; t.Title" Title="Task" Width="300px" Expandable="true" /&gt;
+///         &lt;NxGanttColumn Value="t =&gt; t.Start" Title="Start" Width="100px" DisplayFormat="{0:MM/dd/yy}" /&gt;
 ///     &lt;/Columns&gt;
 /// &lt;/NxGantt&gt;
 /// </code>
@@ -34,7 +33,6 @@ public partial class NxGantt<TItem> : IAsyncDisposable
     // draws the line while a dependency is dragged from one bar to another, and shows where a dragged bar would land.
 
     private const string ModulePath = "./_content/Nx.Components/nx-gantt.js";
-    private static readonly ConcurrentDictionary<(Type, string), PropertyInfo?> Properties = new();
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -61,12 +59,12 @@ public partial class NxGantt<TItem> : IAsyncDisposable
     private string? treeWidth;
 
     /// <summary>A registered column, as the Gantt draws it.</summary>
-    internal sealed record Column(object Key, string? Field, string? Title, string? Width, string? DisplayFormat, bool Expandable, bool Visible,
+    internal sealed record Column(object Key, Func<TItem, object?>? Value, string? Title, string? Width, string? DisplayFormat, bool Expandable, bool Visible,
         bool Editable, bool Filterable, RenderFragment<TItem>? Template, RenderFragment<TItem>? EditorTemplate, RenderFragment? HeaderTemplate)
     {
-        /// <summary>What the header and layout show; templates are new objects on every render and are left out.</summary>
-        public (string?, string?, string?, string?, bool, bool, bool, bool, bool) Shown =>
-            (Field, Title, Width, DisplayFormat, Expandable, Visible, Editable, Filterable, EditorTemplate is null);
+        /// <summary>What the header and layout show; templates and lambdas are new objects on every render and are left out.</summary>
+        public (bool, string?, string?, string?, bool, bool, bool, bool, bool) Shown =>
+            (Value is null, Title, Width, DisplayFormat, Expandable, Visible, Editable, Filterable, EditorTemplate is null);
     }
 
     /// <summary>One task.</summary>
@@ -89,20 +87,20 @@ public partial class NxGantt<TItem> : IAsyncDisposable
     /// <summary>Every task, flat: each names its parent by id.</summary>
     [Parameter] public IEnumerable<TItem>? Data { get; set; }
 
-    /// <summary>The property holding a task's id. Default: <c>Id</c>.</summary>
-    [Parameter] public string IdField { get; set; } = "Id";
+    /// <summary>A task's unique id. Required.</summary>
+    [Parameter, EditorRequired] public Func<TItem, object>? ItemId { get; set; }
 
-    /// <summary>The property holding its parent's id; <c>null</c> at the top. Default: <c>ParentId</c>.</summary>
-    [Parameter] public string ParentIdField { get; set; } = "ParentId";
+    /// <summary>Its parent's id; <c>null</c> (or not passed) at the top.</summary>
+    [Parameter] public Func<TItem, object?>? ParentId { get; set; }
 
-    /// <summary>The property shown on its bar. Default: <c>Title</c>.</summary>
-    [Parameter] public string TitleField { get; set; } = "Title";
+    /// <summary>The text shown on its bar. Default: none.</summary>
+    [Parameter] public Func<TItem, string?>? ItemTitle { get; set; }
 
-    /// <summary>The property holding when it starts. Default: <c>Start</c>.</summary>
-    [Parameter] public string StartField { get; set; } = "Start";
+    /// <summary>When it starts; a task without a start has no bar. Required.</summary>
+    [Parameter, EditorRequired] public Func<TItem, DateTime?>? ItemStart { get; set; }
 
-    /// <summary>The property holding when it ends (the bar stops there). Default: <c>End</c>.</summary>
-    [Parameter] public string EndField { get; set; } = "End";
+    /// <summary>When it ends (the bar stops there). Required.</summary>
+    [Parameter, EditorRequired] public Func<TItem, DateTime?>? ItemEnd { get; set; }
 
     /// <summary>The <see cref="NxGanttColumn{TItem}"/>s of the task list.</summary>
     [Parameter] public RenderFragment? Columns { get; set; }
@@ -110,16 +108,7 @@ public partial class NxGantt<TItem> : IAsyncDisposable
     // ── Dependencies ──────────────────────────────────────────────────────────
 
     /// <summary>The links between tasks, drawn as arrows.</summary>
-    [Parameter] public System.Collections.IEnumerable? Dependencies { get; set; }
-
-    /// <summary>The property holding a link's predecessor id. Default: <c>PredecessorId</c>.</summary>
-    [Parameter] public string PredecessorIdField { get; set; } = "PredecessorId";
-
-    /// <summary>The property holding a link's successor id. Default: <c>SuccessorId</c>.</summary>
-    [Parameter] public string SuccessorIdField { get; set; } = "SuccessorId";
-
-    /// <summary>The property holding a link's type (an <see cref="NxGanttDependencyType"/>, or an enum or number in its order). Default: <c>Type</c>.</summary>
-    [Parameter] public string TypeField { get; set; } = "Type";
+    [Parameter] public IEnumerable<NxGanttDependency>? Dependencies { get; set; }
 
     /// <summary>Raised when the user drags from one bar's start or end to another bar; with a handler the handles show.</summary>
     [Parameter] public EventCallback<NxGanttDependencyCreateEventArgs<TItem>> OnDependencyCreate { get; set; }
@@ -179,7 +168,7 @@ public partial class NxGantt<TItem> : IAsyncDisposable
     [Parameter] public EventCallback<TItem> OnEdit { get; set; }
 
     /// <summary>
-    /// Raised after any edit, as NxGrid's: a bar dragged or resized (the item is untouched; apply the changes), or a cell
+    /// Raised after any edit, as NxGrid's: a bar dragged or resized (the item is untouched; write the new dates), or a cell
     /// left (its editor already wrote the item). Bars drag only with a handler.
     /// </summary>
     [Parameter] public EventCallback<NxGanttUpdateArgs<TItem>> OnUpdate { get; set; }
@@ -309,7 +298,7 @@ public partial class NxGantt<TItem> : IAsyncDisposable
 
     private string CellText(Node task, Column column)
     {
-        var value = column.Field is null ? null : Read(task.Item!, column.Field);
+        var value = column.Value?.Invoke(task.Item);
         if (value is null)
             return "";
         if (string.IsNullOrEmpty(column.DisplayFormat))
@@ -329,6 +318,8 @@ public partial class NxGantt<TItem> : IAsyncDisposable
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        if (ItemId is null || ItemStart is null || ItemEnd is null)
+            throw new InvalidOperationException("NxGantt needs ItemId, ItemStart and ItemEnd.");
         Build();
         // Only an outside change replaces what the user expanded, as NxTreeView.
         if (!initialized || !ReferenceEquals(ExpandedItems, lastExpanded))
@@ -366,11 +357,11 @@ public partial class NxGantt<TItem> : IAsyncDisposable
         {
             if (item is null)
                 continue;
-            var task = new Node(item, IdOf(item), Read(item, ParentIdField), map.Count)
+            var task = new Node(item, IdOf(item), ParentId?.Invoke(item), map.Count)
             {
-                Title = Convert.ToString(Read(item, TitleField), Formats) ?? "",
-                Start = ToDate(Read(item, StartField, required: true)),
-                End = ToDate(Read(item, EndField, required: true))
+                Title = ItemTitle?.Invoke(item) ?? "",
+                Start = ItemStart!(item),
+                End = ItemEnd!(item)
             };
             map.TryAdd(task.Id, task);
         }
@@ -405,36 +396,7 @@ public partial class NxGantt<TItem> : IAsyncDisposable
             editing = map.TryGetValue(e.Node.Id, out var node) ? (node, e.Column) : null;
     }
 
-    private object IdOf(TItem item) => Read(item!, IdField, required: true)!;
-
-    private static DateTime? ToDate(object? value) => value switch
-    {
-        DateTime d => d,
-        DateTimeOffset o => o.LocalDateTime,
-        DateOnly d => d.ToDateTime(TimeOnly.MinValue),
-        _ => null
-    };
-
-    private static object? Read(object item, string field, bool required = false)
-    {
-        var info = Properties.GetOrAdd((item.GetType(), field), key => key.Item1.GetProperty(key.Item2, BindingFlags.Public | BindingFlags.Instance));
-        if (info is null && required)
-            throw new InvalidOperationException($"NxGantt: {item.GetType().Name} has no public property '{field}'.");
-        return info?.GetValue(item);
-    }
-
-    /// <summary>A change of <paramref name="field"/> to <paramref name="date"/>, in the property's own type.</summary>
-    private static NxGanttChange<TItem> DateChange(TItem item, string field, DateTime date)
-    {
-        var info = Properties.GetOrAdd((item!.GetType(), field), key => key.Item1.GetProperty(key.Item2, BindingFlags.Public | BindingFlags.Instance))!;
-        var type = Nullable.GetUnderlyingType(info.PropertyType) ?? info.PropertyType;
-        object value = date;
-        if (type == typeof(DateOnly))
-            value = DateOnly.FromDateTime(date);
-        else if (type == typeof(DateTimeOffset))
-            value = new DateTimeOffset(date);
-        return new NxGanttChange<TItem> { Field = field, OldValue = info.GetValue(item), NewValue = value, ApplyAction = target => info.SetValue(target, value) };
-    }
+    private object IdOf(TItem item) => ItemId!(item);
 
     // ── The rows shown: sorted among siblings, filtered with their parents, collapsed hidden ──
 
@@ -474,9 +436,9 @@ public partial class NxGantt<TItem> : IAsyncDisposable
 
     private IEnumerable<Node> Sort(IEnumerable<Node> tasks)
     {
-        if (columns.FirstOrDefault(c => Same(c, sortColumn)) is not { Field: not null } column)
+        if (columns.FirstOrDefault(c => Same(c, sortColumn)) is not { Value: not null } column)
             return tasks;
-        object? Key(Node t) => Read(t.Item!, column.Field!) is { } v and not string ? v : CellText(t, column);
+        object? Key(Node t) => column.Value(t.Item) is { } v and not string ? v : CellText(t, column);
         var comparer = Comparer<object?>.Create((a, b) => a is null ? (b is null ? 0 : -1) : b is null ? 1
             : a is string sa && b is string sb ? string.Compare(sa, sb, Formats, CompareOptions.IgnoreCase | CompareOptions.NumericOrdering)
             : a is IComparable ca && a.GetType() == b.GetType() ? ca.CompareTo(b) : string.Compare(a.ToString(), b.ToString(), StringComparison.OrdinalIgnoreCase));
@@ -527,19 +489,13 @@ public partial class NxGantt<TItem> : IAsyncDisposable
         var rowOf = rows.Select((t, i) => (t, i)).ToDictionary(p => p.t, p => p.i);
         foreach (var dependency in Dependencies)
         {
-            if (dependency is null || Read(dependency, PredecessorIdField) is not { } from || Read(dependency, SuccessorIdField) is not { } to)
+            if (dependency?.PredecessorId is not { } from || dependency.SuccessorId is not { } to)
                 continue;
             if (!byId.TryGetValue(from, out var a) || !byId.TryGetValue(to, out var b) || !rowOf.TryGetValue(a, out var ra) || !rowOf.TryGetValue(b, out var rb))
                 continue;
             if (Bar(a) is not { } barA || Bar(b) is not { } barB)
                 continue;
-            var type = Read(dependency, TypeField) switch
-            {
-                NxGanttDependencyType t => t,
-                Enum e => (NxGanttDependencyType)Convert.ToInt32(e, CultureInfo.InvariantCulture),
-                int n => (NxGanttDependencyType)n,
-                _ => NxGanttDependencyType.FinishStart
-            };
+            var type = dependency.Type;
             var fromEnd = type is NxGanttDependencyType.FinishStart or NxGanttDependencyType.FinishFinish;
             var toStart = type is NxGanttDependencyType.FinishStart or NxGanttDependencyType.StartStart;
             var x1 = fromEnd ? barA.Left + barA.Width : barA.Left;
@@ -640,14 +596,12 @@ public partial class NxGantt<TItem> : IAsyncDisposable
         if (kind == NxGanttUpdateKind.ResizeEnd && newEnd < start.AddDays(1))
             newEnd = start.AddDays(1);
 
-        var changes = new List<NxGanttChange<TItem>>();
-        if (newStart != start)
-            changes.Add(DateChange(task.Item, StartField, newStart));
-        if (newEnd != end)
-            changes.Add(DateChange(task.Item, EndField, newEnd));
-        if (changes.Count == 0)
+        if (newStart == start && newEnd == end)
             return;
-        await OnUpdate.InvokeAsync(new NxGanttUpdateArgs<TItem> { Item = task.Item, Kind = kind, Changes = changes });
+        await OnUpdate.InvokeAsync(new NxGanttUpdateArgs<TItem>
+        {
+            Item = task.Item, Kind = kind, Start = newStart == start ? null : newStart, End = newEnd == end ? null : newEnd
+        });
         Build();
         StateHasChanged();
     }
@@ -666,7 +620,7 @@ public partial class NxGantt<TItem> : IAsyncDisposable
 
     private async Task SortByAsync(Column column)
     {
-        if (!Sortable || column.Field is null)
+        if (!Sortable || column.Value is null)
             return;
         if (Same(sortColumn, column))
         {
@@ -700,7 +654,7 @@ public partial class NxGantt<TItem> : IAsyncDisposable
         if (Editable && column.Editable && column.EditorTemplate is not null)
         {
             editing = (task, column);
-            editingOldValue = column.Field is null ? null : Read(task.Item!, column.Field);
+            editingOldValue = column.Value?.Invoke(task.Item);
             if (module is not null)
                 await module.InvokeVoidAsync("watchEdit", root, RowId(task));
         }
@@ -715,15 +669,13 @@ public partial class NxGantt<TItem> : IAsyncDisposable
             await module.InvokeVoidAsync("unwatchEdit", root);
         Build();
         StateHasChanged();
-        // The editor wrote the item; the change says what the cell's own field was and is.
-        var changes = new List<NxGanttChange<TItem>>();
-        if (e.Column.Field is { } field && Read(e.Node.Item!, field) is var value && !Equals(value, editingOldValue))
-        {
-            var info = Properties[(e.Node.Item!.GetType(), field)]!;
-            changes.Add(new NxGanttChange<TItem> { Field = field, OldValue = editingOldValue, NewValue = value, ApplyAction = target => info.SetValue(target, value) });
-        }
+        // The editor wrote the item; the args say what the cell's own value was and is.
+        var old = editingOldValue;
         editingOldValue = null;
-        await OnUpdate.InvokeAsync(new NxGanttUpdateArgs<TItem> { Item = e.Node.Item, Kind = NxGanttUpdateKind.Edit, Changes = changes });
+        await OnUpdate.InvokeAsync(new NxGanttUpdateArgs<TItem>
+        {
+            Item = e.Node.Item, Kind = NxGanttUpdateKind.Edit, OldValue = old, NewValue = e.Column.Value?.Invoke(e.Node.Item)
+        });
     }
 
     private async Task RowKeyDownAsync(KeyboardEventArgs e, Node task, List<Node> rows)
@@ -777,7 +729,7 @@ public partial class NxGantt<TItem> : IAsyncDisposable
                 await module.InvokeVoidAsync("dispose", root);
                 await module.DisposeAsync();
             }
-            catch (JSDisconnectedException)
+            catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
             {
                 // The circuit is gone; the browser cleaned up with it.
             }

@@ -1,0 +1,44 @@
+@namespace Nx.Components
+
+@* The time pickers' phone sheet body: hour, minute and (12-hour) AM/PM columns. Each column is a listbox of
+   buttons with one tab stop; nx-picker.js moves focus inside it and brings its selection into view. *@
+<div class="@($"nx-timecolumns {Class}".Trim())" @ref="root" role="group" aria-label="@AriaLabel">
+    <div class="nx-timecolumns-column">
+        <div class="nx-timecolumns-title" aria-hidden="true">Hour</div>
+        <div class="nx-timecolumns-list nx-timecolumns-hours" role="listbox" aria-label="Hour">
+            @foreach (var hour in Hours)
+            {
+                @Option(HourText(hour), hour == Value.Hour, HourDisabled(hour), new TimeOnly(hour, Value.Minute))
+            }
+        </div>
+    </div>
+    <div class="nx-timecolumns-column">
+        <div class="nx-timecolumns-title" aria-hidden="true">Minute</div>
+        <div class="nx-timecolumns-list nx-timecolumns-minutes" role="listbox" aria-label="Minute">
+            @foreach (var minute in Minutes)
+            {
+                @Option(minute.ToString("00"), minute == Value.Minute, !InRange(new TimeOnly(Value.Hour, minute)), new TimeOnly(Value.Hour, minute))
+            }
+        </div>
+    </div>
+    @if (!Use24Hour)
+    {
+        <div class="nx-timecolumns-column nx-timecolumns-column-period">
+            <div class="nx-timecolumns-title" aria-hidden="true">@AmText/@PmText</div>
+            <div class="nx-timecolumns-list nx-timecolumns-periods" role="listbox" aria-label="AM or PM">
+                @Option(AmText, Value.Hour < 12, Lo.Hour >= 12, new TimeOnly(Value.Hour % 12, Value.Minute))
+                @Option(PmText, Value.Hour >= 12, Hi.Hour < 12, new TimeOnly(Value.Hour % 12 + 12, Value.Minute))
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private RenderFragment Option(string text, bool selected, bool disabled, TimeOnly time) =>
+        @<button @key="text" type="button" role="option"
+                 class="@(selected ? "nx-timecolumns-item nx-timecolumns-item-selected" : "nx-timecolumns-item")"
+                 aria-selected="@(selected ? "true" : "false")"
+                 tabindex="@(selected ? "0" : "-1")"
+                 disabled="@disabled"
+                 @onclick="() => PickAsync(time)">@text</button>;
+}

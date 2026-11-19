@@ -445,14 +445,19 @@ public class NxDateTimePickerTests : BunitContext
     }
 
     [Test]
-    public async Task Sheet_TimeTab_ShowsTheList()
+    public async Task Sheet_TimeTab_ShowsHourMinuteAndPeriodColumns()
     {
         var cut = RenderBound<DateTime?>([], March5, p => p.Add(x => x.MobileMode, NxMobileMode.Always).Add(x => x.TimeStep, 60));
 
         await cut.Find(".nx-datetimepicker-toggle").ClickAsync(new MouseEventArgs());
+        Assert.That(cut.FindAll(".nx-datetimepicker-sheet-done"), Is.Empty, "Done belongs to the time columns");
         await cut.FindAll(".nx-datetimepicker-sheet-tab")[1].ClickAsync(new MouseEventArgs());
 
-        Assert.That(cut.FindAll(".nx-datetimepicker-sheet-list button.nx-timepicker-item"), Has.Count.EqualTo(24));
+        Assert.That(cut.FindAll(".nx-sheet .nx-timecolumns [role=listbox]").Select(l => l.GetAttribute("aria-label")),
+            Is.EqualTo(new[] { "Hour", "Minute", "AM or PM" }));
+        Assert.That(cut.FindAll(".nx-sheet .nx-timecolumns [aria-selected=true]").Select(o => o.TextContent.Trim()),
+            Is.EqualTo(new[] { "2", "30", "PM" }));
+        Assert.That(cut.FindAll(".nx-sheet .nx-timecolumns-minutes [role=option]"), Has.Count.EqualTo(12), "every 5 minutes, whatever TimeStep");
         Assert.That(cut.FindAll(".nx-sheet .nx-calendar"), Is.Empty);
         Assert.That(module.Invocations.Any(i => i.Identifier == "lockScroll" && (bool)i.Arguments[0]!), Is.True);
     }
@@ -474,9 +479,61 @@ public class NxDateTimePickerTests : BunitContext
         await cut.Find("[data-date='2026-03-07']").ClickAsync(new MouseEventArgs());
         Assert.That(cut.FindAll(".nx-datetimepicker-sheet-tab")[1].GetAttribute("aria-selected"), Is.EqualTo("true"));
 
-        await cut.FindAll(".nx-datetimepicker-sheet-list .nx-timepicker-item").Single(t => t.TextContent.Trim() == "7:00 AM").ClickAsync(new MouseEventArgs());
-        Assert.That(raised.Last(), Is.EqualTo(new DateTime(2026, 3, 7, 7, 0, 0)));
+        // The columns change nothing until Done; the Time tab shows what Done will set.
+        var picks = raised.Count;
+        await SheetOption(cut, "hours", "7").ClickAsync(new MouseEventArgs());
+        await SheetOption(cut, "minutes", "05").ClickAsync(new MouseEventArgs());
+        await SheetOption(cut, "periods", "AM").ClickAsync(new MouseEventArgs());
+        Assert.That(raised, Has.Count.EqualTo(picks));
+        Assert.That(cut.FindAll(".nx-datetimepicker-sheet-tab")[1].TextContent, Does.Contain("7:05 AM"));
+
+        await cut.Find(".nx-datetimepicker-sheet-done").ClickAsync(new MouseEventArgs());
+        Assert.That(raised.Last(), Is.EqualTo(new DateTime(2026, 3, 7, 7, 5, 0)));
         Assert.That(cut.FindAll(".nx-sheet"), Is.Empty);
+    }
+
+    private static AngleSharp.Dom.IElement SheetOption<T>(IRenderedComponent<NxDateTimePicker<T>> cut, string column, string text) =>
+        cut.FindAll($".nx-sheet .nx-timecolumns-{column} [role=option]").Single(o => o.TextContent.Trim() == text);
+
+    [Test]
+    public async Task Sheet_TimeColumns_LimitedByMinAndMaxOnTheirOwnDays()
+    {
+        var raised = new List<DateTime?>();
+        var cut = RenderBound(raised, new DateTime(2026, 3, 5, 9, 0, 0), p => p
+            .Add(x => x.MobileMode, NxMobileMode.Always)
+            .Add(x => x.Min, new DateTime(2026, 3, 5, 8, 30, 0))
+            .Add(x => x.Max, new DateTime(2026, 3, 9, 17, 0, 0)));
+
+        await cut.Find(".nx-datetimepicker-toggle").ClickAsync(new MouseEventArgs());
+        await cut.FindAll(".nx-datetimepicker-sheet-tab")[1].ClickAsync(new MouseEventArgs());
+
+        // March 5 is Min's day: nothing before 8:30, but the afternoon is open (Max is days away).
+        Assert.That(SheetOption(cut, "hours", "7").HasAttribute("disabled"), Is.True);
+        Assert.That(SheetOption(cut, "hours", "8").HasAttribute("disabled"), Is.False);
+        Assert.That(SheetOption(cut, "periods", "PM").HasAttribute("disabled"), Is.False);
+
+        // 8 at :00 would be before Min: the minute moves up to :30.
+        await SheetOption(cut, "hours", "8").ClickAsync(new MouseEventArgs());
+        Assert.That(SheetOption(cut, "minutes", "30").GetAttribute("aria-selected"), Is.EqualTo("true"));
+        Assert.That(SheetOption(cut, "minutes", "15").HasAttribute("disabled"), Is.True);
+
+        await cut.Find(".nx-datetimepicker-sheet-done").ClickAsync(new MouseEventArgs());
+        Assert.That(raised.Single(), Is.EqualTo(new DateTime(2026, 3, 5, 8, 30, 0)));
+    }
+
+    [Test]
+    public async Task Sheet_Close_DiscardsTheColumnsTime()
+    {
+        var raised = new List<DateTime?>();
+        var cut = RenderBound(raised, March5, p => p.Add(x => x.MobileMode, NxMobileMode.Always));
+
+        await cut.Find(".nx-datetimepicker-toggle").ClickAsync(new MouseEventArgs());
+        await cut.FindAll(".nx-datetimepicker-sheet-tab")[1].ClickAsync(new MouseEventArgs());
+        await SheetOption(cut, "hours", "7").ClickAsync(new MouseEventArgs());
+        await cut.Find(".nx-sheet-close").ClickAsync(new MouseEventArgs());
+
+        Assert.That(raised, Is.Empty);
+        Assert.That(Text(cut), Is.EqualTo("3/5/2026 2:30 PM"));
     }
 
     // ── Validation ────────────────────────────────────────────────────────────
@@ -507,5 +564,113 @@ public class NxDateTimePickerTests : BunitContext
 
         await TypeAndCommitAsync(cut, "3/5/2026 2:30 PM");
         Assert.That(changed, Is.EqualTo(new[] { "Start" }));
+    }
+
+    // ── Edit text on focus ────────────────────────────────────────────────────
+
+    [Test]
+    public async Task Focus_EditTextIsSwappedInByTheBrowser_NotFromHere()
+    {
+        // A masked format: the edit text is the fixed-width form of what is shown.
+        var cut = RenderBound<DateTime?>([], March5, format: "M/d/yyyy HH:mm");
+        Assert.That(Text(cut), Is.EqualTo("3/5/2026 14:30"));
+        Assert.That(cut.Find("input").GetAttribute("data-nx-edit"), Is.EqualTo("03/05/2026 14:30"));
+        Assert.That(module.Invocations.Any(i => i.Identifier == "editOnFocus" && !(bool)i.Arguments[1]!), Is.True);
+
+        await cut.Find("input").FocusAsync(new FocusEventArgs());
+        Assert.That(Text(cut), Is.EqualTo("3/5/2026 14:30"));
+
+        await cut.Find("input").InputAsync(new ChangeEventArgs { Value = "03/05/2026 14:30" });
+        Assert.That(Text(cut), Is.EqualTo("03/05/2026 14:30"));
+
+        await cut.Find("input").BlurAsync(new FocusEventArgs());
+        Assert.That(Text(cut), Is.EqualTo("3/5/2026 14:30"));
+    }
+
+    // ── DateTimeOffset ────────────────────────────────────────────────────────
+
+    private void BrowserZoneIs(string? id, int offsetMinutes) =>
+        module.Setup<BrowserZone>("timeZone").SetResult(new BrowserZone(id, offsetMinutes));
+
+    [Test]
+    public async Task DateTimeOffset_ShowsItsOwnLocalParts_KeepsItsOffset()
+    {
+        BrowserZoneIs("America/Chicago", -360);
+        var raised = new List<DateTimeOffset>();
+        var cut = RenderBound(raised, new DateTimeOffset(2026, 3, 5, 14, 30, 0, TimeSpan.FromHours(9)));
+        Assert.That(Text(cut), Is.EqualTo("3/5/2026 2:30 PM"));
+
+        await TypeAndCommitAsync(cut, "7/9/2026 8:00 AM");
+
+        Assert.That(raised.Single(), Is.EqualTo(new DateTimeOffset(2026, 7, 9, 8, 0, 0, TimeSpan.FromHours(9))));
+        Assert.That(raised.Single().Offset, Is.EqualTo(TimeSpan.FromHours(9)));
+    }
+
+    [Test]
+    public async Task DateTimeOffset_Empty_TakesTheBrowsersOffsetAtThatTime()
+    {
+        BrowserZoneIs("America/Chicago", -360);
+        var raised = new List<DateTimeOffset?>();
+        var cut = RenderBound<DateTimeOffset?>(raised);
+
+        await TypeAndCommitAsync(cut, "7/9/2026 8:00 AM");
+
+        Assert.That(raised.Single(), Is.EqualTo(new DateTimeOffset(2026, 7, 9, 8, 0, 0, TimeSpan.FromHours(-5))));
+        Assert.That(raised.Single()!.Value.Offset, Is.EqualTo(TimeSpan.FromHours(-5)));
+    }
+
+    [Test]
+    public async Task DateTimeOffset_Empty_OffsetFollowsTheClockChangeWithinTheDay()
+    {
+        BrowserZoneIs("America/Chicago", -360);
+        var before = new List<DateTimeOffset?>();
+        var after = new List<DateTimeOffset?>();
+
+        // US clocks go forward on March 8, 2026 at 2 AM.
+        await TypeAndCommitAsync(RenderBound<DateTimeOffset?>(before), "3/8/2026 1:00 AM");
+        await TypeAndCommitAsync(RenderBound<DateTimeOffset?>(after), "3/8/2026 3:00 AM");
+
+        Assert.That(before.Single()!.Value.Offset, Is.EqualTo(TimeSpan.FromHours(-6)));
+        Assert.That(after.Single()!.Value.Offset, Is.EqualTo(TimeSpan.FromHours(-5)));
+    }
+
+    [Test]
+    public async Task DateTimeOffset_BeforeTheBrowserAnswers_UsesTheServersOffset()
+    {
+        var raised = new List<DateTimeOffset?>();
+        var cut = RenderBound<DateTimeOffset?>(raised);
+
+        await TypeAndCommitAsync(cut, "7/9/2026 8:00 AM");
+
+        Assert.That(raised.Single()!.Value.Offset, Is.EqualTo(TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 7, 9, 8, 0, 0))));
+    }
+
+    [Test]
+    public async Task DateTimeOffset_MinMax_CompareOnTheTimeShown()
+    {
+        BrowserZoneIs("America/Chicago", -360);
+        var raised = new List<DateTimeOffset?>();
+        var cut = RenderBound<DateTimeOffset?>(raised, new DateTimeOffset(2026, 3, 5, 14, 30, 0, TimeSpan.FromHours(9)), p => p
+            .Add(x => x.Max, new DateTime(2026, 3, 5, 17, 0, 0)));
+
+        await TypeAndCommitAsync(cut, "3/5/2026 6:45 PM");
+
+        Assert.That(raised.Single(), Is.EqualTo(new DateTimeOffset(2026, 3, 5, 17, 0, 0, TimeSpan.FromHours(9))));
+    }
+
+    [Test]
+    public async Task DateTimeOffset_PickDayThenTime()
+    {
+        BrowserZoneIs("America/Chicago", -360);
+        var raised = new List<DateTimeOffset?>();
+        var cut = RenderBound<DateTimeOffset?>(raised, new DateTimeOffset(2026, 3, 5, 14, 30, 0, TimeSpan.FromHours(9)));
+
+        await KeyAsync(cut, "ArrowDown");
+        await cut.Find("[data-date='2026-03-07']").ClickAsync(new MouseEventArgs());
+        Assert.That(raised.Last(), Is.EqualTo(new DateTimeOffset(2026, 3, 7, 14, 30, 0, TimeSpan.FromHours(9))));
+
+        await cut.FindAll(".nx-datetimepicker-time-list [role=option]").Single(t => t.TextContent.Trim() == "7:00 AM").ClickAsync(new MouseEventArgs());
+        Assert.That(raised.Last(), Is.EqualTo(new DateTimeOffset(2026, 3, 7, 7, 0, 0, TimeSpan.FromHours(9))));
+        Assert.That(raised.Last()!.Value.Offset, Is.EqualTo(TimeSpan.FromHours(9)));
     }
 }

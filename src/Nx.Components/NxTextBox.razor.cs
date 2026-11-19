@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 namespace Nx.Components;
 
@@ -15,8 +16,16 @@ namespace Nx.Components;
 /// &lt;ValidationMessage For="() =&gt; order.Customer" /&gt;
 /// </code>
 /// </example>
-public partial class NxTextBox : IDisposable
+public partial class NxTextBox : IAsyncDisposable
 {
+    // nx-input.js marks the Escape that clears as used, so a window around the field stays open. Loaded only when Clearable.
+    private const string ModulePath = "./_content/Nx.Components/nx-input.js";
+
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
+    private IJSObjectReference? module;
+    private bool escapeApplied;
+
     private readonly FieldValidation validation;
     private readonly string generatedId = $"nx-textbox-{Guid.NewGuid():N}"[..20];
     private ElementReference input;
@@ -87,7 +96,7 @@ public partial class NxTextBox : IDisposable
 
     // ── Buttons ───────────────────────────────────────────────────────────────
 
-    /// <summary>Shows a clear button while there is text. <kbd>Escape</kbd> also clears.</summary>
+    /// <summary>Shows a clear button while there is text. <kbd>Escape</kbd> also clears; in a window, that press does not close it.</summary>
     [Parameter] public bool Clearable { get; set; }
 
     /// <summary>With <see cref="NxTextBoxType.Password"/>, shows a button that reveals the text. Default: <c>true</c>.</summary>
@@ -176,6 +185,13 @@ public partial class NxTextBox : IDisposable
         hasRendered = true;
         if (firstRender && AutoFocus)
             await input.FocusAsync();
+        if (Clearable && !escapeApplied)
+        {
+            escapeApplied = true;
+            module = await JS.InvokeAsync<IJSObjectReference>("import", ModulePath);
+            if (module is not null)
+                await module.InvokeVoidAsync("escapeClears", input);
+        }
     }
 
     // ── Event handlers ────────────────────────────────────────────────────────
@@ -250,9 +266,20 @@ public partial class NxTextBox : IDisposable
     }
 
     /// <inheritdoc />
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         CancelDebounce();
         validation.Dispose();
+        if (module is null)
+            return;
+        try
+        {
+            await module.InvokeVoidAsync("dispose", input);
+            await module.DisposeAsync();
+        }
+        catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
+        {
+            // The circuit is gone; the browser cleaned up with it.
+        }
     }
 }

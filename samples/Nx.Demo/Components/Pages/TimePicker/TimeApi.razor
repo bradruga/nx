@@ -8,9 +8,9 @@
         <table class="doc-table doc-api-table">
             <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
             <tbody>
-                <tr><td>Value</td><td>TValue?</td><td>—</td><td>Use <code>@@bind-Value</code>. TimeOnly, TimeSpan, DateTime, or nullable. A DateTime keeps its date.</td></tr>
-                <tr><td>Min / Max</td><td>TimeOnly?</td><td>none</td><td>Ends of the list; typed times are moved inside.</td></tr>
-                <tr><td>Step</td><td>int</td><td>30</td><td>Minutes between listed times.</td></tr>
+                <tr><td>Value</td><td>TValue?</td><td>—</td><td>Use <code>@@bind-Value</code>. TimeOnly, TimeSpan, DateTime, DateTimeOffset, or nullable. A DateTime keeps its date; a DateTimeOffset its date and offset, and one set on an empty field is today at the browser's offset.</td></tr>
+                <tr><td>Min / Max</td><td>TimeOnly?</td><td>none</td><td>Ends of the list; typed times are moved inside. In the phone sheet, hours and minutes outside are disabled.</td></tr>
+                <tr><td>Step</td><td>int</td><td>30</td><td>Minutes between listed times. The phone sheet's minute column lists every 5 minutes, or every Step under 5.</td></tr>
                 <tr><td>Use24Hour</td><td>bool?</td><td>culture</td><td>24-hour (masked hh:mm) or 12-hour with AM/PM.</td></tr>
                 <tr><td>Culture</td><td>CultureInfo?</td><td>current</td><td>AM/PM designators, separator, default clock.</td></tr>
                 <tr><td>Label</td><td>string?</td><td>—</td><td>As in NxTextBox.</td></tr>
@@ -18,7 +18,7 @@
                 <tr><td>Clearable</td><td>bool</td><td>false</td><td>Clear button and Esc. Nullable types only.</td></tr>
                 <tr><td>ReadOnly / Disabled</td><td>bool</td><td>false</td><td>Native readonly / disabled; the list does not open.</td></tr>
                 <tr><td>AutoFocus</td><td>bool</td><td>false</td><td>Focus after first render.</td></tr>
-                <tr><td>MobileMode / MobileBreakpoint / MobileTitle</td><td></td><td>Auto / 600 / Label</td><td>As in NxDatePicker; title default "Choose a time".</td></tr>
+                <tr><td>MobileMode / MobileBreakpoint / MobileTitle</td><td></td><td>Auto / 600 / Label</td><td>As in NxDatePicker; title default "Choose a time". The sheet shows hour, minute and AM/PM columns and Done instead of the list.</td></tr>
                 <tr><td>Id / Class / Style</td><td>string?</td><td>—</td><td>Input id; outer class and style. Other attributes go to the input.</td></tr>
             </tbody>
         </table>
@@ -59,7 +59,7 @@
                 <tr><td>--nx-popup-max-height</td><td>280px</td><td>Height of the time list.</td></tr>
                 <tr><td>--nx-item-hover-bg / --nx-item-active-bg</td><td></td><td>Hovered and highlighted times.</td></tr>
                 <tr><td>--nx-item-selected-fg</td><td>= --nx-accent</td><td>The bound time.</td></tr>
-                <tr><td>--nx-calendar-selected-bg / -fg</td><td>= --nx-accent</td><td>The bound time in the phone sheet.</td></tr>
+                <tr><td>--nx-calendar-selected-bg / -fg</td><td>= --nx-accent</td><td>The selected hour, minute and AM/PM in the phone sheet.</td></tr>
             </tbody>
         </table>
     </div>

@@ -8,9 +8,9 @@
     <h2>What It Is</h2>
     <p class="doc-note">
         <code>NxTimePicker&lt;TValue&gt;</code> edits a <code>TimeOnly</code>, <code>TimeSpan</code> or the time of a
-        <code>DateTime</code>, nullable or not, to the minute. Type it — <em>930</em>, <em>9:30p</em>, <em>14:30</em> all read —
+        <code>DateTime</code> or <code>DateTimeOffset</code>, nullable or not, to the minute. Type it — <em>930</em>, <em>9:30p</em>, <em>14:30</em> all read —
         or pick from a list of times every <code>Step</code> minutes between <code>Min</code> and <code>Max</code>. The clock is
-        12- or 24-hour by culture, or by <code>Use24Hour</code>. On a phone the list opens as a full-screen sheet with large rows.
+        12- or 24-hour by culture, or by <code>Use24Hour</code>. On a phone it opens as a full-screen sheet with hour and minute columns instead.
     </p>
 </div>
 
@@ -42,6 +42,7 @@
                 <tr><td>Enter</td><td>Picks the highlighted time; typed text that reads as a different time wins. Closed, commits the text.</td></tr>
                 <tr><td>Esc / Alt+↑ / Tab</td><td>Closes the list. Closed, Esc clears when <code>Clearable</code>.</td></tr>
                 <tr><td>role="combobox"</td><td>With a <code>listbox</code> popup and <code>aria-activedescendant</code> on the highlighted time.</td></tr>
+                <tr><td>Phone sheet</td><td>A modal <code>dialog</code> with Hour, Minute and AM/PM <code>listbox</code>es, one tab stop each: ↑ / ↓, Home and End move within a column, Enter or Space sets that part, and the time is announced as it changes. Done commits; Back and Esc discard.</td></tr>
                 <tr><td>inputmode</td><td><code>numeric</code> for 24-hour entry, which is masked to <em>hh:mm</em>; the full keyboard for AM/PM.</td></tr>
             </tbody>
         </table>

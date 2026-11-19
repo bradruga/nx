@@ -32,7 +32,7 @@
 
 .nx-field-box:focus-within {
     border-color: var(--nx-accent);
-    box-shadow: var(--nx-focus-ring-inset);
+    box-shadow: var(--nx-focus-ring-inset, 0 0 0 1px var(--nx-accent));
 }
 
 .nx-field-control {
@@ -122,9 +122,9 @@
 .nx-field-readonly .nx-field-box { background: var(--nx-surface-disabled); }
 
 .nx-field-invalid .nx-field-box,
-.nx-field-invalid .nx-field-box:hover { border-color: var(--nx-invalid); }
-.nx-field-invalid .nx-field-box:focus-within { box-shadow: 0 0 0 1px var(--nx-invalid); }
-.nx-field-invalid .nx-field-label { color: var(--nx-invalid); }
+.nx-field-invalid .nx-field-box:hover { border-color: var(--nx-invalid, var(--nx-danger)); }
+.nx-field-invalid .nx-field-box:focus-within { box-shadow: 0 0 0 1px var(--nx-invalid, var(--nx-danger)); }
+.nx-field-invalid .nx-field-label { color: var(--nx-invalid, var(--nx-danger)); }
 
 /* ── Multi-line (NxTextArea): the box grows with the textarea; buttons sit at the top ── */
 

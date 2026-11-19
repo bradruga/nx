@@ -28,6 +28,7 @@
                aria-controls="@(popupOpen ? CalendarId : null)"
                aria-activedescendant="@(popupOpen ? calendar?.ActiveDescendant : null)"
                aria-invalid="@(validation.IsInvalid ? "true" : null)"
+               data-nx-edit="@(Editable ? FormatEdit(current) : null)"
                @bind="currentText"
                @bind:event="oninput"
                @bind:after="HandleInputAfter"

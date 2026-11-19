@@ -30,10 +30,10 @@ public class NxTreeListTests : BunitContext
 
     private static RenderFragment Columns(bool reverse = false, bool withTemplate = false) => b =>
     {
-        void Column(int seq, string field, string title, string width, bool expandable)
+        void Column(int seq, Func<Spot, object?> value, string title, string width, bool expandable)
         {
             b.OpenComponent<NxTreeListColumn<Spot>>(seq);
-            b.AddComponentParameter(seq + 1, nameof(NxTreeListColumn<Spot>.Field), field);
+            b.AddComponentParameter(seq + 1, nameof(NxTreeListColumn<Spot>.Value), value);
             b.AddComponentParameter(seq + 2, nameof(NxTreeListColumn<Spot>.Title), title);
             b.AddComponentParameter(seq + 3, nameof(NxTreeListColumn<Spot>.Width), width);
             b.AddComponentParameter(seq + 4, nameof(NxTreeListColumn<Spot>.Expandable), expandable);
@@ -41,13 +41,13 @@ public class NxTreeListTests : BunitContext
         }
         if (reverse)
         {
-            Column(0, nameof(Spot.Pieces), "# Pieces", "100px", false);
-            Column(10, nameof(Spot.Name), "Location", "200px", true);
+            Column(0, s => s.Pieces, "# Pieces", "100px", false);
+            Column(10, s => s.Name, "Location", "200px", true);
         }
         else
         {
-            Column(0, nameof(Spot.Name), "Location", "200px", true);
-            Column(10, nameof(Spot.Pieces), "# Pieces", "100px", false);
+            Column(0, s => s.Name, "Location", "200px", true);
+            Column(10, s => s.Pieces, "# Pieces", "100px", false);
         }
         if (withTemplate)
         {
@@ -187,11 +187,11 @@ public class NxTreeListTests : BunitContext
         RenderFragment columns = b =>
         {
             b.OpenComponent<NxTreeListColumn<Spot>>(0);
-            b.AddComponentParameter(1, nameof(NxTreeListColumn<Spot>.Field), nameof(Spot.Pieces));
+            b.AddComponentParameter(1, nameof(NxTreeListColumn<Spot>.Value), (Func<Spot, object?>)(s => s.Pieces));
             b.AddComponentParameter(2, nameof(NxTreeListColumn<Spot>.Title), "# Pieces");
             b.CloseComponent();
             b.OpenComponent<NxTreeListColumn<Spot>>(10);
-            b.AddComponentParameter(11, nameof(NxTreeListColumn<Spot>.Field), nameof(Spot.Name));
+            b.AddComponentParameter(11, nameof(NxTreeListColumn<Spot>.Value), (Func<Spot, object?>)(s => s.Name));
             b.AddComponentParameter(12, nameof(NxTreeListColumn<Spot>.Title), "Location");
             b.CloseComponent();
         };
@@ -244,18 +244,6 @@ public class NxTreeListTests : BunitContext
         Assert.That(cut.FindAll(".nx-treeview-row"), Has.Count.EqualTo(4));
         Assert.That(selected!.Name, Is.EqualTo("Row A"));
         Assert.That(tree().GetAttribute("aria-activedescendant"), Is.EqualTo("yard-1"));
-    }
-
-    [Test]
-    public void UnknownField_Throws()
-    {
-        RenderFragment bad = b =>
-        {
-            b.OpenComponent<NxTreeListColumn<Spot>>(0);
-            b.AddComponentParameter(1, nameof(NxTreeListColumn<Spot>.Field), "Missing");
-            b.CloseComponent();
-        };
-        Assert.Throws<InvalidOperationException>(() => RenderList(columns: bad));
     }
 
     [Test]

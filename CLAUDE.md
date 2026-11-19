@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Nx** is a Blazor component library (.NET 10) for the ERP portal. Components so far:
 `NxButton`, `NxTextBox`, `NxNumericTextBox<TValue>`, `NxComboBox<TItem, TValue>`, `NxCheckBox<TValue>`,
-`NxToggleSwitch`, `NxRadioGroup<TValue>` (+ `NxRadioButton`), `NxToggleGroup<TValue>` (+ `NxToggleGroupItem`),
-`NxDatePicker<TValue>`, `NxDateRangePicker<TValue>`, `NxTimePicker<TValue>`, `NxCalendar`, `NxWindow`, `NxTabStrip` (+ `NxTab`),
+`NxToggleSwitch`, `NxRadioGroup<TItem, TValue>` (+ `NxRadioButton`), `NxToggleGroup<TValue>` (+ `NxToggleGroupItem`),
+`NxDatePicker<TValue>`, `NxDateRangePicker<TValue>`, `NxTimePicker<TValue>`, `NxCalendar`, `NxWindow` (+ `NxWindowHost`), `NxTabStrip` (+ `NxTab`),
 `NxSplitter` (+ `NxSplitterPane`), `NxDropDown<TItem, TValue>`, `NxMultiSelect<TItem, TValue>`, `NxTextArea`, `NxTooltip`,
 `NxMenu`, `NxContextMenu`, `NxDropDownButton`, `NxSplitButton`, `NxAutoComplete<TItem>`, `NxDateTimePicker<TValue>`,
 `NxForm` (+ `NxFormItem`, `NxFormGroup`, `NxValidationMessage`), `NxIcon` (+ `NxIcons`), `NxLoader`, `NxLoaderContainer`,
@@ -41,6 +41,7 @@ src/Nx.Components/
   NxFieldFrame.razor                        # label/box/prefix/suffix/clear chrome shared by the text inputs
   NxCalendar.razor                          # the calendar grid of the date pickers, also public
   NxPickerSheet.razor                       # full-screen phone sheet shared by the pickers
+  NxTimeColumns.razor                       # hour / minute / AM-PM columns of the time pickers' phone sheet, also public
   DateText.cs, DateConversion.cs, TimeConversion.cs  # internal: edit patterns, masks, parsing, TValue conversion
   Nx*.cs                                    # one public enum or record per file
   FieldValidation.cs                        # internal: EditContext plumbing shared by inputs
@@ -63,6 +64,11 @@ tests/Nx.Playwright/                        # one Playwright fixture per compone
 - **Tokens**: every value a component reads is a `--nx-*` property declared in `nx-theme.css`. Scoped CSS holds layout
   only and references tokens. New token? Add it to both the light `:root` block and `.nx-theme-dark` if it is a color.
   Content passed in by the consumer (icons, templates) needs `::deep` to be styled from scoped CSS.
+  A token derived from another (`--nx-focus-ring-color` from `--nx-accent`) is not declared: each use carries the
+  fallback, `var(--nx-tab-indicator, var(--nx-accent))`, so an accent set on any container reaches it. They are listed
+  in the catalogue comment in `nx-theme.css`.
+- **Lists bind with lambdas** everywhere (`ItemText="p => p.Name"`, a column's or series' `Value="r => r.Qty"`,
+  `NxFormItem For="() => model.Name"`), never property-name strings.
 - **JS interop only where unavoidable**: measuring the viewport, per-key `preventDefault`, scrolling. Focus uses
   `ElementReference.FocusAsync()`. Outside-click is handled by blur (the popup cancels `mousedown`); only
   NxDateRangePicker, whose focus moves between two inputs, uses nx-popup.js's outside-press callback.
@@ -135,6 +141,16 @@ tests/Nx.Playwright/                        # one Playwright fixture per compone
   (read in `SetParametersAsync`, as NxNumericTextBox does for Min); Disabled adds up. Joined look is `::deep` CSS on the group.
 - **NxNotification is driven from code** (`@ref` + `Show`), safe from any thread through `InvokeAsync`; timers restart after
   hover or focus leaves a message.
+- **NxWindowHost is optional**: with one in the layout (and `AddNxDialogs()`, which registers its state) every NxWindow
+  draws in the host through its own keyed `NxWindowOutlet`; without one, or with `Inline="true"`, it draws in place.
+  A hosted window loses the page's cascading values and inherited CSS. NxDialogHost passes `Inline` to its dialogs.
+- **Date pickers and `DateTimeOffset`**: a value keeps its previous offset; from empty it takes the browser's zone on
+  that date (`nx-picker.js` `timeZone`, read once; a commit waits for it). bUnit: `module.Setup<BrowserZone>("timeZone")`.
+  Display text swaps to edit text in the browser (`editOnFocus`), as in NxNumericTextBox.
+- **Combo lists virtualize on their own** from `VirtualizeThreshold` rows; the row height is measured by a hidden probe
+  render the first time (`NxComboBox.Virtualization.cs`), unless `ItemHeight` is set.
+- **Escape that clears is marked used** (`escapeClears` in nx-input.js, a branch in nx-combobox.js), so a window around
+  the field closes only on the next Escape.
 - **NxDialogService needs one `<NxDialogHost />`** in the layout; the host renders each open dialog in a cascading
   `NxDialogReference` (content closes it with `Close`). Its tasks complete only when the dialog closes, so in bUnit start
   them outside `cut.InvokeAsync` and `WaitForState`. NxDialog is NxWindow with `FullScreenOnPhone=false`.

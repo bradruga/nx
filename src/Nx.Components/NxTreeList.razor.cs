@@ -1,6 +1,4 @@
-using System.Collections.Concurrent;
 using System.Globalization;
-using System.Reflection;
 using Microsoft.AspNetCore.Components;
 
 namespace Nx.Components;
@@ -8,7 +6,7 @@ namespace Nx.Components;
 /// <summary>
 /// A tree with columns: <see cref="NxTreeView{TItem}"/> (expand, select, the ARIA tree's keys) whose rows are cells under
 /// a header. Built from a flat list as ERP's data comes (<see cref="ItemId"/> and <see cref="ParentId"/>); columns show a
-/// property by name or a template. No sorting, filtering, paging or editing: what ERP's yard page uses.
+/// value or a template. No sorting, filtering, paging or editing: what ERP's yard page uses.
 /// </summary>
 /// <typeparam name="TItem">The item type.</typeparam>
 /// <example>
@@ -16,8 +14,8 @@ namespace Nx.Components;
 /// &lt;NxTreeList Data="locations" ItemId="l =&gt; l.ResourceId" ParentId="l =&gt; l.CurrentContainerId"
 ///             @bind-SelectedItems="selected" ExpandedItems="startExpanded" Height="100%"&gt;
 ///     &lt;Columns&gt;
-///         &lt;NxTreeListColumn Field="@nameof(Location.Name)" Title="Location" Width="200px" Expandable="true" /&gt;
-///         &lt;NxTreeListColumn Field="@nameof(Location.AggregatePieceCount)" Title="# Pieces" Width="100px" /&gt;
+///         &lt;NxTreeListColumn Value="l =&gt; l.Name" Title="Location" Width="200px" Expandable="true" /&gt;
+///         &lt;NxTreeListColumn Value="l =&gt; l.AggregatePieceCount" Title="# Pieces" Width="100px" /&gt;
 ///     &lt;/Columns&gt;
 /// &lt;/NxTreeList&gt;
 /// </code>
@@ -25,16 +23,14 @@ namespace Nx.Components;
 [CascadingTypeParameter(nameof(TItem))]
 public partial class NxTreeList<TItem>
 {
-    private static readonly ConcurrentDictionary<(Type, string), Func<object, object?>> Getters = new();
-
     private readonly List<Column> columns = [];
     private NxTreeView<TItem>? tree;
 
     /// <summary>A registered column, as the list draws it.</summary>
-    internal sealed record Column(string? Field, string? Title, string? Width, bool Expandable, RenderFragment<TItem>? Template)
+    internal sealed record Column(Func<TItem, object?>? Value, string? Title, string? Width, bool Expandable, RenderFragment<TItem>? Template)
     {
-        /// <summary>What the header and layout show; templates are new objects on every render and are left out.</summary>
-        public (string?, string?, string?, bool) Shown => (Field, Title, Width, Expandable);
+        /// <summary>What the header and layout show; lambdas and templates are new objects on every render and are left out.</summary>
+        public (string?, string?, bool) Shown => (Title, Width, Expandable);
     }
 
     // ── Data ──────────────────────────────────────────────────────────────────
@@ -169,16 +165,5 @@ public partial class NxTreeList<TItem>
 
     private string TextOf(TItem item) => TreeColumn is { } column ? Convert.ToString(ValueOf(item, column), CultureInfo.CurrentCulture) ?? "" : item?.ToString() ?? "";
 
-    private static object? ValueOf(TItem item, Column column)
-    {
-        if (item is null || string.IsNullOrEmpty(column.Field))
-            return null;
-        var getter = Getters.GetOrAdd((item.GetType(), column.Field), key =>
-        {
-            var info = key.Item1.GetProperty(key.Item2, BindingFlags.Public | BindingFlags.Instance)
-                       ?? throw new InvalidOperationException($"NxTreeList: {key.Item1.Name} has no public property '{key.Item2}'.");
-            return o => info.GetValue(o);
-        });
-        return getter(item);
-    }
+    private static object? ValueOf(TItem item, Column column) => item is null ? null : column.Value?.Invoke(item);
 }

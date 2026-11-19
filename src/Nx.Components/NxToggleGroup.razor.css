@@ -16,4 +16,4 @@
 
 .nx-togglegroup-disabled { opacity: var(--nx-disabled-opacity); }
 
-.nx-togglegroup-invalid { border-radius: var(--nx-radius); box-shadow: 0 0 0 1.5px var(--nx-invalid); }
+.nx-togglegroup-invalid { border-radius: var(--nx-radius); box-shadow: 0 0 0 1.5px var(--nx-invalid, var(--nx-danger)); }

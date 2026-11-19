@@ -93,7 +93,7 @@
                 <NxButton Variant="NxButtonVariant.Danger" Id="theme-delete" Icon="@IconOf(NxIcons.Trash)" OnClick="() => confirmDelete = true">Delete…</NxButton>
             </div>
 
-            <NxDialog @bind-Visible="confirmDelete" Id="theme-dialog" Title="Delete pour" Width="380px">
+            <NxDialog @bind-Visible="confirmDelete" Id="theme-dialog" Title="Delete pour" Width="380px" Inline="true">
                 <ChildContent>Delete pour P-1042? Its tickets go with it.</ChildContent>
                 <Buttons>
                     <NxButton Variant="NxButtonVariant.Danger" OnClick="() => confirmDelete = false">Delete</NxButton>
@@ -147,9 +147,9 @@
         </table>
     </div>
     <p class="doc-note" style="margin-top:14px">
-        Overriding the tokens on a container instead of <code>:root</code> needs the derived tokens restated there too
-        (<code>--nx-toggle-selected-bg</code>, <code>--nx-tab-indicator</code> and the like): a custom property that reads
-        <code>var(--nx-accent)</code> takes its value where it is declared, on <code>:root</code>.
+        The same tokens work on any container instead of <code>:root</code>, as this sample does: everything inside takes
+        them, popups, windows and dialogs declared there included. Tokens that follow another
+        (<code>--nx-toggle-selected-bg</code>, <code>--nx-tab-indicator</code> and the like) need no restating.
     </p>
 </div>
 

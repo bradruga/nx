@@ -42,8 +42,8 @@ public partial class NxButton
     /// <summary>Visual style. Default: <see cref="NxButtonVariant.Secondary"/>.</summary>
     [Parameter] public NxButtonVariant Variant { get; set; } = NxButtonVariant.Secondary;
 
-    /// <summary>Height and padding. Default: <see cref="NxButtonSize.Medium"/>.</summary>
-    [Parameter] public NxButtonSize Size { get; set; } = NxButtonSize.Medium;
+    /// <summary>Height and padding. Default: <see cref="NxSize.Medium"/>.</summary>
+    [Parameter] public NxSize Size { get; set; } = NxSize.Medium;
 
     /// <summary>When <c>true</c>, the button stretches to the width of its container.</summary>
     [Parameter] public bool FullWidth { get; set; }
@@ -106,7 +106,7 @@ public partial class NxButton
 
     // In an NxButtonGroup, the group's Variant and Size apply unless the button sets its own; Disabled adds up.
     private NxButtonVariant EffectiveVariant => !hasVariant && Group?.Variant is { } v ? v : Variant;
-    private NxButtonSize EffectiveSize => !hasSize && Group?.Size is { } s ? s : Size;
+    private NxSize EffectiveSize => !hasSize && Group?.Size is { } s ? s : Size;
     private bool IsDisabled => Disabled || Group?.Disabled == true;
 
     /// <inheritdoc />
@@ -115,7 +115,7 @@ public partial class NxButton
         // A passed Variant="Secondary" and no Variant look the same once assigned; ask the parameter list.
         if (parameters.TryGetValue<NxButtonVariant>(nameof(Variant), out _))
             hasVariant = true;
-        if (parameters.TryGetValue<NxButtonSize>(nameof(Size), out _))
+        if (parameters.TryGetValue<NxSize>(nameof(Size), out _))
             hasSize = true;
         return base.SetParametersAsync(parameters);
     }
@@ -146,8 +146,8 @@ public partial class NxButton
             };
             var size = EffectiveSize switch
             {
-                NxButtonSize.Small => "nx-button-sm",
-                NxButtonSize.Large => "nx-button-lg",
+                NxSize.Small => "nx-button-sm",
+                NxSize.Large => "nx-button-lg",
                 _                  => "nx-button-md"
             };
             return string.Join(' ', new[]

@@ -68,3 +68,24 @@ public sealed class ContactForm
 
     public bool SendUpdates { get; set; }
 }
+
+/// <summary>A job holding two address objects, for the nested-field demo.</summary>
+public sealed class JobForm
+{
+    [Required(ErrorMessage = "Give the job a name.")]
+    public string? Name { get; set; } = "Baldwin overpass";
+
+    public JobAddress Site { get; } = new() { City = "Fargo", State = "ND" };
+
+    public JobAddress Billing { get; } = new() { City = "Moorhead", State = "MN" };
+}
+
+/// <summary>An address inside a <see cref="JobForm"/>.</summary>
+public sealed class JobAddress
+{
+    [Required(ErrorMessage = "Required.")]
+    public string? City { get; set; }
+
+    [StringLength(2, MinimumLength = 2, ErrorMessage = "Two letters.")]
+    public string? State { get; set; }
+}

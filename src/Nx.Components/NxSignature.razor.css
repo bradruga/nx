@@ -13,9 +13,9 @@
 }
 
 .nx-signature:hover:not(.nx-signature-disabled):not(.nx-signature-readonly) { border-color: var(--nx-border-hover); }
-.nx-signature:focus-within { border-color: var(--nx-accent); box-shadow: var(--nx-focus-ring-inset); }
+.nx-signature:focus-within { border-color: var(--nx-accent); box-shadow: var(--nx-focus-ring-inset, 0 0 0 1px var(--nx-accent)); }
 .nx-signature-invalid,
-.nx-signature-invalid:hover { border-color: var(--nx-invalid); }
+.nx-signature-invalid:hover { border-color: var(--nx-invalid, var(--nx-danger)); }
 .nx-signature-disabled { opacity: var(--nx-disabled-opacity); }
 
 .nx-signature-canvas {
@@ -66,7 +66,7 @@
 }
 
 .nx-signature-clear:hover { background: var(--nx-signature-control-hover-bg); color: var(--nx-signature-control-hover); }
-.nx-signature-clear:focus-visible { outline: 2px solid var(--nx-focus-ring-color); outline-offset: 1px; }
+.nx-signature-clear:focus-visible { outline: 2px solid var(--nx-focus-ring-color, var(--nx-accent)); outline-offset: 1px; }
 
 @media (pointer: coarse) {
     .nx-signature-clear { width: 44px; height: 44px; top: 0; right: 0; }

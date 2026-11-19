@@ -19,8 +19,8 @@
             <CenterTemplate><span class="demo-gauge-value">@context.ToString("0")%</span><br /><span class="demo-gauge-label">reconciled</span></CenterTemplate>
         </NxCircularGauge>
         <div class="demo-row">
-            <NxButton id="overview-less" Size="NxButtonSize.Small" OnClick="() => value = Math.Max(0, value - 15)">− 15</NxButton>
-            <NxButton id="overview-more" Size="NxButtonSize.Small" OnClick="() => value = Math.Min(100, value + 15)">+ 15</NxButton>
+            <NxButton id="overview-less" Size="NxSize.Small" OnClick="() => value = Math.Max(0, value - 15)">− 15</NxButton>
+            <NxButton id="overview-more" Size="NxSize.Small" OnClick="() => value = Math.Min(100, value + 15)">+ 15</NxButton>
         </div>
     </div>
     <DocCode Code="@basicCode" />

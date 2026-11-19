@@ -213,4 +213,41 @@ public class DateRangePickerTests : PageTest
 
         await Expect(page.Locator(".nx-sheet table.nx-calendar-month")).ToHaveCountAsync(1);
     }
+
+    [Test]
+    public async Task Focus_EditTextAtOnce_TypedRightAwayIsKept()
+    {
+        await GoToPage();
+        var start = Input("range-datetime-start");
+        await start.ScrollIntoViewIfNeededAsync();
+        await Expect(start).ToHaveValueAsync("11/2/2026");
+        var cdp = await Page.Context.NewCDPSessionAsync(Page);
+        await cdp.SendAsync("Network.enable");
+        await cdp.SendAsync("Network.emulateNetworkConditions", new() { ["offline"] = false, ["latency"] = 250, ["downloadThroughput"] = -1, ["uploadThroughput"] = -1 });
+
+        await start.FocusAsync();
+        Assert.That(await start.InputValueAsync(), Is.EqualTo("11/02/2026"));
+        await Page.Keyboard.TypeAsync("11/3/2026");
+        await Page.WaitForTimeoutAsync(1500);
+        Assert.That(await start.InputValueAsync(), Is.EqualTo("11/3/2026"));
+
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(Page.Locator("#range-datetime-value")).ToHaveTextAsync("Range: 2026-11-03 15:00 → 2026-11-06 11:00");
+    }
+
+    [Test]
+    public async Task DateTimeOffset_StartKeepsItsOffset_EmptyEndTakesTheBrowsers()
+    {
+        await using var context = await Browser.NewContextAsync(new() { TimezoneId = "America/Chicago" });
+        var page = await context.NewPageAsync();
+        await page.GotoAsync(_baseUrl + "/daterange/examples");
+        await Expect(page.Locator(".layout-container[data-interactive=true]")).ToBeVisibleAsync();
+
+        await page.Locator("#range-offset-start").FillAsync("11/3/2026");
+        await page.Keyboard.PressAsync("Enter");
+        await page.Locator("#range-offset-end").FillAsync("11/9/2026");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.Locator("#range-offset-value")).ToHaveTextAsync("Range: 2026-11-03 06:40 +01:00 → 2026-11-09 00:00 -06:00");
+    }
 }

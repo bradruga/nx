@@ -10,7 +10,7 @@
     display: flex;
     align-items: flex-start;
     gap: 5px;
-    color: var(--nx-validation-color);
+    color: var(--nx-validation-color, var(--nx-invalid, var(--nx-danger)));
     font-size: var(--nx-validation-font-size);
     line-height: 1.35;
 }

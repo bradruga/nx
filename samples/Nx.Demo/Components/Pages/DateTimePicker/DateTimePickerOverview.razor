@@ -6,10 +6,10 @@
 <div class="doc-section">
     <h2>What It Is</h2>
     <p class="doc-note">
-        <code>NxDateTimePicker</code> edits a <code>DateTime</code> in one field. Type it in any .NET format, or open the
-        popup: <code>NxDatePicker</code>'s calendar beside a list of times every <code>TimeStep</code> minutes. Picking a day
-        keeps the time and moves on to the list; picking a time closes the popup. On a phone it is a full-screen sheet with
-        Date and Time tabs.
+        <code>NxDateTimePicker</code> edits a <code>DateTime</code> or <code>DateTimeOffset</code> in one field. Type it in any
+        .NET format, or open the popup: <code>NxDatePicker</code>'s calendar beside a list of times every <code>TimeStep</code>
+        minutes. Picking a day keeps the time and moves on to the list; picking a time closes the popup. On a phone it is a
+        full-screen sheet with Date and Time tabs; the time is set on hour and minute columns.
     </p>
 </div>
 
@@ -34,6 +34,7 @@
                 <tr><td>↑ / ↓, Page Up / Down in the list</td><td>Move through the times; ← goes back to the calendar.</td></tr>
                 <tr><td>Enter on a time</td><td>Picks it and closes the popup.</td></tr>
                 <tr><td>Esc / Tab</td><td>Close the popup. Esc on a closed field clears it when <code>Clearable</code>.</td></tr>
+                <tr><td>Phone sheet, Time tab</td><td>Hour, minute and AM/PM <code>listbox</code>es, one tab stop each: ↑ / ↓ move, Enter or Space sets, Done commits, Back and Esc discard the time.</td></tr>
                 <tr><td>Typing</td><td>Committed on Enter or leaving; unreadable text reverts.</td></tr>
                 <tr><td>role="combobox"</td><td><code>aria-expanded</code>; <code>aria-activedescendant</code> follows the day, then the time.</td></tr>
             </tbody>

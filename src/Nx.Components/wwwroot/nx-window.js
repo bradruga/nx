@@ -1,6 +1,7 @@
 // NxWindow interop. Blazor owns the markup; this module places the window, drags it by the title bar,
 // resizes it from its edges, stacks windows (the last one opened or pressed is on top), traps Tab in
-// a modal window, closes on Escape, locks page scroll, and returns focus on close. Blazor never
+// a modal window, closes on Escape, locks page scroll, returns focus on close, and tells .NET where a drag or
+// resize ended. Blazor never
 // renders a style attribute on the window or its backdrop: their position, size and z-index are set here.
 // See NxWindow.razor.cs, "JS interop".
 
@@ -64,6 +65,16 @@ export function center(id) {
     win.style.top = Math.max(0, Math.round((vh - win.offsetHeight) / 2)) + 'px';
 }
 
+// Tells .NET where a drag or resize left the window, in px, when it differs from `before` (a still open window only).
+function report(state, before) {
+    const { win } = state;
+    if (windows.get(state.id) !== state) return;
+    if (before.width !== undefined && (win.offsetWidth !== before.width || win.offsetHeight !== before.height))
+        state.dotNet.invokeMethodAsync('NotifyResized', win.offsetWidth, win.offsetHeight);
+    if (win.offsetLeft !== before.left || win.offsetTop !== before.top)
+        state.dotNet.invokeMethodAsync('NotifyMoved', win.offsetLeft, win.offsetTop);
+}
+
 function startDrag(state, e) {
     const { win } = state;
     if (e.button !== 0 || e.target.closest('button, a, input, select, textarea') || !state.options.draggable) return;
@@ -81,6 +92,7 @@ function startDrag(state, e) {
         document.removeEventListener('pointermove', move);
         document.removeEventListener('pointerup', up);
         document.removeEventListener('pointercancel', up);
+        report(state, { left, top });
     };
     document.addEventListener('pointermove', move);
     document.addEventListener('pointerup', up);
@@ -111,6 +123,7 @@ function startResize(state, handle, e) {
         document.removeEventListener('pointermove', move);
         document.removeEventListener('pointerup', up);
         document.removeEventListener('pointercancel', up);
+        report(state, start);
     };
     document.addEventListener('pointermove', move);
     document.addEventListener('pointerup', up);
@@ -160,6 +173,7 @@ export function open(id, win, backdrop, dotNet, options) {
     if (options.left != null || options.top != null) {
         win.style.left = options.left ?? '0px';
         win.style.top = options.top ?? '0px';
+        clamp(state);   // a place saved on a larger screen stays reachable
     } else {
         center(id);
     }

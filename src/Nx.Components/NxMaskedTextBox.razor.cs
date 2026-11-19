@@ -158,7 +158,11 @@ public partial class NxMaskedTextBox : IAsyncDisposable
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
+        {
             module = await JS.InvokeAsync<IJSObjectReference>("import", ModulePath);
+            if (module is not null)
+                await module.InvokeVoidAsync("escapeClears", input);
+        }
         if (module is not null && (appliedMask != Mask || appliedPrompt != Prompt))
         {
             appliedMask = Mask;
@@ -228,7 +232,7 @@ public partial class NxMaskedTextBox : IAsyncDisposable
                 await module.InvokeVoidAsync("dispose", input);
                 await module.DisposeAsync();
             }
-            catch (JSDisconnectedException)
+            catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
             {
                 // The circuit is gone; the browser cleaned up with it.
             }

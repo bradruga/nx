@@ -30,6 +30,9 @@ public class NxSchedulerTests : BunitContext
         Render<NxScheduler<Item>>(p =>
         {
             p.Add(x => x.Data, items);
+            p.Add(x => x.ItemStart, i => i.Start);
+            p.Add(x => x.ItemEnd, i => i.End);
+            p.Add(x => x.ItemTitle, i => i.Title);
             p.Add(x => x.Date, Wednesday);
             p.Add(x => x.Culture, culture ?? Us);
             p.Add(x => x.SlotDuration, 60);
@@ -184,6 +187,8 @@ public class NxSchedulerTests : BunitContext
     {
         var dates = new List<DateTime>();
         var cut = Render<NxScheduler<Item>>(p => p
+            .Add(x => x.ItemStart, i => i.Start)
+            .Add(x => x.ItemEnd, i => i.End)
             .Add(x => x.Date, DateTime.Today.AddDays(-30))
             .Add(x => x.Culture, Us)
             .Add(x => x.DateChanged, (DateTime d) => dates.Add(d)));
@@ -248,6 +253,8 @@ public class NxSchedulerTests : BunitContext
     {
         // Half-hour rows (the default SlotDivisions of 2) from 6:00: 8:00 is the fifth row.
         Render<NxScheduler<Item>>(p => p
+            .Add(x => x.ItemStart, i => i.Start)
+            .Add(x => x.ItemEnd, i => i.End)
             .Add(x => x.Date, Wednesday)
             .Add(x => x.StartTime, new TimeOnly(6, 0))
             .Add(x => x.WorkDayStart, new TimeOnly(8, 0)));
@@ -263,16 +270,16 @@ public class NxSchedulerTests : BunitContext
     }
 
     [Test]
-    public void Fields_ByName_DateTimeOffsetTimes()
+    public void Lambdas_ReadAnyProperty_DateTimeOffsetTimes()
     {
         var shift = new Shift { Name = "Days", From = new DateTimeOffset(Wednesday.AddHours(6)), To = new DateTimeOffset(Wednesday.AddHours(12)) };
         var cut = Render<NxScheduler<Shift>>(p => p
             .Add(x => x.Data, new[] { shift })
             .Add(x => x.Date, Wednesday)
             .Add(x => x.Culture, Us)
-            .Add(x => x.StartField, nameof(Shift.From))
-            .Add(x => x.EndField, nameof(Shift.To))
-            .Add(x => x.TitleField, nameof(Shift.Name)));
+            .Add(x => x.ItemStart, s => s.From.LocalDateTime)
+            .Add(x => x.ItemEnd, s => s.To.LocalDateTime)
+            .Add(x => x.ItemTitle, s => s.Name));
 
         var placed = cut.FindAll(".nx-scheduler-day")[3].QuerySelector(".nx-scheduler-event")!;
         Assert.That(placed.QuerySelector(".nx-scheduler-event-title")!.TextContent, Is.EqualTo("Days"));
@@ -282,10 +289,12 @@ public class NxSchedulerTests : BunitContext
     private sealed record Untitled(DateTime Start, DateTime End);
 
     [Test]
-    public void NoTitleProperty_ShowsTheTimeOnly()
+    public void NoItemTitle_ShowsTheTimeOnly()
     {
         var cut = Render<NxScheduler<Untitled>>(p => p
             .Add(x => x.Data, new[] { new Untitled(Wednesday.AddHours(6), Wednesday.AddHours(8)) })
+            .Add(x => x.ItemStart, u => u.Start)
+            .Add(x => x.ItemEnd, u => u.End)
             .Add(x => x.Date, Wednesday)
             .Add(x => x.Culture, Us));
 
@@ -300,9 +309,10 @@ public class NxSchedulerTests : BunitContext
     }
 
     [Test]
-    public void MissingStartField_Throws()
+    public void MissingItemStart_Throws()
     {
-        Assert.Throws<InvalidOperationException>(() => RenderWeek([new("A", Wednesday, Wednesday.AddHours(1))],
-            p => p.Add(x => x.StartField, "From")));
+        Assert.Throws<InvalidOperationException>(() => Render<NxScheduler<Item>>(p => p
+            .Add(x => x.Data, [new("A", Wednesday, Wednesday.AddHours(1))])
+            .Add(x => x.ItemEnd, i => i.End)));
     }
 }

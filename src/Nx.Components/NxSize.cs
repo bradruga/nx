@@ -1,6 +1,6 @@
 namespace Nx.Components;
 
-/// <summary>Size of an <see cref="NxToggleSwitch"/>, <see cref="NxToggleGroup{TValue}"/> or <see cref="NxLoader"/>, on the same scale as <see cref="NxButtonSize"/>.</summary>
+/// <summary>Size of a control (buttons, toggles, switches, chips, loaders): one scale for every component with a <c>Size</c>.</summary>
 public enum NxSize
 {
     /// <summary>Small.</summary>

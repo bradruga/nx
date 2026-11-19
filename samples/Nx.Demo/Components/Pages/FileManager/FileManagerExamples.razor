@@ -7,7 +7,10 @@
     <p class="doc-note"><code>View="NxFileManagerView.Tiles"</code> starts with large icons; <code>@@bind-View</code> keeps the user's choice.</p>
     @* code *@
     <div class="demo-stage demo-stage-column">
-        <NxFileManager TItem="FileEntry" Id="tiles-files" Data="DemoFiles.Project" @bind-View="tilesView" Height="380px" Style="width:100%" />
+        <NxFileManager TItem="FileEntry" Id="tiles-files" Data="DemoFiles.Project"
+                       ItemId="e => e.Id" ParentId="e => e.ParentId" ItemName="e => e.Name" ItemExtension="e => e.Extension"
+                       ItemIsDirectory="e => e.IsDirectory" ItemSize="e => e.Size" ItemDateModified="e => e.DateModified" ItemDateCreated="e => e.DateCreated"
+                       @bind-View="tilesView" Height="380px" Style="width:100%" />
         <span class="demo-value" id="tiles-view">View: @tilesView</span>
     </div>
     @* /code *@
@@ -22,7 +25,10 @@
     </p>
     @* code *@
     <div class="demo-stage demo-stage-column">
-        <NxFileManager TItem="FileEntry" Id="search-files" Data="DemoFiles.Project" Height="360px" Style="width:100%" />
+        <NxFileManager TItem="FileEntry" Id="search-files" Data="DemoFiles.Project"
+                       ItemId="e => e.Id" ParentId="e => e.ParentId" ItemName="e => e.Name" ItemExtension="e => e.Extension"
+                       ItemIsDirectory="e => e.IsDirectory" ItemSize="e => e.Size" ItemDateModified="e => e.DateModified" ItemDateCreated="e => e.DateCreated"
+                       Height="360px" Style="width:100%" />
     </div>
     @* /code *@
     <DocExampleCode Key="search" />
@@ -36,11 +42,14 @@
         <div class="demo-row">
             @foreach (var name in new[] { "Shop", "Cylinder breaks", "Photos" })
             {
-                <NxButton id="@($"go-{name.Replace(' ', '-').ToLowerInvariant()}")" Size="NxButtonSize.Small" OnClick="() => goFolder = Find(name)">@name</NxButton>
+                <NxButton id="@($"go-{name.Replace(' ', '-').ToLowerInvariant()}")" Size="NxSize.Small" OnClick="() => goFolder = Find(name)">@name</NxButton>
             }
-            <NxButton id="go-top" Size="NxButtonSize.Small" OnClick="() => goFolder = null">Top</NxButton>
+            <NxButton id="go-top" Size="NxSize.Small" OnClick="() => goFolder = null">Top</NxButton>
         </div>
-        <NxFileManager TItem="FileEntry" Id="go-files" Data="DemoFiles.Project" @bind-Folder="goFolder" Searchable="false" RootName="Project"
+        <NxFileManager TItem="FileEntry" Id="go-files" Data="DemoFiles.Project"
+                       ItemId="e => e.Id" ParentId="e => e.ParentId" ItemName="e => e.Name" ItemExtension="e => e.Extension"
+                       ItemIsDirectory="e => e.IsDirectory" ItemSize="e => e.Size" ItemDateModified="e => e.DateModified" ItemDateCreated="e => e.DateCreated"
+                       @bind-Folder="goFolder" Searchable="false" RootName="Project"
                        Height="320px" Style="width:100%" />
     </div>
     @* /code *@
@@ -51,7 +60,10 @@
     <h2>Empty</h2>
     @* code *@
     <div class="demo-stage demo-stage-column">
-        <NxFileManager TItem="FileEntry" Id="empty-files" Data="Array.Empty<FileEntry>()" EmptyText="No files for this project yet" Height="220px" Style="width:100%" />
+        <NxFileManager TItem="FileEntry" Id="empty-files" Data="Array.Empty<FileEntry>()"
+                       ItemId="e => e.Id" ParentId="e => e.ParentId" ItemName="e => e.Name" ItemExtension="e => e.Extension"
+                       ItemIsDirectory="e => e.IsDirectory" ItemSize="e => e.Size" ItemDateModified="e => e.DateModified" ItemDateCreated="e => e.DateCreated"
+                       EmptyText="No files for this project yet" Height="220px" Style="width:100%" />
     </div>
     @* /code *@
     <DocExampleCode Key="empty" />

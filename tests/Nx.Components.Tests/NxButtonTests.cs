@@ -66,10 +66,10 @@ public class NxButtonTests : BunitContext
         Assert.That(button.ClassList, Does.Contain(expected));
     }
 
-    [TestCase(NxButtonSize.Small,  "nx-button-sm")]
-    [TestCase(NxButtonSize.Medium, "nx-button-md")]
-    [TestCase(NxButtonSize.Large,  "nx-button-lg")]
-    public void Size_AppliesClass(NxButtonSize size, string expected)
+    [TestCase(NxSize.Small,  "nx-button-sm")]
+    [TestCase(NxSize.Medium, "nx-button-md")]
+    [TestCase(NxSize.Large,  "nx-button-lg")]
+    public void Size_AppliesClass(NxSize size, string expected)
     {
         var button = RenderButton(p => p.Add(x => x.Size, size)).Find("button");
 

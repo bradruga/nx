@@ -9,8 +9,8 @@ namespace Nx.Components;
 /// <example>
 /// <code>
 /// &lt;NxFormGroup Label="Site contact" Columns="2"&gt;
-///     &lt;NxFormItem Field="@@nameof(Site.ContactName)" /&gt;
-///     &lt;NxFormItem Field="@@nameof(Site.ContactPhone)" /&gt;
+///     &lt;NxFormItem For="() =&gt; site.ContactName" /&gt;
+///     &lt;NxFormItem For="() =&gt; site.ContactPhone" /&gt;
 /// &lt;/NxFormGroup&gt;
 /// </code>
 /// </example>

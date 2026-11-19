@@ -91,6 +91,43 @@ public class RadioGroupTests : PageTest
     }
 
     [Test]
+    public async Task Records_ItemTextLabels_ItemValueBinds_ItemDisabledDisables()
+    {
+        await GoToPage();
+
+        await Expect(Radios("records-radio")).ToHaveCountAsync(4);
+        await Expect(Radios("records-radio").Nth(1)).ToBeCheckedAsync();
+        await Expect(Radios("records-radio").Nth(2)).ToBeDisabledAsync();
+        await Expect(Page.Locator("#records-radio label").Nth(0)).Not.ToHaveTextAsync("");
+
+        await Radios("records-radio").Nth(3).ClickAsync();
+        await Expect(Page.Locator("#records-value")).ToHaveTextAsync("Value: 4");
+
+        // The arrow keys skip the disabled record and bind the next one's id.
+        await Page.Keyboard.PressAsync("ArrowUp");
+        await Expect(Page.Locator("#records-value")).ToHaveTextAsync("Value: 2");
+        await Expect(Radios("records-radio").Nth(1)).ToBeFocusedAsync();
+    }
+
+    [Test]
+    public async Task Playground_Records_BindTheSameValueAsTheOtherSources()
+    {
+        await GoToPage("playground");
+
+        await Page.Locator("#pg-records").ClickAsync();
+        await Expect(Page.Locator("#playground-radio label").Nth(1)).ToHaveTextAsync("Broom");
+        await Page.Locator("#pg-template").CheckAsync();
+        await Expect(Page.Locator("#playground-radio label").Nth(1)).ToContainTextAsync("F2");
+        await Expect(Radios("playground-radio").Nth(0)).ToBeCheckedAsync();
+        await Radios("playground-radio").Nth(1).ClickAsync();
+        await Expect(Page.Locator("#playground-value")).ToHaveTextAsync("Value: Broom");
+        await Expect(Page.Locator(".demo-playground-code")).ToContainTextAsync("ItemValue=\"f => f.Name\"");
+
+        await Page.Locator("#pg-data").ClickAsync();
+        await Expect(Radios("playground-radio").Nth(1)).ToBeCheckedAsync();
+    }
+
+    [Test]
     public async Task Horizontal_LaysOutInARow()
     {
         await GoToPage();

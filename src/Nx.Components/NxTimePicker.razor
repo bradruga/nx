@@ -74,17 +74,13 @@
                 <NxPickerSheet Title="@SheetTitle" Class="nx-timepicker-sheet" OnClose="CloseSheet"
                                HeaderActions="@(Clearable && TimeConversion<TValue>.IsNullable ? SheetClear : null)">
                     <ChildContent>
-                        <div class="nx-timepicker-list nx-timepicker-sheet-list" @ref="sheetList" role="listbox" aria-label="@SheetTitle">
-                            @foreach (var time in times)
-                            {
-                                <button type="button" class="@ItemClass(-1, time)" role="option"
-                                        aria-selected="@(time == current ? "true" : "false")"
-                                        @onclick="() => PickAsync(time)">
-                                    @FormatDisplay(time)
-                                </button>
-                            }
-                        </div>
+                        <div class="nx-timepicker-sheet-value" aria-live="polite">@FormatDisplay(sheetTime)</div>
+                        <NxTimeColumns @bind-Value="sheetTime" Min="Min" Max="Max" Use24Hour="Is24Hour"
+                                       MinuteStep="@Math.Clamp(Step, 1, 5)" Culture="EffectiveCulture" AriaLabel="@SheetTitle" />
                     </ChildContent>
+                    <Footer>
+                        <button type="button" class="nx-sheet-action nx-timepicker-sheet-done" @onclick="() => PickAsync(sheetTime)">Done</button>
+                    </Footer>
                 </NxPickerSheet>
             </div>
         }

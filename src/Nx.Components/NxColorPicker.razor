@@ -43,7 +43,7 @@
                     <NxColorGradient Id="@($"{ToggleId}-gradient")" Class="nx-colorpicker-gradient" Value="@draft" ValueChanged="v => draft = v"
                                      ShowOpacityEditor="false" AriaLabel="@(AriaLabel ?? "Color")" />
                     <div class="nx-colorpicker-actions">
-                        <NxButton id="@($"{ToggleId}-apply")" Size="NxButtonSize.Small" Variant="NxButtonVariant.Primary"
+                        <NxButton id="@($"{ToggleId}-apply")" Size="NxSize.Small" Variant="NxButtonVariant.Primary"
                                   Disabled="@(draft is null)" OnClick="() => PickAsync(draft)">Apply</NxButton>
                     </div>
                 }

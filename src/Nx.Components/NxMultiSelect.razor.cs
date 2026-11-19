@@ -30,6 +30,9 @@ public partial class NxMultiSelect<TItem, TValue>
     /// <summary>Loads items for the typed text instead of <see cref="Data"/>, as for NxComboBox.</summary>
     [Parameter] public Func<NxComboBoxRequest, Task<IEnumerable<TItem>>>? DataProvider { get; set; }
 
+    /// <summary>With <see cref="DataProvider"/>, finds the item of a bound value the list has not loaded, so its chip shows the item's text.</summary>
+    [Parameter] public Func<TValue, Task<TItem?>>? ItemByValue { get; set; }
+
     /// <summary>With <see cref="DataProvider"/>, milliseconds to wait after typing before loading. Default: <c>300</c>.</summary>
     [Parameter] public int DebounceDelay { get; set; } = 300;
 
@@ -122,19 +125,19 @@ public partial class NxMultiSelect<TItem, TValue>
     /// <summary>Width of the popup as a CSS length.</summary>
     [Parameter] public string? PopupWidth { get; set; }
 
-    /// <summary>Renders only the visible items; every item is then <see cref="ItemHeight"/> pixels tall.</summary>
-    [Parameter] public bool Virtualize { get; set; }
+    /// <summary>Row count from which the list renders only the rows in view, all one height. Default: <c>200</c>.</summary>
+    [Parameter] public int VirtualizeThreshold { get; set; } = 200;
 
-    /// <summary>Row height in pixels under <see cref="Virtualize"/>. Default: <c>34</c>.</summary>
-    [Parameter] public float ItemHeight { get; set; } = 34;
+    /// <summary>Row height in pixels of a virtualized list. Default: measured from the rendered rows.</summary>
+    [Parameter] public float? ItemHeight { get; set; }
 
     /// <summary>Largest popup height in pixels. Default: <c>300</c>.</summary>
     [Parameter] public int PopupMaxHeight { get; set; } = 300;
 
     // ── Mobile ────────────────────────────────────────────────────────────────
 
-    /// <summary>When the list opens as a full-screen sheet, whose changes apply on Done. Default: <see cref="NxComboBoxMobileMode.Auto"/>.</summary>
-    [Parameter] public NxComboBoxMobileMode MobileMode { get; set; } = NxComboBoxMobileMode.Auto;
+    /// <summary>When the list opens as a full-screen sheet, whose changes apply on Done. Default: <see cref="NxMobileMode.Never"/>.</summary>
+    [Parameter] public NxMobileMode MobileMode { get; set; } = NxMobileMode.Never;
 
     /// <summary>With Auto, the viewport width in pixels at or below which the sheet is used. Default: <c>600</c>.</summary>
     [Parameter] public int MobileBreakpoint { get; set; } = 600;

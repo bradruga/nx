@@ -313,7 +313,7 @@ public partial class NxTileLayout : IAsyncDisposable
                 await module.InvokeVoidAsync("dispose", grid);
                 await module.DisposeAsync();
             }
-            catch (JSDisconnectedException)
+            catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
             {
                 // The circuit is gone; the browser cleaned up with it.
             }

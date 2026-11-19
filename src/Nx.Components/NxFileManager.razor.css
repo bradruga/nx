@@ -58,9 +58,9 @@
     cursor: pointer;
 }
 
-.nx-filemanager-crumb:hover { background: var(--nx-item-hover-bg); }
+.nx-filemanager-crumb:hover { background: var(--nx-item-hover-bg, var(--nx-surface-hover)); }
 .nx-filemanager-crumb[aria-current=page] { color: var(--nx-fg); font-weight: var(--nx-font-weight-medium); cursor: default; }
-.nx-filemanager-crumb:focus-visible { outline: 2px solid var(--nx-focus-ring-color); outline-offset: -2px; }
+.nx-filemanager-crumb:focus-visible { outline: 2px solid var(--nx-focus-ring-color, var(--nx-accent)); outline-offset: -2px; }
 
 /* ── Tree | list | details ───────────────────────────────────────────────── */
 
@@ -154,7 +154,7 @@
 }
 
 .nx-filemanager-th:hover { color: var(--nx-fg); }
-.nx-filemanager-th:focus-visible { outline: 2px solid var(--nx-focus-ring-color); outline-offset: -2px; }
+.nx-filemanager-th:focus-visible { outline: 2px solid var(--nx-focus-ring-color, var(--nx-accent)); outline-offset: -2px; }
 
 .nx-filemanager-list {
     flex: 1;
@@ -164,7 +164,7 @@
     outline: none;
 }
 
-.nx-filemanager-list:focus-visible { box-shadow: inset 0 0 0 2px var(--nx-focus-ring-color); }
+.nx-filemanager-list:focus-visible { box-shadow: inset 0 0 0 2px var(--nx-focus-ring-color, var(--nx-accent)); }
 
 .nx-filemanager-empty { padding: 24px; color: var(--nx-fg-muted); text-align: center; }
 
@@ -175,7 +175,7 @@
     user-select: none;
 }
 
-.nx-filemanager-item:hover { background: var(--nx-item-hover-bg); }
+.nx-filemanager-item:hover { background: var(--nx-item-hover-bg, var(--nx-surface-hover)); }
 .nx-filemanager-item-selected,
 .nx-filemanager-item-selected:hover { background: var(--nx-accent-subtle); }
 .nx-filemanager-list:focus-visible .nx-filemanager-item-selected { box-shadow: inset 0 0 0 1px var(--nx-accent); }

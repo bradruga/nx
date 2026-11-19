@@ -7,12 +7,12 @@
     <h2>Assistant</h2>
     <p class="doc-note">
         As ERP's meeting assistant does: full-width answers rendered from HTML by <code>MessageContentTemplate</code>, a typing
-        message while the answer is on its way (<code>IsTypingField</code>), and follow-up choices under the latest answer.
+        message while the answer is on its way (<code>ItemIsTyping</code>), and follow-up choices under the latest answer.
     </p>
     <div class="demo-stage demo-stage-column">
-        <NxChat Id="assistant-chat" Data="assistant" AuthorId="@DemoChat.Me" IdField="@nameof(ChatMessage.Id)"
-                AuthorIdField="@nameof(ChatMessage.AuthorId)" AuthorNameField="@nameof(ChatMessage.AuthorName)"
-                TextField="@nameof(ChatMessage.Text)" TimestampField="@nameof(ChatMessage.Sent)" IsTypingField="@nameof(ChatMessage.IsTyping)"
+        <NxChat Id="assistant-chat" Data="assistant" AuthorId="@DemoChat.Me" ItemId="m => m.Id"
+                ItemAuthorId="m => m.AuthorId" ItemAuthorName="m => m.AuthorName"
+                ItemText="m => m.Text" ItemTimestamp="m => m.Sent" ItemIsTyping="m => m.IsTyping"
                 MessageWidthMode="NxChatMessageWidthMode.Full" OnSendMessage="e => AskAsync(e.Message)" Height="440px"
                 Placeholder="Ask about pours or crews…" AriaLabel="Assistant" Style="width:100%; max-width:640px">
             <MessageContentTemplate>
@@ -32,7 +32,7 @@
                         <div class="demo-chat-choices">
                             @foreach (var choice in context.Message.Choices)
                             {
-                                <NxButton Size="NxButtonSize.Small" OnClick="() => AskAsync(choice)">@choice</NxButton>
+                                <NxButton Size="NxSize.Small" OnClick="() => AskAsync(choice)">@choice</NxButton>
                             }
                         </div>
                     }
@@ -48,9 +48,9 @@
     <p class="doc-note">Without a template, a typing message shows moving dots. Here Sam answers a moment after you send.</p>
     @* code *@
     <div class="demo-stage demo-stage-column">
-        <NxChat Id="typing-chat" Data="typing" AuthorId="@DemoChat.Me" IdField="@nameof(ChatMessage.Id)"
-                AuthorIdField="@nameof(ChatMessage.AuthorId)" AuthorNameField="@nameof(ChatMessage.AuthorName)"
-                TextField="@nameof(ChatMessage.Text)" TimestampField="@nameof(ChatMessage.Sent)" IsTypingField="@nameof(ChatMessage.IsTyping)"
+        <NxChat Id="typing-chat" Data="typing" AuthorId="@DemoChat.Me" ItemId="m => m.Id"
+                ItemAuthorId="m => m.AuthorId" ItemAuthorName="m => m.AuthorName"
+                ItemText="m => m.Text" ItemTimestamp="m => m.Sent" ItemIsTyping="m => m.IsTyping"
                 OnSendMessage="e => ReplyAsync(e.Message)" Height="320px" AriaLabel="Chat with Sam" Style="width:100%; max-width:560px" />
     </div>
     @* /code *@
@@ -62,9 +62,9 @@
     <p class="doc-note"><code>Disabled</code> turns the box off and keeps the messages readable — a closed ticket's thread, say.</p>
     @* code *@
     <div class="demo-stage demo-stage-column">
-        <NxChat Id="disabled-chat" Data="history" AuthorId="@DemoChat.Me" AuthorIdField="@nameof(ChatMessage.AuthorId)"
-                AuthorNameField="@nameof(ChatMessage.AuthorName)" TextField="@nameof(ChatMessage.Text)"
-                TimestampField="@nameof(ChatMessage.Sent)" Disabled="true" Placeholder="This thread is closed" Height="300px"
+        <NxChat Id="disabled-chat" Data="history" AuthorId="@DemoChat.Me" ItemAuthorId="m => m.AuthorId"
+                ItemAuthorName="m => m.AuthorName" ItemText="m => m.Text"
+                ItemTimestamp="m => m.Sent" Disabled="true" Placeholder="This thread is closed" Height="300px"
                 AriaLabel="Closed thread" Style="width:100%; max-width:560px" />
     </div>
     @* /code *@
@@ -126,7 +126,7 @@
 
     const string assistantCode =
         """
-        <NxChat Data="messages" AuthorId="user" IsTypingField="@nameof(Msg.IsTyping)" … MessageWidthMode="NxChatMessageWidthMode.Full">
+        <NxChat Data="messages" AuthorId="user" ItemIsTyping="m => m.IsTyping" … MessageWidthMode="NxChatMessageWidthMode.Full">
             <MessageContentTemplate>
                 @if (context.IsTyping) { <span>Thinking…</span> }
                 else { @((MarkupString)context.Message.Html) }

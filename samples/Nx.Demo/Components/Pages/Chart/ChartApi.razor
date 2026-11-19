@@ -23,15 +23,16 @@
 </div>
 
 <div class="doc-section">
-    <h2>NxChartSeries</h2>
+    <h2>NxChartSeries&lt;TItem&gt;</h2>
     <div class="doc-table-wrap">
         <table class="doc-table doc-api-table">
             <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
             <tbody>
                 <tr><td>Type</td><td>NxChartSeriesType</td><td>Line</td><td>Line, Area, Column, Bar or Pie.</td></tr>
                 <tr><td>Name</td><td>string?</td><td>—</td><td>In the legend and the tooltip.</td></tr>
-                <tr><td>Data</td><td>IEnumerable?</td><td>—</td><td>Objects read through <code>Field</code>, or plain numbers.</td></tr>
-                <tr><td>Field / CategoryField / ColorField</td><td>string?</td><td>—</td><td>Property names (<code>nameof</code>) of the value, the category and a point's color.</td></tr>
+                <tr><td>Data</td><td>IEnumerable&lt;TItem&gt;?</td><td>—</td><td>Objects read through <code>Value</code>, or plain numbers.</td></tr>
+                <tr><td>Value / ItemCategory</td><td>Func&lt;TItem, object?&gt;?</td><td>—</td><td>An item's value (any number) and its category (text or a date): <code>Value="d =&gt; d.Loads"</code>.</td></tr>
+                <tr><td>ItemColor</td><td>Func&lt;TItem, string?&gt;?</td><td>—</td><td>A point's own color, e.g. a pie slice's.</td></tr>
                 <tr><td>Color</td><td>string?</td><td>--nx-chart-1 … 8</td><td>The series' color.</td></tr>
                 <tr><td>Axis</td><td>string?</td><td>the first</td><td>The value axis' <code>Name</code>.</td></tr>
                 <tr><td>Stacked</td><td>bool</td><td>false</td><td>Stacks on the earlier series of its type on its axis.</td></tr>
@@ -56,7 +57,7 @@
             <tbody>
                 <tr><td colspan="4"><strong>NxChartCategoryAxis</strong> (one per chart)</td></tr>
                 <tr><td>Title</td><td>string?</td><td>—</td><td>Under the labels.</td></tr>
-                <tr><td>Categories</td><td>IEnumerable?</td><td>—</td><td>The categories for series without a <code>CategoryField</code>.</td></tr>
+                <tr><td>Categories</td><td>IEnumerable?</td><td>—</td><td>The categories for series without an <code>ItemCategory</code>.</td></tr>
                 <tr><td>Labels</td><td>IEnumerable&lt;string?&gt;?</td><td>—</td><td>Text under each category instead of it; empty shows none.</td></tr>
                 <tr><td>Type</td><td>NxChartAxisType</td><td>Auto</td><td>Auto (dates when the values are dates), Category or Date.</td></tr>
                 <tr><td>BaseUnit</td><td>NxChartBaseUnit</td><td>Auto</td><td>Hours, Days, Weeks, Months or Years for dates.</td></tr>

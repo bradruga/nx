@@ -169,7 +169,8 @@
     private string ListClass => string.Join(' ', new[]
     {
         "nx-combobox-list",
-        Virtualize ? "nx-combobox-list-virtual" : null,
+        ShouldVirtualize ? "nx-combobox-list-virtual" : null,
+        Probing ? "nx-combobox-list-measuring" : null,
         HasColumns ? "nx-combobox-list-columns" : null
     }.Where(c => c is not null));
 
@@ -199,9 +200,17 @@
                 }
             </div>
         }
-        else if (Virtualize)
+        else if (Probing)
         {
-            <Virtualize Items="rows" ItemSize="ItemHeight" OverscanCount="8" Context="row">
+            @* Virtualize renders no rows on its own first pass, so the rows to measure are rendered plainly. *@
+            foreach (var row in rows.Take(ProbeCount))
+            {
+                @RenderRow(row)
+            }
+        }
+        else if (ShouldVirtualize)
+        {
+            <Virtualize Items="rows" ItemSize="RowHeight" OverscanCount="8" Context="row">
                 @RenderRow(row)
             </Virtualize>
         }

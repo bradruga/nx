@@ -23,7 +23,7 @@
 /* ── One message ──────────────────────────────────────────────────────────── */
 
 .nx-notification {
-    --nx-notification-color: var(--nx-notification-info);
+    --nx-notification-color: var(--nx-notification-info, var(--nx-accent));
     display: flex;
     align-items: flex-start;
     gap: 10px;
@@ -32,16 +32,16 @@
     border: 1px solid var(--nx-border);
     border-left: 4px solid var(--nx-notification-color);
     border-radius: var(--nx-radius);
-    background: var(--nx-notification-bg);
-    color: var(--nx-notification-fg);
+    background: var(--nx-notification-bg, var(--nx-surface));
+    color: var(--nx-notification-fg, var(--nx-fg));
     box-shadow: var(--nx-shadow-popup);
     pointer-events: auto;
     animation: nx-notification-in 0.2s ease-out;
 }
 
-.nx-notification-success { --nx-notification-color: var(--nx-notification-success); }
-.nx-notification-warning { --nx-notification-color: var(--nx-notification-warning); }
-.nx-notification-error   { --nx-notification-color: var(--nx-notification-error); }
+.nx-notification-success { --nx-notification-color: var(--nx-notification-success, var(--nx-success)); }
+.nx-notification-warning { --nx-notification-color: var(--nx-notification-warning, var(--nx-warning)); }
+.nx-notification-error   { --nx-notification-color: var(--nx-notification-error, var(--nx-danger)); }
 .nx-notification-neutral {
     --nx-notification-color: var(--nx-notification-neutral-bg);
     border-color: var(--nx-notification-neutral-bg);
@@ -86,7 +86,7 @@
 .nx-notification-close:focus { outline: none; }
 .nx-notification-close:focus-visible {
     opacity: 1;
-    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color, var(--nx-accent));
     outline-offset: 0;
 }
 

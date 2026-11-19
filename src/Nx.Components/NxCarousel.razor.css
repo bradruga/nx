@@ -6,7 +6,7 @@
     height: var(--nx-carousel-height);
     overflow: hidden;
     border-radius: var(--nx-radius);
-    background: var(--nx-carousel-bg);
+    background: var(--nx-carousel-bg, var(--nx-surface-active));
     font-family: var(--nx-font-family);
     font-size: var(--nx-font-size);
 }
@@ -111,7 +111,7 @@
 .nx-carousel-arrow:focus-visible,
 .nx-carousel-dot:focus-visible,
 .nx-carousel-pause:focus-visible {
-    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color, var(--nx-accent));
     outline-offset: 1px;
 }
 .nx-carousel-dot:focus-visible,

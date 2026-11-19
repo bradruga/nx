@@ -73,12 +73,12 @@
     <div class="demo-stage demo-stage-column">
         <div class="demo-ide" id="ide">
             <div class="demo-ide-stripe" role="toolbar" aria-label="Tool windows">
-                <NxToggleButton id="ide-show-explorer" Variant="NxButtonVariant.Ghost" Size="NxButtonSize.Small" Icon="@Ico(NxIcons.Folder)" AriaLabel="Explorer" Title="Explorer"
+                <NxToggleButton id="ide-show-explorer" Variant="NxButtonVariant.Ghost" Size="NxSize.Small" Icon="@Ico(NxIcons.Folder)" AriaLabel="Explorer" Title="Explorer"
                                 Selected="!explorerHidden" SelectedChanged="on => explorerHidden = !on" />
-                <NxToggleButton id="ide-show-structure" Variant="NxButtonVariant.Ghost" Size="NxButtonSize.Small" Icon="@Ico(NxIcons.ListUnordered)" AriaLabel="Structure" Title="Structure"
+                <NxToggleButton id="ide-show-structure" Variant="NxButtonVariant.Ghost" Size="NxSize.Small" Icon="@Ico(NxIcons.ListUnordered)" AriaLabel="Structure" Title="Structure"
                                 Selected="!structureHidden" SelectedChanged="on => structureHidden = !on" />
                 <span class="demo-ide-stripe-end">
-                    <NxToggleButton id="ide-show-terminal" Variant="NxButtonVariant.Ghost" Size="NxButtonSize.Small" Icon="@Ico(NxIcons.Rows)" AriaLabel="Terminal" Title="Terminal"
+                    <NxToggleButton id="ide-show-terminal" Variant="NxButtonVariant.Ghost" Size="NxSize.Small" Icon="@Ico(NxIcons.Rows)" AriaLabel="Terminal" Title="Terminal"
                                     Selected="!terminalHidden" SelectedChanged="on => terminalHidden = !on" />
                 </span>
             </div>
@@ -87,7 +87,7 @@
                     <div class="demo-ide-panel">
                         <div class="demo-ide-head">
                             <span>Explorer</span>
-                            <NxButton id="ide-hide-explorer" Variant="NxButtonVariant.Ghost" Size="NxButtonSize.Small" Icon="@Ico(NxIcons.Minus)" AriaLabel="Hide Explorer" Title="Hide" OnClick="() => explorerHidden = true" />
+                            <NxButton id="ide-hide-explorer" Variant="NxButtonVariant.Ghost" Size="NxSize.Small" Icon="@Ico(NxIcons.Minus)" AriaLabel="Hide Explorer" Title="Hide" OnClick="() => explorerHidden = true" />
                         </div>
                         <ul class="demo-ide-body demo-ide-list">
                             <li>Pours</li><li class="demo-ide-item-active">PourSchedule.razor</li><li>PourService.cs</li><li>Forms</li><li>FormSet.cs</li>
@@ -106,7 +106,7 @@
                             <div class="demo-ide-panel">
                                 <div class="demo-ide-head">
                                     <span>Terminal</span>
-                                    <NxButton id="ide-hide-terminal" Variant="NxButtonVariant.Ghost" Size="NxButtonSize.Small" Icon="@Ico(NxIcons.Minus)" AriaLabel="Hide Terminal" Title="Hide" OnClick="() => terminalHidden = true" />
+                                    <NxButton id="ide-hide-terminal" Variant="NxButtonVariant.Ghost" Size="NxSize.Small" Icon="@Ico(NxIcons.Minus)" AriaLabel="Hide Terminal" Title="Hide" OnClick="() => terminalHidden = true" />
                                 </div>
                                 <pre class="demo-ide-body demo-ide-code">@terminalText</pre>
                             </div>
@@ -117,7 +117,7 @@
                     <div class="demo-ide-panel">
                         <div class="demo-ide-head">
                             <span>Structure</span>
-                            <NxButton id="ide-hide-structure" Variant="NxButtonVariant.Ghost" Size="NxButtonSize.Small" Icon="@Ico(NxIcons.Minus)" AriaLabel="Hide Structure" Title="Hide" OnClick="() => structureHidden = true" />
+                            <NxButton id="ide-hide-structure" Variant="NxButtonVariant.Ghost" Size="NxSize.Small" Icon="@Ico(NxIcons.Minus)" AriaLabel="Hide Structure" Title="Hide" OnClick="() => structureHidden = true" />
                         </div>
                         <ul class="demo-ide-body demo-ide-list">
                             <li>PourSchedule</li><li>OnInitializedAsync()</li><li>Reschedule(Pour)</li><li>SaveAsync()</li>
@@ -176,7 +176,7 @@
 
     static RenderFragment Ico(NxIconData icon) => @<NxIcon Icon="icon" />;
 
-    const string editorText = "<NxGantt Data=\"pours\" OnUpdate=\"Reschedule\">\n    <Columns>\n        <NxGanttColumn Field=\"Title\" Expandable=\"true\" />\n    </Columns>\n</NxGantt>";
+    const string editorText = "<NxGantt Data=\"pours\" OnUpdate=\"Reschedule\">\n    <Columns>\n        <NxGanttColumn Value=\"p => p.Title\" Expandable=\"true\" />\n    </Columns>\n</NxGantt>";
     const string terminalText = "> dotnet build Nx.slnx\n  0 Warning(s)\n  0 Error(s)";
 
     const string ideCode =

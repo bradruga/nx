@@ -41,26 +41,26 @@
 .nx-slider-input::-webkit-slider-runnable-track {
     height: var(--nx-slider-track-height);
     border-radius: 999px;
-    background: linear-gradient(to right, var(--nx-slider-fill) var(--nx-slider-percent), var(--nx-slider-track) var(--nx-slider-percent));
+    background: linear-gradient(to right, var(--nx-slider-fill, var(--nx-accent)) var(--nx-slider-percent), var(--nx-slider-track, var(--nx-surface-active)) var(--nx-slider-percent));
 }
 .nx-slider-input::-moz-range-track {
     height: var(--nx-slider-track-height);
     border-radius: 999px;
-    background: var(--nx-slider-track);
+    background: var(--nx-slider-track, var(--nx-surface-active));
 }
 .nx-slider-input::-moz-range-progress {
     height: var(--nx-slider-track-height);
     border-radius: 999px;
-    background: var(--nx-slider-fill);
+    background: var(--nx-slider-fill, var(--nx-accent));
 }
 
 .nx-slider-input::-webkit-slider-thumb {
     width: var(--nx-slider-thumb-size);
     height: var(--nx-slider-thumb-size);
     margin-top: calc((var(--nx-slider-track-height) - var(--nx-slider-thumb-size)) / 2);
-    border: 2px solid var(--nx-slider-fill);
+    border: 2px solid var(--nx-slider-fill, var(--nx-accent));
     border-radius: 50%;
-    background: var(--nx-slider-thumb-bg);
+    background: var(--nx-slider-thumb-bg, var(--nx-surface));
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     -webkit-appearance: none;
     transition: transform var(--nx-transition);
@@ -69,23 +69,23 @@
     box-sizing: border-box;
     width: var(--nx-slider-thumb-size);
     height: var(--nx-slider-thumb-size);
-    border: 2px solid var(--nx-slider-fill);
+    border: 2px solid var(--nx-slider-fill, var(--nx-accent));
     border-radius: 50%;
-    background: var(--nx-slider-thumb-bg);
+    background: var(--nx-slider-thumb-bg, var(--nx-surface));
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .nx-slider-input:active::-webkit-slider-thumb { transform: scale(1.15); }
 .nx-slider-input:focus-visible::-webkit-slider-thumb {
-    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color, var(--nx-accent));
     outline-offset: var(--nx-focus-ring-offset);
 }
 .nx-slider-input:focus-visible::-moz-range-thumb {
-    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color, var(--nx-accent));
     outline-offset: var(--nx-focus-ring-offset);
 }
 
-.nx-slider-invalid { --nx-slider-fill: var(--nx-invalid); }
+.nx-slider-invalid { --nx-slider-fill: var(--nx-invalid, var(--nx-danger)); }
 .nx-slider-disabled { opacity: var(--nx-disabled-opacity); }
 
 /* ── Ticks: placed where the thumb's center would be at that value ─────────── */

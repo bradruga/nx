@@ -30,9 +30,9 @@
 .nx-toggle-selected,
 .nx-toggle-selected:hover:not(:disabled) {
     z-index: 2;
-    background: var(--nx-toggle-selected-bg);
-    border-color: var(--nx-toggle-selected-border);
-    color: var(--nx-toggle-selected-fg);
+    background: var(--nx-toggle-selected-bg, var(--nx-accent-subtle));
+    border-color: var(--nx-toggle-selected-border, var(--nx-accent));
+    color: var(--nx-toggle-selected-fg, var(--nx-accent));
 }
 
 /* The ring is drawn by nx-theme.css; lift the item so its neighbors do not cover it. */

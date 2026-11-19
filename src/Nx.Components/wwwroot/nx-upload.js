@@ -28,6 +28,8 @@ export function init(input, zone, dotNet) {
     input.addEventListener('change', state.onChange);
     zone?.addEventListener('paste', state.onPaste);
     states.set(input, state);
+    // Files picked before this module had loaded raised their change event to nobody.
+    if (input.files?.length) state.onChange();
 }
 
 export function upload(input, ids, url, field, withCredentials, concurrency) {

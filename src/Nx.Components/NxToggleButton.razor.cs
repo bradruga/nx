@@ -35,8 +35,8 @@ public partial class NxToggleButton
     /// <summary>Visual style, as NxButton's. Default: the group's, else <see cref="NxButtonVariant.Secondary"/>.</summary>
     [Parameter] public NxButtonVariant? Variant { get; set; }
 
-    /// <summary>Size, as NxButton's. Default: the group's, else <see cref="NxButtonSize.Medium"/>.</summary>
-    [Parameter] public NxButtonSize? Size { get; set; }
+    /// <summary>Size, as NxButton's. Default: the group's, else <see cref="NxSize.Medium"/>.</summary>
+    [Parameter] public NxSize? Size { get; set; }
 
     /// <summary>Renders the native <c>disabled</c> attribute.</summary>
     [Parameter] public bool Disabled { get; set; }

@@ -13,12 +13,12 @@
                             SelectionMode="pgMode" @bind-SelectedItems="pgSelected" @bind-ExpandedItems="pgExpanded" Height="@pgHeight"
                             NoDataText="@pgNoData" AriaLabel="@OrNull(pgAriaLabel)">
                     <Columns>
-                        <NxTreeListColumn Field="@nameof(YardLocation.Name)" Title="@pgTitle" Width="@pgWidth" />
+                        <NxTreeListColumn Value="l => l.Name" Title="@pgTitle" Width="@pgWidth" />
                         @if (pgKind)
                         {
-                            <NxTreeListColumn Field="@nameof(YardLocation.Kind)" Title="Kind" Width="70px" />
+                            <NxTreeListColumn Value="l => l.Kind" Title="Kind" Width="70px" />
                         }
-                        <NxTreeListColumn Field="@nameof(YardLocation.AggregatePieceCount)" Title="# Pieces" Width="90px" />
+                        <NxTreeListColumn Value="l => l.AggregatePieceCount" Title="# Pieces" Width="90px" />
                     </Columns>
                 </NxTreeList>
             </div>
@@ -85,9 +85,9 @@
             attrs.Add($"Height=\"{pgHeight}\"");
             if (pgNoData != "No items") attrs.Add($"NoDataText=\"{pgNoData}\"");
             if (OrNull(pgAriaLabel) is { } label) attrs.Add($"AriaLabel=\"{label}\"");
-            var columns = new List<string> { $"<NxTreeListColumn Field=\"@nameof(Location.Name)\" Title=\"{pgTitle}\" Width=\"{pgWidth}\" />" };
-            if (pgKind) columns.Add("<NxTreeListColumn Field=\"@nameof(Location.Kind)\" Title=\"Kind\" Width=\"70px\" />");
-            columns.Add("<NxTreeListColumn Field=\"@nameof(Location.AggregatePieceCount)\" Title=\"# Pieces\" Width=\"90px\" />");
+            var columns = new List<string> { $"<NxTreeListColumn Value=\"l => l.Name\" Title=\"{pgTitle}\" Width=\"{pgWidth}\" />" };
+            if (pgKind) columns.Add("<NxTreeListColumn Value=\"l => l.Kind\" Title=\"Kind\" Width=\"70px\" />");
+            columns.Add("<NxTreeListColumn Value=\"l => l.AggregatePieceCount\" Title=\"# Pieces\" Width=\"90px\" />");
             return "<NxTreeList " + string.Join("\n            ", attrs) + ">\n    <Columns>\n        "
                 + string.Join("\n        ", columns) + "\n    </Columns>\n</NxTreeList>";
         }

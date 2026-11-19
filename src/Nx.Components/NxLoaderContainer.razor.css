@@ -19,7 +19,7 @@
 }
 
 .nx-loader-container-text {
-    color: var(--nx-loader-text-color);
+    color: var(--nx-loader-text-color, var(--nx-fg-muted));
     font-size: var(--nx-font-size);
     font-weight: var(--nx-font-weight-medium);
 }

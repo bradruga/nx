@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
 namespace Nx.Components;
@@ -8,7 +10,8 @@ namespace Nx.Components;
 /// A dialog window, modal or not: title with icon, close / minimize / maximize, dragging by the title bar,
 /// resizing from the edges, size presets or explicit size, centered or positioned, focus trap and focus
 /// return, Escape and backdrop close, stacking of nested windows, and body and footer slots. Full screen on
-/// phones. Show and hide it with <c>@bind-Visible</c>.
+/// phones. Show and hide it with <c>@bind-Visible</c>. With an <see cref="NxWindowHost"/> in the layout the window is drawn
+/// there, clear of any transformed or clipping ancestor; see <see cref="Inline"/>.
 /// </summary>
 /// <example>
 /// <code>
@@ -27,6 +30,7 @@ public partial class NxWindow : IAsyncDisposable
     private const string ModulePath = "./_content/Nx.Components/nx-window.js";
 
     [Inject] private IJSRuntime JS { get; set; } = default!;
+    [Inject] private IServiceProvider Services { get; set; } = default!;
 
     private readonly string generatedId = $"nx-window-{Guid.NewGuid():N}"[..20];
     private IJSObjectReference? module;
@@ -38,6 +42,9 @@ public partial class NxWindow : IAsyncDisposable
     private bool jsOpen, openPending, closePending;
     private bool? renderedModal;
     private object? appliedOptions;
+    private NxWindowHost? host;
+    private NxWindowOutlet? outlet;
+    private bool drawingInHost, shownInHost;
 
     // ── Visibility ────────────────────────────────────────────────────────────
 
@@ -113,11 +120,17 @@ public partial class NxWindow : IAsyncDisposable
     /// <summary>Explicit height, any CSS length. Default: as tall as the content, up to the viewport.</summary>
     [Parameter] public string? Height { get; set; }
 
-    /// <summary>Distance from the viewport's left edge. With neither Left nor Top the window is centered.</summary>
+    /// <summary>Distance from the viewport's left edge, any CSS length. With neither Left nor Top the window is centered.</summary>
     [Parameter] public string? Left { get; set; }
 
-    /// <summary>Distance from the viewport's top edge.</summary>
+    /// <summary>Distance from the viewport's top edge, any CSS length.</summary>
     [Parameter] public string? Top { get; set; }
+
+    /// <summary>Raised when the user finishes dragging the window, or a resize moved its left or top edge. Save it to pass back as <see cref="Left"/> and <see cref="Top"/>.</summary>
+    [Parameter] public EventCallback<NxWindowMovedEventArgs> OnMoved { get; set; }
+
+    /// <summary>Raised when the user finishes resizing the window. Save it to pass back as <see cref="Width"/> and <see cref="Height"/>.</summary>
+    [Parameter] public EventCallback<NxWindowResizedEventArgs> OnResized { get; set; }
 
     /// <summary>Lets the user move the window by its title bar. Default: <c>true</c>.</summary>
     [Parameter] public bool Draggable { get; set; } = true;
@@ -133,6 +146,13 @@ public partial class NxWindow : IAsyncDisposable
 
     /// <summary>Fills the screen at 600 px and below. <c>false</c> keeps it a centered card, for a short dialog. Default: <c>true</c>.</summary>
     [Parameter] public bool FullScreenOnPhone { get; set; } = true;
+
+    /// <summary>
+    /// Keeps the window where it is declared even when the layout has an <see cref="NxWindowHost"/>. Content drawn in the host
+    /// loses the cascading values (an <c>EditContext</c> from an <c>EditForm</c> around the window), the inherited CSS and the
+    /// event bubbling of the place it was declared in; an inline window keeps them.
+    /// </summary>
+    [Parameter] public bool Inline { get; set; }
 
     // ── Attributes ────────────────────────────────────────────────────────────
 
@@ -226,6 +246,22 @@ public partial class NxWindow : IAsyncDisposable
             lastMaximized = Maximized;
             maximized = Maximized;
         }
+        // Without AddNxDialogs or a host in the layout the window is drawn in place. An open window that changes
+        // place gets new elements, so it is closed and opened again in JS.
+        var target = Inline ? null : Services.GetService<NxWindowHostState>()?.Host;
+        if (target != host)
+        {
+            host?.Remove(this);
+            host = target;
+            host?.Add(this);
+            outlet = null;
+            shownInHost = false;
+            if (jsOpen)
+            {
+                closePending = true;
+                openPending = Visible;
+            }
+        }
         if (Visible && !jsOpen)
             openPending = true;
         else if (!Visible && jsOpen)
@@ -278,6 +314,49 @@ public partial class NxWindow : IAsyncDisposable
     [JSInvokable]
     public Task OnEscape() => InvokeAsync(CloseAsync);
 
+    /// <summary>Called by nx-window.js when a drag or resize moved the window. Not for application use.</summary>
+    [JSInvokable]
+    public Task NotifyMoved(int left, int top) => InvokeAsync(() => OnMoved.InvokeAsync(new NxWindowMovedEventArgs(left, top)));
+
+    /// <summary>Called by nx-window.js when a resize ends. Not for application use.</summary>
+    [JSInvokable]
+    public Task NotifyResized(int width, int height) => InvokeAsync(() => OnResized.InvokeAsync(new NxWindowResizedEventArgs(width, height)));
+
+    /// <summary>The host gave the window its place there.</summary>
+    internal void Attach(NxWindowOutlet place) => outlet = place;
+
+    // Opening and closing add and remove the outlet, which is the host's to render; in between only the outlet
+    // is redrawn. Redrawing the whole host instead would never end for a window declared inside another: the outer
+    // one's content would hand the inner one new parameters, and that one would ask for the host again.
+    private void RefreshHost()
+    {
+        if (Visible != shownInHost)
+        {
+            shownInHost = Visible;
+            if (!Visible)
+                outlet = null;
+            host!.Refresh();
+        }
+        else if (Visible)
+        {
+            outlet?.Refresh();
+        }
+    }
+
+    /// <summary>The window's markup, for its outlet in <see cref="NxWindowHost"/>.</summary>
+    internal void RenderInHost(RenderTreeBuilder builder)
+    {
+        drawingInHost = true;
+        try
+        {
+            BuildRenderTree(builder);
+        }
+        finally
+        {
+            drawingInHost = false;
+        }
+    }
+
     // ── Event handlers ────────────────────────────────────────────────────────
 
     private Task HandleCloseClick() => CloseAsync();
@@ -309,6 +388,7 @@ public partial class NxWindow : IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        host?.Remove(this);
         if (module is not null)
         {
             try
@@ -317,7 +397,7 @@ public partial class NxWindow : IAsyncDisposable
                     await module.InvokeVoidAsync("close", WindowId);
                 await module.DisposeAsync();
             }
-            catch (JSDisconnectedException)
+            catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
             {
                 // The circuit is gone; the browser cleaned up with it.
             }

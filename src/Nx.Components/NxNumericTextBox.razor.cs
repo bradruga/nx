@@ -294,7 +294,10 @@ public partial class NxNumericTextBox<TValue> : IAsyncDisposable
         {
             module = await JS.InvokeAsync<IJSObjectReference>("import", ModulePath);
             if (module is not null)
+            {
                 await module.InvokeVoidAsync("preventKeys", input, new[] { "ArrowUp", "ArrowDown", "PageUp", "PageDown" });
+                await module.InvokeVoidAsync("escapeClears", input);
+            }
             if (AutoFocus)
                 await input.FocusAsync();
         }
@@ -436,7 +439,7 @@ public partial class NxNumericTextBox<TValue> : IAsyncDisposable
             await module.InvokeVoidAsync("dispose", input);
             await module.DisposeAsync();
         }
-        catch (JSDisconnectedException)
+        catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
         {
             // The circuit is gone; the browser cleaned up with it.
         }

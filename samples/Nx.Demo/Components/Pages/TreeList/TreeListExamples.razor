@@ -11,8 +11,8 @@
             <NxTreeList Id="detail-tree" TItem="YardLocation" Data="DemoYard.Locations" ItemId="l => l.ResourceId" ParentId="l => l.CurrentContainerId"
                         @bind-SelectedItem="picked" Height="100%" AriaLabel="Locations">
                 <Columns>
-                    <NxTreeListColumn Field="@nameof(YardLocation.Name)" Title="Location" Width="160px" />
-                    <NxTreeListColumn Field="@nameof(YardLocation.AggregatePieceCount)" Title="# Pieces" Width="90px" />
+                    <NxTreeListColumn Value="l => l.Name" Title="Location" Width="160px" />
+                    <NxTreeListColumn Value="l => l.AggregatePieceCount" Title="# Pieces" Width="90px" />
                 </Columns>
             </NxTreeList>
             <div class="demo-treelist-detail" id="detail-panel">
@@ -39,20 +39,20 @@
     @* code *@
     <div class="demo-stage demo-stage-column">
         <div class="demo-row">
-            <NxButton id="expand-all" Size="NxButtonSize.Small" OnClick="() => templated!.ExpandAllAsync()">Expand all</NxButton>
-            <NxButton id="collapse-all" Size="NxButtonSize.Small" OnClick="() => templated!.CollapseAllAsync()">Collapse all</NxButton>
+            <NxButton id="expand-all" Size="NxSize.Small" OnClick="() => templated!.ExpandAllAsync()">Expand all</NxButton>
+            <NxButton id="collapse-all" Size="NxSize.Small" OnClick="() => templated!.CollapseAllAsync()">Collapse all</NxButton>
         </div>
         <NxTreeList @ref="templated" Id="template-tree" Data="DemoYard.Locations" ItemId="l => l.ResourceId" ParentId="l => l.CurrentContainerId"
                     SelectionMode="NxTreeSelectionMode.None" Height="300px" AriaLabel="Yard capacity" Style="width:100%">
             <Columns>
-                <NxTreeListColumn Field="@nameof(YardLocation.Name)" Title="Location" Width="180px" />
-                <NxTreeListColumn Field="@nameof(YardLocation.Kind)" Title="Kind" Width="80px" />
+                <NxTreeListColumn Value="l => l.Name" Title="Location" Width="180px" />
+                <NxTreeListColumn Value="l => l.Kind" Title="Kind" Width="80px" />
                 <NxTreeListColumn Title="Fill" Width="140px">
                     <Template>
                         <NxProgressBar Value="@Math.Min(100, context.AggregatePieceCount * 100.0 / Capacity(context))" Thin="true" AriaLabel="@($"{context.Name} fill")" />
                     </Template>
                 </NxTreeListColumn>
-                <NxTreeListColumn Field="@nameof(YardLocation.AggregatePieceCount)" Title="# Pieces" Width="80px" />
+                <NxTreeListColumn Value="l => l.AggregatePieceCount" Title="# Pieces" Width="80px" />
             </Columns>
         </NxTreeList>
     </div>
@@ -69,8 +69,8 @@
                     SelectionMode="NxTreeSelectionMode.Multiple" @bind-SelectedItems="several" ExpandedItems="openYard"
                     Height="260px" AriaLabel="Bays to clear" Style="width:100%; max-width:440px">
             <Columns>
-                <NxTreeListColumn Field="@nameof(YardLocation.Name)" Title="Location" Width="200px" />
-                <NxTreeListColumn Field="@nameof(YardLocation.AggregatePieceCount)" Title="# Pieces" Width="100px" />
+                <NxTreeListColumn Value="l => l.Name" Title="Location" Width="200px" />
+                <NxTreeListColumn Value="l => l.AggregatePieceCount" Title="# Pieces" Width="100px" />
             </Columns>
         </NxTreeList>
         <span class="demo-value" id="multi-value">@(several.Any() ? string.Join(", ", several.Select(l => l.Name)) : "Nothing selected")</span>
@@ -86,8 +86,8 @@
         <NxTreeList Id="empty-tree" TItem="YardLocation" Data="Array.Empty<YardLocation>()" ItemId="l => l.ResourceId" ParentId="l => l.CurrentContainerId"
                     NoDataText="No locations in this yard" Height="120px" Style="width:100%; max-width:440px">
             <Columns>
-                <NxTreeListColumn Field="@nameof(YardLocation.Name)" Title="Location" Width="200px" />
-                <NxTreeListColumn Field="@nameof(YardLocation.AggregatePieceCount)" Title="# Pieces" Width="100px" />
+                <NxTreeListColumn Value="l => l.Name" Title="Location" Width="200px" />
+                <NxTreeListColumn Value="l => l.AggregatePieceCount" Title="# Pieces" Width="100px" />
             </Columns>
         </NxTreeList>
     </div>

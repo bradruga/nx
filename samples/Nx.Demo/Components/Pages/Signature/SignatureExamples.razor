@@ -43,8 +43,8 @@
     @* code *@
     <div class="demo-stage demo-stage-column">
         <div class="demo-row">
-            <NxButton id="load-signature" Size="NxButtonSize.Small" OnClick="() => stored = Saved">Load a saved signature</NxButton>
-            <NxButton id="clear-stored" Size="NxButtonSize.Small" OnClick="() => stored = null">Clear</NxButton>
+            <NxButton id="load-signature" Size="NxSize.Small" OnClick="() => stored = Saved">Load a saved signature</NxButton>
+            <NxButton id="clear-stored" Size="NxSize.Small" OnClick="() => stored = null">Clear</NxButton>
         </div>
         <NxSignature Id="readonly-signature" Value="@stored" ReadOnly="true" AriaLabel="Approved by" />
         <NxSignature Id="disabled-signature" Disabled="true" AriaLabel="Locked signature" />

@@ -403,4 +403,205 @@ public class WindowTests : PageTest
         await window.Locator(".nx-window-close").TapAsync();
         await Expect(window).ToHaveCountAsync(0);
     }
+
+    // ── NxWindowHost (the demo's layout has one) ──────────────────────────────
+
+    private Task<bool> InsideAsync(string id, string ancestor) =>
+        Window(id).EvaluateAsync<bool>("(w, selector) => w.closest(selector) !== null", ancestor);
+
+    [Test]
+    public async Task Host_WindowUnderATransformedAncestor_IsCenteredAndNotClipped()
+    {
+        await GoToPage();
+
+        await Page.Locator("#open-hosted").ScrollIntoViewIfNeededAsync();
+        await Page.Locator("#open-hosted").ClickAsync();
+        await Expect(Window("hosted-window")).ToBeVisibleAsync();
+        await Settled("hosted-window");
+
+        // Declared inside the transformed, clipping panel; drawn outside it, in the layout's host.
+        Assert.That(await InsideAsync("hosted-window", "#host-panel"), Is.False);
+        var box = (await Window("hosted-window").BoundingBoxAsync())!;
+        var area = await FixedArea.SizeAsync(Page);
+        Assert.That(box.X + box.Width / 2, Is.EqualTo(area.Width / 2).Within(2));
+        Assert.That(box.Y + box.Height / 2, Is.EqualTo(area.Height / 2).Within(2));
+
+        // Every corner of it is on top: nothing cut off by the panel.
+        var corners = await Window("hosted-window").EvaluateAsync<bool[]>(
+            """
+            w => {
+                const b = w.getBoundingClientRect();
+                return [[b.left + 3, b.top + 3], [b.right - 3, b.top + 3], [b.left + 3, b.bottom - 3], [b.right - 3, b.bottom - 3]]
+                    .map(([x, y]) => w.contains(document.elementFromPoint(x, y)));
+            }
+            """);
+        Assert.That(corners, Is.All.True);
+        Assert.That(await ScrollLockedAsync(), Is.True);
+
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(Window("hosted-window")).ToHaveCountAsync(0);
+        await Expect(Page.Locator("#open-hosted")).ToBeFocusedAsync();
+        Assert.That(await ScrollLockedAsync(), Is.False);
+    }
+
+    [Test]
+    public async Task Host_ExamplesAreDrawnInTheHost_NestedOnesSideBySide()
+    {
+        await GoToPage();
+
+        await Page.Locator("#open-outer").ScrollIntoViewIfNeededAsync();
+        await Page.Locator("#open-outer").ClickAsync();
+        await Page.Locator("#open-inner").ClickAsync();
+        await Expect(Window("inner-window")).ToBeVisibleAsync();
+
+        Assert.That(await InsideAsync("outer-window", ".main-content"), Is.False);
+        Assert.That(await InsideAsync("inner-window", "#outer-window"), Is.False);
+        Assert.That(await ZAsync("inner-window"), Is.GreaterThan(await ZAsync("outer-window")));
+    }
+
+    [Test]
+    public async Task Host_LeavingThePageWithAWindowOpen_TakesItOutOfTheHost()
+    {
+        await GoToPage();
+
+        await Page.Locator("#open-modal").ClickAsync();
+        await Expect(Window("modal-window")).ToBeVisibleAsync();
+        await Page.Keyboard.PressAsync("Escape");
+        await Page.Locator("#open-a").ClickAsync();
+        await Expect(Window("window-a")).ToBeVisibleAsync();
+
+        // The layout, and the host in it, stay; the page and its windows go.
+        await Page.Locator("a.doc-tab[href='window/overview']").ClickAsync();
+        await Expect(Page.Locator("#overview-open")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".nx-window")).ToHaveCountAsync(0);
+        await Expect(Page.Locator("#blazor-error-ui")).ToBeHiddenAsync();
+
+        await Page.Locator("#overview-open").ClickAsync();
+        await Expect(Window("overview-window")).ToBeVisibleAsync();
+        await Expect(Page.Locator("#overview-name")).ToBeFocusedAsync();
+    }
+
+    [Test]
+    public async Task Inline_StaysWhereItIsDeclared_AndStillWorks()
+    {
+        await GoToPage("playground");
+
+        await Page.Locator("#pg-open").ClickAsync();
+        await Expect(Window("playground-window")).ToBeVisibleAsync();
+        Assert.That(await InsideAsync("playground-window", ".demo-preview-inner"), Is.False);
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(Window("playground-window")).ToHaveCountAsync(0);
+
+        await Page.Locator("#pg-inline").CheckAsync();
+        await Page.Locator("#pg-open").ClickAsync();
+        await Expect(Window("playground-window")).ToBeVisibleAsync();
+        Assert.That(await InsideAsync("playground-window", ".demo-preview-inner"), Is.True);
+        await Expect(Page.Locator("#pg-field")).ToBeFocusedAsync();
+        Assert.That(await ScrollLockedAsync(), Is.True);
+
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(Window("playground-window")).ToHaveCountAsync(0);
+        await Expect(Page.Locator("#pg-open")).ToBeFocusedAsync();
+        Assert.That(await ScrollLockedAsync(), Is.False);
+    }
+
+    [Test]
+    public async Task Inline_ToggledWhileOpen_MovesTheOpenWindow()
+    {
+        await GoToPage("playground");
+
+        await Page.Locator("#pg-modal").UncheckAsync();
+        await Page.Locator("#pg-open").ClickAsync();
+        await Expect(Window("playground-window")).ToBeVisibleAsync();
+
+        await Page.Locator("#pg-inline").CheckAsync();
+        await Expect(Page.Locator(".demo-preview-inner #playground-window")).ToBeVisibleAsync();
+        await Page.Locator("#pg-inline").UncheckAsync();
+        await Expect(Page.Locator(".demo-preview-inner #playground-window")).ToHaveCountAsync(0);
+        await Expect(Window("playground-window")).ToBeVisibleAsync();
+
+        // Still the one open window to nx-window.js: its close button works and nothing is left locked.
+        await Window("playground-window").Locator(".nx-window-close").ClickAsync();
+        await Expect(Window("playground-window")).ToHaveCountAsync(0);
+        Assert.That(await ScrollLockedAsync(), Is.False);
+    }
+
+    // ── OnMoved and OnResized ─────────────────────────────────────────────────
+
+    [Test]
+    public async Task MovedAndResized_AreReported_AndASavedPlaceIsRestored()
+    {
+        await GoToPage();
+
+        await Page.Locator("#open-saved").ScrollIntoViewIfNeededAsync();
+        await Expect(Page.Locator("#saved-place")).ToHaveTextAsync("Position: centered");
+        await Page.Locator("#open-saved").ClickAsync();
+        await Settled("saved-window");
+
+        // A click on the title bar that moves nothing reports nothing.
+        await Window("saved-window").Locator(".nx-window-title").ClickAsync();
+        await Expect(Page.Locator("#saved-place")).ToHaveTextAsync("Position: centered");
+
+        var bar = (await Window("saved-window").Locator(".nx-window-titlebar").BoundingBoxAsync())!;
+        await Page.Mouse.MoveAsync(bar.X + 60, bar.Y + 20);
+        await Page.Mouse.DownAsync();
+        await Page.Mouse.MoveAsync(bar.X - 60, bar.Y - 40, new() { Steps = 5 });
+        await Page.Mouse.UpAsync();
+        await Settled("saved-window");
+        var moved = (await Window("saved-window").BoundingBoxAsync())!;
+        await Expect(Page.Locator("#saved-place")).ToHaveTextAsync($"Position: {Math.Round(moved.X)}px, {Math.Round(moved.Y)}px");
+        await Expect(Page.Locator("#saved-size")).ToHaveTextAsync("Size: default");
+
+        var handle = (await Window("saved-window").Locator(".nx-window-resize-se").BoundingBoxAsync())!;
+        await Page.Mouse.MoveAsync(handle.X + 7, handle.Y + 7);
+        await Page.Mouse.DownAsync();
+        await Page.Mouse.MoveAsync(handle.X + 87, handle.Y + 47, new() { Steps = 5 });
+        await Page.Mouse.UpAsync();
+        await Settled("saved-window");
+        var resized = (await Window("saved-window").BoundingBoxAsync())!;
+        Assert.That(resized.Width - moved.Width, Is.EqualTo(80).Within(2));
+        await Expect(Page.Locator("#saved-size")).ToHaveTextAsync($"Size: {Math.Round(resized.Width)}px × {Math.Round(resized.Height)}px");
+
+        // Pulling the top-left corner resizes and moves: both are reported.
+        handle = (await Window("saved-window").Locator(".nx-window-resize-nw").BoundingBoxAsync())!;
+        await Page.Mouse.MoveAsync(handle.X + 7, handle.Y + 7);
+        await Page.Mouse.DownAsync();
+        await Page.Mouse.MoveAsync(handle.X - 13, handle.Y - 3, new() { Steps = 5 });
+        await Page.Mouse.UpAsync();
+        await Settled("saved-window");
+        var last = (await Window("saved-window").BoundingBoxAsync())!;
+        Assert.That(last.X - resized.X, Is.EqualTo(-20).Within(2));
+        await Expect(Page.Locator("#saved-place")).ToHaveTextAsync($"Position: {Math.Round(last.X)}px, {Math.Round(last.Y)}px");
+        await Expect(Page.Locator("#saved-size")).ToHaveTextAsync($"Size: {Math.Round(last.Width)}px × {Math.Round(last.Height)}px");
+
+        await Window("saved-window").Locator(".nx-window-close").ClickAsync();
+        await Expect(Window("saved-window")).ToHaveCountAsync(0);
+        await Page.Locator("#open-saved").ClickAsync();
+        await Settled("saved-window");
+
+        var reopened = (await Window("saved-window").BoundingBoxAsync())!;
+        Assert.That(reopened.X, Is.EqualTo(last.X).Within(1));
+        Assert.That(reopened.Y, Is.EqualTo(last.Y).Within(1));
+        Assert.That(reopened.Width, Is.EqualTo(last.Width).Within(1));
+        Assert.That(reopened.Height, Is.EqualTo(last.Height).Within(1));
+    }
+
+    [Test]
+    public async Task Playground_ShowsOnMoved()
+    {
+        await GoToPage("playground");
+
+        await Page.Locator("#pg-open").ClickAsync();
+        await Settled("playground-window");
+        var bar = (await Window("playground-window").Locator(".nx-window-titlebar").BoundingBoxAsync())!;
+        await Page.Mouse.MoveAsync(bar.X + 80, bar.Y + 20);
+        await Page.Mouse.DownAsync();
+        await Page.Mouse.MoveAsync(bar.X + 120, bar.Y + 50, new() { Steps = 4 });
+        await Page.Mouse.UpAsync();
+        await Settled("playground-window");
+
+        var box = (await Window("playground-window").BoundingBoxAsync())!;
+        await Expect(Page.Locator("#playground-moved")).ToHaveTextAsync($"OnMoved: {Math.Round(box.X)}, {Math.Round(box.Y)}");
+        await Expect(Page.Locator("#playground-resized")).ToHaveTextAsync("OnResized: —");
+    }
 }

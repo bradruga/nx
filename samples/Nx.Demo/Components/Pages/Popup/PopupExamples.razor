@@ -17,8 +17,8 @@
         </div>
         <NxPopup Id="filter-popup" @bind-Visible="filterOpen" AnchorSelector="#mix-filter" Align="NxPopupAlign.End" Width="240px" AriaLabel="Filter Mix">
             <div class="demo-popup-body">
-                <NxButton Variant="NxButtonVariant.Ghost" Size="NxButtonSize.Small" OnClick="() => Sort(false)">Sort A to Z</NxButton>
-                <NxButton Variant="NxButtonVariant.Ghost" Size="NxButtonSize.Small" OnClick="() => Sort(true)">Sort Z to A</NxButton>
+                <NxButton Variant="NxButtonVariant.Ghost" Size="NxSize.Small" OnClick="() => Sort(false)">Sort A to Z</NxButton>
+                <NxButton Variant="NxButtonVariant.Ghost" Size="NxSize.Small" OnClick="() => Sort(true)">Sort Z to A</NxButton>
                 <NxTextBox Id="filter-search" @bind-Value="search" Immediate="true" Placeholder="Search" aria-label="Search values" />
                 @foreach (var mix in Mixes.Where(m => string.IsNullOrEmpty(search) || m.Contains(search, StringComparison.OrdinalIgnoreCase)))
                 {
@@ -41,7 +41,7 @@
             @foreach (var placement in Enum.GetValues<NxPopupPlacement>())
             {
                 var p = placement;
-                <NxButton id="@($"place-{p.ToString().ToLowerInvariant()}")" Size="NxButtonSize.Small"
+                <NxButton id="@($"place-{p.ToString().ToLowerInvariant()}")" Size="NxSize.Small"
                           Variant="@(shown == p ? NxButtonVariant.Primary : NxButtonVariant.Secondary)" OnClick="() => Show(p)">@p</NxButton>
             }
         </div>
@@ -49,7 +49,7 @@
             @foreach (var align in Enum.GetValues<NxPopupAlign>())
             {
                 var a = align;
-                <NxButton Size="NxButtonSize.Small" Variant="@(alignment == a ? NxButtonVariant.Primary : NxButtonVariant.Secondary)" OnClick="() => alignment = a">@a</NxButton>
+                <NxButton Size="NxSize.Small" Variant="@(alignment == a ? NxButtonVariant.Primary : NxButtonVariant.Secondary)" OnClick="() => alignment = a">@a</NxButton>
             }
         </div>
         <div class="demo-popup-target-wrap">
@@ -75,7 +75,7 @@
             <div class="demo-popup-body">
                 <div class="demo-row" style="justify-content:space-between">
                     <strong>Wall panel WP-12</strong>
-                    <NxButton id="card-close" Variant="NxButtonVariant.Ghost" Size="NxButtonSize.Small" AriaLabel="Close" Icon="@CloseIcon" OnClick="() => cardOpen = false" />
+                    <NxButton id="card-close" Variant="NxButtonVariant.Ghost" Size="NxSize.Small" AriaLabel="Close" Icon="@CloseIcon" OnClick="() => cardOpen = false" />
                 </div>
                 <span>Route 9 Bridge · 14 ft × 8 ft</span>
                 <span>Poured 11/10 · stripped 11/11</span>

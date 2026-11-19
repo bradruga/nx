@@ -2,14 +2,15 @@ namespace Nx.Components;
 
 /// <summary>
 /// Passed to <see cref="NxGantt{TItem}.OnUpdate"/> after any edit, as NxGrid's update args. A dragged bar has not
-/// touched the item: apply the <see cref="Changes"/> (or your own dates) and save. A cell's editor has already written it.
+/// touched the item: write <see cref="Start"/> and <see cref="End"/> (or your own dates) and save. A cell's editor has already written it.
 /// </summary>
 /// <typeparam name="TItem">The task type.</typeparam>
 /// <example>
 /// <code>
 /// async Task SaveAsync(NxGanttUpdateArgs&lt;Job&gt; args)
 /// {
-///     args.Apply();
+///     if (args.Start is { } start) args.Item.Start = start;
+///     if (args.End is { } end) args.Item.End = end;
 ///     await db.SaveAsync(args.Item);
 /// }
 /// </code>
@@ -22,13 +23,15 @@ public sealed class NxGanttUpdateArgs<TItem>
     /// <summary>What the user did.</summary>
     public required NxGanttUpdateKind Kind { get; init; }
 
-    /// <summary>The properties that change: the start and end for a drag, the column's field for a cell.</summary>
-    public required IReadOnlyList<NxGanttChange<TItem>> Changes { get; init; }
+    /// <summary>The start a dragged bar asks for; <c>null</c> when it stays.</summary>
+    public DateTime? Start { get; init; }
 
-    /// <summary>Writes every change to <see cref="Item"/>.</summary>
-    public void Apply()
-    {
-        foreach (var change in Changes)
-            change.Apply(Item);
-    }
+    /// <summary>The end a dragged bar asks for; <c>null</c> when it stays.</summary>
+    public DateTime? End { get; init; }
+
+    /// <summary>For a cell: its column's value before the edit.</summary>
+    public object? OldValue { get; init; }
+
+    /// <summary>For a cell: its column's value now; equal to <see cref="OldValue"/> when nothing changed.</summary>
+    public object? NewValue { get; init; }
 }

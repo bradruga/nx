@@ -49,6 +49,27 @@ public class FormTests : PageTest
     }
 
     [Test]
+    public async Task NestedFields_EditAndValidateTheirOwnObject()
+    {
+        await GoToPage();
+
+        var siteState = Page.Locator("#nested-form-Site-State");
+        await Expect(siteState).ToHaveValueAsync("ND");
+        await Expect(Page.Locator("#nested-form-Billing-State")).ToHaveValueAsync("MN");
+
+        await siteState.FillAsync("North Dakota");
+        await Page.Keyboard.PressAsync("Tab");
+
+        await Expect(Page.Locator(".nx-form-item:has(#nested-form-Site-State) .nx-validation-message")).ToHaveTextAsync("Two letters.");
+        await Expect(siteState).ToHaveAttributeAsync("aria-invalid", "true");
+        await Expect(Page.Locator(".nx-form-item:has(#nested-form-Billing-State) .nx-validation-message")).ToHaveCountAsync(0);
+
+        // Two "State" labels, two ids: each label focuses its own editor.
+        await Page.Locator("#nested-form .nx-form-label", new() { HasText = "State" }).Nth(1).ClickAsync();
+        await Expect(Page.Locator("#nested-form-Billing-State")).ToBeFocusedAsync();
+    }
+
+    [Test]
     public async Task Columns_ThirdsAndHalves_OnADesktop()
     {
         await Page.SetViewportSizeAsync(1280, 900);

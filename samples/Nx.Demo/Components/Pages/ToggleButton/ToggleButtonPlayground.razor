@@ -49,7 +49,7 @@
             <label class="demo-control">
                 <span>Size</span>
                 <select id="pg-size" @bind="pgSize">
-                    @foreach (var s in Enum.GetValues<NxButtonSize>())
+                    @foreach (var s in Enum.GetValues<NxSize>())
                     {
                         <option value="@s">@s</option>
                     }
@@ -74,7 +74,7 @@
     bool pgSelected, pgDisabled, pgIcon = true, pgIconOnly, pgFullWidth;
     string pgText = "Hide unused forms", pgTitle = "";
     NxButtonVariant pgVariant = NxButtonVariant.Secondary;
-    NxButtonSize pgSize = NxButtonSize.Medium;
+    NxSize pgSize = NxSize.Medium;
     int pgChanges;
 
     string PlaygroundCode
@@ -83,7 +83,7 @@
         {
             var attrs = new List<string> { "@bind-Selected=\"hideUnused\"" };
             if (pgVariant != NxButtonVariant.Secondary) attrs.Add($"Variant=\"NxButtonVariant.{pgVariant}\"");
-            if (pgSize != NxButtonSize.Medium) attrs.Add($"Size=\"NxButtonSize.{pgSize}\"");
+            if (pgSize != NxSize.Medium) attrs.Add($"Size=\"NxSize.{pgSize}\"");
             if (pgIcon || pgIconOnly) attrs.Add("Icon=\"@eye\"");
             if (pgIconOnly) attrs.Add("AriaLabel=\"Show hidden\"");
             if (OrNull(pgTitle) is { } t) attrs.Add($"Title=\"{t}\"");

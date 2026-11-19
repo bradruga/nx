@@ -10,9 +10,9 @@
     /* Its width comes from its container, never from its buttons: what does not fit overflows. */
     contain: inline-size;
     padding: var(--nx-toolbar-padding);
-    border: 1px solid var(--nx-toolbar-border);
+    border: 1px solid var(--nx-toolbar-border, var(--nx-border));
     border-radius: var(--nx-radius);
-    background: var(--nx-toolbar-bg);
+    background: var(--nx-toolbar-bg, var(--nx-surface));
     /* Overflowed items are laid out invisible to be measured; the clip margin keeps focus rings whole. */
     overflow: clip;
     overflow-clip-margin: 4px;

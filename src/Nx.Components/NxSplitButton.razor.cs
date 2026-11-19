@@ -41,8 +41,8 @@ public partial class NxSplitButton : IAsyncDisposable
     /// <summary>Visual style of both halves, as NxButton. Default: <see cref="NxButtonVariant.Secondary"/>.</summary>
     [Parameter] public NxButtonVariant Variant { get; set; } = NxButtonVariant.Secondary;
 
-    /// <summary>Size, as NxButton. Default: <see cref="NxButtonSize.Medium"/>.</summary>
-    [Parameter] public NxButtonSize Size { get; set; } = NxButtonSize.Medium;
+    /// <summary>Size, as NxButton. Default: <see cref="NxSize.Medium"/>.</summary>
+    [Parameter] public NxSize Size { get; set; } = NxSize.Medium;
 
     /// <summary>Shows the primary action's loading state, as NxButton.</summary>
     [Parameter] public bool Loading { get; set; }
@@ -127,7 +127,7 @@ public partial class NxSplitButton : IAsyncDisposable
             await inputModule.InvokeVoidAsync("dispose", anchor);
             await inputModule.DisposeAsync();
         }
-        catch (JSDisconnectedException)
+        catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
         {
             // The circuit is gone; the browser cleaned up with it.
         }

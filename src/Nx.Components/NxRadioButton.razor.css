@@ -14,7 +14,7 @@
     width: var(--nx-check-size);
     height: var(--nx-check-size);
     margin: calc((20px - var(--nx-check-size)) / 2) 0 0;
-    border: 1.5px solid var(--nx-check-border);
+    border: 1.5px solid var(--nx-check-border, var(--nx-border-hover));
     border-radius: 50%;
     background: var(--nx-surface);
     cursor: pointer;
@@ -45,4 +45,4 @@
 .nx-radio-disabled .nx-radio-input,
 .nx-radio-disabled .nx-radio-label { cursor: not-allowed; }
 
-.nx-radio-invalid .nx-radio-input { border-color: var(--nx-invalid); }
+.nx-radio-invalid .nx-radio-input { border-color: var(--nx-invalid, var(--nx-danger)); }

@@ -1,6 +1,6 @@
 namespace Nx.Components;
 
-/// <summary>How an <see cref="NxChartSeries"/> is drawn.</summary>
+/// <summary>How an <see cref="NxChartSeries{TItem}"/> is drawn.</summary>
 public enum NxChartSeriesType
 {
     /// <summary>Points joined by straight lines, with markers.</summary>

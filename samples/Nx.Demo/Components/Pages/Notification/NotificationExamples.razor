@@ -10,7 +10,7 @@
         <div class="demo-row">
             @foreach (var type in Enum.GetValues<NxNotificationType>())
             {
-                <NxButton id="@($"type-{type}")" Size="NxButtonSize.Small" OnClick="() => ShowType(type)">@type</NxButton>
+                <NxButton id="@($"type-{type}")" Size="NxSize.Small" OnClick="() => ShowType(type)">@type</NxButton>
             }
         </div>
     </div>
@@ -27,11 +27,11 @@
     @* code *@
     <div class="demo-stage">
         <div class="demo-row">
-            <NxButton id="timing-short" Size="NxButtonSize.Small" OnClick="ShowShort">1.5 seconds</NxButton>
-            <NxButton id="timing-sticky" Size="NxButtonSize.Small" OnClick="ShowSticky">Until closed</NxButton>
-            <NxButton id="timing-text" Size="NxButtonSize.Small" OnClick='() => notification?.Show("Copied to the clipboard")'>Show(text)</NxButton>
-            <NxButton id="timing-not-closable" Size="NxButtonSize.Small" OnClick="ShowNotClosable">No close button</NxButton>
-            <NxButton id="timing-hide-all" Size="NxButtonSize.Small" Variant="NxButtonVariant.Ghost" OnClick="() => notification?.HideAll()">Hide all</NxButton>
+            <NxButton id="timing-short" Size="NxSize.Small" OnClick="ShowShort">1.5 seconds</NxButton>
+            <NxButton id="timing-sticky" Size="NxSize.Small" OnClick="ShowSticky">Until closed</NxButton>
+            <NxButton id="timing-text" Size="NxSize.Small" OnClick='() => notification?.Show("Copied to the clipboard")'>Show(text)</NxButton>
+            <NxButton id="timing-not-closable" Size="NxSize.Small" OnClick="ShowNotClosable">No close button</NxButton>
+            <NxButton id="timing-hide-all" Size="NxSize.Small" Variant="NxButtonVariant.Ghost" OnClick="() => notification?.HideAll()">Hide all</NxButton>
         </div>
     </div>
     @* /code *@
@@ -51,7 +51,7 @@
             {
                 @foreach (var horizontal in Enum.GetValues<NxNotificationHorizontalPosition>())
                 {
-                    <NxButton id="@($"position-{vertical}-{horizontal}")" Size="NxButtonSize.Small" OnClick="() => ShowAt(vertical, horizontal)">
+                    <NxButton id="@($"position-{vertical}-{horizontal}")" Size="NxSize.Small" OnClick="() => ShowAt(vertical, horizontal)">
                         @vertical @horizontal
                     </NxButton>
                 }
@@ -67,7 +67,7 @@
     <p class="doc-note"><code>MaxVisible</code> (5) caps the stack; a sixth message closes the oldest.</p>
     @* code *@
     <div class="demo-stage">
-        <NxButton id="many-burst" Size="NxButtonSize.Small" OnClick="Burst">Show 8</NxButton>
+        <NxButton id="many-burst" Size="NxSize.Small" OnClick="Burst">Show 8</NxButton>
     </div>
     @* /code *@
     <DocExampleCode Key="many-at-once" />

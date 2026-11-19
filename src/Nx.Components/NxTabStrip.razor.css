@@ -95,13 +95,13 @@
 .nx-tabstrip-tab { --nx-focus-ring-offset: -3px; }
 
 .nx-tabstrip-tab-active,
-.nx-tabstrip-tab-active:hover { color: var(--nx-tab-active-fg); }
+.nx-tabstrip-tab-active:hover { color: var(--nx-tab-active-fg, var(--nx-accent)); }
 
 /* The active indicator: a bar on the side that faces the content. */
 .nx-tabstrip-tab-active::after {
     content: "";
     position: absolute;
-    background: var(--nx-tab-indicator);
+    background: var(--nx-tab-indicator, var(--nx-accent));
     border-radius: 2px;
 }
 .nx-tabstrip-top .nx-tabstrip-tab-active::after    { left: 8px; right: 8px; bottom: -1px; height: 2px; }
@@ -157,7 +157,7 @@
 }
 .nx-tabstrip-panel[hidden] { display: none; }
 .nx-tabstrip-panel:focus { outline: none; }
-.nx-tabstrip-panel:focus-visible { outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color); outline-offset: -2px; }
+.nx-tabstrip-panel:focus-visible { outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color, var(--nx-accent)); outline-offset: -2px; }
 
 @media (prefers-reduced-motion: reduce) {
     .nx-tabstrip-tab { transition: none; }

@@ -63,6 +63,22 @@
 </div>
 
 <div class="doc-section">
+    <h2>DateTimeOffset</h2>
+    <p class="doc-note">
+        Bound to <code>DateTimeOffset</code>, each end keeps its own time of day and offset. An end that starts empty takes the
+        offset of the browser's time zone on the date picked, as in <code>NxDatePicker</code>.
+    </p>
+    @* code *@
+    <div class="demo-stage demo-stage-column" style="max-width:560px">
+        <NxDateRangePicker Id="range-offset" @bind-StartValue="offsetFrom" @bind-EndValue="offsetTo" StartLabel="Departs (+01:00)" EndLabel="Returns"
+                           Clearable="true" Culture="EnUs" />
+        <div class="demo-row"><span class="demo-value" id="range-offset-value">Range: <strong>@(offsetFrom?.ToString("yyyy-MM-dd HH:mm zzz") ?? "null") → @(offsetTo?.ToString("yyyy-MM-dd HH:mm zzz") ?? "null")</strong></span></div>
+    </div>
+    @* /code *@
+    <DocExampleCode Key="datetimeoffset" />
+</div>
+
+<div class="doc-section">
     <h2>State</h2>
     @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:560px">
@@ -122,6 +138,7 @@
     DateOnly? typedFrom = new(2026, 10, 5), typedTo = new(2026, 10, 9);
     DateOnly? limitFrom, limitTo;
     DateTime dtFrom = new(2026, 11, 2, 15, 0, 0), dtTo = new(2026, 11, 6, 11, 0, 0);
+    DateTimeOffset? offsetFrom = new DateTimeOffset(2026, 11, 2, 6, 40, 0, TimeSpan.FromHours(1)), offsetTo;
     DateOnly? sheetFrom, sheetTo;
 
     readonly LeaveForm leave = new();

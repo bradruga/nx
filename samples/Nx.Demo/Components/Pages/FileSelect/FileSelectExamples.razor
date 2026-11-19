@@ -39,7 +39,7 @@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxFileSelect @ref="limited" Id="limit-files" OnSelect="Limit" />
         <span class="demo-value" id="limit-result">@limitMessage</span>
-        <NxButton id="limit-clear" Size="NxButtonSize.Small" OnClick="() => limited?.ClearFiles()">Clear list</NxButton>
+        <NxButton id="limit-clear" Size="NxSize.Small" OnClick="() => limited?.ClearFiles()">Clear list</NxButton>
     </div>
     @* /code *@
     <DocExampleCode Key="refusing-a-pick" />

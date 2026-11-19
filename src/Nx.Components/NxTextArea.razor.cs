@@ -19,7 +19,7 @@ namespace Nx.Components;
 public partial class NxTextArea : IAsyncDisposable
 {
     // ── JS interop ────────────────────────────────────────────────────────────
-    // nx-input.js grows the textarea with its text (AutoResize). Everything else is the NxTextBox model.
+    // nx-input.js grows the textarea with its text (AutoResize) and marks the Escape that clears as used. Everything else is the NxTextBox model.
 
     private const string ModulePath = "./_content/Nx.Components/nx-input.js";
 
@@ -28,6 +28,7 @@ public partial class NxTextArea : IAsyncDisposable
     private readonly FieldValidation validation;
     private readonly string generatedId = $"nx-textarea-{Guid.NewGuid():N}"[..21];
     private IJSObjectReference? module;
+    private bool escapeApplied;
     private ElementReference textarea;
     private CancellationTokenSource? debounce;
     private string currentText = "";
@@ -89,7 +90,7 @@ public partial class NxTextArea : IAsyncDisposable
 
     // ── State ─────────────────────────────────────────────────────────────────
 
-    /// <summary>Shows a clear button while there is text. <kbd>Escape</kbd> also clears.</summary>
+    /// <summary>Shows a clear button while there is text. <kbd>Escape</kbd> also clears; in a window, that press does not close it.</summary>
     [Parameter] public bool Clearable { get; set; }
 
     /// <summary>Renders the native <c>disabled</c> attribute.</summary>
@@ -158,9 +159,16 @@ public partial class NxTextArea : IAsyncDisposable
         hasRendered = true;
         if (firstRender && AutoFocus)
             await textarea.FocusAsync();
-        if (!AutoResize)
+        if (!AutoResize && !Clearable)
             return;
         module ??= await JS.InvokeAsync<IJSObjectReference>("import", ModulePath);
+        if (module is not null && Clearable && !escapeApplied)
+        {
+            escapeApplied = true;
+            await module.InvokeVoidAsync("escapeClears", textarea);
+        }
+        if (!AutoResize)
+            return;
         // Every render: a value set from code changes the text without an input event.
         if (module is not null)
             await module.InvokeVoidAsync("autosize", textarea, MinRows ?? Rows, MaxRows);
@@ -244,7 +252,7 @@ public partial class NxTextArea : IAsyncDisposable
             await module.InvokeVoidAsync("dispose", textarea);
             await module.DisposeAsync();
         }
-        catch (JSDisconnectedException)
+        catch (Exception gone) when (gone is JSDisconnectedException or OperationCanceledException)
         {
             // The circuit is gone; the browser cleaned up with it.
         }

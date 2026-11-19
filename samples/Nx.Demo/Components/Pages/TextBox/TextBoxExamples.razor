@@ -94,6 +94,40 @@
 </div>
 
 <div class="doc-section">
+    <h2>Escape in a Window</h2>
+    <p class="doc-note">
+        In a window, <kbd class="doc-kbd">Esc</kbd> in a clearable field that has something to clear only clears it; the next
+        <kbd class="doc-kbd">Esc</kbd> closes the window. An empty field, or one that is not clearable, closes it at once. The
+        text area, numeric, masked and auto-complete boxes do the same.
+    </p>
+    @* code *@
+    <div class="demo-stage">
+        <NxButton id="escape-open" Variant="NxButtonVariant.Primary" OnClick="() => escapeOpen = true">New contact</NxButton>
+    </div>
+    <NxWindow Id="escape-window" @bind-Visible="escapeOpen" Title="New contact" Size="NxWindowSize.Small">
+        <ChildContent>
+            <div class="demo-form-grid">
+                <NxTextBox Id="escape-name" Label="Name" Clearable="true" @bind-Value="escapeName" />
+                <NxMaskedTextBox Id="escape-phone" Label="Phone" Mask="(000) 000-0000" Clearable="true" @bind-Value="escapePhone" />
+                <NxNumericTextBox Id="escape-limit" Label="Credit limit" Clearable="true" Min="0m" Format="N0" @bind-Value="escapeLimit" />
+                <div>
+                    <label class="demo-field-label" for="escape-city">City</label>
+                    <NxAutoComplete Id="escape-city" Data="EscapeCities" Clearable="true" @bind-Value="escapeCity" />
+                </div>
+                <NxTextArea Id="escape-notes" Label="Notes" Clearable="true" @bind-Value="escapeNotes" />
+                <NxTextBox Id="escape-reference" Label="Reference (not clearable)" @bind-Value="escapeReference" />
+            </div>
+        </ChildContent>
+        <Footer>
+            <NxButton OnClick="() => escapeOpen = false">Cancel</NxButton>
+            <NxButton Variant="NxButtonVariant.Primary" OnClick="() => escapeOpen = false">Save</NxButton>
+        </Footer>
+    </NxWindow>
+    @* /code *@
+    <DocExampleCode Key="escape-in-a-window" />
+</div>
+
+<div class="doc-section">
     <h2>Max Length &amp; Counter</h2>
     <p class="doc-note">
         <code>MaxLength</code> sets the native limit; <code>ShowCounter</code> adds a live count, linked to the input with
@@ -220,6 +254,10 @@
     string? clearValue = "Clear me", passwordValue = "hunter22", passwordPlain;
     string? counterValue = "PO-4471";
     bool showPanel;
+    bool escapeOpen;
+    string? escapeName = "Dana Ortiz", escapePhone = "2075550142", escapeCity = "Portland", escapeNotes = "Call before 3 PM.", escapeReference = "REF-118";
+    decimal? escapeLimit = 25000m;
+    static readonly string[] EscapeCities = ["Augusta", "Bangor", "Lewiston", "Portland", "Portsmouth"];
     NxTextBox? laterBox;
 
     async Task FocusLater()

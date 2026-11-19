@@ -5,25 +5,46 @@
 
 <div class="doc-section">
     <h2>Playground</h2>
-    <p class="doc-note">Every parameter, live.</p>
+    <p class="doc-note">Every parameter, live, bound to a <code>DateTime?</code>; switch the type to try <code>DateTimeOffset?</code>.</p>
 
     <div class="demo-playground">
         <div class="demo-preview">
             <div class="demo-preview-inner demo-preview-inner-stretch">
-                <NxDateTimePicker Id="playground-datetime" @bind-Value="pgValue" @bind-Value:after="Changed"
-                                  Format="@(OrNull(pgFormat) ?? "g")" Culture="Culture" TimeStep="pgStep"
-                                  Min="pgMinOn ? MinValue : null" Max="pgMaxOn ? MaxValue : null"
-                                  ShowWeekNumbers="pgWeeks" ShowTodayButton="pgToday"
-                                  Label="@OrNull(pgLabel)" Placeholder="@OrNull(pgPlaceholder)"
-                                  Clearable="pgClearable" ReadOnly="pgReadOnly" Disabled="pgDisabled" MobileMode="pgMobile" />
+                @if (pgType == "DateTimeOffset?")
+                {
+                    <NxDateTimePicker Id="playground-datetime" @bind-Value="pgOffset" @bind-Value:after="Changed"
+                                      Format="@(OrNull(pgFormat) ?? "g")" Culture="Culture" TimeStep="pgStep"
+                                      Min="pgMinOn ? MinValue : null" Max="pgMaxOn ? MaxValue : null"
+                                      ShowWeekNumbers="pgWeeks" ShowTodayButton="pgToday"
+                                      Label="@OrNull(pgLabel)" Placeholder="@OrNull(pgPlaceholder)"
+                                      Clearable="pgClearable" ReadOnly="pgReadOnly" Disabled="pgDisabled" MobileMode="pgMobile" />
+                }
+                else
+                {
+                    <NxDateTimePicker Id="playground-datetime" @bind-Value="pgValue" @bind-Value:after="Changed"
+                                      Format="@(OrNull(pgFormat) ?? "g")" Culture="Culture" TimeStep="pgStep"
+                                      Min="pgMinOn ? MinValue : null" Max="pgMaxOn ? MaxValue : null"
+                                      ShowWeekNumbers="pgWeeks" ShowTodayButton="pgToday"
+                                      Label="@OrNull(pgLabel)" Placeholder="@OrNull(pgPlaceholder)"
+                                      Clearable="pgClearable" ReadOnly="pgReadOnly" Disabled="pgDisabled" MobileMode="pgMobile" />
+                }
             </div>
             <div class="demo-row">
-                <span class="demo-value" id="playground-value">Value: <strong>@(pgValue?.ToString("yyyy-MM-dd HH:mm:ss") ?? "null")</strong></span>
+                <span class="demo-value" id="playground-value" data-type="@pgType">Value: <strong>@(pgType == "DateTimeOffset?" ? pgOffset?.ToString("yyyy-MM-dd HH:mm:ss zzz") ?? "null" : pgValue?.ToString("yyyy-MM-dd HH:mm:ss") ?? "null")</strong></span>
                 <span class="demo-counter" id="playground-changes">ValueChanged × @pgChanges</span>
             </div>
         </div>
 
         <div class="demo-controls">
+            <div class="demo-controls-title">Value</div>
+            <label class="demo-control">
+                <span>TValue</span>
+                <select id="pg-type" @bind="pgType">
+                    <option value="DateTime?">DateTime?</option>
+                    <option value="DateTimeOffset?">DateTimeOffset?</option>
+                </select>
+            </label>
+
             <div class="demo-controls-title">Format</div>
             <label class="demo-control"><span>Format</span><input type="text" id="pg-format" placeholder="g" @bind="pgFormat" /></label>
             <label class="demo-control">
@@ -79,6 +100,8 @@
     static readonly DateTime MaxValue = DateTime.Today.AddDays(14).AddHours(17);
 
     DateTime? pgValue = DateTime.Today.AddDays(1).AddHours(10);
+    DateTimeOffset? pgOffset;
+    string pgType = "DateTime?";
     string pgFormat = "g", pgCulture = "en-US", pgLabel = "Starts", pgPlaceholder = "";
     int pgStep = 30, pgChanges;
     bool pgMinOn, pgMaxOn, pgWeeks, pgToday = true, pgClearable = true, pgReadOnly, pgDisabled;

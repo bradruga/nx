@@ -49,7 +49,7 @@
 }
 .nx-colorgradient-thumb:focus { outline: none; }
 .nx-colorgradient-thumb:focus-visible {
-    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color, var(--nx-accent));
     outline-offset: 2px;
 }
 
@@ -96,7 +96,7 @@
 .nx-colorgradient-alpha:focus { outline: none; }
 .nx-colorgradient-hue:focus-visible,
 .nx-colorgradient-alpha:focus-visible {
-    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color);
+    outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color, var(--nx-accent));
     outline-offset: 3px;
 }
 
@@ -171,7 +171,7 @@
 .nx-colorgradient-input:focus {
     border-color: var(--nx-accent);
     outline: none;
-    box-shadow: var(--nx-focus-ring-inset);
+    box-shadow: var(--nx-focus-ring-inset, 0 0 0 1px var(--nx-accent));
 }
 
 .nx-colorgradient-caption {
@@ -197,9 +197,9 @@
 }
 .nx-colorgradient-view:hover:not(:disabled) { background: var(--nx-surface-hover); color: var(--nx-fg); }
 .nx-colorgradient-view:focus { outline: none; }
-.nx-colorgradient-view:focus-visible { outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color); }
+.nx-colorgradient-view:focus-visible { outline: var(--nx-focus-ring-width) solid var(--nx-focus-ring-color, var(--nx-accent)); }
 
-.nx-colorgradient-invalid .nx-colorgradient-input { border-color: var(--nx-invalid); }
+.nx-colorgradient-invalid .nx-colorgradient-input { border-color: var(--nx-invalid, var(--nx-danger)); }
 
 .nx-colorgradient-disabled { opacity: var(--nx-disabled-opacity); }
 .nx-colorgradient-disabled .nx-colorgradient-area { cursor: not-allowed; }

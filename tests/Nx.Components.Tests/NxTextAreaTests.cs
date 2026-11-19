@@ -145,6 +145,24 @@ public class NxTextAreaTests : BunitContext
     }
 
     [Test]
+    public void Clearable_JsMarksTheClearingEscapeAsUsed_WithoutAutoResize()
+    {
+        var cut = RenderBound([], "a", p => p.Add(x => x.Clearable, true));
+        cut.Render(p => p.Add(x => x.Value, "b"));
+
+        Assert.That(module.Invocations.Count(i => i.Identifier == "escapeClears"), Is.EqualTo(1));
+        Assert.That(module.Invocations.Any(i => i.Identifier == "autosize"), Is.False);
+    }
+
+    [Test]
+    public void NotClearable_NoEscapeJs()
+    {
+        RenderBound([], "a", p => p.Add(x => x.AutoResize, true));
+
+        Assert.That(module.Invocations.Any(i => i.Identifier == "escapeClears"), Is.False);
+    }
+
+    [Test]
     public async Task Clearable_ButtonAndEscape()
     {
         var raised = new List<string?>();

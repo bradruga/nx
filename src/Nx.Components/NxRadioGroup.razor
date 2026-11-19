@@ -1,4 +1,5 @@
 @namespace Nx.Components
+@typeparam TItem
 @typeparam TValue
 
 <div class="@CssClass" style="@Style">
@@ -13,13 +14,13 @@
          aria-orientation="@(Orientation == NxOrientation.Horizontal ? "horizontal" : "vertical")"
          aria-disabled="@(Disabled ? "true" : null)"
          aria-invalid="@(validation.IsInvalid ? "true" : null)">
-        <CascadingValue Value="this" IsFixed="true">
+        <CascadingValue TValue="IRadioGroup<TValue>" Value="this" IsFixed="true">
             @if (Data is not null)
             {
                 foreach (var item in Data)
                 {
                     <NxRadioButton TValue="TValue"
-                                   Value="item"
+                                   Value="ValueOf(item)"
                                    Label="@(ItemTemplate is null ? ItemText?.Invoke(item) ?? item?.ToString() : null)"
                                    Disabled="@(ItemDisabled?.Invoke(item) ?? false)"
                                    ChildContent="@(ItemTemplate?.Invoke(item))" />

@@ -38,7 +38,7 @@
     min-height: var(--nx-treelist-header-height);
     padding: 0 10px 0 var(--nx-treelist-lead);
     border-bottom: 1px solid var(--nx-border);
-    background: var(--nx-treelist-header-bg);
+    background: var(--nx-treelist-header-bg, var(--nx-surface-hover));
     color: var(--nx-fg-muted);
     font-size: var(--nx-font-size-sm);
     font-weight: var(--nx-font-weight-medium);

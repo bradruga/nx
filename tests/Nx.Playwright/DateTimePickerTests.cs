@@ -227,10 +227,25 @@ public class DateTimePickerTests : PageTest
         var tabsBox = (await tabs.BoundingBoxAsync())!;
         Assert.That(tabsBox.Y, Is.GreaterThanOrEqualTo(header.Y + header.Height - 1));
 
-        var item = sheet.Locator(".nx-datetimepicker-sheet-list .nx-timepicker-item", new() { HasText = "6:15 PM" });
-        await item.ScrollIntoViewIfNeededAsync();
-        Assert.That((await item.BoundingBoxAsync())!.Height, Is.GreaterThanOrEqualTo(44));
-        await item.TapAsync();
+        // The time is set on columns: hours and AM/PM fit the screen, minutes go by five whatever the step.
+        var columns = sheet.Locator(".nx-timecolumns");
+        await Expect(columns.GetByRole(AriaRole.Listbox)).ToHaveCountAsync(3);
+        await Expect(columns.Locator(".nx-timecolumns-hours .nx-timecolumns-item-selected")).ToBeFocusedAsync();
+        foreach (var (column, text) in new[] { ("hours", "6"), ("minutes", "15"), ("periods", "PM") })
+        {
+            var option = columns.Locator($".nx-timecolumns-{column}").GetByRole(AriaRole.Option, new() { Name = text, Exact = true });
+            await option.ScrollIntoViewIfNeededAsync();
+            Assert.That((await option.BoundingBoxAsync())!.Height, Is.GreaterThanOrEqualTo(44));
+            await option.TapAsync();
+            await Expect(option).ToHaveAttributeAsync("aria-selected", "true");
+        }
+        await Expect(sheet.Locator(".nx-datetimepicker-sheet-tab").Nth(1)).ToContainTextAsync("6:15 PM");
+        Assert.That((await columns.BoundingBoxAsync())!.Y, Is.GreaterThanOrEqualTo(tabsBox.Y + tabsBox.Height - 1), "the columns sit under the tabs");
+        var done = sheet.Locator(".nx-datetimepicker-sheet-done");
+        var doneBox = (await done.BoundingBoxAsync())!;
+        Assert.That(doneBox.Height, Is.GreaterThanOrEqualTo(44));
+        Assert.That(doneBox.Y + doneBox.Height, Is.LessThanOrEqualTo(844));
+        await done.TapAsync();
 
         await Expect(sheet).ToHaveCountAsync(0);
         await Expect(page.Locator("#step-15")).ToHaveValueAsync(DateTime.Today.AddHours(18).AddMinutes(15).ToString("M/d/yyyy h:mm tt"));
@@ -250,5 +265,112 @@ public class DateTimePickerTests : PageTest
         await Page.Keyboard.PressAsync("Tab");
         await Page.Locator("#datetime-submit").ClickAsync();
         await Expect(Page.Locator("#datetime-result")).ToHaveTextAsync("Scheduled for 3/5/2026 2:00 PM");
+    }
+
+    // ── Edit text on focus ────────────────────────────────────────────────────
+
+    [Test]
+    public async Task Focus_TypedRightAway_OnASlowConnection_NothingLostOrOverwritten()
+    {
+        await GoToPage("playground");
+        var input = Page.Locator("#playground-datetime");
+        // Shown as 3/5/2026 14:30, edited behind the mask as 03/05/2026 14:30.
+        await input.FillAsync("3/5/2026 2:30 PM");
+        await input.PressAsync("Enter");
+        await Page.Locator("#pg-format").FillAsync("M/d/yyyy HH:mm");
+        await Page.Locator("#pg-format").PressAsync("Tab");
+        await Expect(input).ToHaveValueAsync("3/5/2026 14:30");
+        var cdp = await Page.Context.NewCDPSessionAsync(Page);
+        await cdp.SendAsync("Network.enable");
+        await cdp.SendAsync("Network.emulateNetworkConditions", new() { ["offline"] = false, ["latency"] = 250, ["downloadThroughput"] = -1, ["uploadThroughput"] = -1 });
+
+        await input.FocusAsync();
+        Assert.That(await input.InputValueAsync(), Is.EqualTo("03/05/2026 14:30"));
+        await Page.Keyboard.TypeAsync("031520260930");
+        Assert.That(await input.InputValueAsync(), Is.EqualTo("03/15/2026 09:30"));
+
+        await Page.WaitForTimeoutAsync(1500);
+        Assert.That(await input.InputValueAsync(), Is.EqualTo("03/15/2026 09:30"));
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(Page.Locator("#playground-value")).ToHaveTextAsync("Value: 2026-03-15 09:30:00");
+    }
+
+    // ── DateTimeOffset ────────────────────────────────────────────────────────
+
+    [Test]
+    public async Task DateTimeOffset_KeepsItsOffset_TypedAndPicked()
+    {
+        await GoToPage();
+        var input = Page.Locator("#offset-kept");
+        await input.ScrollIntoViewIfNeededAsync();
+        await Expect(input).ToHaveValueAsync("10/23/2026 6:00 PM");
+
+        await input.FillAsync("10/25/2026 8:00 AM");
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(Page.Locator("#offset-kept-value")).ToHaveTextAsync("Value: 2026-10-25 08:00 +09:00");
+
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Popup.Locator("td[data-date='2026-10-28']").ClickAsync();
+        await Popup.GetByRole(AriaRole.Option, new() { Name = "9:30 AM", Exact = true }).ClickAsync();
+        await Expect(Page.Locator("#offset-kept-value")).ToHaveTextAsync("Value: 2026-10-28 09:30 +09:00");
+    }
+
+    [TestCase("America/Chicago", "7/9/2026 8:00 AM", "2026-07-09 08:00 -05:00")]
+    [TestCase("America/Chicago", "12/9/2026 8:00 AM", "2026-12-09 08:00 -06:00")]
+    [TestCase("Australia/Adelaide", "7/9/2026 8:00 AM", "2026-07-09 08:00 +09:30")]
+    public async Task DateTimeOffset_Empty_TakesTheBrowsersOffsetAtThatTime(string timeZone, string typed, string expected)
+    {
+        await using var context = await Browser.NewContextAsync(new() { TimezoneId = timeZone });
+        var page = await context.NewPageAsync();
+        await page.GotoAsync(_baseUrl + "/datetimepicker/examples");
+        await Expect(page.Locator(".layout-container[data-interactive=true]")).ToBeVisibleAsync();
+
+        await page.Locator("#offset-empty").FillAsync(typed);
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.Locator("#offset-empty-value")).ToHaveTextAsync($"Value: {expected}");
+    }
+
+    [Test]
+    public async Task Playground_DateTimeOffset()
+    {
+        await GoToPage("playground");
+
+        await Page.Locator("#pg-type").SelectOptionAsync("DateTimeOffset?");
+        // The switch replaces the picker a round trip later; text filled into the old one would be lost.
+        await Expect(Page.Locator("#playground-value")).ToHaveAttributeAsync("data-type", "DateTimeOffset?");
+        await Expect(Page.Locator("#playground-value")).ToHaveTextAsync("Value: null");
+        await Page.Locator("#playground-datetime").FillAsync("3/5/2026 2:30 PM");
+        await Page.Keyboard.PressAsync("Enter");
+
+        await Expect(Page.Locator("#playground-value")).ToHaveTextAsync(new Regex(@"^Value: 2026-03-05 14:30:00 [+-]\d\d:\d\d$"));
+    }
+
+    // ── Phone sheet: time columns ─────────────────────────────────────────────
+
+    [Test]
+    public async Task Sheet_TimeColumns_Keyboard_BackDiscards()
+    {
+        await GoToPage();
+        var input = Page.Locator("#sheet-always");
+        await input.ScrollIntoViewIfNeededAsync();
+        await input.FillAsync("3/5/2026 9:30 AM");
+        await input.PressAsync("Enter");
+        var committed = await input.InputValueAsync();
+
+        await Page.Locator(".nx-field:has(#sheet-always) .nx-datetimepicker-toggle").ClickAsync();
+        var sheet = Page.Locator(".nx-datetimepicker-sheet");
+        await sheet.GetByRole(AriaRole.Tab, new() { Name = "Time" }).ClickAsync();
+        var hours = sheet.Locator(".nx-timecolumns-hours");
+        await Expect(hours.GetByRole(AriaRole.Option, new() { Name = "9", Exact = true })).ToBeFocusedAsync();
+
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Expect(hours.GetByRole(AriaRole.Option, new() { Name = "10", Exact = true })).ToBeFocusedAsync();
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(sheet.GetByRole(AriaRole.Tab, new() { Name = "Time" })).ToContainTextAsync("10:30 AM");
+
+        await sheet.Locator(".nx-sheet-close").ClickAsync();
+        await Expect(sheet).ToHaveCountAsync(0);
+        await Expect(input).ToHaveValueAsync(committed);
     }
 }

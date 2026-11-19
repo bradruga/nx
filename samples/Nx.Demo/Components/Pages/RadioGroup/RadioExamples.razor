@@ -14,14 +14,30 @@
 </div>
 
 <div class="doc-section">
-    <h2>Declared Buttons</h2>
+    <h2>From Records</h2>
     <p class="doc-note">
-        <code>NxRadioButton</code> children bind any value and take markup labels. Here each one binds a customer id from
-        a record list.
+        <code>Data</code> takes a list of records, as the combo box does: <code>ItemText</code> reads the label and
+        <code>ItemValue</code> the bound value. <code>ItemDisabled</code> and <code>ItemTemplate</code> receive the record.
     </p>
     @* code *@
     <div class="demo-stage demo-stage-column">
-        <NxRadioGroup Id="declared-radio" @bind-Value="billTo" Label="Bill to">
+        <NxRadioGroup Id="records-radio" Data="SampleData.Customers.Take(4)" ItemText="c => c.Name" ItemValue="c => c.Id"
+                      ItemDisabled="c => c.Id == 3" @bind-Value="customerId" Label="Customer" />
+        <span class="demo-value" id="records-value">Value: <strong>@customerId</strong></span>
+    </div>
+    @* /code *@
+    <DocExampleCode Key="from-records" />
+</div>
+
+<div class="doc-section">
+    <h2>Declared Buttons</h2>
+    <p class="doc-note">
+        <code>NxRadioButton</code> children bind any value and take markup labels. With no <code>Data</code> to infer the
+        types from, the group names both: <code>TItem</code> and <code>TValue</code>.
+    </p>
+    @* code *@
+    <div class="demo-stage demo-stage-column">
+        <NxRadioGroup TItem="int" TValue="int" Id="declared-radio" @bind-Value="billTo" Label="Bill to">
             @foreach (var customer in SampleData.Customers.Take(3))
             {
                 <NxRadioButton Value="customer.Id">
@@ -126,6 +142,7 @@
     Delivery delivery = Delivery.OurTruck;
     Delivery disabledPick = Delivery.Flatbed;
     int billTo = 1;
+    int customerId = 2;
     string size = "36\"";
     Priority priority = Priority.Normal;
 

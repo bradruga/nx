@@ -46,9 +46,63 @@ public class DemoThemeHomeTests : PageTest
         await Expect(PrimaryButton).ToHaveCSSAsync("background-color", "rgb(112, 48, 160)");
         await Expect(Css).ToContainTextAsync(new Regex(@"--nx-accent:\s+#7030a0;"));
         await Expect(Css).ToContainTextAsync("--nx-accent-hover:");
-        // Derived tokens restated on the sample follow the accent too.
+        // Derived tokens follow the accent set on the sample.
         var selected = Page.Locator("#theme-sample .nx-toggle[aria-checked=true]");
         await Expect(selected).ToHaveCSSAsync("color", "rgb(112, 48, 160)");
+    }
+
+    [Test]
+    public async Task Theme_ContainerAccent_ReachesFocusRing_SelectedToggle_TabIndicator_PopupAndDialog()
+    {
+        await GoToPage("/guides/theme");
+        const string purple = "rgb(112, 48, 160)";
+        const string accentOf = "el => getComputedStyle(el).getPropertyValue('--nx-accent').trim().toLowerCase()";
+        const string indicatorOf = "el => getComputedStyle(el, '::after').backgroundColor";
+        var sample = Page.Locator("#theme-sample");
+        var selected = sample.Locator(".nx-toggle[aria-checked=true]");
+        var activeTab = sample.Locator(".nx-tabstrip-tab-active");
+
+        await PickAccentAsync("#7030a0");
+        await Expect(PrimaryButton).ToHaveCSSAsync("background-color", purple);
+
+        // Only the base tokens are set on the sample; the derived ones are not restated anywhere.
+        Assert.That(await sample.GetAttributeAsync("style"), Does.Not.Contain("--nx-toggle").And.Not.Contain("--nx-tab").And.Not.Contain("--nx-focus"));
+        await Expect(selected).ToHaveCSSAsync("color", purple);
+        await Expect(selected).ToHaveCSSAsync("border-top-color", purple);
+        Assert.That(await activeTab.EvaluateAsync<string>(indicatorOf), Is.EqualTo(purple));
+
+        await activeTab.FocusAsync();
+        await Page.Keyboard.PressAsync("ArrowRight");
+        await Page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(activeTab).ToBeFocusedAsync();
+        await Expect(activeTab).ToHaveCSSAsync("outline-color", purple);
+
+        // The controls beside the sample keep the site's accent.
+        var outside = Page.Locator("#theme-controls .nx-switch-track");
+        Assert.That(await outside.EvaluateAsync<string>("el => getComputedStyle(el).outlineColor"), Is.Not.EqualTo(purple));
+
+        // A popup and a dialog declared inside the container render there, so they take its tokens too.
+        await sample.Locator(".nx-combobox:has(#theme-customer) .nx-combobox-toggle").ClickAsync();
+        var popup = sample.Locator(".nx-combobox-popup");
+        await Expect(popup).ToBeVisibleAsync();
+        Assert.That(await popup.EvaluateAsync<string>(accentOf), Is.EqualTo("#7030a0"));
+        await Expect(popup.Locator(".nx-combobox-item[aria-selected=true]")).ToHaveCSSAsync("color", purple);
+        await Page.Keyboard.PressAsync("Escape");
+
+        await Page.Locator("#theme-delete").ClickAsync();
+        var dialog = sample.Locator("#theme-dialog");
+        await Expect(dialog).ToBeVisibleAsync();
+        Assert.That(await dialog.EvaluateAsync<string>(accentOf), Is.EqualTo("#7030a0"));
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Cancel" }).ClickAsync();
+
+        // Dark on the container: the dark theme's own accent, and the derived tokens follow it.
+        await Page.Locator("#theme-reset").ClickAsync();
+        await Page.Locator("#theme-dark").ClickAsync();
+        const string darkAccent = "rgb(76, 163, 255)";
+        await Expect(PrimaryButton).ToHaveCSSAsync("background-color", darkAccent);
+        await Expect(selected).ToHaveCSSAsync("color", darkAccent);
+        await Expect(selected).ToHaveCSSAsync("border-top-color", darkAccent);
+        Assert.That(await activeTab.EvaluateAsync<string>(indicatorOf), Is.EqualTo(darkAccent));
     }
 
     [Test]

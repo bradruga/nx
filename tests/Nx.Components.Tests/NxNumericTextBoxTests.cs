@@ -491,6 +491,14 @@ public class NxNumericTextBoxTests : BunitContext
         Assert.That((string[])call.Arguments[1]!, Is.EquivalentTo(new[] { "ArrowUp", "ArrowDown", "PageUp", "PageDown" }));
     }
 
+    [Test]
+    public void Keyboard_JsMarksTheClearingEscapeAsUsed()
+    {
+        Render<NxNumericTextBox<int?>>(p => p.Add(x => x.Clearable, true).Add(x => x.Value, 5));
+
+        Assert.That(module.Invocations.Count(i => i.Identifier == "escapeClears"), Is.EqualTo(1));
+    }
+
     // ── Spin buttons ──────────────────────────────────────────────────────────
 
     [Test]

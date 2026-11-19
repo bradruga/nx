@@ -9,7 +9,10 @@
     <div class="demo-playground">
         <div class="demo-preview">
             <div class="demo-preview-inner demo-preview-inner-full demo-preview-inner-stretch">
-                <NxFileManager TItem="FileEntry" Id="playground-files" Data="DemoFiles.Project" @bind-Folder="pgFolder" @bind-SelectedItem="pgSelected"
+                <NxFileManager TItem="FileEntry" Id="playground-files" Data="DemoFiles.Project"
+                               ItemId="e => e.Id" ParentId="e => e.ParentId" ItemName="e => e.Name" ItemExtension="e => e.Extension"
+                               ItemIsDirectory="e => e.IsDirectory" ItemSize="e => e.Size" ItemDateModified="e => e.DateModified" ItemDateCreated="e => e.DateCreated"
+                               @bind-Folder="pgFolder" @bind-SelectedItem="pgSelected"
                                View="pgView" ViewChanged="v => pgView = v" Searchable="pgSearchable" RootName="@pgRoot" EmptyText="@pgEmpty"
                                NoResultsText="@pgNoResults" Height="@pgHeight" OnOpen="e => pgOpens++"
                                OnDownload="@(pgDownload ? EventCallback.Factory.Create<FileEntry>(this, () => pgDownloads++) : default)" />
@@ -69,7 +72,7 @@
     {
         get
         {
-            var attrs = new List<string> { "Data=\"entries\"", "@bind-Folder=\"folder\"", "@bind-SelectedItem=\"selected\"" };
+            var attrs = new List<string> { "Data=\"entries\"", "ItemId=\"e => e.Id\" ParentId=\"e => e.ParentId\" ItemName=\"e => e.Name\" ItemExtension=\"e => e.Extension\"", "ItemIsDirectory=\"e => e.IsDirectory\" ItemSize=\"e => e.Size\" ItemDateModified=\"e => e.DateModified\" ItemDateCreated=\"e => e.DateCreated\"", "@bind-Folder=\"folder\"", "@bind-SelectedItem=\"selected\"" };
             if (pgView != NxFileManagerView.Grid) attrs.Add($"View=\"NxFileManagerView.{pgView}\"");
             if (!pgSearchable) attrs.Add("Searchable=\"false\"");
             if (pgRoot != "Files") attrs.Add($"RootName=\"{pgRoot}\"");

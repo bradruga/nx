@@ -33,7 +33,7 @@
             <label class="demo-control">
                 <span>Size</span>
                 <select id="pg-size" @bind="pgSize">
-                    @foreach (var s in Enum.GetValues<NxButtonSize>())
+                    @foreach (var s in Enum.GetValues<NxSize>())
                     {
                         <option value="@s">@s</option>
                     }
@@ -59,7 +59,7 @@
 
     readonly IReadOnlyList<NxMenuItem> items = [new("Save as draft") { Id = "draft" }, new("Save and release") { Id = "release" }];
     NxButtonVariant pgVariant = NxButtonVariant.Primary;
-    NxButtonSize pgSize = NxButtonSize.Medium;
+    NxSize pgSize = NxSize.Medium;
     bool pgIcon = true, pgLoading, pgDisabled, pgMenuDisabled;
     string pgMenuLabel = "";
     string picked = "—";
@@ -73,7 +73,7 @@
         {
             var attrs = new List<string> { "OnClick=\"SaveAsync\"", "Items=\"items\"", "OnItemClick=\"RunAsync\"" };
             if (pgVariant != NxButtonVariant.Secondary) attrs.Insert(0, $"Variant=\"NxButtonVariant.{pgVariant}\"");
-            if (pgSize != NxButtonSize.Medium) attrs.Add($"Size=\"NxButtonSize.{pgSize}\"");
+            if (pgSize != NxSize.Medium) attrs.Add($"Size=\"NxSize.{pgSize}\"");
             if (pgIcon) attrs.Add("Icon=\"@saveIcon\"");
             if (pgLoading) attrs.Add("Loading=\"true\"");
             if (pgDisabled) attrs.Add("Disabled=\"true\"");
