@@ -55,6 +55,12 @@ public partial class NxDateRangePicker<TValue> : IAsyncDisposable
     private bool activeEnd;             // the next pick sets the end
     private bool editOnFocusApplied;
     private bool isNarrow;
+    private readonly TaskCompletionSource viewportKnown = new();
+
+    // A tap in the first moments after the page loads waits for the browser's answer, so a phone gets its sheet.
+    private Task ViewportKnownAsync() => MobileMode != NxMobileMode.Auto || viewportKnown.Task.IsCompleted
+        ? Task.CompletedTask
+        : Task.WhenAny(viewportKnown.Task, Task.Delay(3000));
     private bool popupOpen, popupPlaced, closePending;
     private bool sheetOpen, sheetFocusPending, scrollLockPending;
     private Side? focusPending;
@@ -246,6 +252,7 @@ public partial class NxDateRangePicker<TValue> : IAsyncDisposable
             if (MobileMode == NxMobileMode.Auto)
             {
                 isNarrow = await module.InvokeAsync<bool>("watchViewport", fields, selfReference, MobileBreakpoint);
+                viewportKnown.TrySetResult();
                 if (isNarrow)
                     StateHasChanged();
             }
@@ -301,8 +308,9 @@ public partial class NxDateRangePicker<TValue> : IAsyncDisposable
 
     // ── Opening and closing ───────────────────────────────────────────────────
 
-    private void Open(Side side)
+    private async Task OpenAsync(Side side)
     {
+        await ViewportKnownAsync();
         if (!Editable || popupOpen || sheetOpen)
             return;
         activeEnd = side == end && start.Current is not null;
@@ -444,7 +452,7 @@ public partial class NxDateRangePicker<TValue> : IAsyncDisposable
         switch (e.Key)
         {
             case "ArrowDown":
-                Open(side);
+                await OpenAsync(side);
                 break;
             case "Enter":
                 await CommitTextAsync(side);
@@ -455,12 +463,12 @@ public partial class NxDateRangePicker<TValue> : IAsyncDisposable
         }
     }
 
-    private void HandleToggleClick(Side side)
+    private async Task HandleToggleClick(Side side)
     {
         if (popupOpen)
             ClosePopup();
         else
-            Open(side);
+            await OpenAsync(side);
     }
 
     private void HandleFocus(Side side)

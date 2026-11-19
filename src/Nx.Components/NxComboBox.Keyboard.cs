@@ -175,6 +175,7 @@ public partial class NxComboBox<TItem, TValue>
 
     private async Task HandleFieldClick()
     {
+        await ViewportKnownAsync();
         if (UseOverlay && Editable && !isOpen)
             await OpenOverlayAsync();
         else if (PickOnly && !UseOverlay && Editable)

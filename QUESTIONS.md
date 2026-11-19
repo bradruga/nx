@@ -27,23 +27,19 @@ virtualization by threshold, `ItemByValue`, opt-in phone sheet, `NxWindowHost`, 
      `--nx-scheduler-today-bg`, `--nx-chart-1`. A container sets them itself.
 191. **Escape pressed within one round trip of the first character** still closes the window: the clear button that
      marks the key used has not rendered yet.
-194. **A component removed while its start-up script calls are still in flight can crash the circuit** (the whole page
-     stops responding). Reproduced by switching the picker playground's type and typing at once: `watchViewport` got a
-     missing element, and a disposed module was called from `OnAfterRenderAsync`. Fixed in nx-popup.js, nx-picker.js,
-     nx-colorpicker.js and the four pickers. Other components with several awaited calls in `OnAfterRenderAsync` have
-     the same shape. Rec: sweep them all (wrap the start-up calls as the pickers now do).
 195. **Keys pressed in the round trip between a popup showing and its script going live are lost** (editor table
      picker; the color picker's Escape was fixed). Files picked before nx-upload.js loaded are now kept; NxFileSelect
      (Blazor's InputFile) can still miss them.
-     Same window: on a phone, a tap on a time picker before `watchViewport` has answered opens the popup, not the
-     sheet (`TimePickerTests.Phone_AutoModeUsesSheet`, 2 of 4 fixture runs). About one test per full Playwright run
-     fails this way, a different one each time. Rec: one sweep for "input in the first round trips after a page or
-     popup appears", rather than one test at a time.
+     Fixed in the 11/19 sweep: every component survives being removed during start-up (it crashed the circuit), and
+     a tap before the viewport answer waits for it, so a phone gets its sheet. Still open: the editor's table picker
+     and the menus take keys only once their script has opened them.
 193. **Seen once, not reproduced**: `NxFileManagerTests.Search_FindsBelowTheOpenFolder_WithLocation` (bUnit, stale
      handler id suspected); `AutoCompleteTests.Typing_Suggests_UnderTheField_NothingHighlighted` (popup above the
      field); `TimePickerTests.List_ActiveScrollsIntoView`; `SliderChipDateInputTests.Chips_ArrowsMove_DeleteRemoves_FocusStays`;
      `ComboBoxTests.Multiple_SpaceTypesWhileFiltering`; `MultiSelectTests.Toggle_ChipsAndKeepOpen`;
-     `DatePickerTests.Validation_RequiredAndCrossField` (0 of 12 alone).
+     `DatePickerTests.Validation_RequiredAndCrossField` (0 of 12 alone);
+     `ComboBoxTests.Columns_HeaderAlignsWithCells_AndStaysOnScroll` and `Mobile_PhoneViewport_DefaultIsThePopup` (the
+     list did not open; 0 of 520 in the browser, with and without load). Two full runs after the sweep were 708 of 708.
 **Open doubts (no code change now):** the chart's second value axis does not line up with the first axis's grid lines
 (aligning them means less round numbers); large charts and long editor documents are not measured. Next for the chart:
 port one ERP page (ControlCharts or StorageHistory) as a trial.

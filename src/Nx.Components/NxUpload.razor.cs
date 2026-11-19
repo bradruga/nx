@@ -133,6 +133,13 @@ public partial class NxUpload : IAsyncDisposable
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // Removed while its start-up calls were still on their way: the module or the circuit is gone, nothing to set up.
+        try { await AfterRenderAsync(firstRender); }
+        catch (Exception gone) when (gone is JSDisconnectedException or ObjectDisposedException or OperationCanceledException) { }
+    }
+
+    private async Task AfterRenderAsync(bool firstRender)
+    {
         if (!firstRender)
             return;
         module = await JS.InvokeAsync<IJSObjectReference>("import", ModulePath);

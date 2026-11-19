@@ -52,6 +52,12 @@ public partial class NxTimePicker<TValue> : IAsyncDisposable
     private bool hasFocus;
     private bool typedSinceNavigate;    // Enter takes the typed text rather than the highlight
     private bool isNarrow;
+    private readonly TaskCompletionSource viewportKnown = new();
+
+    // A tap in the first moments after the page loads waits for the browser's answer, so a phone gets its sheet.
+    private Task ViewportKnownAsync() => MobileMode != NxMobileMode.Auto || viewportKnown.Task.IsCompleted
+        ? Task.CompletedTask
+        : Task.WhenAny(viewportKnown.Task, Task.Delay(3000));
     private bool popupOpen, popupPlaced, closePending, scrollPending;
     private bool sheetOpen, scrollLockPending, returnFocusPending;
 
@@ -272,6 +278,7 @@ public partial class NxTimePicker<TValue> : IAsyncDisposable
             {
                 selfReference = DotNetObjectReference.Create(this);
                 isNarrow = await module.InvokeAsync<bool>("watchViewport", input, selfReference, MobileBreakpoint);
+                viewportKnown.TrySetResult();
                 if (isNarrow)
                     StateHasChanged();
             }
@@ -328,6 +335,7 @@ public partial class NxTimePicker<TValue> : IAsyncDisposable
 
     private async Task OpenAsync()
     {
+        await ViewportKnownAsync();
         if (!Editable || popupOpen || sheetOpen || times.Count == 0)
             return;
         if (UseSheet)

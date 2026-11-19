@@ -9,6 +9,12 @@ public partial class NxComboBox<TItem, TValue>
     private ElementReference overlayInput;
     private ElementReference overlayList;
     private bool isNarrow;
+    private readonly TaskCompletionSource viewportKnown = new();
+
+    // A tap in the first moments after the page loads waits for the browser's answer, so a phone gets its sheet.
+    private Task ViewportKnownAsync() => MobileMode != NxMobileMode.Auto || viewportKnown.Task.IsCompleted
+        ? Task.CompletedTask
+        : Task.WhenAny(viewportKnown.Task, Task.Delay(3000));
     private bool overlayOpen;
     private string overlayText = "";
     private bool overlayFocusPending;

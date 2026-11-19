@@ -4,6 +4,7 @@ public partial class NxComboBox<TItem, TValue>
 {
     private async Task OpenAsync(bool filtering)
     {
+        await ViewportKnownAsync();
         if (!Editable)
             return;
         if (UseOverlay)

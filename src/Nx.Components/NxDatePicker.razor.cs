@@ -50,6 +50,12 @@ public partial class NxDatePicker<TValue> : IAsyncDisposable
     private bool hasFocus;
     private bool editOnFocusApplied;
     private bool isNarrow;
+    private readonly TaskCompletionSource viewportKnown = new();
+
+    // A tap in the first moments after the page loads waits for the browser's answer, so a phone gets its sheet.
+    private Task ViewportKnownAsync() => MobileMode != NxMobileMode.Auto || viewportKnown.Task.IsCompleted
+        ? Task.CompletedTask
+        : Task.WhenAny(viewportKnown.Task, Task.Delay(3000));
     private bool popupOpen, popupPlaced, closePending;
     private bool sheetOpen, sheetFocusPending, scrollLockPending, returnFocusPending;
 
@@ -232,6 +238,7 @@ public partial class NxDatePicker<TValue> : IAsyncDisposable
             {
                 selfReference = DotNetObjectReference.Create(this);
                 isNarrow = await module.InvokeAsync<bool>("watchViewport", input, selfReference, MobileBreakpoint);
+                viewportKnown.TrySetResult();
                 if (isNarrow)
                     StateHasChanged();
             }
@@ -288,6 +295,8 @@ public partial class NxDatePicker<TValue> : IAsyncDisposable
 
     private async Task OpenAsync()
     {
+        if (ShowCalendar)
+            await ViewportKnownAsync();
         if (!ShowCalendar || !Editable || popupOpen || sheetOpen)
             return;
         if (UseSheet)
