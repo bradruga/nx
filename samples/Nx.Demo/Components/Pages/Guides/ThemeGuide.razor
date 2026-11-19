@@ -1,0 +1,325 @@
+@page "/guides/theme"
+@using System.Globalization
+
+<PageTitle>Theme Builder — Nx Components</PageTitle>
+
+<nav class="doc-breadcrumb" aria-label="Breadcrumb">
+    <a href="">Components</a>
+    <span aria-hidden="true">/</span>
+    <span>Guide</span>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">Theme Builder</span>
+</nav>
+
+<h1>Theme Builder</h1>
+<p class="doc-intro">
+    Every Nx color, radius and size is a <code>--nx-*</code> custom property in <code>nx-theme.css</code>. Pick an accent,
+    a corner radius, a control height and a font; the sample below takes them at once, and the CSS to paste into your app
+    lists only what differs from the library's defaults. The sample starts from the library defaults (a blue accent), not
+    this site's green.
+</p>
+
+<div class="doc-section">
+    <h2>Build a Theme</h2>
+    <div class="theme-builder">
+        <div class="theme-controls" id="theme-controls">
+            <div class="theme-control">
+                <span class="theme-control-label" aria-hidden="true">Accent color</span>
+                <NxColorPicker Id="theme-accent" @bind-Value="AccentValue" View="NxColorPickerView.Both" ShowValue="true"
+                               AriaLabel="Accent color" />
+                <span class="theme-control-hint">Hover, pressed and tint shades are derived from it.</span>
+            </div>
+            <NxSlider TValue="int" Id="theme-radius" Label="Corner radius" Min="0" Max="16" LargeStep="4" @bind-Value="radius"
+                      ShowValue="true" Format="0' px'" Immediate="true" />
+            <NxSlider TValue="int" Id="theme-height" Label="Control height" Min="28" Max="44" LargeStep="4" @bind-Value="height"
+                      ShowValue="true" Format="0' px'" Immediate="true" />
+            <div class="theme-control">
+                <label class="theme-control-label" for="theme-font">Font</label>
+                <NxDropDown TItem="FontChoice" TValue="string" Id="theme-font" Data="Fonts" ItemText="f => f.Name" ItemValue="f => f.Value"
+                            @bind-Value="font" aria-label="Font">
+                    <ItemTemplate Context="f"><span style="font-family:@f.Preview">@f.Name</span></ItemTemplate>
+                </NxDropDown>
+            </div>
+            <NxToggleSwitch Id="theme-dark" @bind-Value="dark" Label="Dark theme" />
+            <NxButton Id="theme-reset" Icon="@IconOf(NxIcons.ArrowRotateCcw)" OnClick="Reset" Disabled="!IsChanged">Reset</NxButton>
+        </div>
+
+        <div class="theme-sample @(dark ? "nx-theme-dark" : "theme-sample-light")" id="theme-sample" style="@SampleStyle">
+            <div class="theme-sample-head">
+                <div>
+                    <div class="theme-sample-title">Pour P-1042 · North wall, lift 2</div>
+                    <div class="theme-sample-sub">Job 55120 · Kiewit Northeast</div>
+                </div>
+                <span class="theme-sample-status">Scheduled</span>
+            </div>
+
+            <NxTabStrip AriaLabel="Pour" @bind-ActiveTab="tab">
+                <NxTab Id="details" Title="Details">
+                    <div class="theme-sample-grid">
+                        <NxTextBox Label="Pour name" @bind-Value="pourName" Clearable="true" />
+                        <div>
+                            <label class="theme-sample-label" for="theme-customer">Customer</label>
+                            <NxComboBox Id="theme-customer" Data="SampleData.Customers" ItemText="c => c.Name" ItemValue="c => c.Id"
+                                        @bind-Value="customerId" Placeholder="Search customers" Clearable="true" />
+                        </div>
+                        <NxDatePicker Label="Pour date" @bind-Value="pourDate" />
+                        <NxNumericTextBox Label="Yards" @bind-Value="yards" Min="0m" Format="N1" />
+                        <div>
+                            <span class="theme-sample-label" aria-hidden="true">Shift</span>
+                            <NxToggleGroup Data="Shifts" @bind-Value="shift" AriaLabel="Shift" />
+                        </div>
+                        <div class="theme-sample-checks">
+                            <NxCheckBox @bind-Value="rush" Label="Rush order" />
+                            <NxToggleSwitch @bind-Value="notify" Label="Notify on ship" />
+                        </div>
+                    </div>
+                </NxTab>
+                <NxTab Id="mix" Title="Mix">
+                    <p class="theme-sample-text">5000 psi, ¾ in. stone, 6% air. Slump 4 in. at the plant.</p>
+                </NxTab>
+                <NxTab Id="history" Title="History">
+                    <p class="theme-sample-text">Created by Dana Ortiz on Monday; released to the plant at 9:12 AM.</p>
+                </NxTab>
+            </NxTabStrip>
+
+            <div class="theme-sample-buttons">
+                <NxButton Variant="NxButtonVariant.Primary" Id="theme-primary" Icon="@IconOf(NxIcons.Save)">Save</NxButton>
+                <NxButton>Cancel</NxButton>
+                <NxButton Variant="NxButtonVariant.Ghost" Icon="@IconOf(NxIcons.Print)">Print</NxButton>
+                <NxButton Variant="NxButtonVariant.Link">View ticket</NxButton>
+                <NxButton Variant="NxButtonVariant.Success">Release</NxButton>
+                <NxButton Variant="NxButtonVariant.Warning">Hold</NxButton>
+                <NxButton Variant="NxButtonVariant.Info">Notify</NxButton>
+                <NxButton Variant="NxButtonVariant.Danger" Id="theme-delete" Icon="@IconOf(NxIcons.Trash)" OnClick="() => confirmDelete = true">Delete…</NxButton>
+            </div>
+
+            <NxDialog @bind-Visible="confirmDelete" Id="theme-dialog" Title="Delete pour" Width="380px">
+                <ChildContent>Delete pour P-1042? Its tickets go with it.</ChildContent>
+                <Buttons>
+                    <NxButton Variant="NxButtonVariant.Danger" OnClick="() => confirmDelete = false">Delete</NxButton>
+                    <NxButton OnClick="() => confirmDelete = false">Cancel</NxButton>
+                </Buttons>
+            </NxDialog>
+        </div>
+    </div>
+</div>
+
+<div class="doc-section">
+    <h2>CSS to Copy</h2>
+    <p class="doc-note">
+        Paste it into a stylesheet loaded after <code>nx-theme.css</code>. Accent colors chosen with the dark theme on go in a
+        <code>.nx-theme-dark</code> rule, so the light theme keeps its own.
+    </p>
+    <DocCode Code="@Css" id="theme-css" />
+</div>
+
+<div class="doc-section">
+    <h2>What the Controls Set</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table" id="theme-tokens">
+            <thead><tr><th>Control</th><th>Tokens</th><th>How</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Accent color</td>
+                    <td><code>--nx-accent</code>, <code>-hover</code>, <code>-active</code>, <code>-subtle</code>, <code>-fg</code></td>
+                    <td>
+                        Light: hover and pressed mix in 12% and 25% black. Dark: they mix in 18% and 36% white, so they get
+                        lighter. Subtle is the accent at 10% (dark 14%) opacity; the text on it is white or near-black, whichever
+                        reads better. Selections, focus rings, tabs, sliders and calendars follow the accent.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Corner radius</td>
+                    <td><code>--nx-radius</code>, <code>--nx-radius-sm</code>, <code>--nx-window-radius</code></td>
+                    <td>Small is 2 px less, windows and dialogs 4 px more.</td>
+                </tr>
+                <tr>
+                    <td>Control height</td>
+                    <td><code>--nx-control-height-sm</code>, <code>-md</code>, <code>-lg</code></td>
+                    <td>The medium height; small is 6 px less, large 8 px more. Buttons, text boxes, pickers and toggle groups share it.</td>
+                </tr>
+                <tr>
+                    <td>Font</td>
+                    <td><code>--nx-font-family</code></td>
+                    <td>The default, <code>inherit</code>, takes the page's font.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="doc-note" style="margin-top:14px">
+        Overriding the tokens on a container instead of <code>:root</code> needs the derived tokens restated there too
+        (<code>--nx-toggle-selected-bg</code>, <code>--nx-tab-indicator</code> and the like): a custom property that reads
+        <code>var(--nx-accent)</code> takes its value where it is declared, on <code>:root</code>.
+    </p>
+</div>
+
+@code {
+    sealed record FontChoice(string Name, string Value, string Preview);
+
+    static readonly FontChoice[] Fonts =
+    [
+        new("Page font", "inherit", "inherit"),
+        new("System UI", "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif", "system-ui, sans-serif"),
+        new("Segoe UI", "'Segoe UI', Tahoma, Geneva, sans-serif", "'Segoe UI', Tahoma, sans-serif"),
+        new("Arial", "Arial, Helvetica, sans-serif", "Arial, Helvetica, sans-serif"),
+        new("Verdana", "Verdana, Geneva, sans-serif", "Verdana, Geneva, sans-serif"),
+        new("Georgia", "Georgia, 'Times New Roman', serif", "Georgia, serif"),
+    ];
+
+    // nx-theme.css's accent tokens: light :root, then .nx-theme-dark.
+    static readonly (string Accent, string Hover, string Active, string Fg, string Subtle) LightAccent =
+        ("#0078d4", "#006abc", "#005a9e", "#ffffff", "rgba(0, 120, 212, 0.10)");
+    static readonly (string Accent, string Hover, string Active, string Fg, string Subtle) DarkAccent =
+        ("#4ca3ff", "#6db4ff", "#8cc4ff", "#0b0b0d", "rgba(76, 163, 255, 0.14)");
+
+    const int DefaultRadius = 6, DefaultHeight = 34;
+    const string DefaultFont = "inherit";
+
+    string? accent;               // null: the theme's default accent
+    int radius = DefaultRadius;
+    int height = DefaultHeight;
+    string? font = DefaultFont;
+    bool dark;
+
+    // The sample's own state
+    string? tab = "details";
+    string? pourName = "North wall, lift 2";
+    int? customerId = 3;
+    DateOnly? pourDate = DateOnly.FromDateTime(DateTime.Today.AddDays(2));
+    decimal? yards = 42.5m;
+    string? shift = "Day";
+    bool rush = true, notify;
+    bool confirmDelete;
+    static readonly string[] Shifts = ["Day", "Swing", "Night"];
+
+    static RenderFragment IconOf(NxIconData icon) => @<NxIcon Icon="icon" />;
+
+    string? AccentValue
+    {
+        get => accent ?? (dark ? DarkAccent : LightAccent).Accent;
+        set => accent = value is not null && ParseColor(value) is not null ? value.ToLowerInvariant() : null;
+    }
+
+    bool IsChanged => accent is not null || radius != DefaultRadius || height != DefaultHeight || font != DefaultFont;
+
+    void Reset()
+    {
+        accent = null;
+        radius = DefaultRadius;
+        height = DefaultHeight;
+        font = DefaultFont;
+    }
+
+    // ── Tokens ────────────────────────────────────────────────────────────────
+
+    (string Accent, string Hover, string Active, string Fg, string Subtle) AccentTokens()
+    {
+        var defaults = dark ? DarkAccent : LightAccent;
+        if (accent is null || ParseColor(accent) is not { } c || string.Equals(Hex(c), defaults.Accent, StringComparison.OrdinalIgnoreCase))
+            return defaults;
+
+        var hover = dark ? Mix(c, (255, 255, 255), 0.18) : Mix(c, (0, 0, 0), 0.12);
+        var active = dark ? Mix(c, (255, 255, 255), 0.36) : Mix(c, (0, 0, 0), 0.25);
+        (int, int, int) darkText = dark ? (11, 11, 13) : (31, 31, 35);
+        var fg = Contrast(c, (255, 255, 255)) >= Contrast(c, darkText) ? "#ffffff" : Hex(darkText);
+        var alpha = dark ? "0.14" : "0.10";
+        return (Hex(c), Hex(hover), Hex(active), fg, $"rgba({c.R}, {c.G}, {c.B}, {alpha})");
+    }
+
+    IEnumerable<(string Name, string Value)> AccentList()
+    {
+        var a = AccentTokens();
+        return [("--nx-accent", a.Accent), ("--nx-accent-hover", a.Hover), ("--nx-accent-active", a.Active),
+                ("--nx-accent-fg", a.Fg), ("--nx-accent-subtle", a.Subtle)];
+    }
+
+    IEnumerable<(string Name, string Value)> ShapeList() =>
+    [
+        ("--nx-radius", $"{radius}px"), ("--nx-radius-sm", $"{Math.Max(0, radius - 2)}px"), ("--nx-window-radius", $"{radius + 4}px"),
+        ("--nx-control-height-sm", $"{height - 6}px"), ("--nx-control-height-md", $"{height}px"), ("--nx-control-height-lg", $"{height + 8}px"),
+        ("--nx-font-family", font ?? DefaultFont),
+    ];
+
+    static readonly Dictionary<string, string> ShapeDefaults = new()
+    {
+        ["--nx-radius"] = "6px", ["--nx-radius-sm"] = "4px", ["--nx-window-radius"] = "10px",
+        ["--nx-control-height-sm"] = "28px", ["--nx-control-height-md"] = "34px", ["--nx-control-height-lg"] = "42px",
+        ["--nx-font-family"] = DefaultFont,
+    };
+
+    // Every token is set on the sample, so this site's own overrides on :root do not show through.
+    string SampleStyle => string.Join(" ", AccentList().Concat(ShapeList()).Select(t => $"{t.Name}: {t.Value};"));
+
+    string Css
+    {
+        get
+        {
+            var defaults = dark ? DarkAccent : LightAccent;
+            var accentChanged = AccentTokens().Accent != defaults.Accent;
+            var shape = ShapeList().Where(t => ShapeDefaults[t.Name] != t.Value).ToList();
+            var accents = accentChanged ? AccentList().ToList() : [];
+
+            if (shape.Count == 0 && accents.Count == 0)
+                return "/* Nothing differs from the defaults yet. */";
+
+            var blocks = new List<string>();
+            if (dark)
+            {
+                if (shape.Count > 0) blocks.Add(Block(":root", shape));
+                if (accents.Count > 0) blocks.Add(Block(".nx-theme-dark", accents));
+            }
+            else
+                blocks.Add(Block(":root", accents.Concat(shape).ToList()));
+            return string.Join("\n\n", blocks);
+        }
+    }
+
+    static string Block(string selector, List<(string Name, string Value)> tokens)
+    {
+        var width = tokens.Max(t => t.Name.Length) + 1;
+        return $"{selector} {{\n" + string.Join("\n", tokens.Select(t => $"    {(t.Name + ":").PadRight(width)} {t.Value};")) + "\n}";
+    }
+
+    // ── Color math ────────────────────────────────────────────────────────────
+
+    static (int R, int G, int B)? ParseColor(string value)
+    {
+        var s = value.Trim();
+        if (s.StartsWith('#'))
+        {
+            var hex = s[1..];
+            if (hex.Length is 3 or 4)
+                hex = string.Concat(hex[..3].Select(ch => $"{ch}{ch}"));
+            if (hex.Length is 6 or 8 && int.TryParse(hex[..6], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var n))
+                return ((n >> 16) & 255, (n >> 8) & 255, n & 255);
+            return null;
+        }
+        if (s.StartsWith("rgb", StringComparison.OrdinalIgnoreCase) && s.IndexOf('(') is > 0 and var open && s.EndsWith(')'))
+        {
+            var parts = s[(open + 1)..^1].Split([',', ' ', '/'], StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length >= 3
+                && int.TryParse(parts[0], CultureInfo.InvariantCulture, out var r)
+                && int.TryParse(parts[1], CultureInfo.InvariantCulture, out var g)
+                && int.TryParse(parts[2], CultureInfo.InvariantCulture, out var b))
+                return (Math.Clamp(r, 0, 255), Math.Clamp(g, 0, 255), Math.Clamp(b, 0, 255));
+        }
+        return null;
+    }
+
+    static string Hex((int R, int G, int B) c) => $"#{c.R:x2}{c.G:x2}{c.B:x2}";
+
+    static (int R, int G, int B) Mix((int R, int G, int B) c, (int R, int G, int B) with, double amount) =>
+        ((int)Math.Round(c.R + (with.R - c.R) * amount), (int)Math.Round(c.G + (with.G - c.G) * amount), (int)Math.Round(c.B + (with.B - c.B) * amount));
+
+    static double Luminance((int R, int G, int B) c)
+    {
+        static double Channel(int v) { var s = v / 255.0; return s <= 0.03928 ? s / 12.92 : Math.Pow((s + 0.055) / 1.055, 2.4); }
+        return 0.2126 * Channel(c.R) + 0.7152 * Channel(c.G) + 0.0722 * Channel(c.B);
+    }
+
+    static double Contrast((int R, int G, int B) a, (int R, int G, int B) b)
+    {
+        var (la, lb) = (Luminance(a), Luminance(b));
+        return (Math.Max(la, lb) + 0.05) / (Math.Min(la, lb) + 0.05);
+    }
+}

@@ -6,14 +6,18 @@
 <div class="doc-section">
     <h2>From an Address</h2>
     <p class="doc-note"><code>Url</code> opens a file the browser can fetch — here one from the demo's own <code>wwwroot</code> — page fit.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxPdfViewer Id="url-pdf" Url="@DemoPdf.Url" Zoom="NxPdfViewerZoom.PageFit" Height="480px" Style="width:100%" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="from-an-address" />
 </div>
 
 <div class="doc-section">
     <h2>Following the Page</h2>
     <p class="doc-note"><code>@@bind-Page</code> follows the page in view and jumps to one set from code. <code>OnLoad</code> gives the page count.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <div class="demo-row">
             @for (var i = 1; i <= Math.Max(pageCount, 1); i++)
@@ -27,11 +31,14 @@
         <NxPdfViewer Id="page-pdf" Data="pdf" @bind-Page="currentPage" OnLoad="n => pageCount = n" Tools="NxPdfViewerTools.Zoom | NxPdfViewerTools.Search"
                      Zoom="NxPdfViewerZoom.PageWidth" Height="420px" Style="width:100%" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="following-the-page" />
 </div>
 
 <div class="doc-section">
     <h2>Switching Documents</h2>
     <p class="doc-note">A new <code>Data</code> array opens the new document: the find box clears and the viewer starts at page 1.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <div class="demo-row">
             <NxButton id="switch-report" Size="NxButtonSize.Small" OnClick="() => switched = pdf">Pour report</NxButton>
@@ -42,6 +49,8 @@
         <NxPdfViewer Id="switch-pdf" Data="switched" Tools="NxPdfViewerTools.Pager | NxPdfViewerTools.Download" NoDataText="Pick a document above"
                      OnError="e => switchError = e" OnLoad="_ => switchError = null" Height="360px" Style="width:100%" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="switching-documents" />
 </div>
 
 <DocPager Slug="pdfviewer" Page="examples" />

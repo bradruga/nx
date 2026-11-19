@@ -10,7 +10,7 @@
         <NxToggleGroup Id="single-group" Data="Ranges" @bind-Value="range" AriaLabel="Date range" />
         <span class="demo-value" id="single-value">Value: <strong>@range</strong></span>
     </div>
-    <pre class="doc-code">@singleCode</pre>
+    <DocCode Code="@singleCode" />
 </div>
 
 <div class="doc-section">
@@ -22,7 +22,7 @@
         <NxToggleGroup Id="multi-group" Data="Enum.GetValues<Status>()" Multiple="true" @bind-Values="statuses" AriaLabel="Status filter" />
         <span class="demo-value" id="multi-value">Values: <strong>[@string.Join(", ", statuses)]</strong></span>
     </div>
-    <pre class="doc-code">@multipleCode</pre>
+    <DocCode Code="@multipleCode" />
 </div>
 
 <div class="doc-section">
@@ -31,6 +31,7 @@
         Give an item an <code>Icon</code>; with no label it becomes a square icon button — give it an <code>AriaLabel</code> and a
         <code>Title</code>. A text formatting toolbar, built from three multi-select toggles and one single-select group:
     </p>
+    @* code *@
     <div class="demo-stage">
         <NxToggleGroup Id="format-group" Multiple="true" @bind-Values="formats" AriaLabel="Text style">
             <NxToggleGroupItem Value="@("bold")" AriaLabel="Bold" Title="Bold" Icon="@Glyph("B", "font-weight:700")" />
@@ -44,10 +45,13 @@
         </NxToggleGroup>
         <span class="demo-value" id="format-value">[@string.Join(", ", formats)] · @align</span>
     </div>
+    @* /code *@
+    <DocExampleCode Key="icons-and-icon-only" />
 </div>
 
 <div class="doc-section">
     <h2>Sizes</h2>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         @foreach (var size in Enum.GetValues<NxSize>())
         {
@@ -57,14 +61,19 @@
             </div>
         }
     </div>
+    @* /code *@
+    <DocExampleCode Key="sizes" />
 </div>
 
 <div class="doc-section">
     <h2>Full Width</h2>
     <p class="doc-note"><code>FullWidth</code> stretches the group and shares the width between items — tab bars and mobile layouts.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxToggleGroup Id="full-group" Data="Ranges" @bind-Value="fullRange" FullWidth="true" AriaLabel="Full width range" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="full-width" />
 </div>
 
 <div class="doc-section">
@@ -73,24 +82,31 @@
         <code>ItemDisabled</code> (or <code>Disabled</code> on a declared item) greys an item out; arrow keys skip it.
         <code>Disabled</code> on the group turns off them all.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxToggleGroup Id="disabled-items" Data="Ranges" @bind-Value="disabledRange" ItemDisabled="r => r == Ranges[1]" AriaLabel="Range with a disabled item" />
         <NxToggleGroup Id="disabled-group" Data="Ranges" Value="Ranges[0]" Disabled="true" AriaLabel="Disabled group" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="disabled-items" />
 </div>
 
 <div class="doc-section">
     <h2>Item Template</h2>
     <p class="doc-note"><code>ItemTemplate</code> renders each <code>Data</code> item — here with a live count.</p>
+    @* code *@
     <div class="demo-stage">
         <NxToggleGroup Id="template-group" Data="Enum.GetValues<Status>()" @bind-Value="templateStatus" AriaLabel="Status">
             <ItemTemplate Context="s">@s <span class="demo-toggle-count">@Counts[s]</span></ItemTemplate>
         </NxToggleGroup>
     </div>
+    @* /code *@
+    <DocExampleCode Key="item-template" />
 </div>
 
 <div class="doc-section">
     <h2>Form Validation</h2>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <EditForm id="toggle-form" Model="form" OnValidSubmit="Submit" FormName="toggle-form">
             <DataAnnotationsValidator />
@@ -103,6 +119,8 @@
             </div>
         </EditForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="form-validation" />
 </div>
 
 <DocPager Slug="togglegroup" Page="examples" />

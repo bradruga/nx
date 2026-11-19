@@ -8,6 +8,7 @@
     <p class="doc-note">
         ERP's initials colors dialog: two gradients side by side, hex values, no opacity, and a preview of the initials badge.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <div class="demo-gradient-pair">
             <div>
@@ -25,6 +26,8 @@
             <span class="demo-value" id="initials-value">@textColor on @backColor</span>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="text-and-background" />
 </div>
 
 <div class="doc-section">
@@ -33,6 +36,7 @@
         With <code>ShowOpacityEditor</code> the value carries alpha (<code>#rrggbbaa</code>, or <code>rgba()</code> with
         <code>ValueFormat="NxColorFormat.Rgb"</code>). <code>Format</code> chooses which text boxes show first.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxColorGradient Id="rgba-gradient" @bind-Value="overlay" ValueFormat="NxColorFormat.Rgb" Format="NxColorFormat.Rgb" AriaLabel="Overlay" />
         <div class="demo-row">
@@ -40,17 +44,22 @@
             <span class="demo-value" id="overlay-value">@overlay</span>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="opacity-and-rgb" />
 </div>
 
 <div class="doc-section">
     <h2>In a Popup</h2>
     <p class="doc-note">The gradient has no popup of its own; put it in one. Here an <code>NxDialog</code> opens it from a swatch.</p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-row">
             <button type="button" class="demo-swatch-button" id="popup-swatch" aria-label="Crew color" style="background: @crewColor" @onclick="OpenPopup"></button>
             <span class="demo-value" id="popup-value">@crewColor</span>
         </div>
     </div>
+    @* /code *@
+    @* code *@
     <NxDialog @bind-Visible="showPopup" Title="Crew color" Id="color-dialog">
         <ChildContent>
             <NxColorGradient Id="popup-gradient" @bind-Value="draftColor" ShowOpacityEditor="false" AriaLabel="Crew color" />
@@ -60,10 +69,13 @@
             <NxButton id="popup-cancel" OnClick="() => showPopup = false">Cancel</NxButton>
         </Buttons>
     </NxDialog>
+    @* /code *@
+    <DocExampleCode Key="in-a-popup" />
 </div>
 
 <div class="doc-section">
     <h2>Validation &amp; Disabled</h2>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <EditForm id="gradient-form" Model="badge" OnValidSubmit="() => result = Saved()" FormName="gradient-form">
             <DataAnnotationsValidator />
@@ -76,6 +88,8 @@
         </EditForm>
         <NxColorGradient Id="disabled-gradient" Value="#7a7a7a" Disabled="true" AriaLabel="Disabled" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="validation-and-disabled" />
 </div>
 
 <DocPager Slug="colorgradient" Page="examples" />

@@ -170,16 +170,16 @@ public class ButtonTests : PageTest
     {
         await GoToPage();
 
-        var disabled = Section("Disabled").Locator("button");
+        var disabled = Section("Disabled").Locator(".demo-stage button");
         await Expect(disabled).ToHaveCountAsync(8);
         for (var i = 0; i < 8; i++)
             await Expect(disabled.Nth(i)).ToBeDisabledAsync();
 
-        // The last focusable control before the Disabled section is the AutoLoading button;
-        // Tab from there jumps straight to the form below.
-        await Page.Locator("#guard-auto").FocusAsync();
+        // The last focusable control before the disabled buttons is the guard section's copy button;
+        // Tab from there jumps over them to the Disabled section's Show code.
+        await Section("Busy-Click Guard").Locator(".doc-code-copy").FocusAsync();
         await Page.Keyboard.PressAsync("Tab");
-        await Expect(Page.Locator("#order-number")).ToBeFocusedAsync();
+        await Expect(Section("Disabled").Locator(".doc-example-code-toggle")).ToBeFocusedAsync();
     }
 
     // ── States ────────────────────────────────────────────────────────────────

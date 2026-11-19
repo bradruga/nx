@@ -10,6 +10,7 @@
         A modal window blocks the page with a backdrop and traps focus. A non-modal window floats over a page that still works;
         open both below, drag them apart and press one to bring it to the front.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-row">
             <NxButton id="open-modal" Variant="NxButtonVariant.Primary" OnClick="() => modalOpen = true">Open modal</NxButton>
@@ -17,6 +18,8 @@
             <NxButton id="open-b" OnClick="() => bOpen = true">Open window B</NxButton>
         </div>
     </div>
+    @* /code *@
+    @* code *@
     <NxWindow Id="modal-window" @bind-Visible="modalOpen" Title="Modal" Size="NxWindowSize.Small">
         <p>The page behind is blocked. Tab cycles through these fields and the title bar.</p>
         <div class="demo-form-grid">
@@ -30,6 +33,8 @@
     <NxWindow Id="window-b" @bind-Visible="bOpen" Title="Window B" Modal="false" Size="NxWindowSize.Small" Left="200px" Top="200px">
         <p>Press either window to bring it forward.</p>
     </NxWindow>
+    @* /code *@
+    <DocExampleCode Key="modal-and-non-modal" />
 </div>
 
 <div class="doc-section">
@@ -57,7 +62,7 @@
             <p>Line @i. The body scrolls when the content is taller than the window.</p>
         }
     </NxWindow>
-    <pre class="doc-code">@sizeCode</pre>
+    <DocCode Code="@sizeCode" />
 </div>
 
 <div class="doc-section">
@@ -69,12 +74,15 @@
         <code>MinWidth</code> × <code>MinHeight</code>. Bind <code>@@bind-Minimized</code> or <code>@@bind-Maximized</code> to
         drive them from code.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-row">
             <NxButton id="open-actions" OnClick="() => actionsOpen = true">Open delivery window</NxButton>
             <span class="demo-value" id="actions-state">Minimized: <strong>@(actionsMinimized ? "yes" : "no")</strong> · Maximized: <strong>@(actionsMaximized ? "yes" : "no")</strong> · Refreshed × @refreshes</span>
         </div>
     </div>
+    @* /code *@
+    @* code *@
     <NxWindow Id="actions-window" @bind-Visible="actionsOpen" Title="Delivery 2026-10-23" Icon="@Icon("truck")"
               Minimizable="true" Maximizable="true" Resizable="true" Modal="false"
               @bind-Minimized="actionsMinimized" @bind-Maximized="actionsMaximized">
@@ -87,6 +95,8 @@
             <NxTextBox Id="actions-note" Label="Note (kept while minimized)" @bind-Value="note" />
         </ChildContent>
     </NxWindow>
+    @* /code *@
+    <DocExampleCode Key="title-bar-icon-minimize-maximize-and-resize" />
 </div>
 
 <div class="doc-section">
@@ -114,7 +124,7 @@
             <NxButton id="guarded-discard" Variant="NxButtonVariant.Danger" OnClick="Discard">Discard and close</NxButton>
         </Footer>
     </NxWindow>
-    <pre class="doc-code">@closingCode</pre>
+    <DocCode Code="@closingCode" />
 </div>
 
 <div class="doc-section">
@@ -123,9 +133,12 @@
         A window opened from a window stacks above it, with its own backdrop. Escape closes the top one only, and focus goes back
         to the button in the window below.
     </p>
+    @* code *@
     <div class="demo-stage">
         <NxButton id="open-outer" OnClick="() => outerOpen = true">Open order</NxButton>
     </div>
+    @* /code *@
+    @* code *@
     <NxWindow Id="outer-window" @bind-Visible="outerOpen" Title="Order 55120">
         <ChildContent>
             <p>Two pours scheduled.</p>
@@ -136,6 +149,8 @@
         </ChildContent>
         <Footer><span class="demo-value" id="outer-crew">Crew: <strong>@crew</strong></span></Footer>
     </NxWindow>
+    @* /code *@
+    <DocExampleCode Key="nested-windows" />
 </div>
 
 <div class="doc-section">
@@ -144,10 +159,13 @@
         Popups of the inputs inside — the combo box list, the date picker's calendar — open above the window. Validation works
         as anywhere else; Save closes only when the form is valid.
     </p>
+    @* code *@
     <div class="demo-stage">
         <NxButton id="open-form" Variant="NxButtonVariant.Primary" OnClick="() => formOpen = true">New delivery</NxButton>
         <span class="demo-value" id="form-result">@formResult</span>
     </div>
+    @* /code *@
+    @* code *@
     <NxWindow Id="form-window" @bind-Visible="formOpen" Title="New delivery" Icon="@Icon("truck")">
         <ChildContent>
             <EditForm id="window-form" Model="delivery" OnValidSubmit="SaveDelivery" FormName="window-form">
@@ -172,6 +190,8 @@
             <NxButton id="form-save" Variant="NxButtonVariant.Primary" Type="NxButtonType.Submit" form="window-form">Save</NxButton>
         </Footer>
     </NxWindow>
+    @* /code *@
+    <DocExampleCode Key="a-form-in-a-window" />
 </div>
 
 <DocPager Slug="window" Page="examples" />

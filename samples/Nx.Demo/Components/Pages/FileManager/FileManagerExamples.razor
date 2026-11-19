@@ -5,10 +5,13 @@
 <div class="doc-section">
     <h2>Tiles</h2>
     <p class="doc-note"><code>View="NxFileManagerView.Tiles"</code> starts with large icons; <code>@@bind-View</code> keeps the user's choice.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxFileManager TItem="FileEntry" Id="tiles-files" Data="DemoFiles.Project" @bind-View="tilesView" Height="380px" Style="width:100%" />
         <span class="demo-value" id="tiles-view">View: @tilesView</span>
     </div>
+    @* /code *@
+    <DocExampleCode Key="tiles" />
 </div>
 
 <div class="doc-section">
@@ -17,14 +20,18 @@
         The search box finds names containing the text anywhere below the open folder (the whole project from the top), as
         ERP's own search tool did; each result says which folder it is in. Opening a folder from the results leaves them.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxFileManager TItem="FileEntry" Id="search-files" Data="DemoFiles.Project" Height="360px" Style="width:100%" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="search" />
 </div>
 
 <div class="doc-section">
     <h2>Opening a Folder from Code</h2>
     <p class="doc-note"><code>@@bind-Folder</code> goes both ways: these buttons open a folder; the breadcrumb and tree follow.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <div class="demo-row">
             @foreach (var name in new[] { "Shop", "Cylinder breaks", "Photos" })
@@ -36,13 +43,18 @@
         <NxFileManager TItem="FileEntry" Id="go-files" Data="DemoFiles.Project" @bind-Folder="goFolder" Searchable="false" RootName="Project"
                        Height="320px" Style="width:100%" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="opening-a-folder-from-code" />
 </div>
 
 <div class="doc-section">
     <h2>Empty</h2>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxFileManager TItem="FileEntry" Id="empty-files" Data="Array.Empty<FileEntry>()" EmptyText="No files for this project yet" Height="220px" Style="width:100%" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="empty" />
 </div>
 
 <DocPager Slug="filemanager" Page="examples" />

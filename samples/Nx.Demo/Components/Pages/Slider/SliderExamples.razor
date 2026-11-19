@@ -9,12 +9,15 @@
         <code>LargeStep</code> puts a labelled tick every so many; <code>ShowButtons</code> adds − and +; <code>ShowValue</code>
         prints the value at the end, through <code>Format</code>.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxSlider TValue="int" Id="ticks-slider" Label="Pour sequence" Min="1" Max="12" LargeStep="1" @bind-Value="sequence" />
         <NxSlider TValue="int" Id="buttons-slider" Label="Trucks" Min="0" Max="8" ShowButtons="true" ShowValue="true" @bind-Value="trucks" />
         <NxSlider TValue="decimal" Id="percent-slider" Label="Retainage" Min="0m" Max="0.1m" SmallStep="0.005m" LargeStep="0.025m"
                   Format="P1" ShowValue="true" @bind-Value="retainage" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="ticks-buttons-and-value" />
 </div>
 
 <div class="doc-section">
@@ -23,6 +26,7 @@
         By default <code>ValueChanged</code> fires as the thumb moves. With <code>Immediate="false"</code> it fires once, when the
         thumb is let go — for a value that saves or reloads something.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxSlider TValue="int" Id="live-slider" Label="Live" Min="0" Max="100" LargeStep="25" @bind-Value="live" @bind-Value:after="() => liveCount++" />
         <NxSlider TValue="int" Id="release-slider" Label="On release" Min="0" Max="100" LargeStep="25" Immediate="false"
@@ -32,6 +36,8 @@
             <span class="demo-counter" id="release-count">On release × @releaseCount</span>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="while-dragging-or-on-release" />
 </div>
 
 <div class="doc-section">
@@ -40,15 +46,19 @@
         ERP's pub/sub demo broadcasts a slider's value to other pages; here two sliders share one field, so moving either moves the
         other — an outside change always wins over what the thumb shows.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxSlider TValue="int" Id="sync-a" Label="This page" Min="0" Max="10" LargeStep="5" @bind-Value="shared" />
         <NxSlider TValue="int" Id="sync-b" Label="Another subscriber" Min="0" Max="10" LargeStep="5" @bind-Value="shared" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="a-synchronized-value" />
 </div>
 
 <div class="doc-section">
     <h2>Validation &amp; Disabled</h2>
     <p class="doc-note">In an <code>EditForm</code> the slider takes the field's valid / invalid state and turns red when invalid.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <EditForm id="slider-form" Model="mix" OnValidSubmit="() => result = Saved()" FormName="slider-form">
             <DataAnnotationsValidator />
@@ -61,6 +71,8 @@
         </EditForm>
         <NxSlider TValue="int" Id="disabled-slider" Label="Disabled" Min="0" Max="10" Value="6" Disabled="true" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="validation-and-disabled" />
 </div>
 
 <DocPager Slug="slider" Page="examples" />

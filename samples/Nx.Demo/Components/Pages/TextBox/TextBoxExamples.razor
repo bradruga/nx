@@ -37,7 +37,7 @@
             </div>
         </div>
     </div>
-    <pre class="doc-code">@bindingCode</pre>
+    <DocCode Code="@bindingCode" />
 </div>
 
 <div class="doc-section">
@@ -46,11 +46,14 @@
         <code>Label</code> renders a real <code>&lt;label for&gt;</code>, so clicking it focuses the field and screen
         readers announce it. <code>Placeholder</code> shows while the field is empty.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <NxTextBox Id="label-fixed" Label="Job name" Placeholder="e.g. Route 9 culvert" @bind-Value="labelFixed" />
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="labels-and-placeholder" />
 </div>
 
 <div class="doc-section">
@@ -68,7 +71,7 @@
             <NxTextBox Id="affix-email" Label="Mailbox" Prefix="@Icon("mail")" Suffix="@Text("@northeastprecast.com")" @bind-Value="affixEmail" />
         </div>
     </div>
-    <pre class="doc-code">@affixCode</pre>
+    <DocCode Code="@affixCode" />
 </div>
 
 <div class="doc-section">
@@ -78,6 +81,7 @@
         so the button stays out of the tab order. A <code>Password</code> field gets a reveal toggle — a focusable button
         with <code>aria-pressed</code> — unless <code>ShowPasswordToggle="false"</code>.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <NxTextBox Id="clear-demo" Label="Clearable" Clearable="true" @bind-Value="clearValue" />
@@ -85,6 +89,8 @@
             <NxTextBox Id="password-plain" Label="Password, no toggle" Type="NxTextBoxType.Password" ShowPasswordToggle="false" AutoComplete="new-password" @bind-Value="passwordPlain" />
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="clear-button-and-password-toggle" />
 </div>
 
 <div class="doc-section">
@@ -93,11 +99,14 @@
         <code>MaxLength</code> sets the native limit; <code>ShowCounter</code> adds a live count, linked to the input with
         <code>aria-describedby</code>. Match it to the database column so a save never truncates.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-narrow">
         <div style="width:100%">
             <NxTextBox Id="counter-demo" Label="PO number" MaxLength="12" ShowCounter="true" @bind-Value="counterValue" Immediate="true" />
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="max-length-and-counter" />
 </div>
 
 <div class="doc-section">
@@ -106,12 +115,15 @@
         <code>ReadOnly</code> keeps the field focusable and selectable — use it for values the user may copy but not edit.
         <code>Disabled</code> removes it from the tab order.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <NxTextBox Id="readonly-demo" Label="Read-only" ReadOnly="true" Value="INV-2026-00418" Clearable="true" />
             <NxTextBox Id="disabled-demo" Label="Disabled" Disabled="true" Value="Locked after posting" />
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="read-only-and-disabled" />
 </div>
 
 <div class="doc-section">
@@ -120,6 +132,7 @@
         <code>Type</code> sets the HTML input type; <code>InputMode</code> picks the on-screen keyboard on phones and
         tablets without changing validation. Open this page on a phone to compare.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <NxTextBox Label="Email (type=email)" Type="NxTextBoxType.Email" InputMode="NxInputMode.Email" AutoComplete="email" Prefix="@Icon("mail")" />
@@ -128,6 +141,8 @@
             <NxTextBox Label="Website (type=url)" Type="NxTextBoxType.Url" InputMode="NxInputMode.Url" Placeholder="https://" />
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="types-and-input-modes" />
 </div>
 
 <div class="doc-section">
@@ -164,7 +179,7 @@
             </div>
         </EditForm>
     </div>
-    <pre class="doc-code">@validationCode</pre>
+    <DocCode Code="@validationCode" />
 </div>
 
 <div class="doc-section">
@@ -173,6 +188,7 @@
         <code>AutoFocus</code> focuses the input once, after it first renders — for a field in a dialog or a panel that
         just opened. Call <code>FocusAsync()</code> on a reference to focus it later.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <div class="demo-row">
             <NxButton id="autofocus-open" OnClick="() => showPanel = !showPanel">@(showPanel ? "Close panel" : "Open panel")</NxButton>
@@ -184,6 +200,8 @@
         }
         <NxTextBox @ref="laterBox" Id="autofocus-later" Label="Focused by a button" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="auto-focus" />
 </div>
 
 <DocPager Slug="textbox" Page="examples" />

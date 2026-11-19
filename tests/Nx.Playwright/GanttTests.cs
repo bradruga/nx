@@ -62,7 +62,8 @@ public class GanttTests : PageTest
 
         await Expect(Page.Locator("#edit-log")).ToContainTextAsync("Move: Forms set");
         await Expect(g.Locator(".nx-gantt-bar-ghost")).ToHaveCountAsync(0);
-        Assert.That((await bar.BoundingBoxAsync())!.X - before.X, Is.EqualTo(60).Within(1));
+        // The bar redraws a render after the log line: wait for it to land.
+        await bar.EvaluateAsync("(b, x) => new Promise(r => { const f = () => Math.abs(b.getBoundingClientRect().left - x) <= 1 ? r() : requestAnimationFrame(f); f(); })", (double)before.X + 60);
         Assert.That((await bar.BoundingBoxAsync())!.Width, Is.EqualTo(before.Width).Within(1));
 
         // The right edge out a day: three days become four.
@@ -71,7 +72,7 @@ public class GanttTests : PageTest
         await Page.Mouse.UpAsync();
         await Expect(Page.Locator("#edit-log")).ToContainTextAsync("ResizeEnd: Forms set");
         await Expect(Page.Locator("#edit-log")).ToContainTextAsync("(4 d)");
-        Assert.That((await bar.BoundingBoxAsync())!.Width - before.Width, Is.EqualTo(30).Within(1));
+        await bar.EvaluateAsync("(b, w) => new Promise(r => { const f = () => Math.abs(b.getBoundingClientRect().width - w) <= 1 ? r() : requestAnimationFrame(f); f(); })", (double)before.Width + 30);
     }
 
     [Test]

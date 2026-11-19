@@ -1,0 +1,183 @@
+@* The site search: an NxDialog with an NxComboBox over SiteSearchIndex, opened by SiteSearchButton or any page through
+   SiteSearchState. Also records visits for Recent. *@
+@inject NavigationManager Nav
+@inject SiteSearchState State
+@implements IDisposable
+
+<div class="site-search-host">
+    <NxDialog @bind-Visible="visible" Title="Search" Width="640px" Id="site-search" Class="site-search-dialog" CloseOnBackdropClick="true">
+        <ChildContent>
+            <div class="site-search" @onkeydown="OnKeyDown">
+                <NxComboBox TItem="SearchHit" TValue="string"
+                            Id="site-search-input"
+                            DataProvider="Provide"
+                            DebounceDelay="0"
+                            ItemText="@(h => h.Entry.Title)"
+                            ItemValue="@(h => h.Entry.Url)"
+                            ItemGroup="@(h => h.Group)"
+                            ValueChanged="Go"
+                            MobileMode="NxComboBoxMobileMode.Never"
+                            PopupMaxHeight="360"
+                            NoDataText="@NoDataText"
+                            Placeholder="Components, examples, parameters…"
+                            aria-label="Search the site">
+                    <ItemTemplate Context="hit">
+                        <span class="site-search-hit">
+                            <span class="site-search-hit-icon" aria-hidden="true"><NxIcon Icon="IconFor(hit.Group)" Size="NxIconSize.Small" /></span>
+                            <span class="site-search-hit-main">
+                                <span class="site-search-hit-title">
+                                    @Marked(hit.Title)
+                                    @if (hit.Entry.Detail is { } detail)
+                                    {
+                                        <code class="site-search-hit-detail">@detail</code>
+                                    }
+                                    @if (hit.Alias is { } alias)
+                                    {
+                                        <span class="site-search-hit-alias">also @Marked(alias)</span>
+                                    }
+                                </span>
+                                @if (hit.Snippet is { } snippet)
+                                {
+                                    <span class="site-search-hit-note">@Marked(snippet)</span>
+                                }
+                                <span class="site-search-hit-where">@hit.Entry.Where <span class="site-search-hit-url">/@hit.Entry.Url</span></span>
+                            </span>
+                        </span>
+                    </ItemTemplate>
+                </NxComboBox>
+
+                @if (query.Length == 0)
+                {
+                    <div class="site-search-start">
+                        @foreach (var (label, items, icon) in StartGroups)
+                        {
+                            <div class="site-search-start-label">@label</div>
+                            <ul class="site-search-start-list">
+                                @foreach (var component in items)
+                                {
+                                    <li>
+                                        <a href="@($"{component.Slug}/overview")" class="site-search-start-link" @onclick="Close">
+                                            <NxIcon Icon="icon" Size="NxIconSize.Small" />
+                                            <span class="site-search-start-name">@component.Name</span>
+                                            <span class="site-search-start-where">@component.Category</span>
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        <p class="site-search-tip">
+                            Type a component, an example, a parameter — or the Telerik or ERP name you know:
+                            <em>DropDownList</em>, <em>NepDialogFactory</em>, <em>Placeholder</em>.
+                            Pin a component with the star beside its name.
+                        </p>
+                    </div>
+                }
+            </div>
+        </ChildContent>
+        <Buttons>
+            <span class="site-search-keys">
+                <span><kbd>↑</kbd><kbd>↓</kbd> move</span>
+                <span><kbd>Enter</kbd> open</span>
+                <span><kbd>Esc</kbd> close</span>
+            </span>
+        </Buttons>
+    </NxDialog>
+</div>
+
+@code {
+    bool visible;
+    string query = "";
+
+    string NoDataText => $"Nothing matches “{query.Trim()}”. Try a Telerik name like DropDownList, or a parameter like Placeholder.";
+
+    IEnumerable<(string Label, IReadOnlyList<DemoComponent> Items, NxIconData Icon)> StartGroups =>
+        new[] { ("Pinned", State.Pinned, NxIcons.Star), ("Recent", State.Recent, NxIcons.ClockArrowRotate) }.Where(g => g.Item2.Count > 0);
+
+    protected override void OnInitialized()
+    {
+        Nav.LocationChanged += OnLocationChanged;
+        State.Changed += OnStateChanged;
+        State.OpenRequested += OnOpenRequested;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await State.LoadAsync();
+            await State.VisitAsync(CurrentSlug());
+        }
+    }
+
+    string CurrentSlug() => Nav.ToBaseRelativePath(Nav.Uri).Split('?', '#')[0].Split('/')[0];
+
+    void OnLocationChanged(object? sender, LocationChangedEventArgs e) => _ = InvokeAsync(() => State.VisitAsync(CurrentSlug()));
+
+    void OnStateChanged() => _ = InvokeAsync(StateHasChanged);
+
+    void OnOpenRequested() => _ = InvokeAsync(() => { Open(); StateHasChanged(); });
+
+    void Open()
+    {
+        if (visible)
+            return;
+        query = "";
+        visible = true;
+    }
+
+    void Close() => visible = false;
+
+    // Escape closes the dialog even while the list is open (the list would otherwise take the first press).
+    void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+            visible = false;
+    }
+
+    Task<IEnumerable<SearchHit>> Provide(NxComboBoxRequest request)
+    {
+        query = request.Filter;
+        StateHasChanged();
+        IEnumerable<SearchHit> hits = query.Trim().Length > 0
+            ? SiteSearchIndex.Search(query)
+            : State.Pinned.Select(c => SiteSearchIndex.ForComponent(c, SiteSearchIndex.Pinned))
+                .Concat(State.Recent.Select(c => SiteSearchIndex.ForComponent(c, SiteSearchIndex.Recent)));
+        return Task.FromResult(hits);
+    }
+
+    void Go(string? url)
+    {
+        if (url is null)
+            return;
+        visible = false;
+        Nav.NavigateTo(url);
+    }
+
+    static NxIconData IconFor(string group) => group switch
+    {
+        SiteSearchIndex.Components => NxIcons.BuildingBlocks,
+        SiteSearchIndex.Examples => NxIcons.Play,
+        SiteSearchIndex.Parameters => NxIcons.Gear,
+        SiteSearchIndex.Guides => NxIcons.Book,
+        SiteSearchIndex.Pinned => NxIcons.Star,
+        _ => NxIcons.ClockArrowRotate,
+    };
+
+    static RenderFragment Marked(MarkedText text) => __builder =>
+    {
+        var at = 0;
+        foreach (var (start, length) in text.Marks)
+        {
+            @text.Text[at..start]<mark>@text.Text.Substring(start, length)</mark>
+            at = start + length;
+        }
+        @text.Text[at..]
+    };
+
+    public void Dispose()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+        State.Changed -= OnStateChanged;
+        State.OpenRequested -= OnOpenRequested;
+    }
+}

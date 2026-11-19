@@ -6,6 +6,7 @@
 <div class="doc-section">
     <h2>Loading Progress</h2>
     <p class="doc-note">As ERP's AIA reconciliation: the share loaded so far, with "Loading…" in the middle and no animation between steps.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxCircularGauge Id="loading-gauge" Value="loaded" Transitions="false" Size="160px" AriaLabel="Loading">
             <CenterTemplate>@(context >= 100 ? "Done" : "Loading…")</CenterTemplate>
@@ -15,22 +16,28 @@
             <span class="demo-value" id="loading-value">@loaded%</span>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="loading-progress" />
 </div>
 
 <div class="doc-section">
     <h2>Range &amp; Color</h2>
     <p class="doc-note"><code>Min</code> and <code>Max</code> set the scale; <code>Color</code> the arc — here it turns amber, then red, as the yard fills.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxCircularGauge Id="yard-gauge" Value="pieces" Min="0" Max="240" Color="@YardColor" Size="180px" AriaLabel="Yard pieces">
             <CenterTemplate><span class="demo-gauge-value">@context</span><br /><span class="demo-gauge-label">of 240 spots</span></CenterTemplate>
         </NxCircularGauge>
         <NxSlider TValue="int" Min="0" Max="240" LargeStep="40" @bind-Value="pieces" aria-label="Pieces in the yard" Style="width:280px;max-width:100%" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="range-and-color" />
 </div>
 
 <div class="doc-section">
     <h2>Sizes</h2>
     <p class="doc-note"><code>Size</code> is any CSS length; the ring's thickness scales with it.</p>
+    @* code *@
     <div class="demo-stage">
         @foreach (var (size, v) in new[] { ("64px", 30.0), ("120px", 55.0), ("200px", 80.0) })
         {
@@ -39,6 +46,8 @@
             </NxCircularGauge>
         }
     </div>
+    @* /code *@
+    <DocExampleCode Key="sizes" />
 </div>
 
 <DocPager Slug="circulargauge" Page="examples" />

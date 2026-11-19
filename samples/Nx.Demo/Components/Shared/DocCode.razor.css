@@ -1,0 +1,92 @@
+/* Grid, not position: relative, so the block never stacks above a popup opened from the example. */
+.doc-code-block {
+    display: grid;
+    min-width: 0;
+}
+
+.doc-code-block > * {
+    grid-area: 1 / 1;
+    min-width: 0;
+}
+
+.doc-code-copy {
+    justify-self: end;
+    align-self: start;
+    margin: 20px 8px 0 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 28px;
+    padding: 0 9px;
+    font: inherit;
+    font-size: 12px;
+    color: var(--fg-secondary);
+    background: var(--code-block-bg);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    opacity: 0.85;
+    transition: opacity 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.doc-code-copy:hover,
+.doc-code-copy:focus-visible {
+    opacity: 1;
+    color: var(--fg-primary);
+    border-color: var(--accent);
+}
+
+.doc-code-copy:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+.doc-code-copied,
+.doc-code-copied:hover {
+    opacity: 1;
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.doc-code-copy svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Room for the button on the first line */
+.doc-code-block > .doc-code {
+    padding-right: 96px;
+}
+
+/* The playground's code sits flush in its panel */
+.demo-playground-code .doc-code-copy {
+    margin-top: 8px;
+}
+
+@media (max-width: 599px) {
+    .doc-code-copy {
+        margin: 12px 0 0;
+        height: 44px;
+        min-width: 44px;
+        justify-content: center;
+        padding: 0 10px;
+        border-radius: 0 var(--radius-md) 0 var(--radius-sm);
+    }
+
+    .doc-code-copy span {
+        display: none;
+    }
+
+    .doc-code-block > .doc-code {
+        padding-right: 54px;
+    }
+
+    .demo-playground-code .doc-code-copy {
+        margin-top: 0;
+    }
+}

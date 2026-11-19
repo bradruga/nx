@@ -10,6 +10,7 @@
         The type comes from what you bind. Nullable types allow an empty field; non-nullable ones put the last value back when the
         field is emptied. Integers round typed decimals away from zero.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <div>
@@ -26,6 +27,8 @@
             </div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="number-types" />
 </div>
 
 <div class="doc-section">
@@ -46,7 +49,7 @@
             </div>
         </div>
     </div>
-    <pre class="doc-code">@rangeCode</pre>
+    <DocCode Code="@rangeCode" />
 </div>
 
 <div class="doc-section">
@@ -55,6 +58,7 @@
         Click a spin button to step once, or hold it: after 400 ms it repeats every 60 ms until you let go or it reaches the limit.
         On touch screens the buttons sit side by side at a size a finger can hit. <code>ShowSpinButtons="false"</code> removes them.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <div>
@@ -66,6 +70,8 @@
             </div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="spin-buttons" />
 </div>
 
 <div class="doc-section">
@@ -85,7 +91,7 @@
         </div>
         <div class="demo-row"><span class="demo-value" id="culture-value">Value: <strong>@amount.ToString(CultureInfo.InvariantCulture)</strong></span></div>
     </div>
-    <pre class="doc-code">@formatCode</pre>
+    <DocCode Code="@formatCode" />
 </div>
 
 <div class="doc-section">
@@ -94,12 +100,15 @@
         <code>Decimals</code> rounds every committed value (half away from zero) and, without a <code>Format</code>, shows that many
         places. Type <em>3.14159</em> below.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-narrow">
         <div style="width:100%">
             <NxNumericTextBox Id="decimals-demo" Label="Rate (2 decimals)" @bind-Value="rate" Decimals="2" Culture="EnUs" />
             <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="decimals-value">Value: <strong>@rate.ToString(CultureInfo.InvariantCulture)</strong></span></div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="decimals" />
 </div>
 
 <div class="doc-section">
@@ -108,6 +117,7 @@
         Units and symbols go in <code>Prefix</code> and <code>Suffix</code>, inside the border. Parsing ignores a typed currency
         symbol, group separators, <code>%</code> and accounting parentheses — <em>(250)</em> is −250.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <NxNumericTextBox Id="affix-cost" Label="Cost" @bind-Value="cost" Format="N2" Culture="EnUs" Prefix="@Text("$")" Suffix="@Text("USD")" />
@@ -115,6 +125,8 @@
             <NxNumericTextBox Id="affix-weight" Label="Weight" @bind-Value="weight" Format="N0" Culture="EnUs" Min="0" Suffix="@Text("lbs")" />
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="prefix-and-suffix" />
 </div>
 
 <div class="doc-section">
@@ -123,16 +135,20 @@
         <code>SelectOnFocus</code> selects the whole number when the field gains focus — by Tab or by click — so typing replaces it.
         It suits quantity columns that are overwritten more often than edited.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <NxNumericTextBox Id="select-on" Label="Select on focus" @bind-Value="selectOn" SelectOnFocus="true" Culture="EnUs" />
             <NxNumericTextBox Id="select-off" Label="Default" @bind-Value="selectOff" Culture="EnUs" />
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="select-on-focus" />
 </div>
 
 <div class="doc-section">
     <h2>Clear &amp; State</h2>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <NxNumericTextBox Id="state-clear" Label="Clearable" @bind-Value="clearable" Clearable="true" Culture="EnUs" />
@@ -140,6 +156,8 @@
             <NxNumericTextBox Id="state-disabled" Label="Disabled" Value="0" Disabled="true" Culture="EnUs" />
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="clear-and-state" />
 </div>
 
 <div class="doc-section">
@@ -149,6 +167,7 @@
         <code>ValidationMessage</code>. Clamping keeps values in range on its own, so <code>[Range]</code> here is about
         <code>[Required]</code> and business rules.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:560px">
         <EditForm id="numeric-form" Model="line" OnValidSubmit="SubmitLine" FormName="numeric-form">
             <DataAnnotationsValidator />
@@ -168,6 +187,8 @@
             </div>
         </EditForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="form-validation" />
 </div>
 
 <DocPager Slug="numeric" Page="examples" />

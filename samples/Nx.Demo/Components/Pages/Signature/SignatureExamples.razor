@@ -6,6 +6,7 @@
 <div class="doc-section">
     <h2>Safety Form</h2>
     <p class="doc-note">As ERP's safety forms: a required signature in an <code>EditForm</code>, 300 × 150 with a 3 px pen.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <EditForm id="signature-form" Model="form" OnValidSubmit="Submit" FormName="signature-form">
             <DataAnnotationsValidator />
@@ -20,20 +21,26 @@
             </div>
         </EditForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="safety-form" />
 </div>
 
 <div class="doc-section">
     <h2>Pen, Paper &amp; Size</h2>
     <p class="doc-note"><code>Color</code>, <code>BackgroundColor</code> and <code>StrokeWidth</code> are saved in the image; the pad can be any size.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxSignature Id="blue-signature" @bind-Value="blue" Color="#1d4ed8" BackgroundColor="#fdfbe8" StrokeWidth="2" Width="420px" Height="120px"
                      Placeholder="Initial here" AriaLabel="Initials" Style="max-width:100%" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="pen-paper-and-size" />
 </div>
 
 <div class="doc-section">
     <h2>Read-Only &amp; Disabled</h2>
     <p class="doc-note">A signature set from code is drawn on the pad; <code>ReadOnly</code> shows it without letting it change.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <div class="demo-row">
             <NxButton id="load-signature" Size="NxButtonSize.Small" OnClick="() => stored = Saved">Load a saved signature</NxButton>
@@ -42,6 +49,8 @@
         <NxSignature Id="readonly-signature" Value="@stored" ReadOnly="true" AriaLabel="Approved by" />
         <NxSignature Id="disabled-signature" Disabled="true" AriaLabel="Locked signature" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="read-only-and-disabled" />
 </div>
 
 <DocPager Slug="signature" Page="examples" />

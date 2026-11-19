@@ -6,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddNxDialogs();
+builder.Services.AddScoped<Nx.Demo.Data.SiteSearchState>();
 
 var app = builder.Build();
 

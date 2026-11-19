@@ -5,6 +5,7 @@
 <div class="doc-section">
     <h2>Types &amp; Sizes</h2>
     <p class="doc-note"><code>Type</code> picks the animation; <code>Size</code> is 16, 28 or 44 px (<code>--nx-loader-size-*</code>).</p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-loader-matrix" id="loader-matrix">
             <span></span><span class="demo-row-label">Small</span><span class="demo-row-label">Medium</span><span class="demo-row-label">Large</span>
@@ -18,11 +19,14 @@
             }
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="types-and-sizes" />
 </div>
 
 <div class="doc-section">
     <h2>Color</h2>
     <p class="doc-note">The accent by default; set <code>--nx-loader-color</code> on the loader or any container.</p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-row" id="loader-colors">
             <NxLoader Style="--nx-loader-color: var(--nx-success)" />
@@ -30,6 +34,8 @@
             <NxLoader Type="NxLoaderType.Pulsing" Style="--nx-loader-color: var(--nx-fg-muted)" />
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="color" />
 </div>
 
 <div class="doc-section">
@@ -57,7 +63,7 @@
             <ul class="demo-loader-list"><li><strong>P-1042</strong><span>North wall</span></li><li><strong>P-1043</strong><span>Footings</span></li><li><strong>P-1044</strong><span>Deck</span></li></ul>
         </div>
     </div>
-    <pre class="doc-code">@customCode</pre>
+    <DocCode Code="@customCode" />
 </div>
 
 <div class="doc-section">
@@ -66,6 +72,7 @@
         The container covers its nearest positioned ancestor and blocks clicks on it. Here a card loads for two seconds; try
         clicking its button while it does.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <div class="demo-row">
             <NxButton id="card-load" Variant="NxButtonVariant.Primary" OnClick="LoadCardAsync" Disabled="cardLoading">Load</NxButton>
@@ -80,6 +87,8 @@
             </div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="covering-an-area" />
 </div>
 
 <div class="doc-section">
@@ -88,6 +97,7 @@
         <code>Text</code> goes under the loader; <code>LoaderType</code> and <code>LoaderSize</code> change it. Child content
         replaces both — a progress message, say.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <div class="demo-loader-area demo-loader-short">
@@ -104,6 +114,8 @@
             </div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="text-types-and-your-own-content" />
 </div>
 
 <div class="doc-section">
@@ -118,7 +130,7 @@
             <ul class="demo-loader-list"><li><strong>P-1042</strong><span>North wall</span></li><li><strong>P-1043</strong><span>Footings</span></li><li><strong>P-1044</strong><span>Deck</span></li></ul>
         </div>
     </div>
-    <pre class="doc-code">@darkCode</pre>
+    <DocCode Code="@darkCode" />
 </div>
 
 <DocPager Slug="loader" Page="examples" />

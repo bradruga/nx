@@ -8,15 +8,19 @@
         Files of other types, or over the limit, are listed with the reason and marked <code>IsValid = false</code>; read only
         the valid ones. Try a large file or a <code>.zip</code>.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxFileSelect Id="checks-files" AllowedExtensions="ImageTypes" MaxFileSize="200_000" MinFileSize="10" OnSelect="Checked" />
         <span class="demo-value" id="checks-result">@checks</span>
     </div>
+    @* /code *@
+    <DocExampleCode Key="type-and-size-checks" />
 </div>
 
 <div class="doc-section">
     <h2>One File</h2>
     <p class="doc-note">With <code>Multiple="false"</code> the dialog takes one file and a new pick replaces it.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxFileSelect Id="single-file" Multiple="false" AllowedExtensions='new[] { ".csv", ".txt" }' OnSelect="PreviewAsync" />
         @if (preview is not null)
@@ -24,23 +28,31 @@
             <pre class="doc-code demo-file-preview" id="single-preview">@preview</pre>
         }
     </div>
+    @* /code *@
+    <DocExampleCode Key="one-file" />
 </div>
 
 <div class="doc-section">
     <h2>Refusing a Pick</h2>
     <p class="doc-note">Set <code>IsCancelled</code> in <code>OnSelect</code> to keep files out of the list — here, a fourth file.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxFileSelect @ref="limited" Id="limit-files" OnSelect="Limit" />
         <span class="demo-value" id="limit-result">@limitMessage</span>
         <NxButton id="limit-clear" Size="NxButtonSize.Small" OnClick="() => limited?.ClearFiles()">Clear list</NxButton>
     </div>
+    @* /code *@
+    <DocExampleCode Key="refusing-a-pick" />
 </div>
 
 <div class="doc-section">
     <h2>Disabled</h2>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxFileSelect Id="disabled-files" Disabled="true" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="disabled" />
 </div>
 
 <DocPager Slug="fileselect" Page="examples" />

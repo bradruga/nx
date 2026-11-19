@@ -40,29 +40,35 @@
             </MessageContentTemplate>
         </NxChat>
     </div>
-    <pre class="doc-code">@assistantCode</pre>
+    <DocCode Code="@assistantCode" />
 </div>
 
 <div class="doc-section">
     <h2>Someone Is Typing</h2>
     <p class="doc-note">Without a template, a typing message shows moving dots. Here Sam answers a moment after you send.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxChat Id="typing-chat" Data="typing" AuthorId="@DemoChat.Me" IdField="@nameof(ChatMessage.Id)"
                 AuthorIdField="@nameof(ChatMessage.AuthorId)" AuthorNameField="@nameof(ChatMessage.AuthorName)"
                 TextField="@nameof(ChatMessage.Text)" TimestampField="@nameof(ChatMessage.Sent)" IsTypingField="@nameof(ChatMessage.IsTyping)"
                 OnSendMessage="e => ReplyAsync(e.Message)" Height="320px" AriaLabel="Chat with Sam" Style="width:100%; max-width:560px" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="someone-is-typing" />
 </div>
 
 <div class="doc-section">
     <h2>History Only</h2>
     <p class="doc-note"><code>Disabled</code> turns the box off and keeps the messages readable — a closed ticket's thread, say.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxChat Id="disabled-chat" Data="history" AuthorId="@DemoChat.Me" AuthorIdField="@nameof(ChatMessage.AuthorId)"
                 AuthorNameField="@nameof(ChatMessage.AuthorName)" TextField="@nameof(ChatMessage.Text)"
                 TimestampField="@nameof(ChatMessage.Sent)" Disabled="true" Placeholder="This thread is closed" Height="300px"
                 AriaLabel="Closed thread" Style="width:100%; max-width:560px" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="history-only" />
 </div>
 
 <DocPager Slug="chat" Page="examples" />

@@ -10,11 +10,14 @@
         Open the calendar from either field. The first pick sets the start and moves to the end; the second sets the end and
         closes. Picking a day before the start starts over from there. Two months show side by side; <code>Months="1"</code> shows one.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:560px">
         <NxDateRangePicker Id="range-basic" Label="Two months" @bind-StartValue="basicFrom" @bind-EndValue="basicTo" Culture="EnUs" />
         <div class="demo-row"><span class="demo-value" id="range-basic-value">Range: <strong>@Show(basicFrom) → @Show(basicTo)</strong></span></div>
         <NxDateRangePicker Id="range-one" Label="One month" Months="1" @bind-StartValue="oneFrom" @bind-EndValue="oneTo" Culture="EnUs" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="picking-a-range" />
 </div>
 
 <div class="doc-section">
@@ -23,10 +26,13 @@
         Each field takes a typed date as the date picker does (<em>12/5</em> is this year's). Type a start after the end and the two swap, so the range is
         always in order.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:560px">
         <NxDateRangePicker Id="range-typed" Label="Typed (de-DE)" @bind-StartValue="typedFrom" @bind-EndValue="typedTo" Culture="DeDe" />
         <div class="demo-row"><span class="demo-value" id="range-typed-value">Range: <strong>@Show(typedFrom) → @Show(typedTo)</strong></span></div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="typing" />
 </div>
 
 <div class="doc-section">
@@ -37,7 +43,7 @@
                            Min="LimitMin" Max="LimitMin.AddDays(60)" IsDateDisabled="d => d.DayOfWeek == DayOfWeek.Sunday"
                            ShowWeekNumbers="true" Culture="EnUs" />
     </div>
-    <pre class="doc-code">@limitsCode</pre>
+    <DocCode Code="@limitsCode" />
 </div>
 
 <div class="doc-section">
@@ -46,19 +52,25 @@
         Bound to <code>DateTime</code>, each end keeps its time of day. <code>StartLabel</code> and <code>EndLabel</code> name the
         fields.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:560px">
         <NxDateRangePicker Id="range-datetime" @bind-StartValue="dtFrom" @bind-EndValue="dtTo" StartLabel="Check in" EndLabel="Check out"
                            Culture="EnUs" />
         <div class="demo-row"><span class="demo-value" id="range-datetime-value">Range: <strong>@dtFrom.ToString("yyyy-MM-dd HH:mm") → @dtTo.ToString("yyyy-MM-dd HH:mm")</strong></span></div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="datetime-and-labels" />
 </div>
 
 <div class="doc-section">
     <h2>State</h2>
+    @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:560px">
         <NxDateRangePicker Id="range-readonly" Label="Read-only" StartValue="basicFrom" EndValue="basicTo" ReadOnly="true" Culture="EnUs" />
         <NxDateRangePicker Id="range-disabled" Label="Disabled" StartValue="basicFrom" EndValue="basicTo" Disabled="true" Culture="EnUs" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="state" />
 </div>
 
 <div class="doc-section">
@@ -67,16 +79,20 @@
         At 600px and below the calendar opens full screen, one month at a time, with the range so far at the top and a hint for
         the next pick. <code>MobileMode="Always"</code> forces it here.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:560px">
         <NxDateRangePicker Id="range-sheet" Label="Shutdown" @bind-StartValue="sheetFrom" @bind-EndValue="sheetTo"
                            MobileMode="NxMobileMode.Always" Clearable="true" Culture="EnUs" />
         <div class="demo-row"><span class="demo-value" id="range-sheet-value">Range: <strong>@Show(sheetFrom) → @Show(sheetTo)</strong></span></div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="phone-sheet" />
 </div>
 
 <div class="doc-section">
     <h2>Form Validation</h2>
     <p class="doc-note">Each end validates on its own field; a rule across both goes on the model.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:560px">
         <EditForm id="range-form" Model="leave" OnValidSubmit="Submit" FormName="range-form">
             <DataAnnotationsValidator />
@@ -89,6 +105,8 @@
             </div>
         </EditForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="form-validation" />
 </div>
 
 <DocPager Slug="daterange" Page="examples" />

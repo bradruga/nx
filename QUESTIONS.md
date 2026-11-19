@@ -54,6 +54,14 @@ already answered. Answer by number: "keep" or "change". **Rec** is what I'd do.
 
 ## Reliability pass (11/18)
 
+178. **Library gaps found building the demo site (no src change yet):**
+     - **Container theming is partial.** nx-theme.css says tokens can be set on any ancestor, but derived tokens
+       (`--nx-focus-ring-color`, `--nx-toggle-selected-*`, `--nx-tab-indicator`) are `var(--nx-accent)` on `:root`, so an
+       accent set on a container doesn't reach them. The theme builder restates them. Fix: declare the derived tokens on
+       the components (or `*`) instead of `:root`.
+     - **NxComboBox can't open its list with no text** (search shows Recent/Pinned in its own markup), **has no way to set
+       its text from outside** (the 404 can't pre-fill the search), and **Escape inside an NxDialog takes two presses**
+       (the first closes the list). Search works around all three.
 177. **A body-less `NxTab` inserted at runtime between other body-less tabs lands first.** A tab reports its markup
      position only when it re-renders, and a tab whose parameters are all unchanged strings is skipped by Blazor.
      Tabs with content (the normal case) always re-render, so they land beside their neighbour. Fixing it means a

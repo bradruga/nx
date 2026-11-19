@@ -18,7 +18,7 @@
             <div class="demo-row"><span class="demo-value" id="simple-value">Value: <strong>@(simpleState ?? "null")</strong></span></div>
         </div>
     </div>
-    <pre class="doc-code">@simpleCode</pre>
+    <DocCode Code="@simpleCode" />
 </div>
 
 <div class="doc-section">
@@ -46,7 +46,7 @@
             <NxButton id="value-clear" Size="NxButtonSize.Small" Variant="NxButtonVariant.Ghost" OnClick="() => { customerId = null; customer = null; }">Clear from code</NxButton>
         </div>
     </div>
-    <pre class="doc-code">@valueCode</pre>
+    <DocCode Code="@valueCode" />
 </div>
 
 <div class="doc-section">
@@ -78,7 +78,7 @@
             </div>
         </div>
     </div>
-    <pre class="doc-code">@filterCode</pre>
+    <DocCode Code="@filterCode" />
 </div>
 
 <div class="doc-section">
@@ -89,6 +89,7 @@
         right (<code>overflow: hidden</code>, 60 px tall) does not cut it off. It closes on <kbd class="doc-kbd">Esc</kbd>,
         on <kbd class="doc-kbd">Tab</kbd>, and on a click anywhere outside.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <div>
@@ -101,6 +102,8 @@
             </div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="popup-positioning" />
 </div>
 
 <div class="doc-section">
@@ -130,7 +133,7 @@
         </div>
         <EventLog @ref="providerLog" Label="Provider calls" EmptyText="Open the list or type to call the provider." />
     </div>
-    <pre class="doc-code">@providerCode</pre>
+    <DocCode Code="@providerCode" />
 </div>
 
 <div class="doc-section">
@@ -151,7 +154,7 @@
             <div class="demo-row" style="align-self:end"><span class="demo-value" id="virtual-value">Value: <strong>@(partId?.ToString() ?? "null")</strong></span></div>
         </div>
     </div>
-    <pre class="doc-code">@virtualCode</pre>
+    <DocCode Code="@virtualCode" />
 </div>
 
 <div class="doc-section">
@@ -160,6 +163,7 @@
         <code>ItemGroup</code> puts items under headers, in the order each group first appears. Headers are skipped by the
         arrow keys. <code>GroupHeaderTemplate</code> customizes them — here with a count.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <div>
@@ -178,6 +182,8 @@
             </div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="grouping" />
 </div>
 
 <div class="doc-section">
@@ -208,7 +214,7 @@
             </div>
         </div>
     </div>
-    <pre class="doc-code">@templateCode</pre>
+    <DocCode Code="@templateCode" />
 </div>
 
 <div class="doc-section">
@@ -217,6 +223,7 @@
         <code>AllowCustomValue</code> keeps typed text that matches no item — the list becomes suggestions. It needs a
         <code>string</code> value. <kbd class="doc-kbd">Enter</kbd> keeps what you typed unless you arrowed to an item.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <div>
@@ -226,6 +233,8 @@
             <div class="demo-row" style="align-self:end"><span class="demo-value" id="custom-value">Value: <strong>@(shipVia ?? "null")</strong></span></div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="custom-values" />
 </div>
 
 <div class="doc-section">
@@ -261,7 +270,7 @@
             </div>
         </div>
     </div>
-    <pre class="doc-code">@columnsCode</pre>
+    <DocCode Code="@columnsCode" />
 </div>
 
 <div class="doc-section">
@@ -303,7 +312,7 @@
             </div>
         </EditForm>
     </div>
-    <pre class="doc-code">@multipleCode</pre>
+    <DocCode Code="@multipleCode" />
 </div>
 
 <div class="doc-section">
@@ -315,6 +324,7 @@
         <code>MobileBreakpoint</code> (600 px) by default; <code>MobileMode="Always"</code> forces it, as on these two, so you can
         try it on a desktop.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid demo-form-grid-2">
             <div>
@@ -332,6 +342,8 @@
             </div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="mobile-overlay" />
 </div>
 
 <div class="doc-section">
@@ -340,6 +352,7 @@
         Inside an <code>EditForm</code>, <code>@@bind-Value</code> identifies the field: the combo box turns red with
         <code>aria-invalid</code> while it has messages and works with the built-in <code>ValidationMessage</code>.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:560px">
         <EditForm id="combo-form" Model="ticket" OnValidSubmit="SubmitTicket" FormName="combo-form">
             <DataAnnotationsValidator />
@@ -362,6 +375,8 @@
             </div>
         </EditForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="form-validation" />
 </div>
 
 <DocPager Slug="combobox" Page="examples" />

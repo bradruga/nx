@@ -1,0 +1,30 @@
+@* A collapsed "Show code" under an example: the page's own marked markup (see Data/ExampleCode.cs). The code renders
+   only when opened, so a page's text locators keep finding the live example alone. *@
+@inject NavigationManager Nav
+
+@if (source is not null)
+{
+    <div class="doc-example-code">
+        <button type="button" class="doc-example-code-toggle" aria-expanded="@(open ? "true" : "false")" @onclick="() => open = !open">
+            <span class="doc-example-code-chevron" aria-hidden="true"></span>@(open ? "Hide code" : "Show code")
+        </button>
+        @if (open)
+        {
+            <DocCode Code="@source" />
+        }
+    </div>
+}
+
+@code {
+    /// <summary>The example's key in its page's source: the <c>Key</c> of this tag there.</summary>
+    [Parameter, EditorRequired] public string Key { get; set; } = "";
+
+    string? source;
+    bool open;
+
+    protected override void OnParametersSet()
+    {
+        var path = "/" + Nav.ToBaseRelativePath(Nav.Uri).Split('?', '#')[0];
+        source = ExampleCode.Find(path, Key);
+    }
+}

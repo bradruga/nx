@@ -1,0 +1,9 @@
+@* The top bar's search button; demo-search.js clicks it for Ctrl+K and "/". The dialog is SiteSearch, outside the header. *@
+@inject SiteSearchState State
+
+<button type="button" id="site-search-button" class="site-search-button" @onclick="State.RequestOpen"
+        aria-label="Search the site" aria-keyshortcuts="Control+K Meta+K /" title="Search (Ctrl K or /)">
+    <NxIcon Icon="NxIcons.Search" />
+    <span class="site-search-button-text">Search…</span>
+    <kbd class="site-search-button-kbd">Ctrl K</kbd>
+</button>

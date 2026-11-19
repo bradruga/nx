@@ -1,10 +1,24 @@
 @inject NavigationManager Nav
+@inject SiteSearchState Search
 @implements IDisposable
 
 <nav class="nav-tree">
+    @if (Search.Pinned.Count > 0)
+    {
+        @* No ids here: the tree's nav-{slug} ids stay unique, and the pager test reads them in order. *@
+        <div class="nav-group-label">Pinned</div>
+        @foreach (var component in Search.Pinned)
+        {
+            <a href="@($"{component.Slug}/overview")" class="nav-leaf nav-pinned @(component.Slug == activeSlug ? "nav-pinned-current" : "")">
+                <NxIcon Icon="NxIcons.Star" Size="NxIconSize.XSmall" />
+                @component.Name
+            </a>
+        }
+    }
     <div class="nav-group-label">Guide</div>
     <NavLink href="" Match="NavLinkMatch.All" class="nav-leaf">Overview</NavLink>
     <NavLink href="guides/files" Match="NavLinkMatch.All" class="nav-leaf">FileSelect or Upload?</NavLink>
+    <NavLink href="guides/theme" Match="NavLinkMatch.All" class="nav-leaf">Theme builder</NavLink>
 
     @foreach (var category in DemoCatalog.Categories.Where(c => DemoCatalog.Components.Any(x => x.Category == c)))
     {
@@ -45,7 +59,10 @@
     {
         SyncWithLocation();
         Nav.LocationChanged += OnLocationChanged;
+        Search.Changed += OnSearchChanged;
     }
+
+    void OnSearchChanged() => InvokeAsync(StateHasChanged);
 
     // The group for the current page always opens; groups the user opened stay open.
     void SyncWithLocation()
@@ -69,5 +86,9 @@
             expanded.Add(slug);
     }
 
-    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+    public void Dispose()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+        Search.Changed -= OnSearchChanged;
+    }
 }

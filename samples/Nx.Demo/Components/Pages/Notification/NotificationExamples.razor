@@ -5,6 +5,7 @@
 <div class="doc-section">
     <h2>Types</h2>
     <p class="doc-note">Info, Success, Warning and Error take the theme's colors and icons; Neutral is the plain dark message ERP uses for "Saved by …".</p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-row">
             @foreach (var type in Enum.GetValues<NxNotificationType>())
@@ -13,6 +14,8 @@
             }
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="types" />
 </div>
 
 <div class="doc-section">
@@ -21,6 +24,7 @@
         <code>CloseAfter</code> is in milliseconds; <code>0</code> keeps the message until it is closed. Hover one to hold it.
         <code>Show(text, type)</code> is the short form, with a 5 s timeout.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-row">
             <NxButton id="timing-short" Size="NxButtonSize.Small" OnClick="ShowShort">1.5 seconds</NxButton>
@@ -30,6 +34,8 @@
             <NxButton id="timing-hide-all" Size="NxButtonSize.Small" Variant="NxButtonVariant.Ghost" OnClick="() => notification?.HideAll()">Hide all</NxButton>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="timing" />
 </div>
 
 <div class="doc-section">
@@ -38,6 +44,7 @@
         <code>HorizontalPosition</code> and <code>VerticalPosition</code>; each page usually has one notification. At the
         top the newest message is first, at the bottom it is last — always nearest the edge.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-position-grid">
             @foreach (var vertical in Enum.GetValues<NxNotificationVerticalPosition>())
@@ -51,14 +58,19 @@
             }
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="positions" />
 </div>
 
 <div class="doc-section">
     <h2>Many at Once</h2>
     <p class="doc-note"><code>MaxVisible</code> (5) caps the stack; a sixth message closes the oldest.</p>
+    @* code *@
     <div class="demo-stage">
         <NxButton id="many-burst" Size="NxButtonSize.Small" OnClick="Burst">Show 8</NxButton>
     </div>
+    @* /code *@
+    <DocExampleCode Key="many-at-once" />
 </div>
 
 <NxNotification @ref="notification" id="examples-notification" />

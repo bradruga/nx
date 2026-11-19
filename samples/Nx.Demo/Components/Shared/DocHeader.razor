@@ -1,4 +1,6 @@
-@* Title, summary and page tabs at the top of every component page. *@
+@* Title, summary and page tabs at the top of every component page. The star pins the component to the sidebar. *@
+@inject SiteSearchState Search
+@implements IDisposable
 
 <PageTitle>@Component.Name · @PageTitleText — Nx Components</PageTitle>
 
@@ -10,7 +12,14 @@
     <span aria-current="page">@Component.Name</span>
 </nav>
 
-<h1>@Component.Name</h1>
+<div class="doc-title-row">
+    <h1>@Component.Name</h1>
+    <button type="button" class="doc-pin @(Pinned ? "doc-pin-on" : "")" @onclick="() => Search.TogglePinAsync(Slug)"
+            aria-pressed="@(Pinned ? "true" : "false")" aria-label="@($"Pin {Component.Name}")"
+            title="@(Pinned ? "Unpin from the sidebar" : "Pin to the sidebar")">
+        <NxIcon Icon="NxIcons.Star" />
+    </button>
+</div>
 <p class="doc-intro">@Component.Summary</p>
 
 <nav class="doc-tabs" aria-label="@Component.Name pages">
@@ -26,4 +35,11 @@
 
     DemoComponent Component => DemoCatalog.Find(Slug) ?? throw new InvalidOperationException($"No component '{Slug}' in DemoCatalog.");
     string PageTitleText => DemoCatalog.Pages.First(p => p.Slug == Page).Title;
+    bool Pinned => Search.IsPinned(Slug);
+
+    protected override void OnInitialized() => Search.Changed += OnSearchChanged;
+
+    void OnSearchChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Search.Changed -= OnSearchChanged;
 }

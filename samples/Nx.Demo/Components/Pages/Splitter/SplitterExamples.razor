@@ -5,6 +5,7 @@
 <div class="doc-section">
     <h2>Stacked</h2>
     <p class="doc-note"><code>Orientation="Vertical"</code> stacks the panes; the bars run across and move with ↑ and ↓.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxSplitter Id="vertical-splitter" Orientation="NxOrientation.Vertical" Style="height: 300px">
             <NxSplitterPane Id="vertical-top" Title="Schedule" @bind-Size="topSize" Min="60px">
@@ -16,6 +17,8 @@
         </NxSplitter>
         <div class="demo-row"><span class="demo-value" id="vertical-size">Top: <strong>@topSize</strong></span></div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="stacked" />
 </div>
 
 <div class="doc-section">
@@ -32,7 +35,7 @@
         </NxSplitter>
         <div class="demo-row"><span class="demo-value" id="three-size">Left: <strong>@leftSize</strong> · Right: <strong>@rightSize</strong></span></div>
     </div>
-    <pre class="doc-code">@threeCode</pre>
+    <DocCode Code="@threeCode" />
 </div>
 
 <div class="doc-section">
@@ -41,6 +44,7 @@
         A pane collapses to nothing and back through <code>@@bind-Collapsed</code>; its content is kept and its bar stops
         resizing meanwhile. The splitter draws no button for it: the control is yours, here two toggle buttons in a toolbar.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <div class="demo-row">
             <NxToggleButton id="toggle-nav" Selected="!navCollapsed" SelectedChanged="on => navCollapsed = !on">Navigation</NxToggleButton>
@@ -55,6 +59,8 @@
             <NxSplitterPane Id="collapse-props" Title="Properties" Size="180px" @bind-Collapsed="propsCollapsed"><p>Properties</p></NxSplitterPane>
         </NxSplitter>
     </div>
+    @* /code *@
+    <DocExampleCode Key="collapsing-panes" />
 </div>
 
 <div class="doc-section">
@@ -124,12 +130,13 @@
             <span class="demo-value" id="ide-state">Explorer: <strong>@(explorerHidden ? "hidden" : "shown")</strong> · Terminal: <strong>@(terminalHidden ? "hidden" : "shown")</strong> · Structure: <strong>@(structureHidden ? "hidden" : "shown")</strong></span>
         </div>
     </div>
-    <pre class="doc-code">@ideCode</pre>
+    <DocCode Code="@ideCode" />
 </div>
 
 <div class="doc-section">
     <h2>Nested</h2>
     <p class="doc-note">A pane can hold another splitter: here a list beside a stacked detail and history.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxSplitter Id="nested-splitter" Style="height: 320px">
             <NxSplitterPane Id="nested-list" Title="Orders" Size="30%" Min="140px"><p>Orders</p></NxSplitterPane>
@@ -142,17 +149,22 @@
         </NxSplitter>
         <div class="demo-row"><span class="demo-value" id="nested-size">Detail: <strong>@innerSize</strong></span></div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="nested" />
 </div>
 
 <div class="doc-section">
     <h2>Fixed Panes</h2>
     <p class="doc-note"><code>Resizable="false"</code> keeps a pane's size; its bar shows no grip and takes no drags.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxSplitter Id="fixed-splitter" Style="height: 160px">
             <NxSplitterPane Id="fixed-left" Title="Toolbox" Size="160px" Resizable="false"><p>Fixed 160 px</p></NxSplitterPane>
             <NxSplitterPane Id="fixed-main" Title="Canvas"><p>Canvas</p></NxSplitterPane>
         </NxSplitter>
     </div>
+    @* /code *@
+    <DocExampleCode Key="fixed-panes" />
 </div>
 
 <DocPager Slug="splitter" Page="examples" />

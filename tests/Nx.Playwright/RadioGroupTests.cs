@@ -61,8 +61,8 @@ public class RadioGroupTests : PageTest
         await GoToPage();
 
         await Page.Locator("#data-radio").GetByRole(AriaRole.Radio, new() { Name = "Rail" }).ClickAsync();
-        // Shift+Tab back into the group from the next one lands on its checked button, not its last.
-        await Radios("declared-radio").Nth(0).FocusAsync();
+        // Shift+Tab back into the group from the copy button after it lands on its checked button, not its last.
+        await Page.Locator(".doc-section:has(#data-radio) .doc-code-copy").FocusAsync();
         await Page.Keyboard.PressAsync("Shift+Tab");
 
         await Expect(Radios("data-radio").Nth(2)).ToBeFocusedAsync();

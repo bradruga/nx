@@ -1,4 +1,5 @@
 @page "/"
+@inject NavigationManager Nav
 
 <PageTitle>Nx Components</PageTitle>
 
@@ -19,7 +20,12 @@
 
 <div class="doc-section">
     <h2>Components</h2>
-    @foreach (var category in DemoCatalog.Categories)
+    <div class="home-filter" id="home-filter">
+        <NxToggleGroup Data="Filters" Value="SelectedFilter" ValueChanged="(string? value) => FilterBy(value)" AriaLabel="Category">
+            <ItemTemplate Context="filter">@filter<span class="home-filter-count">@CountOf(filter)</span></ItemTemplate>
+        </NxToggleGroup>
+    </div>
+    @foreach (var category in DemoCatalog.Categories.Where(c => SelectedFilter == AllFilter || c == SelectedFilter))
     {
         <h3 class="home-category">@category</h3>
         <div class="component-grid">
@@ -76,6 +82,19 @@
 </div>
 
 @code {
+    const string AllFilter = "All";
+    static readonly IReadOnlyList<string> Filters = [AllFilter, .. DemoCatalog.Categories];
+
+    /// <summary>The category the grid shows, from <c>?category=</c>; anything else shows all.</summary>
+    [SupplyParameterFromQuery(Name = "category")] public string? Category { get; set; }
+
+    string SelectedFilter => DemoCatalog.Categories.FirstOrDefault(c => string.Equals(c, Category, StringComparison.OrdinalIgnoreCase)) ?? AllFilter;
+
+    static int CountOf(string? filter) => filter == AllFilter ? DemoCatalog.Components.Count : DemoCatalog.Components.Count(c => c.Category == filter);
+
+    void FilterBy(string? filter) =>
+        Nav.NavigateTo(Nav.GetUriWithQueryParameter("category", filter is null or AllFilter ? null : filter), replace: true);
+
     int? customerId;
     decimal? price = 1240m;
     DateOnly? pourDate = DateOnly.FromDateTime(DateTime.Today);

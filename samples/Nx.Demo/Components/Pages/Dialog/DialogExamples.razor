@@ -18,7 +18,7 @@
         </div>
         <span class="demo-value" id="ex-result">Result: <strong>@result</strong></span>
     </div>
-    <pre class="doc-code">@oneLinerCode</pre>
+    <DocCode Code="@oneLinerCode" />
 </div>
 
 <div class="doc-section">
@@ -34,7 +34,7 @@
             <span class="demo-value" id="ex-show-result">@crewResult</span>
         </div>
     </div>
-    <pre class="doc-code">@showCode</pre>
+    <DocCode Code="@showCode" />
 </div>
 
 <div class="doc-section">
@@ -43,6 +43,7 @@
         <code>Open</code> returns an <code>NxDialogReference</code>: await its <code>Result</code>, or <code>Close</code> it.
         Content can take it as a cascading parameter — here a list closes the dialog on a double click.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <div class="demo-row">
             <NxButton id="ex-pick" OnClick="PickTruckAsync">Pick a truck…</NxButton>
@@ -50,6 +51,8 @@
             <span class="demo-value" id="ex-pick-result">@pickResult</span>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="closing-from-code" />
 </div>
 
 <div class="doc-section">
@@ -61,7 +64,7 @@
             <span class="demo-value" id="ex-progress-result">@progressResult</span>
         </div>
     </div>
-    <pre class="doc-code">@progressCode</pre>
+    <DocCode Code="@progressCode" />
 </div>
 
 <div class="doc-section">
@@ -70,12 +73,15 @@
         For a dialog with its own state, put <code>NxDialog</code> in the page. Size it with <code>Width</code>; on a phone it
         stays a card unless <code>FullScreenOnPhone</code>.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-row">
             <NxButton id="ex-markup" OnClick="() => showReview = true">Approve schedule…</NxButton>
             <span class="demo-value" id="ex-markup-result">@reviewResult</span>
         </div>
     </div>
+    @* /code *@
+    @* code *@
     <NxDialog @bind-Visible="showReview" Title="Approve schedule" Width="460px" Id="ex-review">
         <ChildContent>
             <p class="demo-dialog-text">Approving publishes this schedule to the crew. Add an optional note for the submitter.</p>
@@ -87,6 +93,8 @@
             <NxButton id="ex-review-cancel" OnClick="() => showReview = false">Cancel</NxButton>
         </Buttons>
     </NxDialog>
+    @* /code *@
+    <DocExampleCode Key="nxdialog-in-markup" />
 </div>
 
 <DocPager Slug="dialog" Page="examples" />

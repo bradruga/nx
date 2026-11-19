@@ -1,0 +1,22 @@
+/* Category filter: one joined row that scrolls inside itself when it does not fit. */
+.home-filter {
+    max-width: 100%;
+    margin: 0 0 20px;
+    padding-bottom: 4px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+.home-filter ::deep .nx-togglegroup { flex-wrap: nowrap; }
+.home-filter-count {
+    margin-left: 6px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--bg-raised);
+    color: var(--fg-secondary);
+    font-size: 11.5px;
+    font-weight: 500;
+}
+
+@media (max-width: 899px) {
+    .home-filter { --nx-control-height-md: 44px; }
+}

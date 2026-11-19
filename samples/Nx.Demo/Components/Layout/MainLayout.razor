@@ -19,6 +19,7 @@
             </a>
             <span class="top-nav-tag">Blazor · .NET 10</span>
             <div class="top-nav-right">
+                <SiteSearchButton />
                 <button class="top-nav-theme" @onclick="ToggleDark"
                         title="Toggle dark mode" aria-label="Toggle dark mode" aria-pressed="@(isDarkMode ? "true" : "false")">
                     @if (isDarkMode)
@@ -50,6 +51,7 @@
             @Body
         </main>
         <NxDialogHost />
+        <SiteSearch />
     </div>
 </div>
 

@@ -4,6 +4,7 @@
 
 <div class="doc-section">
     <h2>Variants &amp; Sizes</h2>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-row">
             @foreach (var variant in new[] { NxButtonVariant.Primary, NxButtonVariant.Secondary, NxButtonVariant.Danger })
@@ -21,6 +22,8 @@
         </div>
         <div class="demo-row" style="margin-top:12px"><span class="demo-value" id="variants-result">@result</span></div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="variants-and-sizes" />
 </div>
 
 <div class="doc-section">
@@ -29,6 +32,7 @@
         <code>Loading</code> shows the primary half's spinner; <code>Disabled</code> turns off both halves, <code>MenuDisabled</code>
         only the arrow.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-row">
             <NxSplitButton Id="loading-split" Variant="NxButtonVariant.Primary" Loading="saving" OnClick="SaveSlowly" Items="items" OnItemClick="Picked">Save</NxSplitButton>
@@ -36,13 +40,18 @@
             <NxSplitButton Id="menu-disabled-split" MenuDisabled="true" Items="items" OnClick="PrimaryOnly">No menu</NxSplitButton>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="loading-and-disabled" />
 </div>
 
 <div class="doc-section">
     <h2>Submenus</h2>
+    @* code *@
     <div class="demo-stage">
         <NxSplitButton Id="sub-split" Icon="@DemoMenus.Icon("mail")" OnClick="SendToPlant" Items="sendItems" OnItemClick="Picked">Send to plant</NxSplitButton>
     </div>
+    @* /code *@
+    <DocExampleCode Key="submenus" />
 </div>
 
 <DocPager Slug="splitbutton" Page="examples" />

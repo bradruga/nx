@@ -1,0 +1,156 @@
+/* Theme builder: controls beside the sample when there is room, stacked otherwise. */
+.theme-builder {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+}
+
+@media (min-width: 1180px) {
+    .theme-builder { grid-template-columns: 280px minmax(0, 1fr); align-items: start; }
+}
+
+.theme-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--bg-subtle);
+}
+.theme-controls ::deep .nx-button { align-self: flex-start; }
+
+.theme-control { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.theme-control > ::deep .nx-dropdown,
+.theme-control > ::deep .nx-combobox { width: 100%; }
+.theme-control-label { font-size: 13px; font-weight: 500; color: var(--fg-primary); }
+.theme-control-hint { font-size: 12px; color: var(--fg-secondary); }
+
+/* The sample carries its own tokens: the inline style sets the builder's values; the light class restates the
+   light theme (this site may be dark); the alias tokens are restated so they read the sample's values,
+   not the ones resolved on :root. */
+.theme-sample {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-window-radius);
+    background: var(--nx-surface);
+    color: var(--nx-fg);
+    font-family: var(--nx-font-family);
+    font-size: var(--nx-font-size);
+
+    --nx-invalid:               var(--nx-danger);
+    --nx-focus-ring-color:      var(--nx-accent);
+    --nx-focus-ring-inset:      0 0 0 1px var(--nx-accent);
+    --nx-popup-bg:              var(--nx-surface);
+    --nx-popup-border:          var(--nx-border);
+    --nx-item-hover-bg:         var(--nx-surface-hover);
+    --nx-item-active-bg:        var(--nx-accent-subtle);
+    --nx-item-selected-fg:      var(--nx-accent);
+    --nx-group-header-fg:       var(--nx-fg-muted);
+    --nx-popup-header-bg:       var(--nx-surface-hover);
+    --nx-check-border:          var(--nx-border-hover);
+    --nx-toggle-selected-bg:    var(--nx-accent-subtle);
+    --nx-toggle-selected-border: var(--nx-accent);
+    --nx-toggle-selected-fg:    var(--nx-accent);
+    --nx-chip-bg:               var(--nx-accent-subtle);
+    --nx-chip-fg:               var(--nx-fg);
+    --nx-calendar-selected-bg:  var(--nx-accent);
+    --nx-calendar-selected-fg:  var(--nx-accent-fg);
+    --nx-calendar-range-bg:     var(--nx-accent-subtle);
+    --nx-calendar-today-border: var(--nx-accent);
+    --nx-tab-active-fg:         var(--nx-accent);
+    --nx-tab-indicator:         var(--nx-accent);
+    --nx-validation-color:      var(--nx-invalid);
+    --nx-slider-track:          var(--nx-surface-active);
+    --nx-slider-fill:           var(--nx-accent);
+    --nx-slider-thumb-bg:       var(--nx-surface);
+}
+
+.theme-sample-light {
+    --nx-fg:                 #1f1f23;
+    --nx-fg-muted:           #6b6b78;
+    --nx-fg-subtle:          #9a9aa6;
+    --nx-surface:            #ffffff;
+    --nx-surface-hover:      #f3f3f5;
+    --nx-surface-active:     #e9e9ec;
+    --nx-surface-disabled:   #f5f5f7;
+    --nx-border:             #d4d4da;
+    --nx-border-hover:       #b4b4be;
+    --nx-danger:             #d13438;
+    --nx-danger-hover:       #bb2d31;
+    --nx-danger-active:      #a4262c;
+    --nx-danger-fg:          #ffffff;
+    --nx-danger-subtle:      rgba(209, 52, 56, 0.10);
+    --nx-valid:              #107c10;
+    --nx-success:            #107c10;
+    --nx-warning:            #b86e00;
+    --nx-success-hover:      #0e6b0e;
+    --nx-success-active:     #0b5a0b;
+    --nx-success-fg:         #ffffff;
+    --nx-warning-fill:       #f0a30a;
+    --nx-warning-fill-hover: #dc9409;
+    --nx-warning-fill-active:#c58307;
+    --nx-warning-fg:         #1f1f23;
+    --nx-info:               #0a7c9b;
+    --nx-info-hover:         #086a85;
+    --nx-info-active:        #075a71;
+    --nx-info-fg:            #ffffff;
+    --nx-switch-off-bg:      #c4c4cc;
+    --nx-switch-off-fg:      #ffffff;
+    --nx-switch-thumb-bg:    #ffffff;
+    --nx-chip-remove-hover-bg: rgba(0, 0, 0, 0.08);
+    --nx-tooltip-bg:         #2b2b31;
+    --nx-tooltip-fg:         #ffffff;
+    --nx-shadow-popup:       0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+    --nx-shadow-window:      0 24px 64px rgba(0, 0, 0, 0.22), 0 4px 12px rgba(0, 0, 0, 0.10);
+    --nx-window-backdrop:    rgba(15, 15, 22, 0.45);
+    color-scheme: light;
+}
+.theme-sample.nx-theme-dark { color-scheme: dark; }
+
+.theme-sample-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.theme-sample-title { font-size: var(--nx-font-size-lg); font-weight: 600; }
+.theme-sample-sub { font-size: var(--nx-font-size-sm); color: var(--nx-fg-muted); }
+.theme-sample-status {
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--nx-accent-subtle);
+    color: var(--nx-accent);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.theme-sample-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+    gap: 16px;
+    align-items: end;
+}
+.theme-sample-grid > * { min-width: 0; }
+.theme-sample-grid ::deep .nx-combobox,
+.theme-sample-grid ::deep .nx-textbox,
+.theme-sample-grid ::deep .nx-numeric,
+.theme-sample-grid ::deep .nx-datepicker { width: 100%; }
+.theme-sample-label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: var(--nx-font-size-sm);
+    font-weight: var(--nx-font-weight-medium);
+    color: var(--nx-fg);
+}
+.theme-sample-checks { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; min-height: var(--nx-control-height-md); }
+.theme-sample-text { margin: 0; color: var(--nx-fg-muted); }
+
+.theme-sample-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 16px;
+    border-top: 1px solid var(--nx-border);
+}
+
+/* CSS to copy: the button sits over the code block's corner. */

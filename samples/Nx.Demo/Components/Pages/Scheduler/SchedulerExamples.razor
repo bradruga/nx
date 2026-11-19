@@ -8,15 +8,19 @@
         Without a template each item shows its title and times on an accent card. Overlapping items share the day's width:
         Monday's three meetings sit side by side. Half-hour rows (<code>SlotDivisions="2"</code>), 6:00 to 20:00 shown.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxScheduler Id="meetings-scheduler" Data="DemoShifts.Meetings(meetingsWeek)" @bind-Date="meetingsWeek"
                      StartTime="new(6, 0)" EndTime="new(20, 0)" Height="460px" Style="width:100%" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="default-look-and-overlaps" />
 </div>
 
 <div class="doc-section">
     <h2>Following a Date</h2>
     <p class="doc-note"><code>@@bind-Date</code> goes both ways: pick a date and the calendar shows its week; the arrows move the picker too.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxDatePicker TValue="DateTime" Id="date-picker" Label="Week of" @bind-Value="pickedWeek" Style="width:220px" />
         <NxScheduler Id="date-scheduler" Data="DemoShifts.Week(pickedWeek)" @bind-Date="pickedWeek" WorkDayStart="new(7, 0)" WorkDayEnd="new(19, 0)"
@@ -24,15 +28,20 @@
             <ItemTemplate><div class="demo-shift" style="background:@context.Color"><div class="demo-shift-name">@context.ShiftName</div></div></ItemTemplate>
         </NxScheduler>
     </div>
+    @* /code *@
+    <DocExampleCode Key="following-a-date" />
 </div>
 
 <div class="doc-section">
     <h2>A Different Week Start</h2>
     <p class="doc-note"><code>Culture</code> sets the first day of the week and the formats: en-GB weeks start on Monday, with 24-hour times.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxScheduler Id="culture-scheduler" Data="DemoShifts.Meetings(DateTime.Today)" Culture="EnGb" StartTime="new(7, 0)" EndTime="new(17, 0)"
                      Height="340px" Style="width:100%" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="a-different-week-start" />
 </div>
 
 <DocPager Slug="scheduler" Page="examples" />

@@ -10,6 +10,7 @@
         Open, letters move the highlight, and letters typed quickly build a prefix — <em>ma</em> goes to Maine, <em>mas</em> to
         Massachusetts.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-narrow">
         <div style="width:100%">
             <label class="demo-field-label" for="typeahead-dropdown">State</label>
@@ -17,6 +18,8 @@
             <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="typeahead-value">Value: <strong>@(state ?? "null")</strong></span></div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="type-ahead" />
 </div>
 
 <div class="doc-section">
@@ -25,6 +28,7 @@
         <code>DefaultText</code> shows while nothing is selected and adds a first item that sets the value back to
         <code>default</code> — "any", "none", "all".
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-narrow">
         <div style="width:100%">
             <label class="demo-field-label" for="default-dropdown">Department</label>
@@ -32,11 +36,14 @@
             <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="default-value">Value: <strong>@(department ?? "null")</strong></span></div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="default-item" />
 </div>
 
 <div class="doc-section">
     <h2>Grouping &amp; Templates</h2>
     <p class="doc-note"><code>ItemGroup</code> puts items under headers; <code>ItemTemplate</code> and <code>SelectedItemTemplate</code> render them.</p>
+    @* code *@
     <div class="demo-stage demo-stage-narrow">
         <div style="width:100%">
             <label class="demo-field-label" for="group-dropdown">Assigned to</label>
@@ -52,11 +59,14 @@
             <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="group-value">Value: <strong>@(employeeId?.ToString() ?? "null")</strong></span></div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="grouping-and-templates" />
 </div>
 
 <div class="doc-section">
     <h2>Columns</h2>
     <p class="doc-note">The combo box's columns work here too: an aligned grid under a header row.</p>
+    @* code *@
     <div class="demo-stage demo-stage-narrow">
         <div style="width:100%">
             <label class="demo-field-label" for="columns-dropdown">Customer</label>
@@ -70,11 +80,14 @@
             </NxDropDown>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="columns" />
 </div>
 
 <div class="doc-section">
     <h2>Long Lists</h2>
     <p class="doc-note"><code>Virtualize</code> renders only the visible rows: 50,000 parts, and type-ahead still finds them.</p>
+    @* code *@
     <div class="demo-stage demo-stage-narrow">
         <div style="width:100%">
             <label class="demo-field-label" for="virtual-dropdown">Part</label>
@@ -83,11 +96,14 @@
             <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="virtual-value">Value: <strong>@(partId?.ToString() ?? "null")</strong></span></div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="long-lists" />
 </div>
 
 <div class="doc-section">
     <h2>Data Provider</h2>
     <p class="doc-note">A <code>DataProvider</code> loads the items when the list opens, with the loading state while it runs.</p>
+    @* code *@
     <div class="demo-stage demo-stage-narrow">
         <div style="width:100%">
             <label class="demo-field-label" for="provider-dropdown">Customer (remote)</label>
@@ -96,10 +112,13 @@
             <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="provider-value">Value: <strong>@(remoteCustomer?.ToString() ?? "null")</strong></span></div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="data-provider" />
 </div>
 
 <div class="doc-section">
     <h2>Clear &amp; State</h2>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <div>
@@ -116,6 +135,8 @@
             </div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="clear-and-state" />
 </div>
 
 <div class="doc-section">
@@ -124,6 +145,7 @@
         At 600px and below the list opens as a full-screen sheet with large rows and no search box. <code>MobileMode="Always"</code>
         forces it here.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-narrow">
         <div style="width:100%">
             <label class="demo-field-label" for="sheet-dropdown">Plant</label>
@@ -132,10 +154,13 @@
             <div class="demo-row" style="margin-top:8px"><span class="demo-value" id="sheet-value">Value: <strong>@(plant ?? "null")</strong></span></div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="phone-sheet" />
 </div>
 
 <div class="doc-section">
     <h2>Form Validation</h2>
+    @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:560px">
         <EditForm id="dropdown-form" Model="ticket" OnValidSubmit="Submit" FormName="dropdown-form">
             <DataAnnotationsValidator />
@@ -148,6 +173,8 @@
             </div>
         </EditForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="form-validation" />
 </div>
 
 <DocPager Slug="dropdown" Page="examples" />

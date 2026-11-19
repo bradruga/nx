@@ -19,7 +19,7 @@
         <NxTextArea Id="overview-notes" Label="Pour notes" @bind-Value="notes" AutoResize="true" MaxRows="8" MaxLength="500" ShowCounter="true" />
         <div class="demo-row"><span class="demo-value" id="overview-length">Length: <strong>@(notes?.Length ?? 0)</strong></span></div>
     </div>
-    <pre class="doc-code">@basicCode</pre>
+    <DocCode Code="@basicCode" />
 </div>
 
 <div class="doc-section">

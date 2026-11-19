@@ -45,7 +45,7 @@
             <span class="demo-value" id="overview-updated">@(updated is null ? "No cell edited" : $"Updated: {updated}")</span>
         </div>
     </div>
-    <pre class="doc-code">@basicCode</pre>
+    <DocCode Code="@basicCode" />
 </div>
 
 <NxDialog Id="task-dialog" Visible="editing is not null" VisibleChanged="v => { if (!v) editing = null; }" Title="Edit task">

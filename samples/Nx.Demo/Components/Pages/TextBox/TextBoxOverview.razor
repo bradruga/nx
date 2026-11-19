@@ -19,7 +19,7 @@
         <NxTextBox Id="overview-textbox" Label="Customer" Placeholder="Who is this order for?" Clearable="true" @bind-Value="customer" />
         <span class="demo-value" id="overview-value">Value: <strong>@(customer ?? "null")</strong></span>
     </div>
-    <pre class="doc-code">@basicCode</pre>
+    <DocCode Code="@basicCode" />
 </div>
 
 <div class="doc-section">

@@ -1562,3 +1562,65 @@ code {
 @media (prefers-reduced-motion: reduce) {
     .demo-loader-mixer g, .demo-loader-pour-fill, .demo-loader-pour-chute { animation-duration: 4s; }
 }
+
+/* ── Code blocks ── */
+/* DocCode's highlighted tokens (CodeHighlighter), and DocExampleCode's "Show code" toggle. */
+:root {
+    --code-tag:     #116329;
+    --code-attr:    #0550AE;
+    --code-string:  #0A3069;
+    --code-razor:   #8250DF;
+    --code-keyword: #CF222E;
+    --code-comment: #6E7781;
+    --code-number:  #0550AE;
+}
+html.nx-theme-dark {
+    --code-tag:     #7EE787;
+    --code-attr:    #79C0FF;
+    --code-string:  #A5D6FF;
+    --code-razor:   #D2A8FF;
+    --code-keyword: #FF7B72;
+    --code-comment: #8B949E;
+    --code-number:  #79C0FF;
+}
+.doc-code .tok-tag   { color: var(--code-tag); }
+.doc-code .tok-attr  { color: var(--code-attr); }
+.doc-code .tok-str   { color: var(--code-string); }
+.doc-code .tok-razor { color: var(--code-razor); }
+.doc-code .tok-kw    { color: var(--code-keyword); }
+.doc-code .tok-com   { color: var(--code-comment); font-style: italic; }
+.doc-code .tok-num   { color: var(--code-number); }
+
+/* ── Search ──────────────────────────────────────────────────────────────────
+   The pin star in DocHeader and the Pinned group in NavMenu. The search button and dialog are scoped
+   (SiteSearchButton.razor.css, SiteSearch.razor.css); this block is only what lives in shared markup. */
+
+.doc-title-row { display: flex; align-items: center; gap: 6px; margin: 0 0 6px; }
+.doc-title-row h1 { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+
+.doc-pin {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    background: none;
+    color: var(--fg-muted);
+    cursor: pointer;
+}
+.doc-pin:hover { background: var(--bg-subtle); border-color: var(--border); color: var(--fg-secondary); }
+.doc-pin:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.doc-pin-on, .doc-pin-on:hover { color: #E3A008; }
+.doc-pin-on svg { fill: currentColor; }
+
+.nav-sidebar nav a.nav-pinned { display: flex; align-items: center; gap: 6px; }
+.nav-sidebar nav a.nav-pinned svg { color: #E3A008; fill: currentColor; flex-shrink: 0; }
+.nav-sidebar nav a.nav-pinned-current { color: var(--accent); }
+
+@media (max-width: 899px) {
+    .doc-pin { width: 44px; height: 44px; }
+}

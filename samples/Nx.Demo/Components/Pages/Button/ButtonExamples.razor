@@ -16,7 +16,7 @@
         <NxButton Variant="NxButtonVariant.Ghost">Ghost</NxButton>
         <NxButton Variant="NxButtonVariant.Link">Link</NxButton>
     </div>
-    <pre class="doc-code">@variantsCode</pre>
+    <DocCode Code="@variantsCode" />
 </div>
 
 <div class="doc-section">
@@ -31,7 +31,7 @@
         <NxButton id="status-warning" Variant="NxButtonVariant.Warning" Icon="@IconFragment("refresh")">Reopen</NxButton>
         <NxButton id="status-info" Variant="NxButtonVariant.Info" Icon="@IconFragment("download")">Export PDF</NxButton>
     </div>
-    <pre class="doc-code">@statusCode</pre>
+    <DocCode Code="@statusCode" />
 </div>
 
 <div class="doc-section">
@@ -40,6 +40,7 @@
         <code>Small</code>, <code>Medium</code> and <code>Large</code> share the control height scale with
         <code>NxTextBox</code> and <code>NxComboBox</code>, so a button lines up with the field beside it.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         @foreach (var s in Enum.GetValues<NxButtonSize>())
         {
@@ -52,6 +53,8 @@
             </div>
         }
     </div>
+    @* /code *@
+    <DocExampleCode Key="sizes" />
 </div>
 
 <div class="doc-section">
@@ -69,7 +72,7 @@
         <NxButton Icon="@IconFragment("trash")" AriaLabel="Delete" Title="Delete" Variant="NxButtonVariant.Danger" />
         <NxButton Icon="@IconFragment("refresh")" AriaLabel="Refresh" Title="Refresh" Variant="NxButtonVariant.Ghost" />
     </div>
-    <pre class="doc-code">@iconsCode</pre>
+    <DocCode Code="@iconsCode" />
 </div>
 
 <div class="doc-section">
@@ -91,7 +94,7 @@
     <div class="demo-stage">
         <NxButton id="loading-save" Variant="NxButtonVariant.Primary" Loading="saving" LoadingText="Saving…" Icon="@IconFragment("save")" OnClick="SaveClick">Save</NxButton>
     </div>
-    <pre class="doc-code">@saveCode</pre>
+    <DocCode Code="@saveCode" />
 </div>
 
 <div class="doc-section">
@@ -120,7 +123,7 @@
             <span class="demo-counter" id="guard-auto-count">Handler ran @autoRuns×</span>
         </div>
     </div>
-    <pre class="doc-code">@guardCode</pre>
+    <DocCode Code="@guardCode" />
 </div>
 
 <div class="doc-section">
@@ -129,12 +132,15 @@
         <code>Disabled</code> renders the native <code>disabled</code> attribute: the button leaves the tab
         order and neither clicks nor submits.
     </p>
+    @* code *@
     <div class="demo-stage">
         @foreach (var v in Enum.GetValues<NxButtonVariant>())
         {
             <NxButton Variant="v" Disabled="true">@v</NxButton>
         }
     </div>
+    @* /code *@
+    <DocExampleCode Key="disabled" />
 </div>
 
 <div class="doc-section">
@@ -145,6 +151,7 @@
         and the form cannot be submitted twice. <code>Reset</code> resets a native form's inputs;
         <code>Button</code>, the default, never submits.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <EditForm Model="order" OnValidSubmit="SubmitOrder" FormName="button-form">
             <DataAnnotationsValidator />
@@ -166,15 +173,20 @@
             </div>
         </form>
     </div>
+    @* /code *@
+    <DocExampleCode Key="form-types" />
 </div>
 
 <div class="doc-section">
     <h2>Full Width</h2>
     <p class="doc-note"><code>FullWidth</code> stretches the button to its container — dialog footers and mobile layouts.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxButton Variant="NxButtonVariant.Primary" FullWidth="true" Size="NxButtonSize.Large">Sign in</NxButton>
         <NxButton FullWidth="true">Create an account</NxButton>
     </div>
+    @* /code *@
+    <DocExampleCode Key="full-width" />
 </div>
 
 <DocPager Slug="button" Page="examples" />

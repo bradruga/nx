@@ -34,7 +34,7 @@
             <span class="demo-value" id="edit-selected">Selected: <strong>@(Picked?.Title ?? "none")</strong></span>
         </div>
     </div>
-    <pre class="doc-code">@editCode</pre>
+    <DocCode Code="@editCode" />
 </div>
 
 <NxDialog Id="edit-dialog" Visible="form is not null" VisibleChanged="v => { if (!v) form = null; }" Title="Edit task">
@@ -59,6 +59,7 @@
         With <code>OnDependencyCreate</code> each bar shows a handle at both ends: drag from one to another bar to link them
         (end to start is finish-to-start). Add the link to <code>Dependencies</code> and its arrow appears.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxGantt TItem="ScheduleTask" Id="links-gantt" Data="linkTasks" Dependencies="drawn" OnDependencyCreate="Link" TreeListWidth="260px"
                  Height="360px" Style="width:100%">
@@ -68,6 +69,8 @@
         </NxGantt>
         <span class="demo-value" id="links-count">@drawn.Count links@(lastLink is null ? "" : $" · last: {lastLink}")</span>
     </div>
+    @* /code *@
+    <DocExampleCode Key="drawing-dependencies" />
 </div>
 
 <div class="doc-section">
@@ -77,6 +80,7 @@
         data's order). <code>FilterRow</code>: tasks containing the text, with their parents. <code>HasSort</code> and
         <code>HasFilter</code> drive the Clear buttons, as ERP's toolbar does.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxGantt @ref="filtered" TItem="ScheduleTask" Id="filter-gantt" Data="filterTasks" Sortable="true" FilterRow="true" OnStateChanged="StateHasChanged"
                  TreeListWidth="420px" Height="380px" Style="width:100%">
@@ -98,6 +102,8 @@
             </Columns>
         </NxGantt>
     </div>
+    @* /code *@
+    <DocExampleCode Key="sorting-and-the-filter-row" />
 </div>
 
 <div class="doc-section">
@@ -107,6 +113,7 @@
         shows under it, and <code>WeekHeaderTemplate</code> / <code>DayHeaderTemplate</code> the timeline's headers — ERP shows
         one letter per day.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxGantt TItem="ScheduleTask" Id="template-gantt" Data="templateTasks" Dependencies="templateLinks" SlotWidth="22" TreeListWidth="240px"
                  Height="360px" Style="width:100%">
@@ -125,6 +132,8 @@
             </Columns>
         </NxGantt>
     </div>
+    @* /code *@
+    <DocExampleCode Key="templates" />
 </div>
 
 <DocPager Slug="gantt" Page="examples" />

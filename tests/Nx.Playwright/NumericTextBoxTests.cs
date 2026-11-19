@@ -348,6 +348,8 @@ public class NumericTextBoxTests : PageTest
 
         await Page.Locator("#pg-max").FillAsync("1000");
         await Page.Locator("#pg-max").BlurAsync();
+        // The new Max arrives a round trip later; typing before it lands is overwritten by that render.
+        await Expect(Input("playground-numeric")).ToHaveAttributeAsync("aria-valuemax", "1000");
         await Input("playground-numeric").FillAsync("5000");
         await Input("playground-numeric").PressAsync("Enter");
         await Expect(Page.Locator("#playground-value")).ToHaveTextAsync("Value: 1000");

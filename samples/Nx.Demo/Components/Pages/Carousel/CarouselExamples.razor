@@ -8,12 +8,15 @@
         ERP's lobby and break room screens hide the arrows and dots (<code>Arrows="false"</code>, <code>Pageable="false"</code>)
         and let it rotate every 10 seconds; nobody touches a TV. Without dots there is no pause button either.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxCarousel Id="lobby-carousel" Data="DemoSlides.Projects" Height="240px" Arrows="false" Pageable="false"
                     AutomaticPageChangeInterval="10000" AriaLabel="Lobby pictures">
             <Template><DemoSlideView Slide="context" ShowCaption="false" /></Template>
         </NxCarousel>
     </div>
+    @* /code *@
+    <DocExampleCode Key="a-lobby-screen" />
 </div>
 
 <div class="doc-section">
@@ -22,6 +25,7 @@
         The spotlight stops rotating while a picture is open in a viewer: bind <code>AutomaticPageChange</code> to that state.
         Click a slide to open it here.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxCarousel Id="spotlight-carousel" Data="DemoSlides.Projects" Height="240px" AutomaticPageChangeInterval="4000"
                     AutomaticPageChange="!viewerOpen" AriaLabel="Spotlight">
@@ -39,11 +43,14 @@
             }
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="stopping-the-rotation" />
 </div>
 
 <div class="doc-section">
     <h2>From Code</h2>
     <p class="doc-note"><code>@@bind-Page</code> moves it from outside; <code>NextAsync</code> and <code>PreviousAsync</code> step it.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxCarousel @ref="stepper" Id="code-carousel" Data="DemoSlides.Projects" Height="200px" AutomaticPageChange="false"
                     Arrows="false" @bind-Page="codePage" AriaLabel="Projects">
@@ -56,11 +63,14 @@
             <span class="demo-value" id="code-page">Page <strong>@codePage</strong></span>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="from-code" />
 </div>
 
 <div class="doc-section">
     <h2>Any Content</h2>
     <p class="doc-note">A slide is any markup: here this week's numbers, one card at a time.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxCarousel Id="stats-carousel" Data="Stats" Height="160px" AutomaticPageChangeInterval="5000" AriaLabel="This week">
             <Template>
@@ -71,6 +81,8 @@
             </Template>
         </NxCarousel>
     </div>
+    @* /code *@
+    <DocExampleCode Key="any-content" />
 </div>
 
 <DocPager Slug="carousel" Page="examples" />

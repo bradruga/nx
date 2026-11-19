@@ -27,7 +27,7 @@
         </NxContextMenu>
         <div class="demo-row"><span class="demo-value" id="rows-picked">@rowResult</span></div>
     </div>
-    <pre class="doc-code">@rowsCode</pre>
+    <DocCode Code="@rowsCode" />
 </div>
 
 <div class="doc-section">
@@ -36,6 +36,7 @@
         An item with <code>Items</code> opens a submenu — on hover, → or Enter. <code>Checked</code> makes a check item; flip it in
         <code>OnItemClick</code> and hand the menu new items.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxContextMenu Id="view-menu" Items="ViewItems" OnItemClick="ViewPicked" AriaLabel="View options">
             <div class="demo-context-card" id="view-card">
@@ -44,26 +45,34 @@
             </div>
         </NxContextMenu>
     </div>
+    @* /code *@
+    <DocExampleCode Key="submenus-and-check-items" />
 </div>
 
 <div class="doc-section">
     <h2>Opening From Code</h2>
     <p class="doc-note"><code>OpenAtAsync(x, y)</code> opens the menu at any point — here where you click the button.</p>
+    @* code *@
     <div class="demo-stage">
         <NxContextMenu @ref="coded" Id="coded-menu" Items="codedItems" OnItemClick="e => codedPicked = e.Item.Text" AriaLabel="Quick actions" />
         <NxButton id="open-coded" OnClick="OpenCoded">Open a menu here</NxButton>
         <span class="demo-value" id="coded-picked">Picked: <strong>@codedPicked</strong></span>
     </div>
+    @* /code *@
+    <DocExampleCode Key="opening-from-code" />
 </div>
 
 <div class="doc-section">
     <h2>Target by Selector</h2>
     <p class="doc-note"><code>Target</code> attaches the menu to any element by CSS selector, without wrapping it.</p>
+    @* code *@
     <div class="demo-stage">
         <span class="demo-status-badge" id="target-chip">Truck 14 · Loading</span>
         <NxContextMenu Id="target-menu" Target="#target-chip" Items="truckItems" OnItemClick="e => truckPicked = e.Item.Text" AriaLabel="Truck actions" />
         <span class="demo-value" id="target-picked">Picked: <strong>@truckPicked</strong></span>
     </div>
+    @* /code *@
+    <DocExampleCode Key="target-by-selector" />
 </div>
 
 <div class="doc-section">
@@ -72,6 +81,7 @@
         At 600px and below the menu slides up from the bottom with 48px rows and dims the page; a submenu replaces it, with a back
         row at the top. Long-press any example above on a phone.
     </p>
+    <DocCode Code="@sheetCode" />
 </div>
 
 <DocPager Slug="contextmenu" Page="examples" />
@@ -137,6 +147,14 @@
 
     readonly IReadOnlyList<NxMenuItem> truckItems = [new("Track") { Icon = DemoMenus.Icon("truck") }, new("Call driver") { Icon = DemoMenus.Icon("phone") }];
     string truckPicked = "—";
+
+    const string sheetCode =
+        """
+        @* Nothing to set: at 600px and below every context menu opens as a bottom sheet. *@
+        <NxContextMenu Items="items" OnItemClick="Run">
+            …
+        </NxContextMenu>
+        """;
 
     const string rowsCode =
         """

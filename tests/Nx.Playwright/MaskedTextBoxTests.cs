@@ -183,7 +183,7 @@ public class MaskedTextBoxTests : PageTest
         var input = Page.Locator("#prompt-dot");
         await input.ScrollIntoViewIfNeededAsync();
         await Expect(input).ToHaveValueAsync("···-···");
-        await Page.Locator("#mask-time").FocusAsync();
+        await Page.Locator(".doc-section:has(#mask-time) .doc-example-code-toggle").FocusAsync();
         await Page.Keyboard.PressAsync("Tab");
         await Expect(input).ToBeFocusedAsync();
 

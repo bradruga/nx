@@ -9,6 +9,7 @@
         <code>Field</code> alone is enough: each item picks the editor for its property's type and binds it. The model updates
         as you edit (shown live beside the form, or under it on a phone).
     </p>
+    @* code *@
     <div class="demo-stage demo-form-split">
         <NxForm Id="generated-form" EditContext="pourContext" Columns="2">
             <NxFormItem Field="@nameof(PourForm.Name)" ColSpan="2" />
@@ -21,6 +22,8 @@
         </NxForm>
         <pre class="doc-code demo-form-model" id="generated-model">@PourText</pre>
     </div>
+    @* /code *@
+    <DocExampleCode Key="generated-editors" />
 </div>
 
 <div class="doc-section">
@@ -29,6 +32,7 @@
         <code>Columns</code> sets the grid; <code>ColSpan</code> spans it. ERP's contact forms use 12 columns — names in
         thirds, the rest in halves. Narrow the window: under 540 px of form width every item takes the full row.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxForm Id="columns-form" Model="contact" Columns="12" ColumnSpacing="12px">
             <NxFormItem Field="@nameof(ContactForm.FirstName)" ColSpan="4" Label="First*" />
@@ -40,11 +44,14 @@
             <NxFormItem Field="@nameof(ContactForm.Email)" ColSpan="6" />
         </NxForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="columns-and-spans" />
 </div>
 
 <div class="doc-section">
     <h2>Groups</h2>
     <p class="doc-note"><code>NxFormGroup</code> puts a legend over its items and has a grid of its own; it spans the whole form.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxForm Id="groups-form" Model="contact" Columns="2">
             <NxFormGroup Label="Site contact">
@@ -57,6 +64,8 @@
             </NxFormGroup>
         </NxForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="groups" />
 </div>
 
 <div class="doc-section">
@@ -65,6 +74,7 @@
         <code>Orientation="NxOrientation.Horizontal"</code> puts labels in a right-aligned column (<code>--nx-form-label-width</code>);
         on a narrow form they go back above.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:640px">
         <NxForm Id="horizontal-form" Model="pour2" Orientation="NxOrientation.Horizontal">
             <NxFormItem Field="@nameof(PourForm.Name)" />
@@ -73,6 +83,8 @@
             <NxFormItem Field="@nameof(PourForm.PumpTruck)" />
         </NxForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="labels-beside-editors" />
 </div>
 
 <div class="doc-section">
@@ -81,6 +93,7 @@
         Anything inside an item is its editor; the item still adds the label and the field's messages. Give the editor the
         item's <code>Id</code> so the label points at it.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxForm Id="custom-form" Model="contact" Columns="2">
             <NxFormItem Field="@nameof(ContactForm.CustomerId)" Label="Customer" Id="custom-customer">
@@ -100,6 +113,8 @@
             </NxFormItem>
         </NxForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="your-own-editors" />
 </div>
 
 <div class="doc-section">
@@ -108,6 +123,7 @@
         Items work inside any markup in the form — no separate list of items and renderer. Here a side panel sits beside two
         stacked items.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxForm Id="layout-form" Model="pour3">
             <div class="demo-form-layout">
@@ -124,6 +140,8 @@
             </div>
         </NxForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="your-own-layout" />
 </div>
 
 <div class="doc-section">
@@ -132,6 +150,7 @@
         Submit with empty fields, or call <code>IsValid()</code> on the form from outside it. With
         <code>SubmitOnEnter="false"</code> Enter in a field does not submit — only the button does.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxForm @ref="validationForm" Id="validation-form" Model="newContact" Columns="2" SubmitOnEnter="false"
                 OnValidSubmit="() => validationResult = Saved()" OnInvalidSubmit="() => validationResult = Fix()">
@@ -148,6 +167,8 @@
             </Buttons>
         </NxForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="validation" />
 </div>
 
 <div class="doc-section">
@@ -169,7 +190,7 @@
             </Buttons>
         </NxForm>
     </div>
-    <pre class="doc-code">@validatorCode</pre>
+    <DocCode Code="@validatorCode" />
 </div>
 
 <div class="doc-section">
@@ -177,6 +198,7 @@
     <p class="doc-note">
         One field's messages, anywhere under an <code>EditForm</code> or <code>NxForm</code>.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <EditForm id="message-form" Model="messageModel" FormName="message-form">
             <DataAnnotationsValidator />
@@ -187,6 +209,8 @@
             </div>
         </EditForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="nxvalidationmessage" />
 </div>
 
 <DocPager Slug="form" Page="examples" />

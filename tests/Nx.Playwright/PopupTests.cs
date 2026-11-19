@@ -65,9 +65,14 @@ public class PopupTests : PageTest
         await Page.Locator("#mix-filter").ClickAsync();
         var popup = Page.Locator("#filter-popup");
         await Expect(popup).ToBeVisibleAsync();
-        var a = (await Page.Locator("#mix-filter").BoundingBoxAsync())!;
-        var p = (await popup.BoundingBoxAsync())!;
-        Assert.That(p.X + p.Width - (a.X + a.Width), Is.EqualTo(0).Within(1));
+        // nx-anchor.js places the popup after it renders: wait for the right edges to meet.
+        await Page.WaitForFunctionAsync("""
+            () => {
+                const a = document.getElementById('mix-filter').getBoundingClientRect();
+                const p = document.getElementById('filter-popup').getBoundingClientRect();
+                return Math.abs(p.right - a.right) <= 1;
+            }
+            """);
 
         await Page.Locator("#filter-search").FillAsync("psi");
         await Expect(popup.Locator(".nx-checkbox")).ToHaveCountAsync(2);
@@ -80,7 +85,8 @@ public class PopupTests : PageTest
     public async Task Placement_EachSide(string side)
     {
         await GoToPage("examples");
-        await Page.Locator("#place-target").ScrollIntoViewIfNeededAsync();
+        // Centered, so every side has room and the popup does not flip.
+        await Page.Locator("#place-target").EvaluateAsync("e => e.scrollIntoView({ block: 'center' })");
         await Page.Locator($"#place-{side}").ClickAsync();
         var popup = Page.Locator("#place-popup");
         await Expect(popup).ToHaveAttributeAsync("data-placement", side);
@@ -216,7 +222,7 @@ public class PopupTests : PageTest
     {
         await GoToPage("examples");
         await Page.Locator("#job-55104").ScrollIntoViewIfNeededAsync();
-        await Page.Locator("#card-anchor").FocusAsync();
+        await Page.Locator(".doc-section:has(#card-anchor) .doc-example-code-toggle").FocusAsync();
         await Page.Keyboard.PressAsync("Tab");
         await Expect(Page.Locator("#job-55104")).ToBeFocusedAsync();
         await Expect(Page.Locator("#hover-card")).ToContainTextAsync("55104 · Route 9 Bridge");

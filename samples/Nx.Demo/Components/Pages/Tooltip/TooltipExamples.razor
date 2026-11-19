@@ -8,6 +8,7 @@
         <code>Placement</code> is the preferred side. Without room there, the tooltip flips to the opposite side, and it is nudged
         in from the viewport edge with the arrow still on the element.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-row demo-tooltip-grid">
             @foreach (var placement in Enum.GetValues<NxTooltipPlacement>())
@@ -18,6 +19,8 @@
             }
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="placement-and-flip" />
 </div>
 
 <div class="doc-section">
@@ -26,6 +29,7 @@
         <code>Trigger</code> combines <code>Hover</code>, <code>Focus</code> (keyboard) and <code>Click</code>; a long press always
         works on touch. <code>ShowDelay</code> is how long the pointer must rest — focus and clicks show at once.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-row">
             <NxTooltip Id="tip-instant" Text="No delay" ShowDelay="0">
@@ -42,11 +46,14 @@
             </NxTooltip>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="triggers-and-delay" />
 </div>
 
 <div class="doc-section">
     <h2>Rich Content</h2>
     <p class="doc-note"><code>Content</code> takes markup. Keep it short and non-interactive: the pointer cannot reach it.</p>
+    @* code *@
     <div class="demo-stage">
         <NxTooltip Id="tip-rich" ShowDelay="0" Placement="NxTooltipPlacement.Bottom">
             <ChildContent>
@@ -61,6 +68,8 @@
             </Content>
         </NxTooltip>
     </div>
+    @* /code *@
+    <DocExampleCode Key="rich-content" />
 </div>
 
 <div class="doc-section">
@@ -73,12 +82,13 @@
         <span class="demo-status-badge" id="target-badge" tabindex="0">QC hold</span>
         <NxTooltip Id="tip-target" Target="#target-badge" Text="Held for a slump test since 9:40" ShowDelay="0" />
     </div>
-    <pre class="doc-code">@targetCode</pre>
+    <DocCode Code="@targetCode" />
 </div>
 
 <div class="doc-section">
     <h2>From Code &amp; Disabled</h2>
     <p class="doc-note"><code>ShowAsync()</code> and <code>HideAsync()</code> drive a tooltip from code; <code>Disabled</code> turns it off.</p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-row">
             <NxTooltip @ref="coded" Id="tip-coded" Text="Shown from code" Trigger="NxTooltipTrigger.None">
@@ -91,6 +101,8 @@
             </NxTooltip>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="from-code-and-disabled" />
 </div>
 
 <DocPager Slug="tooltip" Page="examples" />

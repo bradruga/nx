@@ -27,7 +27,7 @@
         </NxTreeList>
         <span class="demo-value" id="overview-selected">@(selected.FirstOrDefault() is { } l ? $"{l.Name}: {l.AggregatePieceCount} pieces" : "Click on a location to see pieces")</span>
     </div>
-    <pre class="doc-code">@basicCode</pre>
+    <DocCode Code="@basicCode" />
 </div>
 
 <div class="doc-section">

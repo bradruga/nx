@@ -6,6 +6,7 @@
 <div class="doc-section">
     <h2>Your Own Palette</h2>
     <p class="doc-note"><code>Colors</code> takes any CSS colors in reading order; <code>Columns</code> sets the row length.</p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <div>
@@ -18,6 +19,8 @@
             </div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="your-own-palette" />
 </div>
 
 <div class="doc-section">
@@ -27,6 +30,7 @@
         swatch is picked with one click; the gradient is dragged, so it has an Apply button. With both, a color that is
         not a swatch opens on the Gradient tab.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <div>
@@ -39,6 +43,8 @@
             </div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="gradient" />
 </div>
 
 <div class="doc-section">
@@ -47,6 +53,7 @@
         A schedule item with a fill and a text color, as ERP's project schedule has. <code>ShowValue</code> prints the color
         beside the swatch.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <div class="demo-form-grid">
             <div>
@@ -63,30 +70,39 @@
             <span>Erection · week 32</span>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="background-and-text-colors" />
 </div>
 
 <div class="doc-section">
     <h2>No Color</h2>
     <p class="doc-note"><code>Clearable</code> adds "No color", which sets the value to <code>null</code>; the button shows a struck-out swatch.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxColorPicker Id="clear-color" @bind-Value="highlight" Clearable="true" AriaLabel="Highlight" ShowValue="true" />
         <span class="demo-value" id="clear-value">Value: <strong>@(highlight ?? "null")</strong></span>
     </div>
+    @* /code *@
+    <DocExampleCode Key="no-color" />
 </div>
 
 <div class="doc-section">
     <h2>Disabled</h2>
     <p class="doc-note">ERP turns the picker off once a crew has members.</p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-row">
             <NxColorPicker Id="disabled-color" Value="#2e5496" Disabled="true" AriaLabel="Crew color" />
             <span class="demo-value">The crew has members.</span>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="disabled" />
 </div>
 
 <div class="doc-section">
     <h2>Form Validation</h2>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <EditForm id="color-form" Model="load" OnValidSubmit="() => result = Saved()" FormName="color-form">
             <DataAnnotationsValidator />
@@ -99,6 +115,8 @@
             </div>
         </EditForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="form-validation" />
 </div>
 
 <DocPager Slug="colorpicker" Page="examples" />

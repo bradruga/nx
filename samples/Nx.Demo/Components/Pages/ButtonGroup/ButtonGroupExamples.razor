@@ -5,6 +5,7 @@
 <div class="doc-section">
     <h2>Variants &amp; Sizes</h2>
     <p class="doc-note">Set once on the group. A button that sets its own <code>Variant</code> keeps it — here the primary Save.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <div class="demo-row">
             <NxButtonGroup id="variant-group" AriaLabel="Edit" Size="NxButtonSize.Small">
@@ -26,11 +27,14 @@
         </div>
         <span class="demo-value" id="variant-log">Last: <strong>@last</strong></span>
     </div>
+    @* /code *@
+    <DocExampleCode Key="variants-and-sizes" />
 </div>
 
 <div class="doc-section">
     <h2>With a Menu Button</h2>
     <p class="doc-note">An <code>NxDropDownButton</code> joins the bar like any button.</p>
+    @* code *@
     <div class="demo-stage">
         <NxButtonGroup id="menu-group" AriaLabel="Pour actions">
             <NxButton OnClick='() => Log("Release")'>Release</NxButton>
@@ -38,6 +42,8 @@
             <NxDropDownButton Id="menu-more" Items="moreItems" OnItemClick="e => Log(e.Item.Text)" AlignEnd="true">More</NxDropDownButton>
         </NxButtonGroup>
     </div>
+    @* /code *@
+    <DocExampleCode Key="with-a-menu-button" />
 </div>
 
 <div class="doc-section">
@@ -45,6 +51,7 @@
     <p class="doc-note">
         A calendar toolbar: actions in an <code>NxButtonGroup</code>, the view as a value in an <code>NxToggleGroup</code>.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-toolbar">
             <NxButtonGroup AriaLabel="Navigate">
@@ -56,11 +63,14 @@
             <NxToggleGroup Data="Views" @bind-Value="view" AriaLabel="View" />
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="beside-a-toggle-group" />
 </div>
 
 <div class="doc-section">
     <h2>Full Width &amp; Disabled</h2>
     <p class="doc-note"><code>FullWidth</code> shares the width equally — a footer bar on a phone. <code>Disabled</code> turns every button off.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxButtonGroup id="full-group" AriaLabel="Decision" FullWidth="true">
             <NxButton Variant="NxButtonVariant.Danger" OnClick='() => Log("Reject")'>Reject</NxButton>
@@ -76,6 +86,8 @@
             <NxCheckBox Id="disabled-toggle" @bind-Value="locked" Label="Disabled" />
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="full-width-and-disabled" />
 </div>
 
 <DocPager Slug="buttongroup" Page="examples" />

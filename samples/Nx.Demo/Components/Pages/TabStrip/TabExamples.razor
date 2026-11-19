@@ -8,6 +8,7 @@
         <code>Icon</code> sits before the title; <code>HeaderTemplate</code> replaces both, here with a count badge.
         A <code>Disabled</code> tab is skipped by the arrow keys and cannot be clicked.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxTabStrip Id="icon-tabs" @bind-ActiveTab="iconTab" AriaLabel="Order">
             <NxTab Id="lines" Title="Lines" Icon="@Icon("box")"><p>14 order lines.</p></NxTab>
@@ -20,6 +21,8 @@
         </NxTabStrip>
         <div class="demo-row"><span class="demo-value" id="icon-tab-value">ActiveTab: <strong>@iconTab</strong></span></div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="icons-templates-and-disabled-tabs" />
 </div>
 
 <div class="doc-section">
@@ -41,7 +44,7 @@
         </NxTabStrip>
         <div class="demo-row"><span class="demo-value" id="closable-value">ActiveTab: <strong>@(documentTab ?? "none")</strong> · @documents.Count open</span></div>
     </div>
-    <pre class="doc-code">@closableCode</pre>
+    <DocCode Code="@closableCode" />
 </div>
 
 <div class="doc-section">
@@ -63,7 +66,7 @@
             <span class="demo-value" id="reorder-log">@reorderLog</span>
         </div>
     </div>
-    <pre class="doc-code">@reorderCode</pre>
+    <DocCode Code="@reorderCode" />
 </div>
 
 <div class="doc-section">
@@ -93,7 +96,7 @@
             <span class="demo-value" id="browser-log">@browserLog</span>
         </div>
     </div>
-    <pre class="doc-code">@browserCode</pre>
+    <DocCode Code="@browserCode" />
 </div>
 
 <div class="doc-section">
@@ -102,6 +105,7 @@
         When the tabs do not fit, arrows appear at the ends and the list scrolls — by the arrows, a swipe, the wheel, or the
         keyboard, which keeps the active tab in view.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <div style="max-width: 420px; width: 100%">
             <NxTabStrip Id="overflow-tabs" @bind-ActiveTab="monthTab" AriaLabel="Month">
@@ -113,6 +117,8 @@
         </div>
         <div class="demo-row"><span class="demo-value" id="overflow-value">ActiveTab: <strong>@monthTab</strong></span></div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="overflow" />
 </div>
 
 <div class="doc-section">
@@ -121,6 +127,7 @@
         <code>Position</code> puts the tabs on any side. Left and right make a column of tabs, navigated with ↑ and ↓; on a phone
         they move to the top.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxToggleGroup Id="position-picker" Data="Positions" @bind-Value="position" AriaLabel="Position" />
         <NxTabStrip Id="position-tabs" Position="position" Style="min-height: 180px" AriaLabel="Plant">
@@ -129,6 +136,8 @@
             <NxTab Id="shipping" Title="Shipping"><p>Two trucks loading.</p></NxTab>
         </NxTabStrip>
     </div>
+    @* /code *@
+    <DocExampleCode Key="position" />
 </div>
 
 <div class="doc-section">
@@ -138,6 +147,7 @@
         stays rendered — hidden — once it has been shown, so unbound state such as typed text or scroll position survives.
         Type in both, switch tabs and come back.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid demo-form-grid-2">
             <NxTabStrip Id="lazy-tabs" AriaLabel="Lazy">
@@ -150,10 +160,13 @@
             </NxTabStrip>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="lazy-and-keepalive" />
 </div>
 
 <div class="doc-section">
     <h2>Full Width</h2>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxTabStrip Id="full-tabs" FullWidth="true" AriaLabel="View">
             <NxTab Title="Day"><p>Today's pours.</p></NxTab>
@@ -161,6 +174,8 @@
             <NxTab Title="Month"><p>This month's pours.</p></NxTab>
         </NxTabStrip>
     </div>
+    @* /code *@
+    <DocExampleCode Key="full-width" />
 </div>
 
 <DocPager Slug="tabstrip" Page="examples" />

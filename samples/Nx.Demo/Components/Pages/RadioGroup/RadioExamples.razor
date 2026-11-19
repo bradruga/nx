@@ -10,7 +10,7 @@
         <NxRadioGroup Id="data-radio" Data="Enum.GetValues<Delivery>()" ItemText="DeliveryText" @bind-Value="delivery" Label="Delivery" />
         <span class="demo-value" id="data-value">Value: <strong>@delivery</strong></span>
     </div>
-    <pre class="doc-code">@dataCode</pre>
+    <DocCode Code="@dataCode" />
 </div>
 
 <div class="doc-section">
@@ -19,6 +19,7 @@
         <code>NxRadioButton</code> children bind any value and take markup labels. Here each one binds a customer id from
         a record list.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxRadioGroup Id="declared-radio" @bind-Value="billTo" Label="Bill to">
             @foreach (var customer in SampleData.Customers.Take(3))
@@ -30,14 +31,19 @@
         </NxRadioGroup>
         <span class="demo-value" id="declared-value">Value: <strong>@billTo</strong></span>
     </div>
+    @* /code *@
+    <DocExampleCode Key="declared-buttons" />
 </div>
 
 <div class="doc-section">
     <h2>Horizontal</h2>
     <p class="doc-note"><code>Orientation="Horizontal"</code> lays the buttons in a row that wraps on narrow screens.</p>
+    @* code *@
     <div class="demo-stage">
         <NxRadioGroup Id="horizontal-radio" Data="sizes" @bind-Value="size" Orientation="NxOrientation.Horizontal" Label="Pipe diameter" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="horizontal" />
 </div>
 
 <div class="doc-section">
@@ -46,16 +52,20 @@
         <code>ItemDisabled</code> (or <code>Disabled</code> on a declared button) makes one option unavailable; the arrow keys skip it.
         <code>Disabled</code> on the group turns them all off.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxRadioGroup Id="disabled-radio" Data="Enum.GetValues<Delivery>()" ItemText="DeliveryText" ItemDisabled="d => d == Delivery.Rail"
                       @bind-Value="disabledPick" Label="Rail is not available for this job" />
         <NxRadioGroup Id="group-disabled" Data="Enum.GetValues<Delivery>()" ItemText="DeliveryText" Value="Delivery.OurTruck" Disabled="true" Label="Group disabled" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="disabled-items" />
 </div>
 
 <div class="doc-section">
     <h2>Item Template</h2>
     <p class="doc-note"><code>ItemTemplate</code> renders the label for <code>Data</code> items.</p>
+    @* code *@
     <div class="demo-stage">
         <NxRadioGroup Id="template-radio" Data="Enum.GetValues<Priority>()" @bind-Value="priority" Label="Priority">
             <ItemTemplate Context="p">
@@ -64,10 +74,13 @@
             </ItemTemplate>
         </NxRadioGroup>
     </div>
+    @* /code *@
+    <DocExampleCode Key="item-template" />
 </div>
 
 <div class="doc-section">
     <h2>Form Validation</h2>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <EditForm id="radio-form" Model="form" OnValidSubmit="Submit" FormName="radio-form">
             <DataAnnotationsValidator />
@@ -80,6 +93,8 @@
             </div>
         </EditForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="form-validation" />
 </div>
 
 <DocPager Slug="radio" Page="examples" />

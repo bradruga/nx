@@ -1,6 +1,80 @@
 @page "/not-found"
+@inject NavigationManager Nav
+@inject SiteSearchState Search
 
 <PageTitle>Not found — Nx</PageTitle>
 
-<h1>Not found</h1>
-<p class="doc-intro">Sorry, there's nothing at this address. <a href="">Back to the component list</a>.</p>
+<nav class="doc-breadcrumb" aria-label="Breadcrumb">
+    <a href="">Components</a>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">Not found</span>
+</nav>
+
+<h1>Page not found</h1>
+@if (path.Length > 0)
+{
+    <p class="doc-intro">No page at <code class="notfound-path">/@path</code>.@(matches.Count > 0 ? " Were you looking for one of these?" : "")</p>
+}
+else
+{
+    <p class="doc-intro">Sorry, there's nothing at this address.</p>
+}
+
+@if (matches.Count > 0)
+{
+    <ul class="notfound-matches" aria-label="Closest matches">
+        @foreach (var hit in matches)
+        {
+            <li>
+                <a href="@hit.Entry.Url" class="notfound-match">
+                    <span class="notfound-match-title">
+                        @hit.Entry.Title
+                        @if (hit.Alias is { } alias)
+                        {
+                            <span class="notfound-match-alias">for @alias.Text</span>
+                        }
+                    </span>
+                    <span class="notfound-match-where">@hit.Entry.Where · /@hit.Entry.Url</span>
+                </a>
+            </li>
+        }
+    </ul>
+}
+
+<div class="notfound-actions">
+    <NxButton Variant="NxButtonVariant.Primary" OnClick="Search.RequestOpen" Id="notfound-search">
+        <NxIcon Icon="NxIcons.Search" /> Search the site
+    </NxButton>
+    <a href="" class="notfound-home">Back to the component list</a>
+</div>
+
+@code {
+    string path = "";
+    List<SearchHit> matches = [];
+
+    // The router shows this page for any unknown address, so the path comes from the browser's URL, not the route.
+    protected override void OnParametersSet()
+    {
+        path = Nav.ToBaseRelativePath(Nav.Uri).Split('?', '#')[0].Trim('/');
+        if (path == "not-found")
+            path = "";
+        matches = Suggest(path);
+    }
+
+    /// <summary>The best results for the whole path and for each of its words, components first.</summary>
+    static List<SearchHit> Suggest(string path)
+    {
+        var words = path.Split(['/', '-', '_', '.', ' '], StringSplitOptions.RemoveEmptyEntries);
+        return words.Prepend(string.Concat(words))
+            .Where(w => w.Length > 1)
+            .Distinct()
+            .SelectMany(w => SiteSearchIndex.Search(w, 4))
+            .Where(h => h.Group != SiteSearchIndex.Parameters)
+            .GroupBy(h => h.Entry.Url)
+            .Select(g => g.MaxBy(h => h.Score)!)
+            .OrderBy(h => h.Group == SiteSearchIndex.Components ? 0 : 1)
+            .ThenByDescending(h => h.Score)
+            .Take(6)
+            .ToList();
+    }
+}

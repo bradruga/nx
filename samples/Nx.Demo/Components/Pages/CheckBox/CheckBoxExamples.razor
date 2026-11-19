@@ -8,6 +8,7 @@
         Bound to <code>bool</code> it is checked or not. Bound to <code>bool?</code>, <code>null</code> shows as indeterminate; the
         first click checks it.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <div class="demo-row">
             <NxCheckBox Id="bool-box" @bind-Value="plain" Label="bool" />
@@ -18,6 +19,8 @@
             <span class="demo-value" id="nullable-value">Value: <strong>@(nullable?.ToString() ?? "null")</strong></span>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="bool-and-bool" />
 </div>
 
 <div class="doc-section">
@@ -36,7 +39,7 @@
         </div>
         <span class="demo-value" id="all-count">Done: <strong>@pours.Count(p => p.Done) of @pours.Count</strong></span>
     </div>
-    <pre class="doc-code">@selectAllCode</pre>
+    <DocCode Code="@selectAllCode" />
 </div>
 
 <div class="doc-section">
@@ -45,23 +48,29 @@
         <code>ThreeState</code> lets the user reach the indeterminate state too: unchecked → checked → indeterminate → unchecked. Use it
         for filters where <code>null</code> means "either".
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-row">
             <NxCheckBox Id="three-box" @bind-Value="threeState" ThreeState="true" Label="Taxable" />
             <span class="demo-value" id="three-value">Value: <strong>@(threeState?.ToString() ?? "null (either)")</strong></span>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="three-state" />
 </div>
 
 <div class="doc-section">
     <h2>Label Position &amp; Rich Labels</h2>
     <p class="doc-note"><code>LabelPosition="Start"</code> puts the label first. <code>ChildContent</code> takes markup, such as a link.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxCheckBox Id="label-start" @bind-Value="labelStart" Label="Label before the box" LabelPosition="NxLabelPosition.Start" />
         <NxCheckBox Id="label-rich" @bind-Value="accepted" Label="I accept the ">
             <a href="checkbox/examples" @onclick:preventDefault="true">terms of sale</a>
         </NxCheckBox>
     </div>
+    @* /code *@
+    <DocExampleCode Key="label-position-and-rich-labels" />
 </div>
 
 <div class="doc-section">
@@ -70,17 +79,21 @@
         <code>Disabled</code> removes the box from the tab order. <code>ReadOnly</code> keeps it focusable and announced, greyed, and
         ignores clicks — for values a user may see but not change.
     </p>
+    @* code *@
     <div class="demo-stage">
         <NxCheckBox Id="state-disabled" Value="true" Disabled="true" Label="Disabled, checked" />
         <NxCheckBox Id="state-disabled-off" Value="false" Disabled="true" Label="Disabled" />
         <NxCheckBox Id="state-readonly" Value="true" ReadOnly="true" Label="Read-only, checked" />
         <NxCheckBox Id="state-readonly-mixed" TValue="bool?" Value="null" ReadOnly="true" Label="Read-only, mixed" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="disabled-and-read-only" />
 </div>
 
 <div class="doc-section">
     <h2>Form Validation</h2>
     <p class="doc-note">Inside an <code>EditForm</code> the box reports changes and turns red with its label while invalid.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <EditForm id="checkbox-form" Model="consent" OnValidSubmit="Submit" FormName="checkbox-form">
             <DataAnnotationsValidator />
@@ -92,6 +105,8 @@
             </div>
         </EditForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="form-validation" />
 </div>
 
 <DocPager Slug="checkbox" Page="examples" />

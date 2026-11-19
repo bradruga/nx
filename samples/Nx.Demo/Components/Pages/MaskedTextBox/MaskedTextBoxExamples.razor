@@ -6,6 +6,7 @@
 <div class="doc-section">
     <h2>Common Masks</h2>
     <p class="doc-note">Without <code>IncludeLiterals</code> the value is only what was typed — the phone below is stored as ten digits.</p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <div>
@@ -26,6 +27,8 @@
             </div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="common-masks" />
 </div>
 
 <div class="doc-section">
@@ -34,16 +37,20 @@
         <code>Prompt</code> is the character in an empty slot (<code>_</code> by default). <code>MaskOnFocus</code> hides the
         mask of an empty field until it is focused, so the placeholder shows.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <NxMaskedTextBox Id="prompt-dot" Label="Prompt ·" Mask="000-000" Prompt="'·'" @bind-Value="dot" />
             <NxMaskedTextBox Id="prompt-focus" Label="Mask on focus" Mask="00-0000" MaskOnFocus="true" Placeholder="YY-MM00" @bind-Value="onFocus" />
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="prompt-and-mask-on-focus" />
 </div>
 
 <div class="doc-section">
     <h2>Clear &amp; State</h2>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <NxMaskedTextBox Id="clear-mask" Label="Clearable" Clearable="true" Mask="(000) 000-0000" @bind-Value="clearable" />
@@ -51,11 +58,14 @@
             <NxMaskedTextBox Id="disabled-mask" Label="Disabled" Disabled="true" Mask="00-0000" IncludeLiterals="true" Value="26-0302" />
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="clear-and-state" />
 </div>
 
 <div class="doc-section">
     <h2>Form Validation</h2>
     <p class="doc-note"><code>IsComplete</code> tells whether every slot is filled; here a <code>RegularExpression</code> checks the whole number.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <EditForm id="mask-form" Model="model" OnValidSubmit="() => result = Saved()" FormName="mask-form">
             <DataAnnotationsValidator />
@@ -67,6 +77,8 @@
             </div>
         </EditForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="form-validation" />
 </div>
 
 <DocPager Slug="maskedtextbox" Page="examples" />

@@ -8,6 +8,7 @@
         As ERP's spreadsheet filter: below the header button, right edges lined up (<code>Align="NxPopupAlign.End"</code>),
         sort first, then a search box over the values with a check box each.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-popup-header">
             <span>Mix</span>
@@ -27,11 +28,14 @@
         </NxPopup>
         <span class="demo-value" id="filter-result">@sortText · @chosen.Count of @Mixes.Length shown</span>
     </div>
+    @* /code *@
+    <DocExampleCode Key="column-filter-menu" />
 </div>
 
 <div class="doc-section">
     <h2>Placement &amp; Align</h2>
     <p class="doc-note">Each side and alignment. Near an edge it flips to the side with room and shifts along the anchor.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <div class="demo-row">
             @foreach (var placement in Enum.GetValues<NxPopupPlacement>())
@@ -56,11 +60,14 @@
             <div class="demo-popup-body">@shown, @alignment</div>
         </NxPopup>
     </div>
+    @* /code *@
+    <DocExampleCode Key="placement-and-align" />
 </div>
 
 <div class="doc-section">
     <h2>Details Card</h2>
     <p class="doc-note">Content that stays open while the user works elsewhere: <code>CloseOnOutsideClick="false"</code> and a close button.</p>
+    @* code *@
     <div class="demo-stage">
         <NxButton id="card-anchor" Variant="NxButtonVariant.Link" OnClick="() => cardOpen = true">WP-12</NxButton>
         <NxPopup Id="card-popup" @bind-Visible="cardOpen" AnchorSelector="#card-anchor" Placement="NxPopupPlacement.Right" CloseOnOutsideClick="false"
@@ -75,6 +82,8 @@
             </div>
         </NxPopup>
     </div>
+    @* /code *@
+    <DocExampleCode Key="details-card" />
 </div>
 
 <div class="doc-section">
@@ -109,7 +118,7 @@
         </NxPopup>
         <div class="demo-row"><span class="demo-value" id="hover-state">@(hoverOpen ? $"Showing {hovered?.Number}" : "Rest the pointer on a job")</span></div>
     </div>
-    <pre class="doc-code">@hoverCode</pre>
+    <DocCode Code="@hoverCode" />
 </div>
 
 <div class="doc-section">
@@ -142,7 +151,7 @@
             <span class="demo-value" id="lazy-last">@(lastQuery is null ? "Rest the pointer on a piece" : $"Last query: {lastQuery}")</span>
         </div>
     </div>
-    <pre class="doc-code">@lazyCode</pre>
+    <DocCode Code="@lazyCode" />
 </div>
 
 <DocPager Slug="popup" Page="examples" />

@@ -8,6 +8,7 @@
         ERP's engagement chart: two lines on the first value axis and an area on a second one, named by the series' <code>Axis</code>.
         The first axis draws on the left, the second on the right. Click a legend entry to hide its series.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxChart Id="axes-chart" Height="340px" LegendPosition="NxChartLegendPosition.Bottom" AriaLabel="Yard activity">
             <NxChartSeries Name="Loads" Data="DemoCharts.Days" Field="@nameof(YardDay.Loads)" CategoryField="@nameof(YardDay.Date)" />
@@ -18,6 +19,8 @@
             <NxChartValueAxis Name="hours" Title="Hours" LabelFormat="0.0" />
         </NxChart>
     </div>
+    @* /code *@
+    <DocExampleCode Key="lines-on-two-value-axes" />
 </div>
 
 <div class="doc-section">
@@ -26,6 +29,7 @@
         Slump tests with the mean dotted and the 95% limits faded, no markers on the limits, and <code>NarrowRange</code> so the
         scale fits the values instead of starting at 0. Clicking a test raises <code>OnSeriesClick</code> with its data item.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxChart Id="control-chart" Title="Slump" Height="300px" OnSeriesClick="Picked">
             <NxChartSeries Name="Slump (in)" Data="DemoCharts.Slumps" Field="@nameof(SlumpTest.Slump)" CategoryField="@nameof(SlumpTest.Index)" Color="#4472C4">
@@ -41,6 +45,8 @@
         </NxChart>
         <span class="demo-value" id="control-picked">@picked</span>
     </div>
+    @* /code *@
+    <DocExampleCode Key="a-control-chart" />
 </div>
 
 <div class="doc-section">
@@ -49,6 +55,7 @@
         Pieces in storage by yard, stacked (<code>Stacked</code>) with a white outline between areas (<code>LineColor</code>),
         and the categories' labels given apart (<code>Labels</code>: weekly dates, the rest blank), as ERP's storage history does.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxChart Id="stacked-area-chart" Title="Number of pieces in storage" Height="320px">
             @foreach (var yard in StorageYards)
@@ -58,6 +65,8 @@
             <NxChartCategoryAxis Categories="DemoCharts.Days.Select(d => (object)d.Date)" Labels="WeeklyLabels" />
         </NxChart>
     </div>
+    @* /code *@
+    <DocExampleCode Key="stacked-areas" />
 </div>
 
 <div class="doc-section">
@@ -66,6 +75,7 @@
         Columns side by side, or stacked when every series is <code>Stacked</code>. Here the dates are months: a date category axis
         with <code>BaseUnit="NxChartBaseUnit.Months"</code> adds the items of each month (<code>Aggregate</code>).
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <div class="demo-row">
             <NxToggleButton id="columns-stacked" @bind-Selected="stacked">Stacked</NxToggleButton>
@@ -80,11 +90,14 @@
             <NxChartValueAxis Title="Loads" />
         </NxChart>
     </div>
+    @* /code *@
+    <DocExampleCode Key="columns-grouped-stacked-by-month" />
 </div>
 
 <div class="doc-section">
     <h2>Bars with Labels</h2>
     <p class="doc-note">A <code>Bar</code> series lays the categories down the side; <code>ShowLabels</code> writes each value at the end of its bar.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxChart Id="bar-chart" Height="280px" LegendPosition="NxChartLegendPosition.None" AriaLabel="Inventory on hand">
             <NxChartSeries Type="NxChartSeriesType.Bar" Name="On hand" Data="DemoCharts.Inventory" Field="@nameof(Share.Count)"
@@ -92,6 +105,8 @@
             <NxChartValueAxis LabelFormat="N0" Title="Quantity" />
         </NxChart>
     </div>
+    @* /code *@
+    <DocExampleCode Key="bars-with-labels" />
 </div>
 
 <div class="doc-section">
@@ -100,6 +115,7 @@
         A <code>Pie</code> series takes each item as a slice; the legend lists the slices and hides one when clicked, and the
         tooltip context carries the slice's <code>Percentage</code>.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxChart Id="pie-chart" Title="Pieces by location" Height="300px" LegendPosition="NxChartLegendPosition.Right">
             <NxChartSeries Type="NxChartSeriesType.Pie" Data="DemoCharts.Yards" Field="@nameof(Share.Count)" CategoryField="@nameof(Share.Name)">
@@ -107,6 +123,8 @@
             </NxChartSeries>
         </NxChart>
     </div>
+    @* /code *@
+    <DocExampleCode Key="a-pie" />
 </div>
 
 <DocPager Slug="chart" Page="examples" />

@@ -9,6 +9,7 @@
         markup into the box below.
     </p>
     <div class="demo-stage demo-stage-column">
+        @* code *@
         <NxTextBox Id="icon-filter" Placeholder="Filter icons" @bind-Value="filter" Immediate="true" Clearable="true" Style="max-width:320px">
             <Prefix><NxIcon Icon="NxIcons.Search" /></Prefix>
         </NxTextBox>
@@ -25,17 +26,20 @@
                 <span class="demo-log-empty">No icon matches “@filter”.</span>
             }
         </div>
+        @* /code *@
         <span class="demo-value" id="icon-count">@Filtered.Count() of @NxIcons.All.Count icons</span>
         @if (picked is not null)
         {
-            <pre class="doc-code" id="icon-picked">&lt;NxIcon Icon="NxIcons.@picked" /&gt;</pre>
+            <DocCode id="icon-picked" Code="@($"<NxIcon Icon=\"NxIcons.{picked}\" />")" />
         }
     </div>
+    <DocExampleCode Key="the-icon-set" />
 </div>
 
 <div class="doc-section">
     <h2>Sizes</h2>
     <p class="doc-note">Seven steps, each a <code>--nx-icon-size-*</code> token: 12, 14, 16 (default), 20, 24, 32 and 48 px.</p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-row demo-icon-sizes" id="icon-sizes">
             @foreach (var size in Enum.GetValues<NxIconSize>())
@@ -47,11 +51,14 @@
             }
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="sizes" />
 </div>
 
 <div class="doc-section">
     <h2>Colors</h2>
     <p class="doc-note">The text color by default; <code>Color</code> picks a theme token. Switch the theme in the header to see the dark values.</p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-row" id="icon-colors">
             @foreach (var color in Enum.GetValues<NxIconColor>())
@@ -63,6 +70,8 @@
             }
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="colors" />
 </div>
 
 <div class="doc-section">
@@ -71,6 +80,7 @@
         Pass an icon to <code>NxButton</code>'s <code>Icon</code> slot; without a label the button is icon-only and needs an
         <code>AriaLabel</code>. Inline with text, an icon centers on the line.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <div class="demo-row">
             <NxButton Variant="NxButtonVariant.Primary" Icon="@IconOf(NxIcons.Save)">Save</NxButton>
@@ -83,6 +93,8 @@
             <NxIcon Icon="NxIcons.HyperlinkOpen" Size="NxIconSize.Small" Color="NxIconColor.Primary" /> Open schedule
         </p>
     </div>
+    @* /code *@
+    <DocExampleCode Key="in-buttons-and-text" />
 </div>
 
 <div class="doc-section">
@@ -97,12 +109,13 @@
             <NxIcon Icon="Diamond" Size="NxIconSize.XXLarge" />
         </div>
     </div>
-    <pre class="doc-code">@customCode</pre>
+    <DocCode Code="@customCode" />
 </div>
 
 <div class="doc-section">
     <h2>Labelled Icons</h2>
     <p class="doc-note">A status icon with no text beside it gets an <code>AriaLabel</code> (and a <code>Title</code> for the mouse).</p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-row" id="icon-labelled">
             <span>Pour P-1042</span>
@@ -111,6 +124,8 @@
             <NxIcon Icon="NxIcons.Clock" Color="NxIconColor.Muted" AriaLabel="Waiting" Title="Waiting" />
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="labelled-icons" />
 </div>
 
 <DocPager Slug="icon" Page="examples" />

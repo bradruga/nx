@@ -21,15 +21,18 @@
         </NxEditor>
         <span class="demo-value" id="comment-length">@(string.IsNullOrEmpty(commentHtml) ? "Empty" : $"{commentHtml.Length} characters of HTML")</span>
     </div>
-    <pre class="doc-code">@ticketCode</pre>
+    <DocCode Code="@ticketCode" />
 </div>
 
 <div class="doc-section">
     <h2>Email Body</h2>
     <p class="doc-note">ERP's email dialog: block formats, a highlight color, alignment, lists with indent and links.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxEditor Id="email-editor" @bind-Value="emailHtml" Tools="EmailTools" Height="300px" AriaLabel="Email body" Style="width:100%" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="email-body" />
 </div>
 
 <div class="doc-section">
@@ -39,9 +42,12 @@
         by sizing it on the grid, add and delete rows and columns, merge the selected cells and split them again. Tab moves
         between cells.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxEditor Id="report-editor" @bind-Value="reportHtml" Tools="NxEditorTool.All" Height="420px" AriaLabel="Report template" Style="width:100%" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="tables-and-every-tool" />
 </div>
 
 <div class="doc-section">
@@ -51,16 +57,20 @@
         <code>width</code> and <code>height</code> are written to the HTML. Drag the picture itself to move it to another
         place in the text; Delete removes it. Each is one undo step.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxEditor Id="picture-editor" @bind-Value="pictureHtml" Tools="PictureTools" Height="auto" AriaLabel="Inspection note" Style="width:100%" />
         <span class="demo-value">Value</span>
         <pre class="doc-code demo-editor-html" id="picture-html">@pictureHtml</pre>
     </div>
+    @* /code *@
+    <DocExampleCode Key="pictures" />
 </div>
 
 <div class="doc-section">
     <h2>Form Validation</h2>
     <p class="doc-note">An empty editor is <code>""</code>, so <code>[Required]</code> works as on a text box.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <EditForm id="editor-form" Model="hold" OnValidSubmit="PlaceHold" FormName="editor-form" style="width:100%">
             <DataAnnotationsValidator />
@@ -73,15 +83,20 @@
             </div>
         </EditForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="form-validation" />
 </div>
 
 <div class="doc-section">
     <h2>Read-Only &amp; Disabled</h2>
     <p class="doc-note"><code>ReadOnly</code> keeps the text selectable and copyable; <code>Disabled</code> greys it out. Both turn the toolbar off.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxEditor Id="readonly-editor" Value="@ReadOnlyHtml" ReadOnly="true" Height="140px" AriaLabel="Approved notes" Style="width:100%" />
         <NxEditor Id="disabled-editor" Value="@ReadOnlyHtml" Disabled="true" Tools="ShortTools" Height="140px" AriaLabel="Locked notes" Style="width:100%" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="read-only-and-disabled" />
 </div>
 
 <DocPager Slug="editor" Page="examples" />

@@ -8,6 +8,7 @@
         An <code>NxToolBarSpacer</code> takes the free room, so the buttons after it sit at the end. An icon-only button needs an
         <code>AriaLabel</code>, which is also its text in the More menu.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxToolBar Id="spacer-toolbar" AriaLabel="Drawing">
             <NxToolBarButton Id="sp-undo" Icon="@Icon(NxIcons.Undo)" AriaLabel="Undo" Title="Undo" OnClick='() => Log("Undo")' />
@@ -21,6 +22,8 @@
         </NxToolBar>
         <span class="demo-value" id="spacer-log">@last</span>
     </div>
+    @* /code *@
+    <DocExampleCode Key="spacer-and-icon-only-buttons" />
 </div>
 
 <div class="doc-section">
@@ -29,6 +32,7 @@
         In a narrow box the default moves buttons into the More menu; <code>Overflow="NxToolBarOverflow.Wrap"</code> wraps them
         onto another line and <code>Scroll</code> scrolls the row sideways.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         @foreach (var mode in Enum.GetValues<NxToolBarOverflow>())
         {
@@ -46,11 +50,14 @@
         }
         <span class="demo-value" id="overflow-log">@last</span>
     </div>
+    @* /code *@
+    <DocExampleCode Key="overflow-menu-wrap-or-scroll" />
 </div>
 
 <div class="doc-section">
     <h2>Sizes &amp; Variants</h2>
     <p class="doc-note"><code>Size</code> on the toolbar sets every button's size; a button's <code>Variant</code> and <code>Size</code> are its own.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         @foreach (var size in Enum.GetValues<NxButtonSize>())
         {
@@ -63,6 +70,8 @@
             </NxToolBar>
         }
     </div>
+    @* /code *@
+    <DocExampleCode Key="sizes-and-variants" />
 </div>
 
 <DocPager Slug="toolbar" Page="examples" />

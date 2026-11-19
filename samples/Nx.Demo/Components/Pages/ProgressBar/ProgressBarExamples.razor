@@ -6,6 +6,7 @@
 <div class="doc-section">
     <h2>Value Out of Max</h2>
     <p class="doc-note">With <code>Max</code> the value is a count — chunks, slides, rows. The label is still the percentage.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:560px">
         <NxProgressBar id="count-bar" Value="processed" Max="Chunks" AriaLabel="Transcript" />
         <div class="demo-row">
@@ -13,6 +14,8 @@
             <span class="demo-value" id="count-value">@processed of @Chunks chunks</span>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="value-out-of-max" />
 </div>
 
 <div class="doc-section">
@@ -20,6 +23,7 @@
     <p class="doc-note">
         <code>LabelTemplate</code> gets the value, max and percentage as <code>context</code>, and whether it is complete.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:560px">
         <NxProgressBar id="template-bar" Value="processed" Max="Chunks" AriaLabel="Transcript">
             <LabelTemplate>
@@ -34,11 +38,14 @@
             </LabelTemplate>
         </NxProgressBar>
     </div>
+    @* /code *@
+    <DocExampleCode Key="label-template" />
 </div>
 
 <div class="doc-section">
     <h2>Thin</h2>
     <p class="doc-note">A slim bar with no label, e.g. how far through a form's slides you are.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:560px">
         <div class="demo-row demo-row-spread" style="max-width:none"><strong>Safety briefing</strong><span id="thin-step">Slide @slide of @Slides</span></div>
         <NxProgressBar id="thin-bar" Value="slide" Max="Slides" Thin="true" AriaLabel="Slides" />
@@ -47,24 +54,32 @@
             <NxButton id="thin-next" Disabled="slide >= Slides" OnClick="() => slide++">Next</NxButton>
         </NxButtonGroup>
     </div>
+    @* /code *@
+    <DocExampleCode Key="thin" />
 </div>
 
 <div class="doc-section">
     <h2>Indeterminate</h2>
     <p class="doc-note">For work whose size is unknown — waiting for a server, say.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:560px">
         <NxProgressBar id="indeterminate-bar" Indeterminate="true" AriaLabel="Connecting" />
         <NxProgressBar Indeterminate="true" Thin="true" AriaLabel="Loading" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="indeterminate" />
 </div>
 
 <div class="doc-section">
     <h2>Colors &amp; Height</h2>
     <p class="doc-note">Tokens on the bar or any container: <code>--nx-progressbar-fill</code>, <code>-track</code>, <code>-height</code>, <code>-radius</code>.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:560px">
         <NxProgressBar Value="92" AriaLabel="Budget" Style="--nx-progressbar-fill: var(--nx-danger)" />
         <NxProgressBar Value="55" AriaLabel="Cure" Style="--nx-progressbar-fill: var(--nx-success); --nx-progressbar-height: 28px; --nx-progressbar-radius: 4px" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="colors-and-height" />
 </div>
 
 <DocPager Slug="progressbar" Page="examples" />

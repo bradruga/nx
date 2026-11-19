@@ -8,6 +8,7 @@
         A 2xx answer raises <code>OnSuccess</code>, anything else <code>OnError</code>, with the status and body on the file.
         Name a file with "fail" in it to see one fail, then Retry.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxUpload Id="results-upload" SaveUrl="demo/upload" OnSuccess='e => Log($"OK {e.File.Name}: {e.File.ResponseText}")'
                   OnError='e => Log($"Failed {e.File.Name}: {e.File.StatusCode}")' OnCancel='e => Log($"Cancelled {e.File.Name}")' />
@@ -18,14 +19,19 @@
             }
         </ul>
     </div>
+    @* /code *@
+    <DocExampleCode Key="success-failure-and-retry" />
 </div>
 
 <div class="doc-section">
     <h2>Upload on Demand</h2>
     <p class="doc-note"><code>AutoUpload="false"</code> lists the files and shows Upload and Clear; or call <code>UploadFilesAsync()</code>.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxUpload Id="manual-upload" SaveUrl="demo/upload" AutoUpload="false" MaxConcurrentUploads="2" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="upload-on-demand" />
 </div>
 
 <div class="doc-section">
@@ -34,24 +40,33 @@
         <code>ShowPasteButton</code> adds a Paste button that reads files from the clipboard (the browser asks first). Ctrl+V
         on the focused drop zone works without it.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxUpload Id="paste-upload" SaveUrl="demo/upload" ShowPasteButton="true" AllowedExtensions='new[] { ".png", ".jpg" }' />
     </div>
+    @* /code *@
+    <DocExampleCode Key="paste" />
 </div>
 
 <div class="doc-section">
     <h2>One File, Checks</h2>
     <p class="doc-note">A single 1 MB PDF: another pick replaces it; other files are refused and never sent.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxUpload Id="single-upload" SaveUrl="demo/upload" Multiple="false" AllowedExtensions='new[] { ".pdf" }' MaxFileSize="1_000_000" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="one-file-checks" />
 </div>
 
 <div class="doc-section">
     <h2>Disabled</h2>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxUpload Id="disabled-upload" SaveUrl="demo/upload" Disabled="true" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="disabled" />
 </div>
 
 <DocPager Slug="upload" Page="examples" />

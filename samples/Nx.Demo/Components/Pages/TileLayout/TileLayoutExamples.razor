@@ -9,6 +9,7 @@
         <code>OnResize</code> fire after each change; read <code>GetState()</code> to save it and <code>SetState</code> to bring it
         back. The × in a header hides the tile (<code>Visible</code>).
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxTileLayout @ref="board" Id="edit-tiles" Columns="4" RowHeight="120px" Reorderable="true" Resizable="true"
                       OnReorder='e => Log($"Moved {e.Id} from {e.OldIndex + 1} to {e.NewIndex + 1}")'
@@ -39,6 +40,8 @@
         </div>
         <pre class="doc-code" id="edit-state">@stateText</pre>
     </div>
+    @* /code *@
+    <DocExampleCode Key="reorder-resize-and-save" />
 </div>
 
 <div class="doc-section">
@@ -47,6 +50,7 @@
         <code>ColumnWidth</code> caps how wide a column grows (here 220 px), and without <code>RowHeight</code> rows fit their
         content.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <NxTileLayout Id="auto-tiles" Columns="3" ColumnWidth="220px" Gap="10px" AriaLabel="Inventory">
             <NxTileLayoutItem HeaderText="Rebar">
@@ -63,6 +67,8 @@
             </NxTileLayoutItem>
         </NxTileLayout>
     </div>
+    @* /code *@
+    <DocExampleCode Key="column-width-and-auto-rows" />
 </div>
 
 <DocPager Slug="tilelayout" Page="examples" />

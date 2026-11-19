@@ -8,6 +8,7 @@
         As ERP's concrete test does: each delivery ticket chip shows plant and ticket number and a button that opens its batch
         ticket report. Buttons inside a chip keep their own keys; the chip's remove button still names the ticket.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxChipList TItem="Delivery" Id="template-chips" Data="deliveries" ItemText='d => $"{d.Plant}-{d.Number}"' Removable="true"
                     AriaLabel="Delivery notes" OnRemove="e => deliveries.Remove(e.Item)">
@@ -21,11 +22,14 @@
         </NxChipList>
         <span class="demo-value" id="template-opened">@(opened is null ? "No report opened" : $"Report for ticket {opened}")</span>
     </div>
+    @* /code *@
+    <DocExampleCode Key="item-template" />
 </div>
 
 <div class="doc-section">
     <h2>Variants &amp; Sizes</h2>
     <p class="doc-note"><code>Variant</code> is a soft fill or an outline; <code>Size</code> is small, medium or large.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         @foreach (var size in Enum.GetValues<NxSize>())
         {
@@ -36,11 +40,14 @@
             </div>
         }
     </div>
+    @* /code *@
+    <DocExampleCode Key="variants-and-sizes" />
 </div>
 
 <div class="doc-section">
     <h2>Adding Chips</h2>
     <p class="doc-note">The list shows whatever is in <code>Data</code>; add to it and the chip appears. Long text is cut with an ellipsis.</p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <form class="demo-row" @onsubmit="Add">
             <NxTextBox Id="add-tag" Placeholder="Add a tag" @bind-Value="newTag" Immediate="true" aria-label="New tag" Style="flex:1" />
@@ -48,13 +55,18 @@
         </form>
         <NxChipList TItem="string" Id="tag-chips" Data="tags" Removable="true" AriaLabel="Tags" OnRemove="e => tags.Remove(e.Item)" NoDataText="No tags yet" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="adding-chips" />
 </div>
 
 <div class="doc-section">
     <h2>Disabled</h2>
+    @* code *@
     <div class="demo-stage">
         <NxChipList Id="disabled-chips" Data="Mixes" Removable="true" Disabled="true" AriaLabel="Mixes, disabled" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="disabled" />
 </div>
 
 <DocPager Slug="chiplist" Page="examples" />

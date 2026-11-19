@@ -5,6 +5,7 @@
 <div class="doc-section">
     <h2>Variants &amp; Sizes</h2>
     <p class="doc-note">Every NxButton variant and size, with the down arrow after the label.</p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-row">
             @foreach (var variant in Enum.GetValues<NxButtonVariant>())
@@ -20,6 +21,8 @@
         </div>
         <div class="demo-row" style="margin-top:12px"><span class="demo-value" id="variants-picked">Picked: <strong>@picked</strong></span></div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="variants-and-sizes" />
 </div>
 
 <div class="doc-section">
@@ -28,6 +31,7 @@
         With only an <code>Icon</code> there is no arrow — the usual "more actions" button; give it an <code>AriaLabel</code>.
         <code>AlignEnd</code> lines the menu up with the button's right edge, for buttons at the end of a row.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-row demo-row-spread">
             <span>Pour P-1042</span>
@@ -35,22 +39,30 @@
                               Items="editItems" OnItemClick="Picked" AlignEnd="true" />
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="icon-only-and-alignment" />
 </div>
 
 <div class="doc-section">
     <h2>Submenus &amp; Check Items</h2>
+    @* code *@
     <div class="demo-stage">
         <NxDropDownButton Id="view-button" Items="ViewItems" OnItemClick="ViewPicked" Icon="@DemoMenus.Icon("settings")">View</NxDropDownButton>
         <span class="demo-value" id="view-state">Density: <strong>@density</strong> · Totals: <strong>@(totals ? "on" : "off")</strong></span>
     </div>
+    @* /code *@
+    <DocExampleCode Key="submenus-and-check-items" />
 </div>
 
 <div class="doc-section">
     <h2>Disabled &amp; Full Width</h2>
+    @* code *@
     <div class="demo-stage demo-stage-column" style="max-width:360px">
         <NxDropDownButton Id="disabled-button" Items="items" Disabled="true">Disabled</NxDropDownButton>
         <NxDropDownButton Id="full-button" Items="items" OnItemClick="Picked" FullWidth="true" Variant="NxButtonVariant.Primary">Full width</NxDropDownButton>
     </div>
+    @* /code *@
+    <DocExampleCode Key="disabled-and-full-width" />
 </div>
 
 <DocPager Slug="dropdownbutton" Page="examples" />

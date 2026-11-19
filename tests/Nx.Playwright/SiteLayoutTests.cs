@@ -16,7 +16,7 @@ public class SiteLayoutTests : PageTest
 
     public SiteLayoutTests(string baseUrl) => _baseUrl = baseUrl;
 
-    private static readonly string[] Components = ["button", "textbox", "numeric", "combobox", "checkbox", "switch", "radio", "togglegroup",
+    internal static readonly string[] Components = ["button", "textbox", "numeric", "combobox", "checkbox", "switch", "radio", "togglegroup",
                                                           "datepicker", "daterange", "timepicker", "window", "tabstrip", "splitter",
                                                           "dropdown", "multiselect", "textarea", "tooltip", "contextmenu", "dropdownbutton", "splitbutton",
                                                           "form", "icon", "loader", "datetimepicker", "autocomplete",
@@ -26,7 +26,7 @@ public class SiteLayoutTests : PageTest
     private static readonly string[] SubPages = ["overview", "examples", "playground", "api"];
 
     private static IEnumerable<string> AllPaths() =>
-        new[] { "/", "/guides/files" }.Concat(Components.SelectMany(c => SubPages.Select(p => $"/{c}/{p}")));
+        new[] { "/", "/guides/files", "/guides/theme" }.Concat(Components.SelectMany(c => SubPages.Select(p => $"/{c}/{p}")));
 
     private ILocator Hamburger => Page.Locator(".doc-hamburger");
     private ILocator Sidebar   => Page.Locator("#site-nav");

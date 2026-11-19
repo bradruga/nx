@@ -19,7 +19,7 @@
         <NxDateTimePicker Id="overview-start" Label="Pour starts" @bind-Value="start" Format="M/d/yyyy h:mm tt" TimeStep="15" Clearable="true" />
         <span class="demo-value" id="overview-value">Value: <strong>@(start?.ToString("yyyy-MM-dd HH:mm") ?? "null")</strong></span>
     </div>
-    <pre class="doc-code">@basicCode</pre>
+    <DocCode Code="@basicCode" />
 </div>
 
 <div class="doc-section">

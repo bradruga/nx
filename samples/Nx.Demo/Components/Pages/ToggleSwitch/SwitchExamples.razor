@@ -4,6 +4,7 @@
 
 <div class="doc-section">
     <h2>Sizes</h2>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         @foreach (var size in Enum.GetValues<NxSize>())
         {
@@ -13,6 +14,8 @@
             </div>
         }
     </div>
+    @* /code *@
+    <DocExampleCode Key="sizes" />
 </div>
 
 <div class="doc-section">
@@ -25,7 +28,7 @@
         <NxToggleSwitch Id="text-inside" @bind-Value="inside" OnText="On" OffText="Off" Label="Inside the track" />
         <NxToggleSwitch Id="text-beside" @bind-Value="beside" OnText="Yes" OffText="No" StateTextPosition="NxToggleTextPosition.Beside" Label="Beside the track" />
     </div>
-    <pre class="doc-code">@textCode</pre>
+    <DocCode Code="@textCode" />
 </div>
 
 <div class="doc-section">
@@ -38,11 +41,12 @@
         <NxToggleSwitch Id="loading-switch" Value="published" ValueChanged="PublishAsync" Loading="saving" Label="Publish to the customer portal" />
         <EventLog @ref="log" Label="Saves" EmptyText="Flip the switch." />
     </div>
-    <pre class="doc-code">@loadingCode</pre>
+    <DocCode Code="@loadingCode" />
 </div>
 
 <div class="doc-section">
     <h2>Label Position</h2>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <div class="demo-switch-list">
             <NxToggleSwitch Id="pos-start-1" @bind-Value="settingA" Label="Show cost columns" LabelPosition="NxLabelPosition.Start" />
@@ -50,18 +54,24 @@
             <NxToggleSwitch Id="pos-start-3" @bind-Value="settingC" Label="Group by job" LabelPosition="NxLabelPosition.Start" />
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="label-position" />
 </div>
 
 <div class="doc-section">
     <h2>Disabled</h2>
+    @* code *@
     <div class="demo-stage">
         <NxToggleSwitch Id="disabled-on" Value="true" Disabled="true" Label="Disabled, on" />
         <NxToggleSwitch Id="disabled-off" Value="false" Disabled="true" Label="Disabled, off" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="disabled" />
 </div>
 
 <div class="doc-section">
     <h2>Form Validation</h2>
+    @* code *@
     <div class="demo-stage demo-stage-column">
         <EditForm id="switch-form" Model="form" OnValidSubmit="Submit" FormName="switch-form">
             <DataAnnotationsValidator />
@@ -73,6 +83,8 @@
             </div>
         </EditForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="form-validation" />
 </div>
 
 <DocPager Slug="switch" Page="examples" />

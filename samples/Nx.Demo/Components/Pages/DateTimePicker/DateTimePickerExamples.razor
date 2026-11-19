@@ -9,6 +9,7 @@
         Any .NET format. An all-number 24-hour one (<code>MM/dd/yyyy HH:mm</code>) is typed behind a mask; the others are
         typed freely and read leniently — <code>3/5 2pm</code> works.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <NxDateTimePicker Id="format-12h" Label="M/d/yyyy h:mm tt" Format="M/d/yyyy h:mm tt" @bind-Value="a" />
@@ -17,17 +18,22 @@
             <NxDateTimePicker Id="format-words" Label="MMM d 'at' h:mm tt" Format="MMM d 'at' h:mm tt" @bind-Value="d" />
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="formats" />
 </div>
 
 <div class="doc-section">
     <h2>Time Step</h2>
     <p class="doc-note"><code>TimeStep</code> is the minutes between listed times (30 by default). Typed times need not be on a step.</p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <NxDateTimePicker Id="step-15" Label="Every 15 minutes" TimeStep="15" @bind-Value="stepped" />
             <NxDateTimePicker Id="step-60" Label="Every hour" TimeStep="60" @bind-Value="hourly" />
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="time-step" />
 </div>
 
 <div class="doc-section">
@@ -36,10 +42,13 @@
         <code>Min</code> and <code>Max</code> are date-times: days outside them are off in the calendar, times outside them
         are left out of the list on the first and last day, and typed values are moved to the nearest limit.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxDateTimePicker Id="injury-time" Label="Injury occurred" Min="hireDate" Max="now" @bind-Value="injury" TimeStep="15" />
         <span class="demo-value">Between hire (@hireDate.ToString("g")) and now (@now.ToString("g")).</span>
     </div>
+    @* /code *@
+    <DocExampleCode Key="min-and-max" />
 </div>
 
 <div class="doc-section">
@@ -48,6 +57,7 @@
         Bind <code>DateTime?</code> for a value that can be empty; <code>Clearable</code> adds the clear button and Esc. A
         plain <code>DateTime</code> is never empty: clearing the text puts the value back.
     </p>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <div>
@@ -60,16 +70,21 @@
             </div>
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="nullable-and-clear" />
 </div>
 
 <div class="doc-section">
     <h2>State</h2>
+    @* code *@
     <div class="demo-stage">
         <div class="demo-form-grid">
             <NxDateTimePicker Id="state-readonly" Label="Read-only" ReadOnly="true" Value="fixedValue" />
             <NxDateTimePicker Id="state-disabled" Label="Disabled" Disabled="true" Value="fixedValue" />
         </div>
     </div>
+    @* /code *@
+    <DocExampleCode Key="state" />
 </div>
 
 <div class="doc-section">
@@ -78,13 +93,17 @@
         At 600 px and below the popup is a full-screen sheet: Date and Time tabs showing the current choice, a big calendar,
         then a list of times. <code>MobileMode="Always"</code> shows it here on any screen.
     </p>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <NxDateTimePicker Id="sheet-always" Label="Gate opens" MobileMode="NxMobileMode.Always" TimeStep="15" Clearable="true" @bind-Value="gate" />
     </div>
+    @* /code *@
+    <DocExampleCode Key="phone-sheet" />
 </div>
 
 <div class="doc-section">
     <h2>Form Validation</h2>
+    @* code *@
     <div class="demo-stage demo-stage-column demo-stage-narrow">
         <EditForm id="datetime-form" Model="meeting" OnValidSubmit="Submit" FormName="datetime-form">
             <DataAnnotationsValidator />
@@ -96,6 +115,8 @@
             </div>
         </EditForm>
     </div>
+    @* /code *@
+    <DocExampleCode Key="form-validation" />
 </div>
 
 <DocPager Slug="datetimepicker" Page="examples" />
